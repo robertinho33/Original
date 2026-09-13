@@ -10,7 +10,7 @@
         content="Finaliza o pedido da Aurílio Cosméticos."
     >
 
-    <title>Finalizar pedido Aurílio Cosméticos.</title>
+    <title>Finalizar pedido Aurílio Cosméticos</title>
 
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/checkout.css">
@@ -286,7 +286,7 @@
                             <option value="RJ">Rio de Janeiro</option>
                             <option value="RN">Rio Grande do Norte</option>
                             <option value="RS">Rio Grande do Sul</option>
-                            <option value="RO">Rondô´nia</option>
+                            <option value="RO">Rondônia</option>
                             <option value="RR">Roraima</option>
                             <option value="SC">Santa Catarina</option>
                             <option value="SP">São Paulo</option>
@@ -337,7 +337,7 @@
                         >
 
                         <span>
-                            <strong>Cartï¿½fï¿½'ï¿½,Â£o</strong>
+                            <strong>Cartão</strong>
                             <small>Pagamento combinado no atendimento</small>
                         </span>
                     </label>
@@ -441,20 +441,14 @@
 
                 <p class="checkout-security">
                     Seus dados permanecem somente nesta etapa
-                    até a confirmação do pedido. </p>
+                    até a confirmação do pedido.
+                </p>
 
             </div>
 
         </aside>
 
     </form>
-
-    <div id="secao-frete">
-  <h4>Opções de Envio</h4>
-  <div id="opcoes-frete">
-    <p>Digite seu CEP acima para calcular o frete.</p>
-  </div>
-</div>
 
 </main>
 
@@ -466,7 +460,7 @@
 >
     <div class="checkout-success-card">
 
-        <span class="checkout-success-icon">ï¿½fÂ¢ï¿½.ï¿½?oÃ¢ï¿½,ï¿½ï¿½"</span>
+        <span class="checkout-success-icon">✓</span>
 
         <p class="eyebrow">PEDIDO RECEBIDO</p>
 
@@ -478,7 +472,7 @@
         <p id="successMessage"></p>
 
         <div class="success-order-number">
-            <span>Nï¿½fï¿½'ï¿½,Âºmero do pedido</span>
+            <span>Número do pedido</span>
             <strong id="successOrderNumber"></strong>
         </div>
 
@@ -486,13 +480,14 @@
             class="primary"
             href="../index.html"
         >
-            Voltar ï¿½fï¿½'ï¿½,Â  loja
-            <span>ï¿½fÂ¢Ã¢ï¿½,ï¿½Â Ã¢ï¿½,ï¿½ï¿½"ï¿½</span>
+            Voltar à loja
+            <span>➔</span>
         </a>
 
     </div>
 </div>
 
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <script type="module" src="../js/checkout/address-service.js"></script>
 <script type="module" src="../js/checkout/checkout.js"></script>
 

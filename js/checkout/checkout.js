@@ -2,163 +2,8 @@
 import { saveOrder as persistOrder } from '../orders/order-service.js';
 
 'use strict';
-import { processarPagamentoPix, processarPagamentoCartao } from './payment-service.js';
-import { buscarEnderecoPorCEP } from './address-service.js';
-import { calcularFretePorCEP } from './shipping-service.js';
-
-document.addEventListener('DOMContentLoaded', () => {
-  const inputCep = document.getElementById('cep');
-
-  if (inputCep) {
-    inputCep.addEventListener('blur', async () => {
-      const cepValue = inputCep.value.replace(/\D/g, '');
-
-      if (cepValue.length === 8) {
-        try {
-          preencherCamposEndereco({ logradouro: 'Buscando...', bairro: 'Buscando...', cidade: 'Buscando...', uf: '' });
-
-          // 1. Busca o endereço
-          const endereco = await buscarEnderecoPorCEP(cepValue);
-          preencherCamposEndereco(endereco);
-          document.getElementById('numero')?.focus();
-
-          // 2. Aciona o cálculo de frete logo após encontrar o CEP
-          exibirStatusFrete('Calculando frete...');
-          const itensCarrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-          const opcoesFrete = await calcularFretePorCEP(cepValue, itensCarrinho);
-
-          // 3. Renderiza as opções de frete na tela
-          renderizarOpcoesFrete(opcoesFrete);
-
-        } catch (error) {
-          alert('Erro ao processar CEP ou frete: ' + error.message);
-          limparCamposEndereco();
-        }
-      }
-    });
-  }
-});
-
-function renderizarOpcoesFrete(opcoes) {
-  const container = document.getElementById('opcoes-frete');
-  if (!container) return;
-
-  container.innerHTML = opcoes.map((opcao, index) => `
-    <label class="opcao-frete-item" style="display: block; margin-bottom: 8px; cursor: pointer;">
-      <input type="radio" name="frete" value="${opcao.valor}" data-nome="${opcao.nome}" ${index === 0 ? 'checked' : ''} />
-      <span><strong>${opcao.nome}</strong> - R$ ${opcao.valor.toFixed(2).replace('.', ',')} (${opcao.prazo})</span>
-    </label>
-  `).join('');
-
-  // Atualiza o total ao selecionar uma opção de frete
-  const radiosFrete = container.querySelectorAll('input[name="frete"]');
-  radiosFrete.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-      atualizarTotalComFrete(parseFloat(e.target.value));
-    });
-  });
-
-  // Seleciona o primeiro frete por padrão
-  if (opcoes.length > 0) {
-    atualizarTotalComFrete(opcoes[0].valor);
-  }
-}
-
-function exibirStatusFrete(mensagem) {
-  const container = document.getElementById('opcoes-frete');
-  if (container) container.innerHTML = `<p>${mensagem}</p>`;
-}
-
-function atualizarTotalComFrete(valorFrete) {
-  const subtotal = parseFloat(localStorage.getItem('totalCarrinho') || '0');
-  const totalGeral = subtotal + valorFrete;
-
-  const elTotal = document.getElementById('valor-total');
-  if (elTotal) {
-    elTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const formCheckout = document.getElementById('form-checkout');
-  if (!formCheckout) return;
-
-  formCheckout.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    // 1. Obter os dados do formulário
-    const formData = new FormData(formCheckout);
-    const metodoPagamento = formData.get('metodoPagamento'); // 'pix' ou 'cartao'
-
-    const dadosComprador = {
-      nome: formData.get('nome'),
-      cpf: formData.get('cpf').replace(/\D/g, ''),
-      email: formData.get('email'),
-      telefone: formData.get('telefone')
-    };
-
-    // Obter total e itens da sacola (exemplo vindo do localStorage ou estado do carrinho)
-    const itensCarrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-    const valorTotal = parseFloat(localStorage.getItem('totalCarrinho') || '0');
-
-    try {
-      // Exibir indicador de carregamento
-      setLoading(true);
-
-      if (metodoPagamento === 'pix') {
-        const resultadoPix = await processarPagamentoPix(dadosComprador, itensCarrinho);
-        exibirModalPix(resultadoPix.qrCode, resultadoPix.qrCodeBase64);
-      } else if (metodoPagamento === 'cartao') {
-        const dadosCartao = {
-          numero: formData.get('numeroCartao').replace(/\s/g, ''),
-          nome: formData.get('nomeCartao'),
-          mesExpiracao: formData.get('mesExpiracao'),
-          anoExpiracao: formData.get('anoExpiracao'),
-          cvv: formData.get('cvv'),
-          bandeira: formData.get('bandeira'),
-          parcelas: formData.get('parcelas')
-        };
-
-        const resultadoCartao = await processarPagamentoCartao(dadosCartao, dadosComprador, valorTotal);
-        if (resultadoCartao.status === 'approved') {
-          window.location.href = '/pages/sucesso.html';
-        } else {
-          alert('Pagamento não aprovado. Verifique os dados do cartão.');
-        }
-      }
-    } catch (error) {
-      alert(`Falha ao processar pagamento: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  });
-});
-
-function setLoading(isPending) {
-  const btnSubmit = document.getElementById('btn-finalizar');
-  if (btnSubmit) {
-    btnSubmit.disabled = isPending;
-    btnSubmit.textContent = isPending ? 'Processando...' : 'Finalizar Compra';
-  }
-}
-
-function exibirModalPix(chaveCopiaCola, imagemBase64) {
-  const containerPix = document.getElementById('container-pix');
-  if (containerPix) {
-    containerPix.innerHTML = `
-      <h3>Pagamento via PIX</h3>
-      <img src="data:image/jpeg;base64,${imagemBase64}" alt="QR Code PIX" />
-      <p>Chave Copia e Cola:</p>
-      <input type="text" value="${chaveCopiaCola}" id="chave-pix-input" readonly />
-      <button onclick="navigator.clipboard.writeText('${chaveCopiaCola}')">Copiar Chave</button>
-    `;
-    containerPix.style.display = 'block';
-  }
-}
 
 const CART_STORAGE_KEY = 'aurea-cart';
-/* const ORDER_STORAGE_KEY = 'aurea-last-order'; */
-
 const CATALOG_PATH = '../data/produtos.csv';
 
 const DELIVERY_COST = 19.90;
@@ -168,7 +13,7 @@ let cart = [];
 
 
 /* =========================================================
-   UTILITÃ¯Â¿Â½fÃ‚ÂRIOS
+   UTILITÁRIOS
    ========================================================= */
 
 function formatCurrency(value) {
@@ -332,7 +177,7 @@ function normalizeProduct(row) {
     return {
         sku: String(row.SKU || '').trim(),
         name: String(row.Produto || '').trim(),
-        price: parsePrice(row.PreÃ¯Â¿Â½fÃ‚Â§o),
+        price: parsePrice(row.Preço),
         image: String(row.Imagem || '').trim()
     };
 }
@@ -389,7 +234,7 @@ async function loadProducts() {
 
     if (!response.ok) {
         throw new Error(
-            `NÃ¯Â¿Â½fÃ‚Â£o foi possÃ¯Â¿Â½fÃ‚Â­vel carregar o catÃ¯Â¿Â½fÃ‚Â¡logo. HTTP ${response.status}`
+            `Não foi possível carregar o catálogo. HTTP ${response.status}`
         );
     }
 
@@ -505,8 +350,7 @@ function renderCheckoutItems() {
                     </strong>
 
                     <small>
-                        ${item.quantity} Ã¯Â¿Â½fÃ¯Â¿Â½?"
-                        ${formatCurrency(item.product.price)}
+                        ${item.quantity}x ${formatCurrency(item.product.price)}
                     </small>
 
                 </div>
@@ -541,7 +385,7 @@ function renderTotals() {
     if (shipping) {
         shipping.textContent =
             getShippingCost() === 0
-                ? 'GrÃ¯Â¿Â½fÃ‚Â¡tis'
+                ? 'Grátis'
                 : formatCurrency(getShippingCost());
     }
 
@@ -593,7 +437,7 @@ function updateDeliveryFields() {
 
 
 /* =========================================================
-   FORMATAÃ¯Â¿Â½fÃ¯Â¿Â½?Ã¯Â¿Â½Ã¯Â¿Â½fÃ¯Â¿Â½'O
+   FORMATAÇÃO
    ========================================================= */
 
 function formatCEP(value) {
@@ -661,7 +505,7 @@ function setupFormatting() {
 
 
 /* =========================================================
-   VALIDAÃ¯Â¿Â½fÃ¯Â¿Â½?Ã¯Â¿Â½Ã¯Â¿Â½fÃ¯Â¿Â½'O
+   VALIDAÇÃO
    ========================================================= */
 
 function clearErrors() {
@@ -732,7 +576,7 @@ function validateForm() {
     if (phoneDigits.length < 10) {
         setFieldError(
             'customerPhone',
-            'Informe um telefone vÃ¯Â¿Â½fÃ‚Â¡lido.'
+            'Informe um telefone válido.'
         );
 
         valid = false;
@@ -745,7 +589,7 @@ function validateForm() {
 
         setFieldError(
             'customerEmail',
-            'Informe um e-mail vÃ¯Â¿Â½fÃ‚Â¡lido.'
+            'Informe um e-mail válido.'
         );
 
         valid = false;
@@ -764,7 +608,7 @@ function validateForm() {
             ],
             [
                 'addressNumber',
-                'Informe o nÃ¯Â¿Â½fÃ‚Âºmero.'
+                'Informe o número.'
             ],
             [
                 'addressNeighborhood',
@@ -810,7 +654,7 @@ function validateForm() {
 
             setFieldError(
                 'addressZip',
-                'Informe um CEP vÃ¯Â¿Â½fÃ‚Â¡lido.'
+                'Informe um CEP válido.'
             );
 
             valid = false;
@@ -965,7 +809,7 @@ function saveOrder(order) {
 
 
 /* =========================================================
-   CONFIRMAÃ¯Â¿Â½fÃ¯Â¿Â½?Ã¯Â¿Â½Ã¯Â¿Â½fÃ¯Â¿Â½'O
+   CONFIRMAÇÃO
    ========================================================= */
 
 function showSuccess(order) {
@@ -1006,7 +850,6 @@ function showSuccess(order) {
 /* =========================================================
    ENVIO
    ========================================================= */
-
 
 async function handleCepLookup() {
     const cepInput = document.querySelector('#addressZip');
@@ -1049,6 +892,8 @@ async function handleCepLookup() {
         console.warn('Consulta de CEP:', error.message);
     }
 }
+
+
 function handleSubmit(event) {
 
     event.preventDefault();
@@ -1063,7 +908,7 @@ function handleSubmit(event) {
         if (message) {
             message.hidden = false;
             message.textContent =
-                'Sua sacola estÃ¯Â¿Â½fÃ‚Â¡ vazia. Volte Ã¯Â¿Â½fÃ‚Â  loja e adicione produtos.';
+                'Sua sacola está vazia. Volte à loja e adicione produtos.';
         }
 
         return;
@@ -1092,10 +937,6 @@ function handleSubmit(event) {
 
     saveOrder(order);
 
-    /*
-     * O carrinho sÃ¯Â¿Â½fÃ‚Â³ Ã¯Â¿Â½fÃ‚Â© limpo depois que o pedido
-     * foi criado e salvo com sucesso.
-     */
     localStorage.removeItem(
         CART_STORAGE_KEY
     );
@@ -1132,7 +973,7 @@ function setupEvents() {
 
 
 /* =========================================================
-   INICIALIZAÃ¯Â¿Â½fÃ¯Â¿Â½?Ã¯Â¿Â½Ã¯Â¿Â½fÃ¯Â¿Â½'O
+   INICIALIZAÇÃO
    ========================================================= */
 
 async function init() {
@@ -1195,50 +1036,11 @@ async function init() {
             message.hidden = false;
 
             message.textContent =
-                'NÃ¯Â¿Â½fÃ‚Â£o foi possÃ¯Â¿Â½fÃ‚Â­vel carregar o checkout. ' +
-                'Atualize a pÃ¯Â¿Â½fÃ‚Â¡gina e tente novamente.';
+                'Não foi possível carregar o checkout. ' +
+                'Atualize a página e tente novamente.';
         }
     }
 }
 
-import { buscarEnderecoPorCEP } from './address-service.js';
-
-document.addEventListener('DOMContentLoaded', () => {
-  const inputCep = document.getElementById('cep');
-
-  if (inputCep) {
-    // Escuta o preenchimento do CEP
-    inputCep.addEventListener('blur', async () => {
-      const cepValue = inputCep.value.replace(/\D/g, '');
-
-      if (cepValue.length === 8) {
-        try {
-          // Preenche os campos com indicador de carregamento
-          preencherCamposEndereco({ logradouro: 'Buscando...', bairro: 'Buscando...', cidade: 'Buscando...', uf: '' });
-
-          const endereco = await buscarEnderecoPorCEP(cepValue);
-
-          // Atualiza os inputs com os dados retornados
-          preencherCamposEndereco(endereco);
-          document.getElementById('numero')?.focus();
-        } catch (error) {
-          alert('CEP não encontrado. Por favor, preencha o endereço manualmente.');
-          limparCamposEndereco();
-        }
-      }
-    });
-  }
-});
-
-function preencherCamposEndereco(dados) {
-  if (document.getElementById('rua')) document.getElementById('rua').value = dados.logradouro || '';
-  if (document.getElementById('bairro')) document.getElementById('bairro').value = dados.bairro || '';
-  if (document.getElementById('cidade')) document.getElementById('cidade').value = dados.cidade || '';
-  if (document.getElementById('uf')) document.getElementById('uf').value = dados.uf || '';
-}
-
-function limparCamposEndereco() {
-  preencherCamposEndereco({ logradouro: '', bairro: '', cidade: '', uf: '' });
-}
 
 init();
