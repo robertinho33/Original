@@ -1,0 +1,493 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="Finaliza o pedido da Aurílio Cosméticos."
+    >
+
+    <title>Finalizar pedido Aurílio Cosméticos.</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/checkout.css">
+</head>
+
+<body class="checkout-page">
+
+<header class="topbar checkout-topbar">
+
+    <a class="brand" href="../index.html">
+        <span>A</span> Cosmetics
+    </a>
+
+    <a class="checkout-back" href="../index.html#colecao">
+        &larr; Continuar comprando
+    </a>
+
+</header>
+
+<main class="checkout-main">
+
+    <div class="checkout-heading">
+        <p class="eyebrow">FINALIZAR PEDIDO</p>
+
+        <h1>
+            Seu pedido,<br>
+            <em>do seu jeito.</em>
+        </h1>
+
+        <p>
+            Confira seus produtos, informe seus dados e escolha
+            como deseja receber e pagar seu pedido.
+        </p>
+    </div>
+
+    <div
+        id="checkoutMessage"
+        class="checkout-message"
+        role="alert"
+        hidden
+    ></div>
+
+    <form id="checkoutForm" class="checkout-layout" novalidate>
+
+        <div class="checkout-form-column">
+
+            <section class="checkout-card">
+
+                <div class="checkout-section-heading">
+                    <span>01</span>
+
+                    <div>
+                        <p class="eyebrow">CLIENTE</p>
+                        <h2>Seus dados</h2>
+                    </div>
+                </div>
+
+                <div class="checkout-grid">
+
+                    <label class="checkout-field checkout-field-full">
+                        <span>Nome completo *</span>
+
+                        <input
+                            id="customerName"
+                            name="customerName"
+                            type="text"
+                            autocomplete="name"
+                            required
+                            maxlength="120"
+                            placeholder="Seu nome completo"
+                        >
+
+                        <small data-error-for="customerName"></small>
+                    </label>
+
+                    <label class="checkout-field">
+                        <span>Telefone / WhatsApp *</span>
+
+                        <input
+                            id="customerPhone"
+                            name="customerPhone"
+                            type="tel"
+                            autocomplete="tel"
+                            required
+                            maxlength="20"
+                            placeholder="(00) 00000-0000"
+                        >
+
+                        <small data-error-for="customerPhone"></small>
+                    </label>
+
+                    <label class="checkout-field">
+                        <span>E-mail</span>
+
+                        <input
+                            id="customerEmail"
+                            name="customerEmail"
+                            type="email"
+                            autocomplete="email"
+                            maxlength="160"
+                            placeholder="seu@email.com"
+                        >
+
+                        <small data-error-for="customerEmail"></small>
+                    </label>
+
+                </div>
+
+            </section>
+
+
+            <section class="checkout-card">
+
+                <div class="checkout-section-heading">
+                    <span>02</span>
+
+                    <div>
+                        <p class="eyebrow">ENTREGA</p>
+                        <h2>Onde receber?</h2>
+                    </div>
+                </div>
+
+                <div class="delivery-options">
+
+                    <label class="delivery-option">
+                        <input
+                            type="radio"
+                            name="deliveryMethod"
+                            value="delivery"
+                            checked
+                        >
+
+                        <span>
+                            <strong>Entrega padrão</strong>
+                            <small>Receba no endereço informado</small>
+                        </span>
+
+                        <b>R$ 19,90</b>
+                    </label>
+
+                    <label class="delivery-option">
+                        <input
+                            type="radio"
+                            name="deliveryMethod"
+                            value="pickup"
+                        >
+
+                        <span>
+                            <strong>Retirada</strong>
+                            <small>Retire o pedido no local combinado</small>
+                        </span>
+
+                        <b>Grátis</b>
+                    </label>
+
+                </div>
+
+                <div id="addressFields" class="checkout-grid">
+
+                    <label class="checkout-field">
+                        <span>CEP *</span>
+
+                        <input
+                            id="addressZip"
+                            name="addressZip"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="postal-code"
+                            maxlength="9"
+                            placeholder="00000-000"
+                        >
+
+                        <small data-error-for="addressZip"></small>
+                    </label>
+
+                    <label class="checkout-field checkout-field-wide">
+                        <span>Rua / Avenida *</span>
+
+                        <input
+                            id="addressStreet"
+                            name="addressStreet"
+                            type="text"
+                            autocomplete="street-address"
+                            maxlength="160"
+                            placeholder="Nome da rua ou avenida"
+                        >
+
+                        <small data-error-for="addressStreet"></small>
+                    </label>
+
+                    <label class="checkout-field">
+                        <span>Número *</span>
+
+                        <input
+                            id="addressNumber"
+                            name="addressNumber"
+                            type="text"
+                            maxlength="20"
+                            placeholder="123"
+                        >
+
+                        <small data-error-for="addressNumber"></small>
+                    </label>
+
+                    <label class="checkout-field">
+                        <span>Complemento</span>
+
+                        <input
+                            id="addressComplement"
+                            name="addressComplement"
+                            type="text"
+                            maxlength="100"
+                            placeholder="Apto, bloco..."
+                        >
+                    </label>
+
+                    <label class="checkout-field">
+                        <span>Bairro *</span>
+
+                        <input
+                            id="addressNeighborhood"
+                            name="addressNeighborhood"
+                            type="text"
+                            autocomplete="address-level3"
+                            maxlength="100"
+                            placeholder="Seu bairro"
+                        >
+
+                        <small data-error-for="addressNeighborhood"></small>
+                    </label>
+
+                    <label class="checkout-field">
+                        <span>Cidade *</span>
+
+                        <input
+                            id="addressCity"
+                            name="addressCity"
+                            type="text"
+                            autocomplete="address-level2"
+                            maxlength="100"
+                            placeholder="Sua cidade"
+                        >
+
+                        <small data-error-for="addressCity"></small>
+                    </label>
+
+                    <label class="checkout-field">
+                        <span>Estado *</span>
+
+                        <select
+                            id="addressState"
+                            name="addressState"
+                        >
+                            <option value="">Selecione</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondô´nia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+
+                        <small data-error-for="addressState"></small>
+                    </label>
+
+                </div>
+
+            </section>
+
+
+            <section class="checkout-card">
+
+                <div class="checkout-section-heading">
+                    <span>03</span>
+
+                    <div>
+                        <p class="eyebrow">PAGAMENTO</p>
+                        <h2>Como pagar?</h2>
+                    </div>
+                </div>
+
+                <div class="payment-options">
+
+                    <label class="payment-option">
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="pix"
+                            checked
+                        >
+
+                        <span>
+                            <strong>Pix</strong>
+                            <small>Pagamento confirmado após a transferência</small>
+                        </span>
+                    </label>
+
+                    <label class="payment-option">
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="card"
+                        >
+
+                        <span>
+                            <strong>Cartï¿½fï¿½'ï¿½,Â£o</strong>
+                            <small>Pagamento combinado no atendimento</small>
+                        </span>
+                    </label>
+
+                    <label class="payment-option">
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="cash"
+                        >
+
+                        <span>
+                            <strong>Dinheiro</strong>
+                            <small>Pagamento no recebimento ou retirada</small>
+                        </span>
+                    </label>
+
+                </div>
+
+            </section>
+
+
+            <section class="checkout-card">
+
+                <div class="checkout-section-heading">
+                    <span>04</span>
+
+                    <div>
+                        <p class="eyebrow">OBSERVAÇÕES</p>
+                        <h2>Algo mais?</h2>
+                    </div>
+                </div>
+
+                <label class="checkout-field">
+                    <span>Observações do pedido</span>
+
+                    <textarea
+                        id="orderNotes"
+                        name="orderNotes"
+                        rows="5"
+                        maxlength="500"
+                        placeholder="Alguma informação importante sobre seu pedido?"
+                    ></textarea>
+                </label>
+
+            </section>
+
+        </div>
+
+
+        <aside class="checkout-summary">
+
+            <div class="checkout-summary-card">
+
+                <div class="checkout-summary-heading">
+                    <p class="eyebrow">SEU PEDIDO</p>
+
+                    <h2>Resumo</h2>
+                </div>
+
+                <div
+                    id="checkoutItems"
+                    class="checkout-items"
+                ></div>
+
+                <div class="checkout-totals">
+
+                    <div>
+                        <span>Produtos</span>
+                        <strong id="checkoutSubtotal">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Entrega</span>
+                        <strong id="checkoutShipping">
+                            R$ 19,90
+                        </strong>
+                    </div>
+
+                    <div class="checkout-total">
+
+                        <span>Total</span>
+
+                        <strong id="checkoutTotal">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <button
+                    class="primary checkout-submit"
+                    type="submit"
+                >
+                    Confirmar pedido
+                    <span>➔</span>
+                </button>
+
+                <p class="checkout-security">
+                    Seus dados permanecem somente nesta etapa
+                    até a confirmação do pedido. </p>
+
+            </div>
+
+        </aside>
+
+    </form>
+
+</main>
+
+
+<div
+    class="checkout-success"
+    id="checkoutSuccess"
+    hidden
+>
+    <div class="checkout-success-card">
+
+        <span class="checkout-success-icon">ï¿½fÂ¢ï¿½.ï¿½?oÃ¢ï¿½,ï¿½ï¿½"</span>
+
+        <p class="eyebrow">PEDIDO RECEBIDO</p>
+
+        <h2>
+            Tudo certo,<br>
+            <em>seu pedido foi registrado.</em>
+        </h2>
+
+        <p id="successMessage"></p>
+
+        <div class="success-order-number">
+            <span>Nï¿½fï¿½'ï¿½,Âºmero do pedido</span>
+            <strong id="successOrderNumber"></strong>
+        </div>
+
+        <a
+            class="primary"
+            href="../index.html"
+        >
+            Voltar ï¿½fï¿½'ï¿½,Â  loja
+            <span>ï¿½fÂ¢Ã¢ï¿½,ï¿½Â Ã¢ï¿½,ï¿½ï¿½"ï¿½</span>
+        </a>
+
+    </div>
+</div>
+
+<script type="module" src="../js/checkout/address-service.js"></script>
+<script type="module" src="../js/checkout/checkout.js"></script>
+
+</body>
+</html>

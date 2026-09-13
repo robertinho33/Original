@@ -1,0 +1,398 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="Auréa" uma experiência moderna para descobrir produtos de beleza."
+  >
+
+  <title>Auréa" Beauty Studio</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span>A</span> AURÉA
+    </a>
+
+    <nav>
+      <a href="#colecao">Coleção</a>
+      <a href="#ritual">Ritual</a>
+      <a href="#sobre">Sobre</a>
+    </nav>
+
+    <button
+      class="cart-button"
+      id="openCart"
+      type="button"
+      aria-label="Abrir sacola"
+    >
+      Sacola
+      <b id="cartCount">0</b>
+    </button>
+  </header>
+
+  <main>
+
+    <section class="hero">
+
+      <div class="hero-copy">
+
+        <p class="eyebrow">
+          BEAUTY • CARE • RITUAL
+        </p>
+
+        <h1>
+          Beleza que<br>
+          <em>começa</em> no ritual.
+        </h1>
+
+        <p class="hero-text">
+          Uma loja digital pensada para transformar a escolha
+          de produtos em uma experiência simples, elegante e pessoal.
+        </p>
+
+        <a class="primary" href="#colecao">
+          Explorar coleção
+          <span>➔</span>
+        </a>
+
+      </div>
+
+      <div class="hero-card">
+        <div class="orb"></div>
+        <div class="product-shape"></div>
+
+        <div class="floating-note">
+          ESSENCIAL<br>
+          <strong>para você.</strong>
+        </div>
+      </div>
+
+    </section>
+
+
+    <section id="colecao" class="collection">
+
+      <div class="section-head">
+
+        <div>
+          <p class="eyebrow">
+            CURADORIA AURÉA
+          </p>
+
+          <h2>
+            Escolha seu momento.
+          </h2>
+        </div>
+
+        <div
+          class="filters"
+          id="filters"
+          aria-label="Categorias de produtos"
+        ></div>
+
+      </div>
+
+      <div
+        class="products"
+        id="products"
+      ></div>
+
+    </section>
+
+
+    <section id="ritual" class="ritual">
+
+      <div>
+        <p class="eyebrow">
+          SEU RITUAL
+        </p>
+
+        <h2>
+          Menos complicaçÃ£o.<br>
+          <em>Mais intençÃ£o.</em>
+        </h2>
+      </div>
+
+      <div class="steps">
+
+        <article>
+          <span>01</span>
+          <h3>Descubra</h3>
+          <p>
+            Produtos selecionados por funçÃ£o, nÃ£o por excesso.
+          </p>
+        </article>
+
+        <article>
+          <span>02</span>
+          <h3>Escolha</h3>
+          <p>
+            Monte uma rotina que faça sentido para seu dia.
+          </p>
+        </article>
+
+        <article>
+          <span>03</span>
+          <h3>Cuide</h3>
+          <p>
+            Pequenos rituais criam grandes diferenças.
+          </p>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <section id="sobre" class="manifesto">
+
+      <p class="eyebrow">
+        A IDEIA
+      </p>
+
+      <blockquote>
+        — O melhor produto é aquele que encontra espaço na sua rotina.— 
+      </blockquote>
+
+      <p>
+        Design limpo, navegaçÃ£o rápida e uma experiência feita
+        para funcionar tÃ£o bem no celular quanto no desktop.
+      </p>
+
+    </section>
+
+  </main>
+
+
+  <aside
+    class="drawer"
+    id="cartDrawer"
+    aria-hidden="true"
+    aria-label="Sua sacola"
+  >
+
+    <div class="drawer-head">
+
+      <div>
+        <p class="eyebrow">
+          AUR— A
+        </p>
+
+        <h2>
+          Sua sacola
+        </h2>
+      </div>
+
+      <button
+        id="closeCart"
+        type="button"
+        aria-label="Fechar sacola"
+      >
+        — 
+      </button>
+
+    </div>
+
+
+    <div class="cart-summary-top">
+      <span id="cartSummary">
+        0 itens
+      </span>
+
+      <span>
+        Pedido
+      </span>
+    </div>
+
+
+    <div
+      id="cartItems"
+      class="cart-items"
+    ></div>
+
+
+    <div class="cart-footer">
+
+      <div class="cart-total-line">
+        <span>
+          Subtotal
+        </span>
+
+        <strong id="cartTotal">
+          R$ 0,00
+        </strong>
+      </div>
+
+      <p class="cart-note">
+        Frete e condiçÃµes de pagamento serÃ£o definidos no checkout.
+      </p>
+
+      <button
+        class="primary checkout"
+        id="checkout"
+        type="button"
+      >
+        Finalizar pedido
+        <span>— </span>
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <div
+    class="backdrop"
+    id="backdrop"
+  ></div>
+
+
+  <footer>
+
+    <span>
+      Â© 2026 AUR— A
+    </span>
+
+    <span>
+      Feito para uma vida mais bonita.
+    </span>
+
+  </footer>
+
+
+  <script
+    type="module"
+    src="js/app.js"
+  ></script>
+
+
+  <!-- =====================================================
+       ETAPA 3/7  MODAL DE PRODUTO
+       ===================================================== -->
+
+  <div
+    class="product-modal"
+    id="productModal"
+    aria-hidden="true"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="productModalTitle"
+  >
+
+    <div
+      class="product-modal-backdrop"
+      id="productModalBackdrop"
+    ></div>
+
+    <div class="product-modal-panel">
+
+      <button
+        class="product-modal-close"
+        id="closeProductModal"
+        type="button"
+        aria-label="Fechar produto"
+      >
+        — 
+      </button>
+
+      <div class="product-modal-content">
+
+        <div class="product-modal-image">
+          <img
+            id="productModalImage"
+            src=""
+            alt=""
+          >
+        </div>
+
+        <div class="product-modal-details">
+
+          <p
+            class="eyebrow"
+            id="productModalCategory"
+          ></p>
+
+          <h2 id="productModalTitle"></h2>
+
+          <p
+            class="product-modal-description"
+            id="productModalDescription"
+          ></p>
+
+          <div class="product-modal-meta">
+
+            <div>
+              <span>Peso</span>
+              <strong id="productModalWeight"></strong>
+            </div>
+
+            <div>
+              <span>Estoque</span>
+              <strong id="productModalStock"></strong>
+            </div>
+
+          </div>
+
+          <div class="product-modal-purchase">
+
+            <div class="product-modal-price">
+              <span>Pre— o</span>
+              <strong id="productModalPrice">
+                R$ 0,00
+              </strong>
+            </div>
+
+            <div class="modal-quantity">
+
+              <button
+                type="button"
+                id="modalDecrease"
+                aria-label="Diminuir quantidade"
+              >
+                
+              </button>
+
+              <span id="modalQuantity">1</span>
+
+              <button
+                type="button"
+                id="modalIncrease"
+                aria-label="Aumentar quantidade"
+              >
+                +
+              </button>
+
+            </div>
+
+          </div>
+
+          <button
+            class="primary product-modal-add"
+            id="modalAddToCart"
+            type="button"
+          >
+            Adicionar —  sacola
+            <span></span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+
+</html>
+
