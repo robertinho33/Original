@@ -1126,5 +1126,44 @@ async function init() {
     }
 }
 
+import { buscarEnderecoPorCEP } from './address-service.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inputCep = document.getElementById('cep');
+
+  if (inputCep) {
+    // Escuta o preenchimento do CEP
+    inputCep.addEventListener('blur', async () => {
+      const cepValue = inputCep.value.replace(/\D/g, '');
+
+      if (cepValue.length === 8) {
+        try {
+          // Preenche os campos com indicador de carregamento
+          preencherCamposEndereco({ logradouro: 'Buscando...', bairro: 'Buscando...', cidade: 'Buscando...', uf: '' });
+
+          const endereco = await buscarEnderecoPorCEP(cepValue);
+
+          // Atualiza os inputs com os dados retornados
+          preencherCamposEndereco(endereco);
+          document.getElementById('numero')?.focus();
+        } catch (error) {
+          alert('CEP não encontrado. Por favor, preencha o endereço manualmente.');
+          limparCamposEndereco();
+        }
+      }
+    });
+  }
+});
+
+function preencherCamposEndereco(dados) {
+  if (document.getElementById('rua')) document.getElementById('rua').value = dados.logradouro || '';
+  if (document.getElementById('bairro')) document.getElementById('bairro').value = dados.bairro || '';
+  if (document.getElementById('cidade')) document.getElementById('cidade').value = dados.cidade || '';
+  if (document.getElementById('uf')) document.getElementById('uf').value = dados.uf || '';
+}
+
+function limparCamposEndereco() {
+  preencherCamposEndereco({ logradouro: '', bairro: '', cidade: '', uf: '' });
+}
 
 init();
