@@ -1,0 +1,24 @@
+// js/checkout/shipping-service.js
+
+export async function calcularFretePorCEP(cepDestino, itensCarrinho) {
+  const cleanCEP = cepDestino.replace(/\D/g, '');
+  if (cleanCEP.length !== 8) throw new Error('CEP inválido para frete');
+
+  // Aqui você pode integrar com a API do Melhor Envio ou Correios.
+  // Exemplo de cálculo simulado por região com base no prefixo do CEP:
+  const prefixo = parseInt(cleanCEP.substring(0, 2), 10);
+  
+  // Taxas e prazos simulados
+  let valorPac = 22.50;
+  let valorSedex = 38.90;
+
+  if (prefixo >= 1 && prefixo <= 19) { // Região SP / Sudeste
+    valorPac = 14.90;
+    valorSedex = 24.90;
+  }
+
+  return [
+    { id: 'pac', nome: 'PAC (Correios)', valor: valorPac, prazo: '4 a 7 dias úteis' },
+    { id: 'sedex', nome: 'SEDEX (Correios)', valor: valorSedex, prazo: '1 a 3 dias úteis' }
+  ];
+}

@@ -3,6 +3,81 @@ import { saveOrder as persistOrder } from '../orders/order-service.js';
 
 'use strict';
 import { processarPagamentoPix, processarPagamentoCartao } from './payment-service.js';
+import { buscarEnderecoPorCEP } from './address-service.js';
+import { calcularFretePorCEP } from './shipping-service.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inputCep = document.getElementById('cep');
+
+  if (inputCep) {
+    inputCep.addEventListener('blur', async () => {
+      const cepValue = inputCep.value.replace(/\D/g, '');
+
+      if (cepValue.length === 8) {
+        try {
+          preencherCamposEndereco({ logradouro: 'Buscando...', bairro: 'Buscando...', cidade: 'Buscando...', uf: '' });
+
+          // 1. Busca o endereço
+          const endereco = await buscarEnderecoPorCEP(cepValue);
+          preencherCamposEndereco(endereco);
+          document.getElementById('numero')?.focus();
+
+          // 2. Aciona o cálculo de frete logo após encontrar o CEP
+          exibirStatusFrete('Calculando frete...');
+          const itensCarrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+          const opcoesFrete = await calcularFretePorCEP(cepValue, itensCarrinho);
+
+          // 3. Renderiza as opções de frete na tela
+          renderizarOpcoesFrete(opcoesFrete);
+
+        } catch (error) {
+          alert('Erro ao processar CEP ou frete: ' + error.message);
+          limparCamposEndereco();
+        }
+      }
+    });
+  }
+});
+
+function renderizarOpcoesFrete(opcoes) {
+  const container = document.getElementById('opcoes-frete');
+  if (!container) return;
+
+  container.innerHTML = opcoes.map((opcao, index) => `
+    <label class="opcao-frete-item" style="display: block; margin-bottom: 8px; cursor: pointer;">
+      <input type="radio" name="frete" value="${opcao.valor}" data-nome="${opcao.nome}" ${index === 0 ? 'checked' : ''} />
+      <span><strong>${opcao.nome}</strong> - R$ ${opcao.valor.toFixed(2).replace('.', ',')} (${opcao.prazo})</span>
+    </label>
+  `).join('');
+
+  // Atualiza o total ao selecionar uma opção de frete
+  const radiosFrete = container.querySelectorAll('input[name="frete"]');
+  radiosFrete.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      atualizarTotalComFrete(parseFloat(e.target.value));
+    });
+  });
+
+  // Seleciona o primeiro frete por padrão
+  if (opcoes.length > 0) {
+    atualizarTotalComFrete(opcoes[0].valor);
+  }
+}
+
+function exibirStatusFrete(mensagem) {
+  const container = document.getElementById('opcoes-frete');
+  if (container) container.innerHTML = `<p>${mensagem}</p>`;
+}
+
+function atualizarTotalComFrete(valorFrete) {
+  const subtotal = parseFloat(localStorage.getItem('totalCarrinho') || '0');
+  const totalGeral = subtotal + valorFrete;
+
+  const elTotal = document.getElementById('valor-total');
+  if (elTotal) {
+    elTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const formCheckout = document.getElementById('form-checkout');
