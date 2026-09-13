@@ -2,6 +2,84 @@
 import { saveOrder as persistOrder } from '../orders/order-service.js';
 
 'use strict';
+import { processarPagamentoPix, processarPagamentoCartao } from './payment-service.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const formCheckout = document.getElementById('form-checkout');
+  if (!formCheckout) return;
+
+  formCheckout.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    // 1. Obter os dados do formulário
+    const formData = new FormData(formCheckout);
+    const metodoPagamento = formData.get('metodoPagamento'); // 'pix' ou 'cartao'
+
+    const dadosComprador = {
+      nome: formData.get('nome'),
+      cpf: formData.get('cpf').replace(/\D/g, ''),
+      email: formData.get('email'),
+      telefone: formData.get('telefone')
+    };
+
+    // Obter total e itens da sacola (exemplo vindo do localStorage ou estado do carrinho)
+    const itensCarrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+    const valorTotal = parseFloat(localStorage.getItem('totalCarrinho') || '0');
+
+    try {
+      // Exibir indicador de carregamento
+      setLoading(true);
+
+      if (metodoPagamento === 'pix') {
+        const resultadoPix = await processarPagamentoPix(dadosComprador, itensCarrinho);
+        exibirModalPix(resultadoPix.qrCode, resultadoPix.qrCodeBase64);
+      } else if (metodoPagamento === 'cartao') {
+        const dadosCartao = {
+          numero: formData.get('numeroCartao').replace(/\s/g, ''),
+          nome: formData.get('nomeCartao'),
+          mesExpiracao: formData.get('mesExpiracao'),
+          anoExpiracao: formData.get('anoExpiracao'),
+          cvv: formData.get('cvv'),
+          bandeira: formData.get('bandeira'),
+          parcelas: formData.get('parcelas')
+        };
+
+        const resultadoCartao = await processarPagamentoCartao(dadosCartao, dadosComprador, valorTotal);
+        if (resultadoCartao.status === 'approved') {
+          window.location.href = '/pages/sucesso.html';
+        } else {
+          alert('Pagamento não aprovado. Verifique os dados do cartão.');
+        }
+      }
+    } catch (error) {
+      alert(`Falha ao processar pagamento: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  });
+});
+
+function setLoading(isPending) {
+  const btnSubmit = document.getElementById('btn-finalizar');
+  if (btnSubmit) {
+    btnSubmit.disabled = isPending;
+    btnSubmit.textContent = isPending ? 'Processando...' : 'Finalizar Compra';
+  }
+}
+
+function exibirModalPix(chaveCopiaCola, imagemBase64) {
+  const containerPix = document.getElementById('container-pix');
+  if (containerPix) {
+    containerPix.innerHTML = `
+      <h3>Pagamento via PIX</h3>
+      <img src="data:image/jpeg;base64,${imagemBase64}" alt="QR Code PIX" />
+      <p>Chave Copia e Cola:</p>
+      <input type="text" value="${chaveCopiaCola}" id="chave-pix-input" readonly />
+      <button onclick="navigator.clipboard.writeText('${chaveCopiaCola}')">Copiar Chave</button>
+    `;
+    containerPix.style.display = 'block';
+  }
+}
 
 const CART_STORAGE_KEY = 'aurea-cart';
 /* const ORDER_STORAGE_KEY = 'aurea-last-order'; */
