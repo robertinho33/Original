@@ -514,6 +514,8 @@ headers: {
 body: JSON.stringify(order)
 }
 );
+
+```
 let result = null;
 
 try {
@@ -532,6 +534,8 @@ if (!response.ok || !result?.success) {
 }
 
 return result;
+```
+
 }
 
 function renderPixPayment(result) {
@@ -539,6 +543,8 @@ const pixContainer =
 document.querySelector(
 '#pixPaymentContainer'
 );
+
+```
 const qrCodeImage =
     document.querySelector(
         '#pixQrCodeImage'
@@ -572,6 +578,8 @@ if (pixContainer) {
     pixContainer.style.display =
         'block';
 }
+```
+
 }
 
 function hidePixPayment() {
@@ -579,10 +587,14 @@ const container =
 document.querySelector(
 '#pixPaymentContainer'
 );
+
+```
 if (container) {
     container.style.display =
         'none';
 }
+```
+
 }
 
 /* =========================================================
@@ -647,6 +659,8 @@ if (
 if (modal) {
     modal.hidden = false;
 }
+```
+
 }
 
 
