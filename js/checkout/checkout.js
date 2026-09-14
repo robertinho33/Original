@@ -12,6 +12,7 @@ import { saveOrder as persistOrder } from '../orders/order-service.js';
 const CART_STORAGE_KEY = 'aurea-cart';
 const CATALOG_PATH = '../data/produtos.csv';
 const DELIVERY_COST = 19.90;
+const PIX_API_URL = 'https://aurea-pix-api.onrender.com/api/create-pix-payment';
 
 let products = [];
 let cart = [];
@@ -166,6 +167,21 @@ function escapeHtml(value) {
 function onlyDigits(value) {
 
     return String(value ?? '').replace(/\D/g, '');
+}
+
+function formatPhone(value) {
+
+    const digits = onlyDigits(value).slice(0, 11);
+
+    if (digits.length <= 2) {
+        return digits;
+    }
+
+    if (digits.length <= 7) {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    }
+
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
 
@@ -945,7 +961,7 @@ async function createPixPayment(order) {
     );
 
     const response = await fetch(
-        '/api/create-pix-payment',
+        PIX_API_URL,
         {
             method: 'POST',
 
@@ -1439,6 +1455,16 @@ function setupEvents() {
     elements.cep.addEventListener(
         'blur',
         handleCep
+    );
+
+    elements.customerPhone.addEventListener(
+        'input',
+        () => {
+
+            elements.customerPhone.value =
+                formatPhone(elements.customerPhone.value);
+
+        }
     );
 
 
