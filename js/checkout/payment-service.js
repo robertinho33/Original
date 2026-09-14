@@ -1,4 +1,4 @@
-export async function criarTransacaoPix(dadosPedido) {
+export async function criarTransacaoPix(dadosPedido) { 
   // Exemplo de payload enviado para seu backend/API gateway
   const response = await fetch('/api/payments/pix', {
     method: 'POST',
