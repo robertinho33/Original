@@ -1,80 +1,66 @@
 ﻿'use strict';
 
-import {
-    saveOrder as repositorySaveOrder
+import { 
+    saveOrder as repositorySaveOrder,
+    findOrderById as repositoryFindOrderById,
+    loadOrders as repositoryLoadOrders,
+    updateOrder as repositoryUpdateOrder
 } from './order-repository.js';
 
-export function saveOrder(order) {
-
+export async function saveOrder(order) {
     if (!order || typeof order !== 'object') {
-        throw new Error(
-            'Pedido inválido.'
-        );
+        throw new Error('Pedido inválido.');
     }
 
     if (!order.id) {
-        throw new Error(
-            'Pedido sem identificação.'
-        );
+        throw new Error('Pedido sem identificação.');
     }
 
     if (!order.customer?.name) {
-        throw new Error(
-            'Pedido sem cliente.'
-        );
+        throw new Error('Pedido sem cliente.');
     }
 
-    if (
-        !Array.isArray(order.items) ||
-        !order.items.length
-    ) {
-        throw new Error(
-            'Pedido sem produtos.'
-        );
+    if (!Array.isArray(order.items) || !order.items.length) {
+        throw new Error('Pedido sem produtos.');
     }
 
-    const subtotal =
-        Number(order.subtotal);
+    const subtotal = Number(order.financial?.subtotal ?? order.subtotal);
+    const shipping = Number(order.financial?.shipping ?? order.shipping);
+    const total = Number(order.financial?.total ?? order.total);
 
-    const shipping =
-        Number(order.shipping);
-
-    const total =
-        Number(order.total);
-
-    if (
-        !Number.isFinite(subtotal) ||
-        !Number.isFinite(shipping) ||
-        !Number.isFinite(total)
-    ) {
-        throw new Error(
-            'Pedido sem informações financeiras válidas.'
-        );
+    if (!Number.isFinite(subtotal) || !Number.isFinite(shipping) || !Number.isFinite(total)) {
+        throw new Error('Pedido sem informações financeiras válidas.');
     }
 
-    if (!order.status) {
-        throw new Error(
-            'Pedido sem status.'
-        );
-    }
+    order.status = order.status || 'pending';
+    
+    if (!order.payment) order.payment = {};
+    order.payment.status = order.payment.status || 'pending';
 
-    if (!order.payment?.status) {
-        throw new Error(
-            'Pedido sem status de pagamento.'
-        );
-    }
-
-    if (!order.logistics?.status) {
-        throw new Error(
-            'Pedido sem status de logística.'
-        );
-    }
+    if (!order.logistics) order.logistics = {};
+    order.logistics.status = order.logistics.status || 'pending';
 
     if (!Array.isArray(order.history)) {
-        throw new Error(
-            'Pedido sem histórico.'
-        );
+        order.history = [
+            {
+                status: order.status,
+                updatedAt: new Date().toISOString(),
+                note: 'Pedido criado no checkout'
+            }
+        ];
     }
 
-    return repositorySaveOrder(order);
+    return await repositorySaveOrder(order);
+}
+
+export async function getOrderById(orderId) {
+    return await repositoryFindOrderById(orderId);
+}
+
+export async function getAllOrders() {
+    return await repositoryLoadOrders();
+}
+
+export async function updateOrder(order) {
+    return await repositoryUpdateOrder(order);
 }

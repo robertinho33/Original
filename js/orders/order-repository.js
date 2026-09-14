@@ -1,117 +1,66 @@
 ﻿'use strict';
 
-const ORDER_STORAGE_KEY = 'aurea-orders';
+import { db } from '../firebase-config.js';
+import { 
+    doc, 
+    setDoc, 
+    getDoc, 
+    getDocs, 
+    collection 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-export function saveOrder(order) {
+const COLLECTION_NAME = "orders";
 
-    if (!order || typeof order !== 'object') {
-        throw new Error(
-            'Pedido inválido.'
-        );
+export async function saveOrder(order) {
+    try {
+        await setDoc(doc(db, COLLECTION_NAME, order.id), order);
+        return { success: true, id: order.id, data: order };
+    } catch (error) {
+        console.error("Erro ao salvar pedido no Firestore:", error);
+        throw new Error("Não foi possível registrar o pedido no banco de dados.");
     }
-
-    if (!order.id) {
-        throw new Error(
-            'Pedido sem identificação.'
-        );
-    }
-
-    const orders = loadOrders();
-
-    const existingIndex =
-        orders.findIndex(
-            existingOrder =>
-                existingOrder.id === order.id
-        );
-
-    if (existingIndex === -1) {
-        orders.push(order);
-    } else {
-        orders[existingIndex] = order;
-    }
-
-    localStorage.setItem(
-        ORDER_STORAGE_KEY,
-        JSON.stringify(orders)
-    );
-
-    return order;
 }
 
-export function loadOrders() {
+export async function findOrderById(orderId) {
+    if (!orderId) return null;
 
     try {
+        const docRef = doc(db, COLLECTION_NAME, orderId);
+        const docSnap = await getDoc(docRef);
 
-        const stored =
-            JSON.parse(
-                localStorage.getItem(
-                    ORDER_STORAGE_KEY
-                ) || '[]'
-            );
-
-        return Array.isArray(stored)
-            ? stored
-            : [];
-
+        if (docSnap.exists()) {
+            return docSnap.data();
+        }
+        return null;
     } catch (error) {
+        console.error("Erro ao buscar pedido por ID:", error);
+        return null;
+    }
+}
 
-        console.error(
-            'Erro ao carregar pedidos:',
-            error
-        );
-
+export async function loadOrders() {
+    try {
+        const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+        const orders = [];
+        querySnapshot.forEach((docSnap) => {
+            orders.push(docSnap.data());
+        });
+        return orders;
+    } catch (error) {
+        console.error("Erro ao carregar lista de pedidos:", error);
         return [];
     }
 }
 
-export function findOrderById(orderId) {
-
-    if (!orderId) {
-        return null;
+export async function updateOrder(order) {
+    if (!order || !order.id) {
+        throw new Error("Pedido inválido para atualização.");
     }
 
-    return (
-        loadOrders().find(
-            order =>
-                order.id === orderId
-        ) || null
-    );
-}
-
-export function updateOrder(order) {
-
-    if (!order || typeof order !== 'object') {
-        throw new Error(
-            'Pedido inválido.'
-        );
+    const existingOrder = await findOrderById(order.id);
+    if (!existingOrder) {
+        throw new Error("Pedido não encontrado para atualização.");
     }
 
-    if (!order.id) {
-        throw new Error(
-            'Pedido sem identificação.'
-        );
-    }
-
-    const orders = loadOrders();
-
-    const index =
-        orders.findIndex(
-            existingOrder =>
-                existingOrder.id === order.id
-        );
-
-    if (index === -1) {
-        throw new Error(
-            'Pedido não encontrado.'
-        );
-    }
-
-    orders[index] = order;
-
-    localStorage.setItem(
-        ORDER_STORAGE_KEY,
-        JSON.stringify(orders)
-    );
-
-    return order;
+    return await saveOrder(order);
 }
