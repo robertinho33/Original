@@ -6,7 +6,7 @@ import { saveOrder as persistOrder } from '../orders/order-service.js';
 
 
 /* =========================================================
-   CONFIGURA«√O
+   CONFIGURA√á√ÉO
    ========================================================= */
 
 const CART_STORAGE_KEY = 'aurea-cart';
@@ -88,7 +88,7 @@ const elements = {
 
 
 /* =========================================================
-   UTILIT¡RIOS
+   UTILIT√ÅRIOS
    ========================================================= */
 
 function formatCurrency(value) {
@@ -279,9 +279,9 @@ function normalizeProduct(product) {
             'Produto',
 
         price: parsePrice(
-            product.PreÁo ??
+            product.Pre√ßo ??
             product.Preco ??
-            product.preÁo ??
+            product.pre√ßo ??
             product.preco ??
             product.Price ??
             product.price ??
@@ -301,9 +301,9 @@ function normalizeProduct(product) {
             '',
 
         description:
-            product.DescriÁ„o ??
+            product.Descri√ß√£o ??
             product.Descricao ??
-            product.descriÁ„o ??
+            product.descri√ß√£o ??
             product.descricao ??
             ''
     };
@@ -318,7 +318,7 @@ async function loadProducts() {
 
     if (!response.ok) {
         throw new Error(
-            `N„o foi possÌvel carregar o cat·logo. HTTP ${response.status}`
+            `N√£o foi poss√≠vel carregar o cat√°logo. HTTP ${response.status}`
         );
     }
 
@@ -477,7 +477,7 @@ function renderCart() {
 
         elements.checkoutItems.innerHTML = `
             <div class="empty-cart">
-                Seu carrinho est· vazio.
+                Seu carrinho est√° vazio.
             </div>
         `;
 
@@ -517,7 +517,7 @@ function renderCart() {
                         </p>
 
                         <p class="checkout-item-meta">
-                            ${item.quantity} ◊
+                            ${item.quantity} √ó
                             ${formatCurrency(item.product.price)}
                         </p>
 
@@ -548,7 +548,7 @@ function updateTotals() {
     elements.checkoutShipping.textContent =
         shipping > 0
             ? formatCurrency(shipping)
-            : 'Gr·tis';
+            : 'Gr√°tis';
 
     elements.checkoutTotal.textContent =
         formatCurrency(total);
@@ -615,7 +615,7 @@ async function handleCep() {
     }
 
     elements.cepStatus.textContent =
-        'Consultando endereÁo...';
+        'Consultando endere√ßo...';
 
     try {
 
@@ -623,7 +623,7 @@ async function handleCep() {
 
         if (!address) {
             throw new Error(
-                'CEP n„o encontrado.'
+                'CEP n√£o encontrado.'
             );
         }
 
@@ -653,7 +653,7 @@ async function handleCep() {
             '';
 
         elements.cepStatus.textContent =
-            'EndereÁo preenchido automaticamente.';
+            'Endere√ßo preenchido automaticamente.';
 
         elements.cepStatus.style.color =
             'var(--success)';
@@ -668,7 +668,7 @@ async function handleCep() {
         );
 
         elements.cepStatus.textContent =
-            'N„o foi possÌvel localizar este CEP.';
+            'N√£o foi poss√≠vel localizar este CEP.';
 
         elements.cepStatus.style.color =
             'var(--danger)';
@@ -677,7 +677,7 @@ async function handleCep() {
 
 
 /* =========================================================
-   VALIDA«√O
+   VALIDA√á√ÉO
    ========================================================= */
 
 function clearValidation() {
@@ -783,7 +783,7 @@ function validateForm() {
     if (!items.length) {
 
         showMessage(
-            'Seu carrinho est· vazio. Adicione produtos antes de finalizar o pedido.'
+            'Seu carrinho est√° vazio. Adicione produtos antes de finalizar o pedido.'
         );
 
         valid = false;
@@ -814,7 +814,7 @@ function hideMessage() {
 
 
 /* =========================================================
-   DADOS DO FORMUL¡RIO
+   DADOS DO FORMUL√ÅRIO
    ========================================================= */
 
 function getCustomerData() {
@@ -970,7 +970,7 @@ async function createPixPayment(order) {
 
         throw new Error(
             result?.message ||
-            'O servidor n„o conseguiu criar o pagamento PIX.'
+            'O servidor n√£o conseguiu criar o pagamento PIX.'
         );
     }
 
@@ -1023,7 +1023,7 @@ function renderPixPayment(result) {
     if (!qrSource && !copyCode) {
 
         throw new Error(
-            'O servidor criou o PIX, mas n„o retornou os dados do pagamento.'
+            'O servidor criou o PIX, mas n√£o retornou os dados do pagamento.'
         );
     }
 
@@ -1084,7 +1084,7 @@ function showSuccess(order) {
     } else {
 
         elements.successMessage.textContent =
-            'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os prÛximos passos.';
+            'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os pr√≥ximos passos.';
 
     }
 
@@ -1113,12 +1113,12 @@ async function copyPixCode() {
         await navigator.clipboard.writeText(code);
 
         elements.pixCopyStatus.textContent =
-            'CÛdigo PIX copiado.';
+            'C√≥digo PIX copiado.';
 
     } catch (error) {
 
         console.warn(
-            '[PIX] Clipboard indisponÌvel:',
+            '[PIX] Clipboard indispon√≠vel:',
             error
         );
 
@@ -1127,7 +1127,7 @@ async function copyPixCode() {
         document.execCommand('copy');
 
         elements.pixCopyStatus.textContent =
-            'CÛdigo PIX copiado.';
+            'C√≥digo PIX copiado.';
     }
 }
 
@@ -1181,7 +1181,7 @@ async function handleSubmit(event) {
         await persistOrder(order);
 
         /*
-         * O carrinho È removido somente depois
+         * O carrinho √© removido somente depois
          * que o pedido foi salvo.
          */
         localStorage.removeItem(
@@ -1194,7 +1194,7 @@ async function handleSubmit(event) {
         showSuccess(order);
 
         /*
-         * PIX È criado depois do pedido.
+         * PIX √© criado depois do pedido.
          */
         if (order.payment.method === 'pix') {
 
@@ -1225,7 +1225,7 @@ async function handleSubmit(event) {
                     await createPixPayment(order);
 
                 /*
-                 * ReconstrÛi o conte˙do original
+                 * Reconstr√≥i o conte√∫do original
                  * do container para renderizar o PIX.
                  */
                 elements.pixPaymentContainer.innerHTML = `
@@ -1240,7 +1240,7 @@ async function handleSubmit(event) {
                         </h3>
 
                         <p>
-                            Escaneie o QR Code ou copie o cÛdigo PIX.
+                            Escaneie o QR Code ou copie o c√≥digo PIX.
                         </p>
 
                     </div>
@@ -1285,7 +1285,7 @@ async function handleSubmit(event) {
                 `;
 
                 /*
-                 * Atualiza as referÍncias dos elementos
+                 * Atualiza as refer√™ncias dos elementos
                  * recriados acima.
                  */
                 elements.pixQrCodeImage =
@@ -1315,9 +1315,9 @@ async function handleSubmit(event) {
 
                 renderPixPayment(pixResult);
                 /*
-                 * Registra a geraÁ„o do PIX no pedido.
+                 * Registra a gera√ß√£o do PIX no pedido.
                  *
-                 * A geraÁ„o do PIX n„o confirma o pagamento.
+                 * A gera√ß√£o do PIX n√£o confirma o pagamento.
                  * O status permanece "pending".
                  */
                 order.payment.pixCode =
@@ -1336,8 +1336,8 @@ async function handleSubmit(event) {
                 );
 
                 /*
-                 * Atualiza o mesmo pedido j· salvo.
-                 * O order.id impede duplicaÁ„o.
+                 * Atualiza o mesmo pedido j√° salvo.
+                 * O order.id impede duplica√ß√£o.
                  */
                 await persistOrder(order);
 
@@ -1364,7 +1364,7 @@ async function handleSubmit(event) {
                         </h3>
 
                         <p>
-                            Seu pedido foi salvo, mas n„o foi possÌvel
+                            Seu pedido foi salvo, mas n√£o foi poss√≠vel
                             gerar o PIX automaticamente.
                             Entre em contato conosco para concluir o pagamento.
                         </p>
@@ -1383,7 +1383,7 @@ async function handleSubmit(event) {
 
         showMessage(
             error?.message ||
-            'N„o foi possÌvel finalizar o pedido. Tente novamente.'
+            'N√£o foi poss√≠vel finalizar o pedido. Tente novamente.'
         );
 
         elements.submitOrder.disabled = false;
@@ -1443,8 +1443,8 @@ function setupEvents() {
 
 
     /*
-     * Limpa o estado de erro quando o usu·rio
-     * comeÁa a corrigir um campo.
+     * Limpa o estado de erro quando o usu√°rio
+     * come√ßa a corrigir um campo.
      */
     elements.form
         .querySelectorAll('input, textarea')
@@ -1468,7 +1468,7 @@ function setupEvents() {
 
 
 /* =========================================================
-   INICIALIZA«√O
+   INICIALIZA√á√ÉO
    ========================================================= */
 
 async function init() {
@@ -1496,12 +1496,12 @@ async function init() {
     } catch (error) {
 
         console.error(
-            '[CHECKOUT] Falha na inicializaÁ„o:',
+            '[CHECKOUT] Falha na inicializa√ß√£o:',
             error
         );
 
         showMessage(
-            'N„o foi possÌvel carregar o checkout. Atualize a p·gina e tente novamente.'
+            'N√£o foi poss√≠vel carregar o checkout. Atualize a p√°gina e tente novamente.'
         );
 
         elements.submitOrder.disabled = true;
