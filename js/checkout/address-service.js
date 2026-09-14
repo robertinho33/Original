@@ -1,4 +1,4 @@
-﻿/* js/checkout/address-service.js */
+/* js/checkout/address-service.js */
 
 export async function fetchAddressByCep(cep) {
     const cleanCep = String(cep).replace(/\D/g, '');
