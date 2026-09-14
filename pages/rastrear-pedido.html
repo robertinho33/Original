@@ -1,0 +1,130 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Rastrear pedido — AUREA COSMETICS</title>
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/order-tracking.css"
+    >
+
+</head>
+
+<body>
+
+    <main class="order-tracking-page">
+
+        <header class="tracking-header">
+
+            <p class="eyebrow">
+                AUREA COSMETICS
+            </p>
+
+            <h1>
+                Acompanhe seu pedido
+            </h1>
+
+            <p>
+                Informe o número do pedido para consultar
+                o status da entrega.
+            </p>
+
+        </header>
+
+
+        <form
+            id="trackingForm"
+            class="tracking-search"
+        >
+
+            <input
+                id="trackingOrderId"
+                class="form-control"
+                type="text"
+                placeholder="Ex.: AUR-MU16W00F"
+                autocomplete="off"
+                required
+            >
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Consultar pedido
+            </button>
+
+        </form>
+
+
+        <div
+            id="trackingError"
+            class="alert alert-danger tracking-error"
+            role="alert"
+        ></div>
+
+
+        <section
+            id="trackingResult"
+            class="tracking-result"
+        >
+
+            <article class="tracking-card">
+
+                <div
+                    id="trackingStatus"
+                    class="tracking-status"
+                ></div>
+
+                <div
+                    id="trackingDisplayedOrderId"
+                    class="tracking-order-id"
+                ></div>
+
+                <div
+                    id="trackingPayment"
+                    class="tracking-payment"
+                ></div>
+
+            </article>
+
+
+            <article class="tracking-card">
+
+                <h2>
+                    Histórico do pedido
+                </h2>
+
+                <div
+                    id="trackingTimeline"
+                    class="tracking-timeline"
+                ></div>
+
+            </article>
+
+        </section>
+
+    </main>
+
+
+    <script
+        type="module"
+        src="../js/orders/order-tracking.js"
+    ></script>
+
+</body>
+
+</html>

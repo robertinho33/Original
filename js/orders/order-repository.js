@@ -3,9 +3,32 @@
 const ORDER_STORAGE_KEY = 'aurea-orders';
 
 export function saveOrder(order) {
+
+    if (!order || typeof order !== 'object') {
+        throw new Error(
+            'Pedido inválido.'
+        );
+    }
+
+    if (!order.id) {
+        throw new Error(
+            'Pedido sem identificação.'
+        );
+    }
+
     const orders = loadOrders();
 
-    orders.push(order);
+    const existingIndex =
+        orders.findIndex(
+            existingOrder =>
+                existingOrder.id === order.id
+        );
+
+    if (existingIndex === -1) {
+        orders.push(order);
+    } else {
+        orders[existingIndex] = order;
+    }
 
     localStorage.setItem(
         ORDER_STORAGE_KEY,
@@ -16,16 +39,22 @@ export function saveOrder(order) {
 }
 
 export function loadOrders() {
+
     try {
-        const stored = JSON.parse(
-            localStorage.getItem(ORDER_STORAGE_KEY) || '[]'
-        );
+
+        const stored =
+            JSON.parse(
+                localStorage.getItem(
+                    ORDER_STORAGE_KEY
+                ) || '[]'
+            );
 
         return Array.isArray(stored)
             ? stored
             : [];
 
     } catch (error) {
+
         console.error(
             'Erro ao carregar pedidos:',
             error
@@ -36,7 +65,53 @@ export function loadOrders() {
 }
 
 export function findOrderById(orderId) {
-    return loadOrders().find(
-        order => order.id === orderId
-    ) || null;
+
+    if (!orderId) {
+        return null;
+    }
+
+    return (
+        loadOrders().find(
+            order =>
+                order.id === orderId
+        ) || null
+    );
+}
+
+export function updateOrder(order) {
+
+    if (!order || typeof order !== 'object') {
+        throw new Error(
+            'Pedido inválido.'
+        );
+    }
+
+    if (!order.id) {
+        throw new Error(
+            'Pedido sem identificação.'
+        );
+    }
+
+    const orders = loadOrders();
+
+    const index =
+        orders.findIndex(
+            existingOrder =>
+                existingOrder.id === order.id
+        );
+
+    if (index === -1) {
+        throw new Error(
+            'Pedido não encontrado.'
+        );
+    }
+
+    orders[index] = order;
+
+    localStorage.setItem(
+        ORDER_STORAGE_KEY,
+        JSON.stringify(orders)
+    );
+
+    return order;
 }

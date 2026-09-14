@@ -1,26 +1,79 @@
 ﻿'use strict';
 
-import { saveOrder as repositorySaveOrder } from './order-repository.js';
+import {
+    saveOrder as repositorySaveOrder
+} from './order-repository.js';
 
 export function saveOrder(order) {
+
     if (!order || typeof order !== 'object') {
-        throw new Error('Pedido invÃ¡lido.');
+        throw new Error(
+            'Pedido inválido.'
+        );
     }
 
     if (!order.id) {
-        throw new Error('Pedido sem identificaÃ§Ã£o.');
+        throw new Error(
+            'Pedido sem identificação.'
+        );
     }
 
     if (!order.customer?.name) {
-        throw new Error('Pedido sem cliente.');
+        throw new Error(
+            'Pedido sem cliente.'
+        );
     }
 
-    if (!Array.isArray(order.items) || !order.items.length) {
-        throw new Error('Pedido sem produtos.');
+    if (
+        !Array.isArray(order.items) ||
+        !order.items.length
+    ) {
+        throw new Error(
+            'Pedido sem produtos.'
+        );
     }
 
-    if (!order.financial) {
-        throw new Error('Pedido sem informaÃ§Ãµes financeiras.');
+    const subtotal =
+        Number(order.subtotal);
+
+    const shipping =
+        Number(order.shipping);
+
+    const total =
+        Number(order.total);
+
+    if (
+        !Number.isFinite(subtotal) ||
+        !Number.isFinite(shipping) ||
+        !Number.isFinite(total)
+    ) {
+        throw new Error(
+            'Pedido sem informações financeiras válidas.'
+        );
+    }
+
+    if (!order.status) {
+        throw new Error(
+            'Pedido sem status.'
+        );
+    }
+
+    if (!order.payment?.status) {
+        throw new Error(
+            'Pedido sem status de pagamento.'
+        );
+    }
+
+    if (!order.logistics?.status) {
+        throw new Error(
+            'Pedido sem status de logística.'
+        );
+    }
+
+    if (!Array.isArray(order.history)) {
+        throw new Error(
+            'Pedido sem histórico.'
+        );
     }
 
     return repositorySaveOrder(order);

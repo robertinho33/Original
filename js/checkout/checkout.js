@@ -1,5 +1,13 @@
-Ôªøimport { fetchAddressByCep } from './address-service.js';
+import { ORDER_STATUS } from '../orders/order-status.js';
+import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
+import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
+import { fetchAddressByCep } from './address-service.js';
 import { saveOrder as persistOrder } from '../orders/order-service.js';
+
+
+/* =========================================================
+   CONFIGURA«√O
+   ========================================================= */
 
 const CART_STORAGE_KEY = 'aurea-cart';
 const CATALOG_PATH = '../data/produtos.csv';
@@ -9,644 +17,1081 @@ let products = [];
 let cart = [];
 let submitting = false;
 
+
 /* =========================================================
-   UTILIT√ÅRIOS
+   ELEMENTOS
+   ========================================================= */
+
+const elements = {
+    form: document.getElementById('checkoutForm'),
+
+    customerName: document.getElementById('customerName'),
+    customerEmail: document.getElementById('customerEmail'),
+    customerPhone: document.getElementById('customerPhone'),
+
+    deliveryMethod: document.querySelectorAll(
+        'input[name="deliveryMethod"]'
+    ),
+
+    addressFields: document.getElementById('addressFields'),
+
+    cep: document.getElementById('cep'),
+    cepStatus: document.getElementById('cepStatus'),
+
+    street: document.getElementById('street'),
+    number: document.getElementById('number'),
+    complement: document.getElementById('complement'),
+    neighborhood: document.getElementById('neighborhood'),
+    city: document.getElementById('city'),
+    state: document.getElementById('state'),
+
+    paymentMethod: document.querySelectorAll(
+        'input[name="paymentMethod"]'
+    ),
+
+    orderNotes: document.getElementById('orderNotes'),
+
+    checkoutItems: document.getElementById('checkoutItems'),
+    checkoutSubtotal: document.getElementById('checkoutSubtotal'),
+    checkoutShipping: document.getElementById('checkoutShipping'),
+    checkoutTotal: document.getElementById('checkoutTotal'),
+
+    submitOrder: document.getElementById('submitOrder'),
+    submitOrderText: document.getElementById('submitOrderText'),
+
+    checkoutMessage: document.getElementById('checkoutMessage'),
+
+    checkoutSuccess: document.getElementById('checkoutSuccess'),
+    successMessage: document.getElementById('successMessage'),
+    successOrderNumber: document.getElementById('successOrderNumber'),
+
+    pixPaymentContainer: document.getElementById(
+        'pixPaymentContainer'
+    ),
+
+    pixQrCodeImage: document.getElementById(
+        'pixQrCodeImage'
+    ),
+
+    pixCopiaCola: document.getElementById(
+        'pixCopiaCola'
+    ),
+
+    btnCopyPix: document.getElementById(
+        'btnCopyPix'
+    ),
+
+    pixCopyStatus: document.getElementById(
+        'pixCopyStatus'
+    )
+};
+
+
+/* =========================================================
+   UTILIT¡RIOS
    ========================================================= */
 
 function formatCurrency(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) {
-        return 'R$ 0,00';
-    }
+
+    const number = Number(value) || 0;
+
     return number.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL'
     });
 }
 
-function escapeHTML(value) {
-    return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-}
 
 function parsePrice(value) {
+
+    if (typeof value === 'number') {
+        return value;
+    }
+
     if (value === null || value === undefined) {
         return 0;
     }
-    let text = String(value).trim();
+
+    let text = String(value)
+        .trim()
+        .replace(/\s/g, '')
+        .replace(/^R\$/i, '');
+
     if (!text) {
         return 0;
     }
-    text = text
-        .replace(/\s/g, '')
-        .replace(/^R\$/i, '');
+
+    /*
+     * Formato brasileiro:
+     * 1.234,56 -> 1234.56
+     */
     if (text.includes(',')) {
+
         text = text
             .replace(/\./g, '')
             .replace(',', '.');
+
+        return Number.parseFloat(text) || 0;
     }
-    const number = Number(text);
-    return Number.isFinite(number) ? number : 0;
+
+    /*
+     * Formato simples:
+     * 1234.56
+     */
+    return Number.parseFloat(text) || 0;
 }
+
+
+function normalizeText(value) {
+
+    return String(value ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
+
+function escapeHtml(value) {
+
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+
+function onlyDigits(value) {
+
+    return String(value ?? '').replace(/\D/g, '');
+}
+
 
 /* =========================================================
    CSV
    ========================================================= */
 
-function parseCSVLine(line) {
-    const values = [];
+function parseCsvLine(line) {
+
+    const result = [];
+
     let current = '';
     let insideQuotes = false;
-    for (let index = 0; index < line.length; index += 1) {
-        const char = line[index];
-        const next = line[index + 1];
+
+    for (let i = 0; i < line.length; i += 1) {
+
+        const char = line[i];
+        const next = line[i + 1];
+
         if (char === '"' && insideQuotes && next === '"') {
+
             current += '"';
-            index += 1;
+            i += 1;
+
             continue;
         }
+
         if (char === '"') {
+
             insideQuotes = !insideQuotes;
+
             continue;
         }
-        if (char === ',' && !insideQuotes) {
-            values.push(current);
+
+        if (char === ';' && !insideQuotes) {
+
+            result.push(current);
             current = '';
+
             continue;
         }
+
+        if (char === ',' && !insideQuotes) {
+
+            result.push(current);
+            current = '';
+
+            continue;
+        }
+
         current += char;
     }
-    values.push(current);
-    return values;
+
+    result.push(current);
+
+    return result;
 }
 
-function parseCSV(text) {
-    const rows = [];
-    let current = '';
-    let insideQuotes = false;
-    for (let index = 0; index < text.length; index += 1) {
-        const char = text[index];
-        const next = text[index + 1];
-        if (char === '"' && insideQuotes && next === '"') {
-            current += '""';
-            index += 1;
-            continue;
-        }
-        if (char === '"') {
-            insideQuotes = !insideQuotes;
-            current += char;
-            continue;
-        }
-        if ((char === '\n' || char === '\r') && !insideQuotes) {
-            if (char === '\r' && next === '\n') {
-                index += 1;
-            }
-            if (current.trim()) {
-                rows.push(current);
-            }
-            current = '';
-            continue;
-        }
-        current += char;
-    }
-    if (current.trim()) {
-        rows.push(current);
-    }
-    if (!rows.length) {
+
+function parseCsv(text) {
+
+    const lines = text
+        .replace(/^\uFEFF/, '')
+        .split(/\r?\n/)
+        .filter(line => line.trim());
+
+    if (!lines.length) {
         return [];
     }
-    const headers = parseCSVLine(rows[0]).map(header =>
-        header.trim().replace(/^\uFEFF/, '')
-    );
-    return rows.slice(1).map(line => {
-        const values = parseCSVLine(line);
-        const row = {};
+
+    const headers = parseCsvLine(lines[0])
+        .map(header => header.trim());
+
+    return lines.slice(1).map(line => {
+
+        const values = parseCsvLine(line);
+
+        const item = {};
+
         headers.forEach((header, index) => {
-            row[header] = values[index] ?? '';
+
+            item[header] = values[index] ?? '';
+
         });
-        return row;
+
+        return item;
+
     });
 }
 
-function normalizeProduct(row) {
+
+/* =========================================================
+   PRODUTOS
+   ========================================================= */
+
+function normalizeProduct(product) {
+
     return {
-        sku: String(row.SKU || '').trim(),
-        name: String(row.Produto || '').trim(),
-        price: parsePrice(row.Pre√ßo),
-        image: String(row.Imagem || '').trim()
+        sku:
+            product.SKU ??
+            product.sku ??
+            product.Codigo ??
+            product.codigo ??
+            '',
+
+        name:
+            product.Produto ??
+            product.produto ??
+            product.Nome ??
+            product.nome ??
+            'Produto',
+
+        price: parsePrice(
+            product.PreÁo ??
+            product.Preco ??
+            product.preÁo ??
+            product.preco ??
+            product.Price ??
+            product.price ??
+            0
+        ),
+
+        image:
+            product.Imagem ??
+            product.imagem ??
+            product.Image ??
+            product.image ??
+            '',
+
+        category:
+            product.Categoria ??
+            product.categoria ??
+            '',
+
+        description:
+            product.DescriÁ„o ??
+            product.Descricao ??
+            product.descriÁ„o ??
+            product.descricao ??
+            ''
     };
 }
+
+
+async function loadProducts() {
+
+    const response = await fetch(CATALOG_PATH, {
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `N„o foi possÌvel carregar o cat·logo. HTTP ${response.status}`
+        );
+    }
+
+    const text = await response.text();
+
+    products = parseCsv(text)
+        .map(normalizeProduct)
+        .filter(product => product.sku);
+
+    return products;
+}
+
 
 /* =========================================================
    CARRINHO
    ========================================================= */
 
 function loadCart() {
+
     try {
-        const stored = JSON.parse(
-            localStorage.getItem(CART_STORAGE_KEY) || '[]'
+
+        const stored = localStorage.getItem(
+            CART_STORAGE_KEY
         );
-        if (!Array.isArray(stored)) {
+
+        if (!stored) {
             return [];
         }
-        return stored
-            .filter(item =>
-                item &&
-                typeof item.sku === 'string' &&
-                Number.isInteger(item.quantity) &&
-                item.quantity > 0
-            )
-            .map(item => ({
-                sku: item.sku,
-                quantity: item.quantity
-            }));
+
+        const parsed = JSON.parse(stored);
+
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+
+        return parsed;
+
     } catch (error) {
-        console.error('Erro ao carregar a sacola:', error);
+
+        console.error(
+            '[CHECKOUT] Erro ao carregar carrinho:',
+            error
+        );
+
         return [];
     }
 }
 
-async function loadProducts() {
-    const response = await fetch(CATALOG_PATH, { cache: 'no-store' });
-    if (!response.ok) {
-        throw new Error(`N√£o foi poss√≠vel carregar o cat√°logo. HTTP ${response.status}`);
-    }
-    const text = await response.text();
-    return parseCSV(text)
-        .map(normalizeProduct)
-        .filter(product => product.sku && product.name);
+
+function normalizeCartItem(item) {
+
+    return {
+        sku: String(
+            item.sku ??
+            item.SKU ??
+            item.codigo ??
+            item.code ??
+            ''
+        ).trim(),
+
+        quantity: Math.max(
+            1,
+            Number(
+                item.quantity ??
+                item.quantidade ??
+                item.qty ??
+                1
+            ) || 1
+        )
+    };
 }
 
-function getProductBySku(sku) {
-    return products.find(product => product.sku === sku);
+
+function findProductBySku(sku) {
+
+    const normalizedSku = normalizeText(sku);
+
+    return products.find(product =>
+        normalizeText(product.sku) === normalizedSku
+    );
 }
+
 
 function getCartItems() {
+
     return cart
         .map(item => {
-            const product = getProductBySku(item.sku);
+
+            const normalized = normalizeCartItem(item);
+
+            const product = findProductBySku(
+                normalized.sku
+            );
+
             if (!product) {
                 return null;
             }
+
             return {
-                ...item,
+                ...normalized,
                 product,
-                subtotal: product.price * item.quantity
+                total:
+                    product.price *
+                    normalized.quantity
             };
         })
         .filter(Boolean);
 }
 
+
 /* =========================================================
-   VALORES
+   TOTAIS
    ========================================================= */
 
 function getSubtotal() {
-    return getCartItems().reduce((total, item) => total + item.subtotal, 0);
+
+    return getCartItems()
+        .reduce(
+            (total, item) => total + item.total,
+            0
+        );
 }
+
 
 function getDeliveryMethod() {
-    return document.querySelector('input[name="deliveryMethod"]:checked')?.value || 'delivery';
+
+    return document.querySelector(
+        'input[name="deliveryMethod"]:checked'
+    )?.value ?? 'delivery';
 }
 
-function getShippingCost() {
-    return getDeliveryMethod() === 'pickup' ? 0 : DELIVERY_COST;
+
+function getShipping() {
+
+    return getDeliveryMethod() === 'delivery'
+        ? DELIVERY_COST
+        : 0;
 }
+
 
 function getTotal() {
-    return getSubtotal() + getShippingCost();
+
+    return getSubtotal() + getShipping();
 }
+
 
 /* =========================================================
-   RESUMO
+   RENDER CARRINHO
    ========================================================= */
 
-function renderCheckoutItems() {
-    const container = document.querySelector('#checkoutItems');
-    if (!container) {
+function renderCart() {
+
+    const items = getCartItems();
+
+    if (!items.length) {
+
+        elements.checkoutItems.innerHTML = `
+            <div class="empty-cart">
+                Seu carrinho est· vazio.
+            </div>
+        `;
+
+        updateTotals();
+
         return;
     }
-    const items = getCartItems();
-    container.innerHTML = items.map(item => {
-        const image = item.product.image
-            ? `<img src="${escapeHTML(item.product.image)}" alt="${escapeHTML(item.product.name)}">`
-            : '';
-        return `
-            <article class="checkout-item">
-                <div class="checkout-item-image">
-                    ${image}
-                </div>
-                <div class="checkout-item-info">
-                    <strong>${escapeHTML(item.product.name)}</strong>
-                    <small>${item.quantity}x ${formatCurrency(item.product.price)}</small>
-                </div>
-                <strong class="checkout-item-price">
-                    ${formatCurrency(item.subtotal)}
-                </strong>
-            </article>
-        `;
-    }).join('');
+
+    elements.checkoutItems.innerHTML =
+        items.map(item => {
+
+            const image = item.product.image
+                ? item.product.image
+                : '';
+
+            const imageHtml = image
+                ? `
+                    <img
+                        class="checkout-item-image"
+                        src="${escapeHtml(image)}"
+                        alt="${escapeHtml(item.product.name)}"
+                    >
+                `
+                : `
+                    <div class="checkout-item-image"></div>
+                `;
+
+            return `
+                <article class="checkout-item">
+
+                    ${imageHtml}
+
+                    <div class="checkout-item-info">
+
+                        <p class="checkout-item-name">
+                            ${escapeHtml(item.product.name)}
+                        </p>
+
+                        <p class="checkout-item-meta">
+                            ${item.quantity} ◊
+                            ${formatCurrency(item.product.price)}
+                        </p>
+
+                    </div>
+
+                    <strong class="checkout-item-price">
+                        ${formatCurrency(item.total)}
+                    </strong>
+
+                </article>
+            `;
+
+        }).join('');
+
+    updateTotals();
 }
 
-function renderTotals() {
-    const subtotal = document.querySelector('#checkoutSubtotal');
-    const shipping = document.querySelector('#checkoutShipping');
-    const total = document.querySelector('#checkoutTotal');
 
-    if (subtotal) {
-        subtotal.textContent = formatCurrency(getSubtotal());
-    }
-    if (shipping) {
-        shipping.textContent = getShippingCost() === 0 ? 'Gr√°tis' : formatCurrency(getShippingCost());
-    }
-    if (total) {
-        total.textContent = formatCurrency(getTotal());
-    }
+function updateTotals() {
+
+    const subtotal = getSubtotal();
+    const shipping = getShipping();
+    const total = subtotal + shipping;
+
+    elements.checkoutSubtotal.textContent =
+        formatCurrency(subtotal);
+
+    elements.checkoutShipping.textContent =
+        shipping > 0
+            ? formatCurrency(shipping)
+            : 'Gr·tis';
+
+    elements.checkoutTotal.textContent =
+        formatCurrency(total);
 }
 
-function renderSummary() {
-    renderCheckoutItems();
-    renderTotals();
-}
 
 /* =========================================================
    ENTREGA
    ========================================================= */
 
 function updateDeliveryFields() {
-    const method = getDeliveryMethod();
-    const addressFields = document.querySelector('#addressFields');
-    if (!addressFields) {
-        return;
-    }
-    const isDelivery = method === 'delivery';
-    addressFields.hidden = !isDelivery;
-    addressFields.querySelectorAll('input, select, textarea').forEach(field => {
-        field.disabled = !isDelivery;
+
+    const delivery = getDeliveryMethod();
+
+    const isDelivery = delivery === 'delivery';
+
+    elements.addressFields.classList.toggle(
+        'is-disabled',
+        !isDelivery
+    );
+
+    const addressInputs = elements.addressFields
+        .querySelectorAll('input');
+
+    addressInputs.forEach(input => {
+
+        input.disabled = !isDelivery;
+
+        input.required = isDelivery;
+
     });
-    renderTotals();
+
+    updateTotals();
 }
 
+
 /* =========================================================
-   FORMATA√á√ÉO
+   CEP
    ========================================================= */
 
-function formatCEP(value) {
-    const digits = String(value).replace(/\D/g, '').slice(0, 8);
+function formatCep(value) {
+
+    const digits = onlyDigits(value).slice(0, 8);
+
     if (digits.length <= 5) {
         return digits;
     }
+
     return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
-function formatPhone(value) {
-    const digits = String(value).replace(/\D/g, '').slice(0, 11);
-    if (digits.length <= 2) {
-        return digits;
+
+async function handleCep() {
+
+    const cep = onlyDigits(elements.cep.value);
+
+    elements.cep.value = formatCep(cep);
+
+    if (cep.length !== 8) {
+
+        elements.cepStatus.textContent = '';
+
+        return;
     }
-    if (digits.length <= 7) {
-        return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+
+    elements.cepStatus.textContent =
+        'Consultando endereÁo...';
+
+    try {
+
+        const address = await fetchAddressByCep(cep);
+
+        if (!address) {
+            throw new Error(
+                'CEP n„o encontrado.'
+            );
+        }
+
+        /*
+         * Aceita os nomes mais comuns retornados
+         * pelo address-service.
+         */
+
+        elements.street.value =
+            address.street ??
+            address.logradouro ??
+            '';
+
+        elements.neighborhood.value =
+            address.neighborhood ??
+            address.bairro ??
+            '';
+
+        elements.city.value =
+            address.city ??
+            address.localidade ??
+            '';
+
+        elements.state.value =
+            address.state ??
+            address.uf ??
+            '';
+
+        elements.cepStatus.textContent =
+            'EndereÁo preenchido automaticamente.';
+
+        elements.cepStatus.style.color =
+            'var(--success)';
+
+        elements.number.focus();
+
+    } catch (error) {
+
+        console.error(
+            '[CHECKOUT] Erro ao consultar CEP:',
+            error
+        );
+
+        elements.cepStatus.textContent =
+            'N„o foi possÌvel localizar este CEP.';
+
+        elements.cepStatus.style.color =
+            'var(--danger)';
     }
-    if (digits.length <= 10) {
-        return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-    }
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
-function setupFormatting() {
-    const cep = document.querySelector('#addressZip');
-    const phone = document.querySelector('#customerPhone');
-
-    cep?.addEventListener('input', event => {
-        event.target.value = formatCEP(event.target.value);
-    });
-
-    phone?.addEventListener('input', event => {
-        event.target.value = formatPhone(event.target.value);
-    });
-}
 
 /* =========================================================
-   ERROS
+   VALIDA«√O
    ========================================================= */
 
-function clearErrors() {
-    document.querySelectorAll('.checkout-field.invalid').forEach(field => {
-        field.classList.remove('invalid');
-    });
-    document.querySelectorAll('[data-error-for]').forEach(error => {
-        error.textContent = '';
-    });
+function clearValidation() {
+
+    elements.form
+        .querySelectorAll('.field.invalid')
+        .forEach(field => {
+
+            field.classList.remove('invalid');
+
+        });
 }
 
-function setFieldError(fieldId, message) {
-    const field = document.querySelector(`#${fieldId}`);
-    const messageElement = document.querySelector(`[data-error-for="${fieldId}"]`);
-    field?.closest('.checkout-field')?.classList.add('invalid');
-    if (messageElement) {
-        messageElement.textContent = message;
+
+function markInvalid(input) {
+
+    input
+        .closest('.field')
+        ?.classList.add('invalid');
+}
+
+
+function validateRequired(input) {
+
+    if (!input.value.trim()) {
+
+        markInvalid(input);
+
+        return false;
     }
+
+    return true;
 }
 
-/* =========================================================
-   VALIDA√á√ÉO
-   ========================================================= */
+
+function validateEmail(email) {
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        .test(email.trim());
+}
+
 
 function validateForm() {
-    clearErrors();
+
+    clearValidation();
+
+    const delivery = getDeliveryMethod();
+
     let valid = true;
-    const name = document.querySelector('#customerName');
-    const phone = document.querySelector('#customerPhone');
-    const email = document.querySelector('#customerEmail');
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || '';
 
-    if (!name?.value.trim()) {
-        setFieldError('customerName', 'Informe seu nome.');
+    if (!validateRequired(elements.customerName)) {
         valid = false;
     }
 
-    const phoneDigits = phone?.value.replace(/\D/g, '') || '';
-    if (phoneDigits.length < 10) {
-        setFieldError('customerPhone', 'Informe um telefone v√°lido.');
+    if (
+        !elements.customerEmail.value.trim() ||
+        !validateEmail(elements.customerEmail.value)
+    ) {
+
+        markInvalid(elements.customerEmail);
+
         valid = false;
     }
 
-    if (paymentMethod === 'pix') {
-        if (!email?.value.trim()) {
-            setFieldError('customerEmail', 'Informe seu e-mail para gerar o PIX.');
-            valid = false;
-        } else if (!email.checkValidity()) {
-            setFieldError('customerEmail', 'Informe um e-mail v√°lido.');
-            valid = false;
-        }
-    } else if (email?.value.trim() && !email.checkValidity()) {
-        setFieldError('customerEmail', 'Informe um e-mail v√°lido.');
+    if (!validateRequired(elements.customerPhone)) {
         valid = false;
     }
 
-    if (getDeliveryMethod() === 'delivery') {
-        const requiredFields = [
-            ['addressZip', 'Informe o CEP.'],
-            ['addressStreet', 'Informe a rua ou avenida.'],
-            ['addressNumber', 'Informe o n√∫mero.'],
-            ['addressNeighborhood', 'Informe o bairro.'],
-            ['addressCity', 'Informe a cidade.'],
-            ['addressState', 'Selecione o estado.']
+    if (delivery === 'delivery') {
+
+        const requiredAddress = [
+            elements.cep,
+            elements.street,
+            elements.number,
+            elements.neighborhood,
+            elements.city,
+            elements.state
         ];
 
-        requiredFields.forEach(([id, errorMessage]) => {
-            const field = document.querySelector(`#${id}`);
-            if (!field?.value.trim()) {
-                setFieldError(id, errorMessage);
+        requiredAddress.forEach(input => {
+
+            if (!input.value.trim()) {
+
+                markInvalid(input);
+
                 valid = false;
             }
+
         });
 
-        const cepDigits = document.querySelector('#addressZip')?.value.replace(/\D/g, '') || '';
-        if (cepDigits && cepDigits.length !== 8) {
-            setFieldError('addressZip', 'Informe um CEP v√°lido.');
+        if (
+            onlyDigits(elements.cep.value).length !== 8
+        ) {
+
+            markInvalid(elements.cep);
+
             valid = false;
         }
     }
 
-    if (!paymentMethod) {
-        const paymentError = document.querySelector('[data-payment-error]');
-        if (paymentError) {
-            paymentError.textContent = 'Selecione uma forma de pagamento.';
-        }
+    const items = getCartItems();
+
+    if (!items.length) {
+
+        showMessage(
+            'Seu carrinho est· vazio. Adicione produtos antes de finalizar o pedido.'
+        );
+
         valid = false;
     }
 
     return valid;
 }
 
+
+/* =========================================================
+   MENSAGENS
+   ========================================================= */
+
+function showMessage(message) {
+
+    elements.checkoutMessage.textContent = message;
+
+    elements.checkoutMessage.hidden = false;
+}
+
+
+function hideMessage() {
+
+    elements.checkoutMessage.hidden = true;
+
+    elements.checkoutMessage.textContent = '';
+}
+
+
+/* =========================================================
+   DADOS DO FORMUL¡RIO
+   ========================================================= */
+
+function getCustomerData() {
+
+    return {
+        name: elements.customerName.value.trim(),
+        email: elements.customerEmail.value.trim(),
+        phone: elements.customerPhone.value.trim()
+    };
+}
+
+
+function getAddressData() {
+
+    if (getDeliveryMethod() !== 'delivery') {
+        return null;
+    }
+
+    return {
+        cep: formatCep(elements.cep.value),
+        street: elements.street.value.trim(),
+        number: elements.number.value.trim(),
+        complement: elements.complement.value.trim(),
+        neighborhood: elements.neighborhood.value.trim(),
+        city: elements.city.value.trim(),
+        state: elements.state.value.trim().toUpperCase()
+    };
+}
+
+
+function getPaymentMethod() {
+
+    return document.querySelector(
+        'input[name="paymentMethod"]:checked'
+    )?.value ?? 'pix';
+}
+
+
 /* =========================================================
    PEDIDO
    ========================================================= */
 
 function createOrder() {
+
+    const items = getCartItems();
+
+    const subtotal = getSubtotal();
+    const shipping = getShipping();
+    const total = subtotal + shipping;
+
     const deliveryMethod = getDeliveryMethod();
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || '';
-
-    const customer = {
-        name: document.querySelector('#customerName')?.value.trim() || '',
-        phone: document.querySelector('#customerPhone')?.value.trim() || '',
-        email: document.querySelector('#customerEmail')?.value.trim() || ''
-    };
-
-    const address = deliveryMethod === 'delivery' ? {
-        zip: document.querySelector('#addressZip')?.value.trim() || '',
-        street: document.querySelector('#addressStreet')?.value.trim() || '',
-        number: document.querySelector('#addressNumber')?.value.trim() || '',
-        complement: document.querySelector('#addressComplement')?.value.trim() || '',
-        neighborhood: document.querySelector('#addressNeighborhood')?.value.trim() || '',
-        city: document.querySelector('#addressCity')?.value.trim() || '',
-        state: document.querySelector('#addressState')?.value || ''
-    } : null;
-
-    const items = getCartItems().map(item => ({
-        sku: item.product.sku,
-        name: item.product.name,
-        quantity: item.quantity,
-        unitPrice: item.product.price,
-        subtotal: item.subtotal
-    }));
+    const paymentMethod = getPaymentMethod();
 
     const now = new Date();
 
-    return {
-        id: createOrderId(),
-        status: 'pending',
+    const orderId =
+        `AUR-${now.getTime().toString(36).toUpperCase()}`;
+
+
+    const order = {
+
+        id: orderId,
+
+        orderId,
+
+        status: ORDER_STATUS.NEW,
+
         createdAt: now.toISOString(),
-        customer,
+
+        customer: getCustomerData(),
+
         delivery: {
             method: deliveryMethod,
-            shipping: getShippingCost(),
-            address
+            address: getAddressData()
         },
+
         payment: {
-            method: paymentMethod
+            method: paymentMethod,
+            status: 'pending'
         },
-        items,
-        financial: {
-            subtotal: getSubtotal(),
-            shipping: getShippingCost(),
-            total: getTotal()
+
+        logistics: {
+            status: LOGISTICS_STATUS.NEW
         },
-        notes: document.querySelector('#orderNotes')?.value.trim() || ''
+
+        history: [],
+
+        items: items.map(item => ({
+            sku: item.product.sku,
+            name: item.product.name,
+            quantity: item.quantity,
+            unitPrice: item.product.price,
+            total: item.total,
+            image: item.product.image
+        })),
+
+        subtotal,
+
+        shipping,
+
+        total,
+
+        notes: elements.orderNotes.value.trim(),
+
+        source: 'website',
+
+        currency: 'BRL'
     };
+
+
+    appendOrderEvent(
+        order,
+        ORDER_EVENT.ORDER_CREATED
+    );
+
+
+    return order;
 }
-
-function createOrderId() {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).slice(2, 7).toUpperCase();
-    return `AUR-${timestamp}-${random}`;
-}
-
-/* =========================================================
-   PERSIST√äNCIA
-   ========================================================= */
-
-async function saveOrder(order) {
-    return persistOrder(order);
-}
-
 /* =========================================================
    PIX
    ========================================================= */
 
-/* =========================================================
-PIX
-========================================================= */
-
 async function createPixPayment(order) {
-const response = await fetch(
-'/api/create-pix-payment',
-{
-method: 'POST',
-headers: {
-'Content-Type': 'application/json'
-},
-body: JSON.stringify(order)
-}
-);
-let result = null;
 
-try {
-    result = await response.json();
-} catch {
-    throw new Error(
-        'O servidor n√£o retornou uma resposta v√°lida.'
+    console.log(
+        '[PIX] Criando pagamento:',
+        order.total
+    );
+
+    const response = await fetch(
+        '/api/create-pix-payment',
+        {
+            method: 'POST',
+
+            headers: {
+                'Content-Type': 'application/json'
+            },
+
+            body: JSON.stringify(order)
+        }
+    );
+
+    if (!response.ok) {
+
+        throw new Error(
+            `O servidor PIX respondeu com HTTP ${response.status}.`
+        );
+    }
+
+    const result = await response.json();
+
+    if (!result || result.success !== true) {
+
+        throw new Error(
+            result?.message ||
+            'O servidor n„o conseguiu criar o pagamento PIX.'
+        );
+    }
+
+    return result;
+}
+
+
+function getPixQrSource(result) {
+
+    if (result.qr_code_base64) {
+
+        return result.qr_code_base64.startsWith('data:')
+            ? result.qr_code_base64
+            : `data:image/png;base64,${result.qr_code_base64}`;
+    }
+
+    if (result.qr_code) {
+        return result.qr_code;
+    }
+
+    if (result.qrCodeBase64) {
+
+        return result.qrCodeBase64.startsWith('data:')
+            ? result.qrCodeBase64
+            : `data:image/png;base64,${result.qrCodeBase64}`;
+    }
+
+    return '';
+}
+
+
+function getPixCopyCode(result) {
+
+    return (
+        result.pix_code ??
+        result.qr_code ??
+        result.copy_paste ??
+        result.copia_e_cola ??
+        result.pixCode ??
+        ''
     );
 }
 
-if (!response.ok || !result?.success) {
-    throw new Error(
-        result?.message ||
-        'N√£o foi poss√≠vel gerar o PIX.'
-    );
-}
-
-return result;
-}
 
 function renderPixPayment(result) {
-const pixContainer =
-document.querySelector(
-'#pixPaymentContainer'
-);
-const qrCodeImage =
-    document.querySelector(
-        '#pixQrCodeImage'
-    );
 
-const pixCopiaCola =
-    document.querySelector(
-        '#pixCopiaCola'
-    );
+    const qrSource = getPixQrSource(result);
+    const copyCode = getPixCopyCode(result);
 
-if (
-    qrCodeImage &&
-    result?.qr_code
-) {
-    qrCodeImage.src =
-        result.qr_code;
+    if (!qrSource && !copyCode) {
 
-    qrCodeImage.alt =
-        'QR Code para pagamento via PIX';
+        throw new Error(
+            'O servidor criou o PIX, mas n„o retornou os dados do pagamento.'
+        );
+    }
+
+    if (qrSource) {
+
+        elements.pixQrCodeImage.src =
+            qrSource;
+
+        elements.pixQrCodeImage.hidden = false;
+
+    } else {
+
+        elements.pixQrCodeImage.hidden = true;
+    }
+
+    elements.pixCopiaCola.value =
+        copyCode;
+
+    elements.pixPaymentContainer.hidden =
+        false;
 }
 
-if (
-    pixCopiaCola &&
-    result?.pix_code
-) {
-    pixCopiaCola.value =
-        result.pix_code;
-}
-
-if (pixContainer) {
-    pixContainer.style.display =
-        'block';
-}
-}
-
-function hidePixPayment() {
-const container =
-document.querySelector(
-'#pixPaymentContainer'
-);
-if (container) {
-    container.style.display =
-        'none';
-}
-}
 
 /* =========================================================
-CONFIRMA√á√ÉO
-========================================================= */
+   SUCESSO
+   ========================================================= */
 
-async function showSuccess(order) {
-const modal =
-document.querySelector(
-'#checkoutSuccess'
-);
-
-
-const orderNumber =
-    document.querySelector(
-        '#successOrderNumber'
-    );
-
-const message =
-    document.querySelector(
-        '#successMessage'
-    );
-
-hidePixPayment();
-
-if (orderNumber) {
-    orderNumber.textContent =
-        order.id;
-}
-
-if (message) {
-    message.textContent =
-        `Obrigado, ${order.customer.name}. Recebemos seu pedido no valor de ${formatCurrency(order.financial.total)}.`;
-}
-
-if (
-    order.payment.method === 'pix'
-) {
-    try {
-        const pixResult =
-            await createPixPayment(order);
-
-        renderPixPayment(
-            pixResult
+function showSuccess(order) {
+    const trackOrderButton =
+        document.getElementById(
+            'trackOrderButton'
         );
 
-    } catch (error) {
-        console.error(
-            '[PIX] Erro ao gerar pagamento:',
-            error
-        );
+    if (trackOrderButton) {
 
-        hidePixPayment();
-
-        if (message) {
-            message.textContent =
-                'Pedido recebido, mas n√£o foi poss√≠vel gerar o PIX. Tente novamente.';
-        }
+        trackOrderButton.href =
+            `../pages/rastrear-pedido.html?pedido=${encodeURIComponent(
+                order.orderId
+            )}`;
     }
-}
 
-if (modal) {
-    modal.hidden = false;
-}
+
+    elements.form.hidden = true;
+
+    elements.checkoutSuccess.hidden = false;
+
+    elements.successOrderNumber.textContent =
+        order.orderId;
+
+    const paymentMethod =
+        order.payment.method;
+
+    if (paymentMethod === 'pix') {
+
+        elements.successMessage.textContent =
+            'Seu pedido foi registrado. Gere o pagamento PIX abaixo para concluir a compra.';
+
+    } else {
+
+        elements.successMessage.textContent =
+            'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os prÛximos passos.';
+
+    }
+
+    elements.checkoutSuccess.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
 }
 
 
@@ -655,216 +1100,413 @@ if (modal) {
    ========================================================= */
 
 async function copyPixCode() {
-    const input = document.querySelector('#pixCopiaCola');
-    const button = document.querySelector('#btnCopyPix');
 
-    if (!input || !input.value) {
-        return;
-    }
+    const code =
+        elements.pixCopiaCola.value.trim();
 
-    const originalText = button?.textContent || 'Copiar';
-
-    try {
-        if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(input.value);
-        } else {
-            input.focus();
-            input.select();
-            document.execCommand('copy');
-        }
-
-        if (button) {
-            button.textContent = 'Copiado!';
-            window.setTimeout(() => {
-                button.textContent = originalText;
-            }, 2000);
-        }
-    } catch (error) {
-        console.error('N√£o foi poss√≠vel copiar o PIX:', error);
-    }
-}
-
-function setupPixCopy() {
-    document.addEventListener('click', event => {
-        const button = event.target.closest('#btnCopyPix');
-        if (!button) {
-            return;
-        }
-        event.preventDefault();
-        copyPixCode();
-    });
-}
-
-/* =========================================================
-   CEP
-   ========================================================= */
-
-async function handleCepLookup() {
-    const cepInput = document.querySelector('#addressZip');
-
-    if (!cepInput) {
-        return;
-    }
-
-    const cep = cepInput.value.replace(/\D/g, '');
-
-    if (cep.length !== 8) {
+    if (!code) {
         return;
     }
 
     try {
-        const address = await fetchAddressByCep(cep);
-        const street = document.querySelector('#addressStreet');
-        const neighborhood = document.querySelector('#addressNeighborhood');
-        const city = document.querySelector('#addressCity');
-        const state = document.querySelector('#addressState');
 
-        if (street) street.value = address.street;
-        if (neighborhood) neighborhood.value = address.neighborhood;
-        if (city) city.value = address.city;
-        if (state) state.value = address.state;
+        await navigator.clipboard.writeText(code);
+
+        elements.pixCopyStatus.textContent =
+            'CÛdigo PIX copiado.';
 
     } catch (error) {
-        console.warn('Consulta de CEP:', error.message);
+
+        console.warn(
+            '[PIX] Clipboard indisponÌvel:',
+            error
+        );
+
+        elements.pixCopiaCola.select();
+
+        document.execCommand('copy');
+
+        elements.pixCopyStatus.textContent =
+            'CÛdigo PIX copiado.';
     }
 }
 
-/* =========================================================
-   ESTADO DO ENVIO
-   ========================================================= */
-
-function setSubmittingState(isSubmitting) {
-    submitting = isSubmitting;
-    const form = document.querySelector('#checkoutForm');
-
-    if (!form) {
-        return;
-    }
-
-    const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
-
-    if (!submitButton) {
-        return;
-    }
-
-    if (isSubmitting) {
-        submitButton.disabled = true;
-        if (!submitButton.dataset.originalText) {
-            submitButton.dataset.originalText = submitButton.textContent;
-        }
-        submitButton.textContent = 'Processando pedido...';
-    } else {
-        submitButton.disabled = false;
-        if (submitButton.dataset.originalText) {
-            submitButton.textContent = submitButton.dataset.originalText;
-            delete submitButton.dataset.originalText;
-        }
-    }
-}
 
 /* =========================================================
-   ENVIO DO FORMUL√ÅRIO
+   SUBMIT
    ========================================================= */
 
 async function handleSubmit(event) {
+
     event.preventDefault();
 
     if (submitting) {
         return;
     }
 
-    const message = document.querySelector('#checkoutMessage');
-
-    if (!cart.length) {
-        if (message) {
-            message.hidden = false;
-            message.textContent = 'Sua sacola est√° vazia. Volte √† loja e adicione produtos.';
-        }
-        return;
-    }
+    hideMessage();
 
     if (!validateForm()) {
-        if (message) {
-            message.hidden = false;
-            message.textContent = 'Confira os campos destacados antes de continuar.';
+
+        if (!elements.checkoutMessage.hidden) {
+            return;
         }
-        document.querySelector('.checkout-field.invalid input, .checkout-field.invalid select')?.focus();
+
+        showMessage(
+            'Confira os campos destacados antes de continuar.'
+        );
+
         return;
     }
 
-    if (message) {
-        message.hidden = true;
-        message.textContent = '';
-    }
+    submitting = true;
 
-    setSubmittingState(true);
+    elements.submitOrder.disabled = true;
+
+    elements.submitOrderText.textContent =
+        'Registrando pedido...';
 
     try {
-        const order = createOrder();
-        await saveOrder(order);
 
-        localStorage.removeItem(CART_STORAGE_KEY);
-        await showSuccess(order);
-    } catch (error) {
-        console.error('Erro ao finalizar pedido:', error);
-        if (message) {
-            message.hidden = false;
-            message.textContent = error?.message || 'N√£o foi poss√≠vel finalizar o pedido. Tente novamente.';
+        const order = createOrder();
+
+        console.log(
+            '[CHECKOUT] Pedido criado:',
+            order
+        );
+
+        /*
+         * Primeiro registra o pedido.
+         */
+        await persistOrder(order);
+
+        /*
+         * O carrinho È removido somente depois
+         * que o pedido foi salvo.
+         */
+        localStorage.removeItem(
+            CART_STORAGE_KEY
+        );
+
+        /*
+         * Mostra a tela de sucesso.
+         */
+        showSuccess(order);
+
+        /*
+         * PIX È criado depois do pedido.
+         */
+        if (order.payment.method === 'pix') {
+
+            elements.pixPaymentContainer.hidden =
+                false;
+
+            elements.pixPaymentContainer.innerHTML = `
+                <div class="pix-heading">
+
+                    <p class="eyebrow">
+                        PAGAMENTO PIX
+                    </p>
+
+                    <h3>
+                        Gerando seu pagamento...
+                    </h3>
+
+                    <p>
+                        Aguarde enquanto preparamos o PIX.
+                    </p>
+
+                </div>
+            `;
+
+            try {
+
+                const pixResult =
+                    await createPixPayment(order);
+
+                /*
+                 * ReconstrÛi o conte˙do original
+                 * do container para renderizar o PIX.
+                 */
+                elements.pixPaymentContainer.innerHTML = `
+                    <div class="pix-heading">
+
+                        <p class="eyebrow">
+                            PAGAMENTO PIX
+                        </p>
+
+                        <h3>
+                            Finalize seu pagamento
+                        </h3>
+
+                        <p>
+                            Escaneie o QR Code ou copie o cÛdigo PIX.
+                        </p>
+
+                    </div>
+
+                    <div class="pix-qr">
+
+                        <img
+                            id="pixQrCodeImage"
+                            src=""
+                            alt="QR Code para pagamento PIX"
+                        >
+
+                    </div>
+
+                    <div class="pix-copy">
+
+                        <label for="pixCopiaCola">
+                            PIX Copia e Cola
+                        </label>
+
+                        <div class="pix-copy-row">
+
+                            <input
+                                type="text"
+                                id="pixCopiaCola"
+                                readonly
+                            >
+
+                            <button
+                                type="button"
+                                id="btnCopyPix"
+                                class="copy-pix-button"
+                            >
+                                Copiar
+                            </button>
+
+                        </div>
+
+                        <small id="pixCopyStatus"></small>
+
+                    </div>
+                `;
+
+                /*
+                 * Atualiza as referÍncias dos elementos
+                 * recriados acima.
+                 */
+                elements.pixQrCodeImage =
+                    document.getElementById(
+                        'pixQrCodeImage'
+                    );
+
+                elements.pixCopiaCola =
+                    document.getElementById(
+                        'pixCopiaCola'
+                    );
+
+                elements.btnCopyPix =
+                    document.getElementById(
+                        'btnCopyPix'
+                    );
+
+                elements.pixCopyStatus =
+                    document.getElementById(
+                        'pixCopyStatus'
+                    );
+
+                elements.btnCopyPix.addEventListener(
+                    'click',
+                    copyPixCode
+                );
+
+                renderPixPayment(pixResult);
+                /*
+                 * Registra a geraÁ„o do PIX no pedido.
+                 *
+                 * A geraÁ„o do PIX n„o confirma o pagamento.
+                 * O status permanece "pending".
+                 */
+                order.payment.pixCode =
+                    pixResult.pix_code;
+
+                order.payment.pixGeneratedAt =
+                    new Date().toISOString();
+
+                appendOrderEvent(
+                    order,
+                    ORDER_EVENT.PIX_GENERATED,
+                    {
+                        amount: pixResult.amount,
+                        pixKey: pixResult.pix_key
+                    }
+                );
+
+                /*
+                 * Atualiza o mesmo pedido j· salvo.
+                 * O order.id impede duplicaÁ„o.
+                 */
+                await persistOrder(order);
+
+                console.log(
+                    '[PIX] Pagamento criado com sucesso.'
+                );
+
+            } catch (pixError) {
+
+                console.error(
+                    '[PIX] Erro ao gerar pagamento:',
+                    pixError
+                );
+
+                elements.pixPaymentContainer.innerHTML = `
+                    <div class="pix-heading">
+
+                        <p class="eyebrow">
+                            PAGAMENTO PIX
+                        </p>
+
+                        <h3>
+                            Pedido registrado
+                        </h3>
+
+                        <p>
+                            Seu pedido foi salvo, mas n„o foi possÌvel
+                            gerar o PIX automaticamente.
+                            Entre em contato conosco para concluir o pagamento.
+                        </p>
+
+                    </div>
+                `;
+            }
         }
-    } finally {
-        setSubmittingState(false);
+
+    } catch (error) {
+
+        console.error(
+            '[CHECKOUT] Erro ao finalizar pedido:',
+            error
+        );
+
+        showMessage(
+            error?.message ||
+            'N„o foi possÌvel finalizar o pedido. Tente novamente.'
+        );
+
+        elements.submitOrder.disabled = false;
+
+        elements.submitOrderText.textContent =
+            'Confirmar pedido';
+
+        submitting = false;
+
+        return;
     }
+
+    elements.submitOrder.disabled = true;
+
+    elements.submitOrderText.textContent =
+        'Pedido registrado';
 }
+
 
 /* =========================================================
    EVENTOS
    ========================================================= */
 
 function setupEvents() {
-    document.querySelector('#checkoutForm')?.addEventListener('submit', handleSubmit);
 
-    document.querySelectorAll('input[name="deliveryMethod"]').forEach(input => {
-        input.addEventListener('change', updateDeliveryFields);
+    elements.form.addEventListener(
+        'submit',
+        handleSubmit
+    );
+
+
+    elements.deliveryMethod.forEach(input => {
+
+        input.addEventListener(
+            'change',
+            updateDeliveryFields
+        );
+
     });
 
-    document.querySelector('#addressZip')?.addEventListener('blur', handleCepLookup);
+
+    elements.cep.addEventListener(
+        'input',
+        () => {
+
+            elements.cep.value =
+                formatCep(elements.cep.value);
+
+        }
+    );
+
+
+    elements.cep.addEventListener(
+        'blur',
+        handleCep
+    );
+
+
+    /*
+     * Limpa o estado de erro quando o usu·rio
+     * comeÁa a corrigir um campo.
+     */
+    elements.form
+        .querySelectorAll('input, textarea')
+        .forEach(input => {
+
+            input.addEventListener(
+                'input',
+                () => {
+
+                    input
+                        .closest('.field')
+                        ?.classList.remove('invalid');
+
+                    hideMessage();
+
+                }
+            );
+
+        });
 }
 
+
 /* =========================================================
-   INICIALIZA√á√ÉO
+   INICIALIZA«√O
    ========================================================= */
 
 async function init() {
+
+    console.log(
+        '[CHECKOUT] Inicializando...'
+    );
+
     try {
+
         cart = loadCart();
 
-        if (!cart.length) {
-            window.location.href = '../index.html#colecao';
-            return;
-        }
+        await loadProducts();
 
-        products = await loadProducts();
-        cart = cart.filter(item => getProductBySku(item.sku));
+        renderCart();
 
-        if (!cart.length) {
-            window.location.href = '../index.html#colecao';
-            return;
-        }
-
-        setupFormatting();
-        setupEvents();
-        setupPixCopy();
         updateDeliveryFields();
-        renderSummary();
+
+        setupEvents();
+
+        console.log(
+            '[CHECKOUT] Inicializado com sucesso.'
+        );
 
     } catch (error) {
-        console.error('Erro ao iniciar checkout:', error);
-        const message = document.querySelector('#checkoutMessage');
-        if (message) {
-            message.hidden = false;
-            message.textContent = 'N√£o foi poss√≠vel carregar o checkout. Atualize a p√°gina e tente novamente.';
-        }
+
+        console.error(
+            '[CHECKOUT] Falha na inicializaÁ„o:',
+            error
+        );
+
+        showMessage(
+            'N„o foi possÌvel carregar o checkout. Atualize a p·gina e tente novamente.'
+        );
+
+        elements.submitOrder.disabled = true;
     }
 }
+
 
 init();

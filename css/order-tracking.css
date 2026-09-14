@@ -1,0 +1,128 @@
+﻿.order-tracking-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+}
+
+.tracking-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.tracking-header .eyebrow {
+    letter-spacing: .12em;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.tracking-header h1 {
+    margin: 8px 0;
+}
+
+.tracking-search {
+    display: flex;
+    gap: 10px;
+    max-width: 620px;
+    margin: 0 auto 36px;
+}
+
+.tracking-search input {
+    flex: 1;
+}
+
+.tracking-result {
+    display: none;
+}
+
+.tracking-result.visible {
+    display: block;
+}
+
+.tracking-card {
+    border: 1px solid rgba(0, 0, 0, .1);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    background: #fff;
+}
+
+.tracking-status {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.tracking-order-id {
+    color: #666;
+    font-size: .9rem;
+}
+
+.tracking-payment {
+    margin-top: 18px;
+}
+
+.tracking-timeline {
+    position: relative;
+    margin-top: 24px;
+    padding-left: 30px;
+}
+
+.tracking-timeline::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: rgba(0, 0, 0, .12);
+}
+
+.tracking-event {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.tracking-event:last-child {
+    margin-bottom: 0;
+}
+
+.tracking-event::before {
+    content: "";
+    position: absolute;
+    left: -28px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #aaa;
+}
+
+.tracking-event.active::before {
+    background: currentColor;
+}
+
+.tracking-event-label {
+    font-weight: 700;
+}
+
+.tracking-event-date {
+    margin-top: 4px;
+    font-size: .85rem;
+    color: #777;
+}
+
+.tracking-error {
+    display: none;
+    margin: 20px auto;
+    max-width: 620px;
+}
+
+.tracking-error.visible {
+    display: block;
+}
+
+@media (max-width: 576px) {
+    .tracking-search {
+        flex-direction: column;
+    }
+}
