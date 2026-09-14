@@ -1,5 +1,5 @@
 const PIX_KEY = '11986215473';
-const PIX_CITY = 'SAO PAULO';
+const PIX_CITY = 'SAO PAULO'; 
 const PIX_MERCHANT_NAME = 'AUREA COSMETICS';
 
 function normalizeText(value, maxLength) {
