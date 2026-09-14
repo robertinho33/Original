@@ -458,12 +458,10 @@
     id="checkoutSuccess"
     hidden
 >
+    <div class="checkout-success" id="checkoutSuccess" hidden>
     <div class="checkout-success-card">
-
         <span class="checkout-success-icon">✓</span>
-
         <p class="eyebrow">PEDIDO RECEBIDO</p>
-
         <h2>
             Tudo certo,<br>
             <em>seu pedido foi registrado.</em>
@@ -476,20 +474,33 @@
             <strong id="successOrderNumber"></strong>
         </div>
 
-        <a
-            class="primary"
-            href="../index.html"
-        >
+        <!-- CONTAINER PIX MERCADO PAGO -->
+        <div id="pixPaymentContainer" style="display: none; margin: 20px 0; padding: 15px; border: 1px solid #10b981; border-radius: 8px; background-color: #f0fdf4; text-align: center;">
+            <h3 style="color: #065f46; margin-bottom: 8px;">Pague com Pix para finalizar</h3>
+            <p style="font-size: 0.9rem; color: #047857; margin-bottom: 12px;">Escaneie o QR Code no app do seu banco ou copie a chave abaixo:</p>
+            
+            <img id="pixQrCodeImage" src="" alt="QR Code Pix" style="max-width: 180px; width: 100%; margin: 10px auto; display: block;" />
+
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <input type="text" id="pixCopiaCola" readonly style="flex: 1; padding: 8px 10px; border: 1px solid #a7f3d0; border-radius: 4px; font-size: 0.85rem;" />
+                <button type="button" id="btnCopyPix" style="padding: 8px 12px; background: #10b981; color: white; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Copiar</button>
+            </div>
+        </div>
+
+        <a class="primary" href="../index.html">
             Voltar à loja
             <span>➔</span>
         </a>
-
     </div>
 </div>
+</div>
 
-<script src="https://sdk.mercadopago.com/js/v2"></script>
+
 <script type="module" src="../js/checkout/address-service.js"></script>
-<script type="module" src="../js/checkout/checkout.js"></script>
+<script type="module" src="../js/checkout/checkout.js?v=20260913"></script>
+<!-- SDK Mercado Pago -->
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 
 </body>
 </html>
+
