@@ -1,7 +1,7 @@
 ﻿'use strict';
 
 import {
-    findOrderById
+    findTrackingById
 } from './order-repository.js';
 
 import {
@@ -87,10 +87,10 @@ function showError(message) {
 function renderOrder(order) {
 
     const logisticsStatus =
-        order.logistics?.status || 'new';
+        order.logisticsStatus || 'new';
 
     elements.orderId.textContent =
-        order.orderId || order.id;
+        order.id;
 
     elements.status.textContent =
         getLogisticsStatusLabel(
@@ -98,11 +98,11 @@ function renderOrder(order) {
         );
 
     const paymentStatus =
-        order.payment?.status === 'pending'
+        order.paymentStatus === 'pending'
             ? 'Aguardando pagamento'
-            : order.payment?.status === 'confirmed'
+            : order.paymentStatus === 'confirmed'
                 ? 'Pagamento confirmado'
-                : order.payment?.status || 'Não informado';
+                : order.paymentStatus || 'Não informado';
 
     elements.payment.textContent =
         `Pagamento: ${paymentStatus} · Total: ${formatCurrency(order.total)}`;
@@ -179,7 +179,7 @@ elements.form.addEventListener(
         }
 
         const order =
-            findOrderById(orderId);
+            findTrackingById(orderId);
 
         if (!order) {
 
@@ -209,9 +209,10 @@ if (initialOrderId) {
         initialOrderId;
 
     const order =
-        findOrderById(initialOrderId);
+        findTrackingById(initialOrderId);
 
     if (order) {
         renderOrder(order);
     }
 }
+

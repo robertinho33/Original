@@ -32,13 +32,13 @@ export async function saveOrder(order) {
         throw new Error('Pedido sem informações financeiras válidas.');
     }
 
-    order.status = order.status || 'pending';
+    order.status = order.status || 'new';
     
     if (!order.payment) order.payment = {};
     order.payment.status = order.payment.status || 'pending';
 
     if (!order.logistics) order.logistics = {};
-    order.logistics.status = order.logistics.status || 'pending';
+    order.logistics.status = order.logistics.status || 'new';
 
     if (!Array.isArray(order.history)) {
         order.history = [
