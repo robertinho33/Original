@@ -1,0 +1,166 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="Painel administrativo Auréa Cosmetics."
+    >
+
+    <title>Auréa — Painel Administrativo</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body>
+
+    <header class="admin-header">
+
+        <div class="admin-header-brand">
+            <span class="admin-brand-mark">A</span>
+
+            <div>
+                <strong>AURÉA</strong>
+                <small>ADMINISTRAÇÃO</small>
+            </div>
+        </div>
+
+        <div class="admin-header-actions">
+
+            <span
+                id="adminUserEmail"
+                class="admin-user-email"
+            ></span>
+
+            <button
+                id="adminLogoutButton"
+                class="admin-logout-button"
+                type="button"
+            >
+                Sair
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main class="admin-main">
+
+        <section class="admin-intro">
+
+            <div>
+                <p class="eyebrow">
+                    CONTROLE DA LOJA
+                </p>
+
+                <h1>
+                    Painel de <em>pedidos.</em>
+                </h1>
+
+                <p class="admin-intro-description">
+                    Acompanhe pedidos, confirme pagamentos e
+                    atualize o andamento das entregas.
+                </p>
+            </div>
+
+            <div class="admin-summary">
+
+                <div class="admin-summary-card">
+                    <span>Pedidos</span>
+                    <strong id="ordersCount">0</strong>
+                </div>
+
+                <div class="admin-summary-card">
+                    <span>Aguardando PIX</span>
+                    <strong id="pendingPaymentsCount">0</strong>
+                </div>
+
+                <div class="admin-summary-card">
+                    <span>Em andamento</span>
+                    <strong id="activeOrdersCount">0</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="admin-orders-section">
+
+            <div class="admin-section-heading">
+
+                <div>
+                    <p class="eyebrow">
+                        OPERAÇÃO
+                    </p>
+
+                    <h2>
+                        Pedidos recentes
+                    </h2>
+                </div>
+
+                <button
+                    id="refreshOrdersButton"
+                    class="admin-refresh-button"
+                    type="button"
+                >
+                    Atualizar
+                </button>
+
+            </div>
+
+
+            <div
+                id="adminMessage"
+                class="admin-message"
+                role="status"
+                aria-live="polite"
+                hidden
+            ></div>
+
+
+            <div
+                id="adminOrdersLoading"
+                class="admin-loading"
+            >
+                Carregando pedidos...
+            </div>
+
+
+            <div
+                id="adminOrdersEmpty"
+                class="admin-empty"
+                hidden
+            >
+                <strong>Nenhum pedido encontrado.</strong>
+
+                <p>
+                    Quando um pedido for realizado na loja,
+                    ele aparecerá aqui.
+                </p>
+            </div>
+
+
+            <div
+                id="adminOrdersList"
+                class="admin-orders-list"
+            ></div>
+
+        </section>
+
+    </main>
+
+
+    <script
+        type="module"
+        src="../js/admin/admin.js"
+    ></script>
+
+</body>
+
+</html>

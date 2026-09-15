@@ -1,4 +1,4 @@
-import { ORDER_STATUS } from '../orders/order-status.js';
+﻿import { ORDER_STATUS } from '../orders/order-status.js';
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
 import { fetchAddressByCep } from './address-service.js';
@@ -6,7 +6,7 @@ import { saveOrder as persistOrder } from '../orders/order-service.js';
 
 
 /* =========================================================
-   CONFIGURAÇÃO
+   CONFIGURAÃ‡ÃƒO
    ========================================================= */
 
 const CART_STORAGE_KEY = 'aurea-cart';
@@ -17,6 +17,15 @@ const PIX_API_URL = 'https://aurea-pix-api.onrender.com/api/create-pix-payment';
 let products = [];
 let cart = [];
 let submitting = false;
+let appliedCoupon = null;
+
+const COUPONS = Object.freeze({
+    AUREA10: Object.freeze({
+        code: 'AUREA10',
+        type: 'percentage',
+        value: 10
+    })
+});
 
 
 /* =========================================================
@@ -55,7 +64,11 @@ const elements = {
     checkoutItems: document.getElementById('checkoutItems'),
     checkoutSubtotal: document.getElementById('checkoutSubtotal'),
     checkoutShipping: document.getElementById('checkoutShipping'),
+    checkoutDiscount: document.getElementById('checkoutDiscount'),
     checkoutTotal: document.getElementById('checkoutTotal'),
+    couponCode: document.getElementById('couponCode'),
+    applyCoupon: document.getElementById('applyCoupon'),
+    couponMessage: document.getElementById('couponMessage'),
 
     submitOrder: document.getElementById('submitOrder'),
     submitOrderText: document.getElementById('submitOrderText'),
@@ -89,7 +102,7 @@ const elements = {
 
 
 /* =========================================================
-   UTILITÁRIOS
+   UTILITÃRIOS
    ========================================================= */
 
 function formatCurrency(value) {
@@ -295,9 +308,9 @@ function normalizeProduct(product) {
             'Produto',
 
         price: parsePrice(
-            product.Preço ??
+            product['Pre\u00E7o'] ??
             product.Preco ??
-            product.preço ??
+            product['pre\u00E7o'] ??
             product.preco ??
             product.Price ??
             product.price ??
@@ -317,9 +330,9 @@ function normalizeProduct(product) {
             '',
 
         description:
-            product.Descrição ??
+            product['Descri\u00E7\u00E3o'] ??
             product.Descricao ??
-            product.descrição ??
+            product['descri\u00E7Ã£o'] ??
             product.descricao ??
             ''
     };
@@ -334,7 +347,7 @@ async function loadProducts() {
 
     if (!response.ok) {
         throw new Error(
-            `Não foi possível carregar o catálogo. HTTP ${response.status}`
+            `NÃ£o foi possÃ­vel carregar o catÃ¡logo. HTTP ${response.status}`
         );
     }
 
@@ -475,9 +488,77 @@ function getShipping() {
 }
 
 
+function getDiscount(subtotal = getSubtotal()) {
+
+    if (!appliedCoupon) {
+        return 0;
+    }
+
+    if (appliedCoupon.type === 'percentage') {
+        return Number(
+            (subtotal * (appliedCoupon.value / 100)).toFixed(2)
+        );
+    }
+
+    return 0;
+}
+
+
 function getTotal() {
 
-    return getSubtotal() + getShipping();
+    const subtotal = getSubtotal();
+    const shipping = getShipping();
+    const discount = getDiscount(subtotal);
+
+    return Math.max(
+        0,
+        Number((subtotal - discount + shipping).toFixed(2))
+    );
+}
+
+
+function applyCouponCode() {
+
+    const code = String(
+        elements.couponCode?.value || ''
+    ).trim().toUpperCase();
+
+    if (!code) {
+
+        appliedCoupon = null;
+
+        if (elements.couponMessage) {
+            elements.couponMessage.textContent =
+                'Digite um cupom.';
+        }
+
+        updateTotals();
+        return;
+    }
+
+    const coupon = COUPONS[code];
+
+    if (!coupon) {
+
+        appliedCoupon = null;
+
+        if (elements.couponMessage) {
+            elements.couponMessage.textContent =
+                'Cupom inválido.';
+        }
+
+        updateTotals();
+        return;
+    }
+
+    appliedCoupon = coupon;
+
+    if (elements.couponMessage) {
+        elements.couponMessage.textContent =
+            'Cupom aplicado: 10% de desconto.';
+    }
+
+    updateTotals();
 }
 
 
@@ -493,7 +574,7 @@ function renderCart() {
 
         elements.checkoutItems.innerHTML = `
             <div class="empty-cart">
-                Seu carrinho está vazio.
+                Seu carrinho estÃ¡ vazio.
             </div>
         `;
 
@@ -533,7 +614,7 @@ function renderCart() {
                         </p>
 
                         <p class="checkout-item-meta">
-                            ${item.quantity} ×
+                            ${item.quantity} Ã—
                             ${formatCurrency(item.product.price)}
                         </p>
 
@@ -556,7 +637,8 @@ function updateTotals() {
 
     const subtotal = getSubtotal();
     const shipping = getShipping();
-    const total = subtotal + shipping;
+    const discount = getDiscount(subtotal);
+    const total = getTotal();
 
     elements.checkoutSubtotal.textContent =
         formatCurrency(subtotal);
@@ -564,7 +646,12 @@ function updateTotals() {
     elements.checkoutShipping.textContent =
         shipping > 0
             ? formatCurrency(shipping)
-            : 'Grátis';
+            : 'GrÃ¡tis';
+
+    elements.checkoutDiscount.textContent =
+        discount > 0
+            ? `- ${formatCurrency(discount)}`
+            : formatCurrency(0);
 
     elements.checkoutTotal.textContent =
         formatCurrency(total);
@@ -631,7 +718,7 @@ async function handleCep() {
     }
 
     elements.cepStatus.textContent =
-        'Consultando endereço...';
+        'Consultando endereÃ§o...';
 
     try {
 
@@ -639,7 +726,7 @@ async function handleCep() {
 
         if (!address) {
             throw new Error(
-                'CEP não encontrado.'
+                'CEP nÃ£o encontrado.'
             );
         }
 
@@ -669,7 +756,7 @@ async function handleCep() {
             '';
 
         elements.cepStatus.textContent =
-            'Endereço preenchido automaticamente.';
+            'EndereÃ§o preenchido automaticamente.';
 
         elements.cepStatus.style.color =
             'var(--success)';
@@ -684,7 +771,7 @@ async function handleCep() {
         );
 
         elements.cepStatus.textContent =
-            'Não foi possível localizar este CEP.';
+            'NÃ£o foi possÃ­vel localizar este CEP.';
 
         elements.cepStatus.style.color =
             'var(--danger)';
@@ -693,7 +780,7 @@ async function handleCep() {
 
 
 /* =========================================================
-   VALIDAÇÃO
+   VALIDAÃ‡ÃƒO
    ========================================================= */
 
 function clearValidation() {
@@ -799,7 +886,7 @@ function validateForm() {
     if (!items.length) {
 
         showMessage(
-            'Seu carrinho está vazio. Adicione produtos antes de finalizar o pedido.'
+            'Seu carrinho estÃ¡ vazio. Adicione produtos antes de finalizar o pedido.'
         );
 
         valid = false;
@@ -830,7 +917,7 @@ function hideMessage() {
 
 
 /* =========================================================
-   DADOS DO FORMULÁRIO
+   DADOS DO FORMULÃRIO
    ========================================================= */
 
 function getCustomerData() {
@@ -879,7 +966,8 @@ function createOrder() {
 
     const subtotal = getSubtotal();
     const shipping = getShipping();
-    const total = subtotal + shipping;
+    const discount = getDiscount(subtotal);
+    const total = getTotal();
 
     const deliveryMethod = getDeliveryMethod();
     const paymentMethod = getPaymentMethod();
@@ -929,9 +1017,19 @@ function createOrder() {
 
         subtotal,
 
+        discount,
+
         shipping,
 
         total,
+
+        coupon: appliedCoupon
+            ? {
+                code: appliedCoupon.code,
+                type: appliedCoupon.type,
+                value: appliedCoupon.value
+            }
+            : null,
 
         notes: elements.orderNotes.value.trim(),
 
@@ -949,9 +1047,6 @@ function createOrder() {
 
     return order;
 }
-/* =========================================================
-   PIX
-   ========================================================= */
 
 async function createPixPayment(order) {
 
@@ -986,7 +1081,7 @@ async function createPixPayment(order) {
 
         throw new Error(
             result?.message ||
-            'O servidor não conseguiu criar o pagamento PIX.'
+            'O servidor nÃ£o conseguiu criar o pagamento PIX.'
         );
     }
 
@@ -1039,7 +1134,7 @@ function renderPixPayment(result) {
     if (!qrSource && !copyCode) {
 
         throw new Error(
-            'O servidor criou o PIX, mas não retornou os dados do pagamento.'
+            'O servidor criou o PIX, mas nÃ£o retornou os dados do pagamento.'
         );
     }
 
@@ -1100,7 +1195,7 @@ function showSuccess(order) {
     } else {
 
         elements.successMessage.textContent =
-            'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os próximos passos.';
+            'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os prÃ³ximos passos.';
 
     }
 
@@ -1129,12 +1224,12 @@ async function copyPixCode() {
         await navigator.clipboard.writeText(code);
 
         elements.pixCopyStatus.textContent =
-            'Código PIX copiado.';
+            'CÃ³digo PIX copiado.';
 
     } catch (error) {
 
         console.warn(
-            '[PIX] Clipboard indisponível:',
+            '[PIX] Clipboard indisponÃ­vel:',
             error
         );
 
@@ -1143,7 +1238,7 @@ async function copyPixCode() {
         document.execCommand('copy');
 
         elements.pixCopyStatus.textContent =
-            'Código PIX copiado.';
+            'CÃ³digo PIX copiado.';
     }
 }
 
@@ -1180,7 +1275,7 @@ async function handleSubmit(event) {
     elements.submitOrder.disabled = true;
 
     elements.submitOrderText.textContent =
-        'Registrando pedido...';
+        'Processando pedido...';
 
     try {
 
@@ -1192,30 +1287,14 @@ async function handleSubmit(event) {
         );
 
         /*
-         * Primeiro registra o pedido.
-         */
-        await persistOrder(order);
-
-        /*
-         * O carrinho é removido somente depois
-         * que o pedido foi salvo.
-         */
-        localStorage.removeItem(
-            CART_STORAGE_KEY
-        );
-
-        /*
-         * Mostra a tela de sucesso.
-         */
-        showSuccess(order);
-
-        /*
-         * PIX é criado depois do pedido.
+         * O PIX precisa ser gerado antes da primeira
+         * gravação do pedido no Firestore.
+         *
+         * Assim o pedido é salvo somente uma vez.
          */
         if (order.payment.method === 'pix') {
 
-            elements.pixPaymentContainer.hidden =
-                false;
+            elements.pixPaymentContainer.hidden = false;
 
             elements.pixPaymentContainer.innerHTML = `
                 <div class="pix-heading">
@@ -1240,10 +1319,21 @@ async function handleSubmit(event) {
                 const pixResult =
                     await createPixPayment(order);
 
-                /*
-                 * Reconstrói o conteúdo original
-                 * do container para renderizar o PIX.
-                 */
+                order.payment.pixCode =
+                    pixResult.pix_code;
+
+                order.payment.pixGeneratedAt =
+                    new Date().toISOString();
+
+                appendOrderEvent(
+                    order,
+                    ORDER_EVENT.PIX_GENERATED,
+                    {
+                        amount: pixResult.amount,
+                        pixKey: pixResult.pix_key
+                    }
+                );
+
                 elements.pixPaymentContainer.innerHTML = `
                     <div class="pix-heading">
 
@@ -1300,10 +1390,6 @@ async function handleSubmit(event) {
                     </div>
                 `;
 
-                /*
-                 * Atualiza as referências dos elementos
-                 * recriados acima.
-                 */
                 elements.pixQrCodeImage =
                     document.getElementById(
                         'pixQrCodeImage'
@@ -1330,32 +1416,6 @@ async function handleSubmit(event) {
                 );
 
                 renderPixPayment(pixResult);
-                /*
-                 * Registra a geração do PIX no pedido.
-                 *
-                 * A geração do PIX não confirma o pagamento.
-                 * O status permanece "pending".
-                 */
-                order.payment.pixCode =
-                    pixResult.pix_code;
-
-                order.payment.pixGeneratedAt =
-                    new Date().toISOString();
-
-                appendOrderEvent(
-                    order,
-                    ORDER_EVENT.PIX_GENERATED,
-                    {
-                        amount: pixResult.amount,
-                        pixKey: pixResult.pix_key
-                    }
-                );
-
-                /*
-                 * Atualiza o mesmo pedido já salvo.
-                 * O order.id impede duplicação.
-                 */
-                await persistOrder(order);
 
                 console.log(
                     '[PIX] Pagamento criado com sucesso.'
@@ -1368,27 +1428,28 @@ async function handleSubmit(event) {
                     pixError
                 );
 
-                elements.pixPaymentContainer.innerHTML = `
-                    <div class="pix-heading">
-
-                        <p class="eyebrow">
-                            PAGAMENTO PIX
-                        </p>
-
-                        <h3>
-                            Pedido registrado
-                        </h3>
-
-                        <p>
-                            Seu pedido foi salvo, mas não foi possível
-                            gerar o PIX automaticamente.
-                            Entre em contato conosco para concluir o pagamento.
-                        </p>
-
-                    </div>
-                `;
+                throw new Error(
+                    'Não foi possível gerar o PIX. ' +
+                    'O pedido não foi registrado. Tente novamente.'
+                );
             }
         }
+
+        /*
+         * ÚNICA gravação do pedido.
+         *
+         * No caso do PIX, o objeto já contém:
+         * - pixCode
+         * - pixGeneratedAt
+         * - PIX_GENERATED
+         */
+        await persistOrder(order);
+
+        localStorage.removeItem(
+            CART_STORAGE_KEY
+        );
+
+        showSuccess(order);
 
     } catch (error) {
 
@@ -1405,24 +1466,11 @@ async function handleSubmit(event) {
         elements.submitOrder.disabled = false;
 
         elements.submitOrderText.textContent =
-            'Confirmar pedido';
+            'Finalizar pedido';
 
         submitting = false;
-
-        return;
     }
-
-    elements.submitOrder.disabled = true;
-
-    elements.submitOrderText.textContent =
-        'Pedido registrado';
 }
-
-
-/* =========================================================
-   EVENTOS
-   ========================================================= */
-
 function setupEvents() {
 
     elements.form.addEventListener(
@@ -1468,9 +1516,28 @@ function setupEvents() {
     );
 
 
+    elements.applyCoupon?.addEventListener(
+        'click',
+        applyCouponCode
+    );
+
+
+    elements.couponCode?.addEventListener(
+        'keydown',
+        event => {
+
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyCouponCode();
+            }
+
+        }
+    );
+
+
     /*
-     * Limpa o estado de erro quando o usuário
-     * começa a corrigir um campo.
+     * Limpa o estado de erro quando o usuÃ¡rio
+     * comeÃ§a a corrigir um campo.
      */
     elements.form
         .querySelectorAll('input, textarea')
@@ -1494,7 +1561,7 @@ function setupEvents() {
 
 
 /* =========================================================
-   INICIALIZAÇÃO
+   INICIALIZAÃ‡ÃƒO
    ========================================================= */
 
 async function init() {
@@ -1522,12 +1589,12 @@ async function init() {
     } catch (error) {
 
         console.error(
-            '[CHECKOUT] Falha na inicialização:',
+            '[CHECKOUT] Falha na inicializaÃ§Ã£o:',
             error
         );
 
         showMessage(
-            'Não foi possível carregar o checkout. Atualize a página e tente novamente.'
+            'NÃ£o foi possÃ­vel carregar o checkout. Atualize a pÃ¡gina e tente novamente.'
         );
 
         elements.submitOrder.disabled = true;
@@ -1536,3 +1603,12 @@ async function init() {
 
 
 init();
+
+
+
+
+
+
+
+
+
