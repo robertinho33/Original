@@ -1,0 +1,73 @@
+{
+  "startedAt": "2026-09-15T18:44:57.659Z",
+  "mode": "STAGING_ONLY",
+  "sourceFilesModified": false,
+  "officialCatalogModified": false,
+  "checkoutModified": false,
+  "pixModified": false,
+  "ordersModified": false,
+  "serverModified": false,
+  "sources": {
+    "brae": {
+      "id": "brae",
+      "name": "Braé",
+      "file": "Brae.csv",
+      "csvRows": 339,
+      "generated": 339,
+      "rejected": 0,
+      "rejectedLines": [],
+      "braePricesConverted": 260,
+      "missingImages": 2,
+      "duplicateImages": 1
+    },
+    "ecobelle": {
+      "id": "ecobelle",
+      "name": "EcoBelle",
+      "file": "EcoBelle.csv",
+      "csvRows": 118,
+      "generated": 118,
+      "rejected": 0,
+      "rejectedLines": [],
+      "braePricesConverted": 0,
+      "missingImages": 0,
+      "duplicateImages": 0
+    },
+    "inovax": {
+      "id": "inovax",
+      "name": "Inovax",
+      "file": "Inovax.csv",
+      "csvRows": 66,
+      "generated": 65,
+      "rejected": 1,
+      "rejectedLines": [
+        {
+          "line": 2,
+          "sku": "",
+          "name": "Inovax",
+          "price": ""
+        }
+      ],
+      "braePricesConverted": 0,
+      "missingImages": 0,
+      "duplicateImages": 16
+    }
+  },
+  "totals": {
+    "csvRows": 523,
+    "productsGenerated": 522,
+    "rejectedTechnicalRows": 1,
+    "braePricesConverted": 260,
+    "braePricesPreserved": 79,
+    "missingImages": 2,
+    "duplicateImages": 17
+  },
+  "warnings": [
+    "Imagens duplicadas foram preservadas.",
+    "Produtos sem imagem foram preservados sem imagem.",
+    "Nenhum CSV original foi alterado.",
+    "Nenhum produto foi excluído por imagem duplicada."
+  ],
+  "finishedAt": "2026-09-15T18:44:57.694Z",
+  "products": 522,
+  "duplicateSkus": []
+}

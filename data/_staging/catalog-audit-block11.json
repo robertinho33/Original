@@ -1,0 +1,323 @@
+{
+  "generatedAt": "2026-09-15T18:12:31.336Z",
+  "source": {
+    "file": "data/_staging/catalog-preview-block10.json"
+  },
+  "summary": {
+    "total": 56,
+    "valid": 56,
+    "invalid": 0,
+    "validityRate": 100
+  },
+  "bySource": {
+    "ecobelle": {
+      "total": 24,
+      "valid": 24,
+      "invalid": 0,
+      "featured": 0,
+      "inactive": 0
+    },
+    "inovax": {
+      "total": 28,
+      "valid": 28,
+      "invalid": 0,
+      "featured": 0,
+      "inactive": 0
+    },
+    "brae": {
+      "total": 4,
+      "valid": 4,
+      "invalid": 0,
+      "featured": 0,
+      "inactive": 0
+    }
+  },
+  "missing": {
+    "sku": 0,
+    "name": 0,
+    "price": 0,
+    "image": 0,
+    "sourceId": 0,
+    "sourceName": 0,
+    "sourceUrl": 0
+  },
+  "duplicates": {
+    "sku": [],
+    "sourceUrl": [
+      {
+        "value": "https://www.grupoecobelle.com.br/produtos",
+        "count": 24,
+        "products": [
+          {
+            "sku": "8KWYN6U92",
+            "name": "Kit Lama Vulcânica La Boue EcoBelle 300g",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "YDMYK3MK4",
+            "name": "Máscara Líquida Liquid Mask EcoBelle 200 mL",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "NJTFJ9RNF",
+            "name": "Perfume Capilar EcoBelle 50 mL",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "PM32Q8G3S",
+            "name": "Kit Lama Vulcânica La Boue EcoBelle",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "HJT8U9H6U",
+            "name": "Bye Quebra Eco Belle 250 mL",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "7XR3P3BXK",
+            "name": "Máscara La Boue EcoBelle Dossier Noir 1.2 kg",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "LWHSMBHAQ",
+            "name": "Selante La Boue Mastic Noir Eco Belle 500ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "BJP3XM8ES",
+            "name": "Máscara La Boue Eco Belle Dossier Noir 300g",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "56RC8P9G4",
+            "name": "Selante La Boue Mastic Noir Eco Belle 300ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "2QSQFLXZ6",
+            "name": "Kit doÈden Capim-Limão e Alecrim",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "CW2L93VRJ",
+            "name": "Finalizador La Boue Home Care Verte 300ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "PYL4GGXEC",
+            "name": "Shampoo La Boue Home Care Verte 500ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "VLL9VL3WH",
+            "name": "Condicionador La Boue Home Care Verte 300ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "B8SXJ3U53",
+            "name": "CRONOGRAMA DA LAMA COMPLETO",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "YVGKB834N",
+            "name": "ATIVADOR DE CACHOS LUX ECOBELLE 500mL - FORTE",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "ZYUKCQGVL",
+            "name": "Selante Capilar La Boue Verte EcoBelle Verte 500ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "KXXWAV2AT",
+            "name": "Selante Capilar La Boue Blanc Eco Belle 500ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "QV886TX2F",
+            "name": "Kit La Boue Blanc Eco Belle Argila Branca 500ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "RTPDWV5JL",
+            "name": "Coloração Permanente Shine Express 60g - Camuflagem",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "HCNTRBT4Z",
+            "name": "MÁSCARA EXTRATOS BELA PRO 1 KG - NOVA EMBALAGEM",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "VEHZKS3RJ",
+            "name": "Acid Absolut Repair - Acidificante - EcoBelle 500 mL",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "6337X66EK",
+            "name": "Dupla Body Splash BelaPro 200 ml",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "UTW2VYA2G",
+            "name": "Body Splash Flor da Noite & Baunilha 200 ml BelaPro",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          },
+          {
+            "sku": "UCH7WQRVG",
+            "name": "Body Splash Flor de Cerejeira & Pêssego 200 ml BelaPro",
+            "sourceId": "ecobelle",
+            "sourceUrl": "https://www.grupoecobelle.com.br/produtos"
+          }
+        ]
+      }
+    ],
+    "name": []
+  },
+  "invalidProducts": [],
+  "sample": [
+    {
+      "sku": "8KWYN6U92",
+      "name": "Kit Lama Vulcânica La Boue EcoBelle 300g",
+      "price": 250,
+      "category": "Kits",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "YDMYK3MK4",
+      "name": "Máscara Líquida Liquid Mask EcoBelle 200 mL",
+      "price": 109,
+      "category": "Produtos",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "NJTFJ9RNF",
+      "name": "Perfume Capilar EcoBelle 50 mL",
+      "price": 94.99,
+      "category": "Finalizadores",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "PM32Q8G3S",
+      "name": "Kit Lama Vulcânica La Boue EcoBelle",
+      "price": 500,
+      "category": "La Boue",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "HJT8U9H6U",
+      "name": "Bye Quebra Eco Belle 250 mL",
+      "price": 149,
+      "category": "By Quebra",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "7XR3P3BXK",
+      "name": "Máscara La Boue EcoBelle Dossier Noir 1.2 kg",
+      "price": 320,
+      "category": "La Boue",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "LWHSMBHAQ",
+      "name": "Selante La Boue Mastic Noir Eco Belle 500ml",
+      "price": 100,
+      "category": "La Boue",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "BJP3XM8ES",
+      "name": "Máscara La Boue Eco Belle Dossier Noir 300g",
+      "price": 150,
+      "category": "La Boue",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "56RC8P9G4",
+      "name": "Selante La Boue Mastic Noir Eco Belle 300ml",
+      "price": 60,
+      "category": "La Boue",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    },
+    {
+      "sku": "2QSQFLXZ6",
+      "name": "Kit doÈden Capim-Limão e Alecrim",
+      "price": 120,
+      "category": "Condicionador",
+      "sourceId": "ecobelle",
+      "sourceName": "EcoBelle",
+      "sourceUrl": "https://www.grupoecobelle.com.br/produtos",
+      "active": true,
+      "featured": false,
+      "priority": 0
+    }
+  ]
+}

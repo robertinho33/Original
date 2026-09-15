@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
 
 :root{--ink:#1c1b19;--muted:#77736d;--paper:#f7f4ee;--cream:#eee7db;--line:#ddd7cd;--accent:#9b6b4b;--white:#fff}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",sans-serif}
@@ -1853,4 +1853,7 @@ body.modal-open {
         transition: none;
     }
 }
+
+
+
 
