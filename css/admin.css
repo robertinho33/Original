@@ -361,3 +361,113 @@
     }
 
 }
+
+/* =========================================================
+   CLIENTES
+   ========================================================= */
+
+.admin-customers-section {
+    padding-top: 52px;
+}
+
+.admin-section-count {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-customers-list {
+    display: grid;
+    gap: 16px;
+}
+
+.admin-customer-card {
+    border: 1px solid var(--line);
+    background: var(--paper);
+}
+
+.admin-customer-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.admin-customer-name {
+    margin: 0;
+    font-family: "Playfair Display", serif;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.admin-customer-email {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.admin-customer-orders {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-customer-card-body {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 24px;
+}
+
+.admin-customer-data span {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.admin-customer-data strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE — CLIENTES
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .admin-customer-card-body {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 640px) {
+
+    .admin-customer-card-header {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .admin-customer-orders {
+        align-self: flex-start;
+    }
+
+    .admin-customer-card-body {
+        grid-template-columns: 1fr;
+    }
+
+}

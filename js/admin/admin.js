@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import {
     observeAdminAuth,
@@ -8,6 +8,10 @@ import {
 import {
     getAllOrders
 } from '../orders/order-service.js';
+
+import {
+    buildCustomerSummaries
+} from './customer-service.js';
 
 import {
     getOrderStatusLabel
@@ -32,6 +36,15 @@ const elements = {
         document.getElementById('pendingPaymentsCount'),
     activeOrdersCount:
         document.getElementById('activeOrdersCount'),
+
+    customersCount:
+        document.getElementById('customersCount'),
+
+    customersEmpty:
+        document.getElementById('adminCustomersEmpty'),
+
+    customersList:
+        document.getElementById('adminCustomersList'),
 
     refreshButton:
         document.getElementById('refreshOrdersButton'),
@@ -149,6 +162,162 @@ function getNextLogisticsStatus(order) {
     return LOGISTICS_FLOW[currentIndex + 1] || null;
 }
 
+function formatCustomerPhone(phone) {
+    const digits = String(phone || '')
+        .replace(/\D/g, '');
+
+    if (digits.length === 11) {
+        return digits.replace(
+            /^(\d{2})(\d{5})(\d{4})$/,
+            '($1) $2-$3'
+        );
+    }
+
+    if (digits.length === 10) {
+        return digits.replace(
+            /^(\d{2})(\d{4})(\d{4})$/,
+            '($1) $2-$3'
+        );
+    }
+
+    return String(phone || '').trim() ||
+        'Telefone não informado';
+}
+
+function createCustomerCard(customer) {
+    const card =
+        document.createElement('article');
+
+    card.className =
+        'admin-customer-card';
+
+    const customerName =
+        escapeHtml(
+            customer.name ||
+            'Cliente não informado'
+        );
+
+    const customerEmail =
+        escapeHtml(
+            customer.email ||
+            'E-mail não informado'
+        );
+
+    const customerPhone =
+        escapeHtml(
+            formatCustomerPhone(
+                customer.phone
+            )
+        );
+
+    const ordersCount =
+        Number(customer.ordersCount || 0);
+
+    const totalSpent =
+        formatCurrency(
+            customer.totalSpent
+        );
+
+    const lastOrderId =
+        escapeHtml(
+            customer.lastOrderId ||
+            '—'
+        );
+
+    const lastOrderAt =
+        formatDate(
+            customer.lastOrderAt
+        );
+
+    card.innerHTML = `
+        <div class="admin-customer-card-header">
+
+            <div>
+                <h3 class="admin-customer-name">
+                    ${customerName}
+                </h3>
+
+                <p class="admin-customer-email">
+                    ${customerEmail}
+                </p>
+            </div>
+
+            <span class="admin-customer-orders">
+                ${ordersCount}
+                ${ordersCount === 1 ? 'pedido' : 'pedidos'}
+            </span>
+
+        </div>
+
+        <div class="admin-customer-card-body">
+
+            <div class="admin-customer-data">
+                <span>Telefone</span>
+                <strong>
+                    ${customerPhone}
+                </strong>
+            </div>
+
+            <div class="admin-customer-data">
+                <span>Total comprado</span>
+                <strong>
+                    ${totalSpent}
+                </strong>
+            </div>
+
+            <div class="admin-customer-data">
+                <span>Último pedido</span>
+                <strong>
+                    ${lastOrderId}
+                </strong>
+            </div>
+
+            <div class="admin-customer-data">
+                <span>Data do último pedido</span>
+                <strong>
+                    ${lastOrderAt}
+                </strong>
+            </div>
+
+        </div>
+    `;
+
+    return card;
+}
+
+function renderCustomers(orders) {
+    const customers =
+        buildCustomerSummaries(orders);
+
+    elements.customersList.innerHTML = '';
+
+    elements.customersCount.textContent =
+        `${customers.length} ${
+            customers.length === 1
+                ? 'cliente'
+                : 'clientes'
+        }`;
+
+    elements.customersEmpty.hidden =
+        customers.length !== 0;
+
+    if (!customers.length) {
+        return;
+    }
+
+    const fragment =
+        document.createDocumentFragment();
+
+    customers.forEach(customer => {
+        fragment.appendChild(
+            createCustomerCard(customer)
+        );
+    });
+
+    elements.customersList.appendChild(
+        fragment
+    );
+}
 function createOrderCard(order) {
     const card =
         document.createElement('article');
@@ -370,6 +539,7 @@ async function loadOrders() {
             await getAllOrders();
 
         renderSummary(orders);
+        renderCustomers(orders);
         renderOrders(orders);
 
     } catch (error) {
