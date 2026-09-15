@@ -1,34 +1,74 @@
 ﻿.order-tracking-page {
     max-width: 900px;
     margin: 0 auto;
-    padding: 48px 20px 80px;
+    padding: 56px 20px 90px;
 }
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
 
 .tracking-header {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 34px;
 }
 
 .tracking-header .eyebrow {
-    letter-spacing: .12em;
-    font-size: .75rem;
-    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 8px;
+    letter-spacing: .16em;
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    opacity: .7;
 }
 
 .tracking-header h1 {
-    margin: 8px 0;
+    margin: 0 0 10px;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
 }
+
+.tracking-header p {
+    max-width: 620px;
+    margin: 0 auto;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   BUSCA
+   ========================================================= */
 
 .tracking-search {
     display: flex;
     gap: 10px;
     max-width: 620px;
-    margin: 0 auto 36px;
+    margin: 0 auto 38px;
 }
 
 .tracking-search input {
     flex: 1;
+    min-height: 48px;
+    border: 1px solid rgba(0, 0, 0, .14);
+    border-radius: 10px;
+    padding: 0 15px;
+    font-size: .95rem;
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
 }
+
+.tracking-search input:focus {
+    outline: none;
+    border-color: rgba(0, 69, 79, .55);
+    box-shadow: 0 0 0 4px rgba(0, 69, 79, .08);
+}
+
+/* =========================================================
+   RESULTADO
+   ========================================================= */
 
 .tracking-result {
     display: none;
@@ -38,48 +78,95 @@
     display: block;
 }
 
+/* =========================================================
+   CARD DO PEDIDO
+   ========================================================= */
+
 .tracking-card {
-    border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 22px;
     background: #fff;
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, .06);
+}
+
+.tracking-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: currentColor;
+    opacity: .8;
 }
 
 .tracking-status {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 6px;
+    margin-bottom: 7px;
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.2;
 }
 
 .tracking-order-id {
-    color: #666;
-    font-size: .9rem;
+    color: #6b7280;
+    font-size: .88rem;
+    font-weight: 600;
+    letter-spacing: .02em;
 }
 
 .tracking-payment {
-    margin-top: 18px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(0, 0, 0, .08);
+    color: #374151;
+    font-size: .95rem;
+    font-weight: 600;
 }
+
+/* =========================================================
+   TÍTULO DO HISTÓRICO
+   ========================================================= */
+
+.tracking-card h2 {
+    margin-bottom: 24px;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+/* =========================================================
+   TIMELINE
+   ========================================================= */
 
 .tracking-timeline {
     position: relative;
     margin-top: 24px;
-    padding-left: 30px;
+    padding-left: 38px;
 }
 
 .tracking-timeline::before {
     content: "";
     position: absolute;
-    left: 8px;
-    top: 4px;
-    bottom: 4px;
+    left: 10px;
+    top: 5px;
+    bottom: 5px;
     width: 2px;
-    background: rgba(0, 0, 0, .12);
+    background: linear-gradient(
+        to bottom,
+        currentColor,
+        rgba(0, 0, 0, .10)
+    );
+    opacity: .55;
 }
 
 .tracking-event {
     position: relative;
-    margin-bottom: 24px;
+    margin-bottom: 26px;
+    padding: 0 0 2px;
 }
 
 .tracking-event:last-child {
@@ -89,40 +176,106 @@
 .tracking-event::before {
     content: "";
     position: absolute;
-    left: -28px;
-    top: 4px;
-    width: 10px;
-    height: 10px;
+    left: -34px;
+    top: 1px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    background: #aaa;
+    background: #fff;
+    border: 3px solid #aaa;
+    box-sizing: border-box;
+    z-index: 1;
 }
 
 .tracking-event.active::before {
+    border-color: currentColor;
     background: currentColor;
+    box-shadow:
+        0 0 0 4px rgba(0, 0, 0, .05);
 }
 
 .tracking-event-label {
-    font-weight: 700;
+    font-size: .98rem;
+    font-weight: 750;
+    line-height: 1.35;
 }
 
 .tracking-event-date {
-    margin-top: 4px;
-    font-size: .85rem;
-    color: #777;
+    margin-top: 5px;
+    color: #7a7f87;
+    font-size: .82rem;
+    line-height: 1.4;
 }
+
+/* =========================================================
+   ERRO
+   ========================================================= */
 
 .tracking-error {
     display: none;
-    margin: 20px auto;
     max-width: 620px;
+    margin: 20px auto;
+    border-radius: 10px;
 }
 
 .tracking-error.visible {
     display: block;
 }
 
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
 @media (max-width: 576px) {
+
+    .order-tracking-page {
+        padding: 38px 16px 65px;
+    }
+
+    .tracking-header {
+        margin-bottom: 28px;
+    }
+
+    .tracking-header h1 {
+        font-size: 2rem;
+    }
+
     .tracking-search {
         flex-direction: column;
+        margin-bottom: 30px;
+    }
+
+    .tracking-search input {
+        width: 100%;
+    }
+
+    .tracking-search button {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .tracking-card {
+        padding: 22px 18px;
+        border-radius: 16px;
+    }
+
+    .tracking-status {
+        font-size: 1.25rem;
+    }
+
+    .tracking-timeline {
+        padding-left: 34px;
+    }
+
+    .tracking-event {
+        margin-bottom: 23px;
+    }
+
+    .tracking-event::before {
+        left: -30px;
+    }
+
+    .tracking-timeline::before {
+        left: 10px;
     }
 }
