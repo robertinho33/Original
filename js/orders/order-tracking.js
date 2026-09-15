@@ -72,114 +72,137 @@ function formatDate(value) {
 
 function showError(message) {
 
-    elements.error.textContent = message;
+    if (elements.error) {
+        elements.error.textContent = message;
 
-    elements.error.classList.add(
-        'visible'
-    );
+        elements.error.classList.add(
+            'visible'
+        );
+    }
 
-    elements.result.classList.remove(
-        'visible'
-    );
+    if (elements.result) {
+        elements.result.classList.remove(
+            'visible'
+        );
+    }
 }
 
 
 function renderOrder(order) {
 
+    if (!order) {
+        showError(
+            'Pedido não encontrado. Confira o número informado.'
+        );
+
+        return;
+    }
+
     const logisticsStatus =
         order.logisticsStatus || 'new';
 
-    elements.orderId.textContent =
-        order.id;
+    if (elements.orderId) {
+        elements.orderId.textContent =
+            order.id || '—';
+    }
 
-    elements.status.textContent =
-        getLogisticsStatusLabel(
-            logisticsStatus
-        );
+    if (elements.status) {
+        elements.status.textContent =
+            getLogisticsStatusLabel(
+                logisticsStatus
+            );
+    }
 
     const paymentStatus =
         order.paymentStatus === 'pending'
             ? 'Aguardando pagamento'
             : order.paymentStatus === 'confirmed'
                 ? 'Pagamento confirmado'
-                : order.paymentStatus || 'Não informado';
+                : order.paymentStatus === 'cancelled'
+                    ? 'Pagamento cancelado'
+                    : order.paymentStatus === 'rejected'
+                        ? 'Pagamento recusado'
+                        : 'Não informado';
 
-    elements.payment.textContent =
-        `Pagamento: ${paymentStatus} · Total: ${formatCurrency(order.total)}`;
-
-    elements.timeline.innerHTML = '';
-
-    const history =
-        Array.isArray(order.history)
-            ? order.history
-            : [];
-
-    if (!history.length) {
-
-        elements.timeline.innerHTML =
-            '<p>Nenhum evento registrado.</p>';
-
-    } else {
-
-        history.forEach(event => {
-
-            const item =
-                document.createElement('div');
-
-            item.className =
-                'tracking-event active';
-
-            const label =
-                ORDER_EVENT_LABELS[event.type] ||
-                event.label ||
-                'Evento do pedido';
-
-            item.innerHTML = `
-                <div class="tracking-event-label">
-                    ${label}
-                </div>
-
-                <div class="tracking-event-date">
-                    ${formatDate(event.createdAt)}
-                </div>
-            `;
-
-            elements.timeline.appendChild(
-                item
-            );
-        });
+    if (elements.payment) {
+        elements.payment.textContent =
+            `Pagamento: ${paymentStatus} · Total: ${formatCurrency(order.total)}`;
     }
 
-    elements.error.classList.remove(
-        'visible'
-    );
+    if (elements.timeline) {
 
-    elements.result.classList.add(
-        'visible'
-    );
+        elements.timeline.innerHTML = '';
+
+        const history =
+            Array.isArray(order.history)
+                ? order.history
+                : [];
+
+        if (!history.length) {
+
+            elements.timeline.innerHTML =
+                '<p>Nenhum evento registrado.</p>';
+
+        } else {
+
+            history.forEach(event => {
+
+                const item =
+                    document.createElement('div');
+
+                item.className =
+                    'tracking-event active';
+
+                const label =
+                    ORDER_EVENT_LABELS[event.type] ||
+                    event.label ||
+                    'Evento do pedido';
+
+                item.innerHTML = `
+                    <div class="tracking-event-label">
+                        ${label}
+                    </div>
+
+                    <div class="tracking-event-date">
+                        ${formatDate(event.createdAt)}
+                    </div>
+                `;
+
+                elements.timeline.appendChild(
+                    item
+                );
+            });
+        }
+    }
+
+    if (elements.error) {
+        elements.error.classList.remove(
+            'visible'
+        );
+    }
+
+    if (elements.result) {
+        elements.result.classList.add(
+            'visible'
+        );
+    }
 }
 
 
-elements.form.addEventListener(
-    'submit',
-    event => {
+async function loadTracking(orderId) {
 
-        event.preventDefault();
+    if (!orderId) {
+        showError(
+            'Informe o número do pedido.'
+        );
 
-        const orderId =
-            elements.input.value.trim();
+        return;
+    }
 
-        if (!orderId) {
-
-            showError(
-                'Informe o número do pedido.'
-            );
-
-            return;
-        }
+    try {
 
         const order =
-            findTrackingById(orderId);
+            await findTrackingById(orderId);
 
         if (!order) {
 
@@ -191,8 +214,36 @@ elements.form.addEventListener(
         }
 
         renderOrder(order);
+
+    } catch (error) {
+
+        console.error(
+            '[TRACKING] Erro ao consultar pedido:',
+            error
+        );
+
+        showError(
+            'Não foi possível consultar o pedido. Tente novamente.'
+        );
     }
-);
+}
+
+
+if (elements.form) {
+
+    elements.form.addEventListener(
+        'submit',
+        event => {
+
+            event.preventDefault();
+
+            const orderId =
+                elements.input?.value.trim() || '';
+
+            loadTracking(orderId);
+        }
+    );
+}
 
 
 const params =
@@ -205,14 +256,10 @@ const initialOrderId =
 
 if (initialOrderId) {
 
-    elements.input.value =
-        initialOrderId;
-
-    const order =
-        findTrackingById(initialOrderId);
-
-    if (order) {
-        renderOrder(order);
+    if (elements.input) {
+        elements.input.value =
+            initialOrderId;
     }
-}
 
+    loadTracking(initialOrderId);
+}
