@@ -182,9 +182,27 @@ function onlyDigits(value) {
     return String(value ?? '').replace(/\D/g, '');
 }
 
+function normalizePhoneDigits(value) {
+
+    let digits = onlyDigits(value);
+
+    // Remove o código do país do Brasil
+    // somente quando houver 13 dígitos.
+    if (
+        digits.length === 13 &&
+        digits.startsWith('55')
+    ) {
+        digits = digits.slice(2);
+    }
+
+    return digits.slice(0, 11);
+}
+
+
 function formatPhone(value) {
 
-    const digits = onlyDigits(value).slice(0, 11);
+    const digits =
+        normalizePhoneDigits(value);
 
     if (digits.length <= 2) {
         return digits;
@@ -192,6 +210,10 @@ function formatPhone(value) {
 
     if (digits.length <= 7) {
         return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    }
+
+    if (digits.length <= 10) {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
     }
 
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
@@ -923,9 +945,16 @@ function hideMessage() {
 function getCustomerData() {
 
     return {
-        name: elements.customerName.value.trim(),
-        email: elements.customerEmail.value.trim(),
-        phone: elements.customerPhone.value.trim()
+        name:
+            elements.customerName.value.trim(),
+
+        email:
+            elements.customerEmail.value.trim(),
+
+        phone:
+            normalizePhoneDigits(
+                elements.customerPhone.value
+            )
     };
 }
 
@@ -1603,6 +1632,7 @@ async function init() {
 
 
 init();
+
 
 
 

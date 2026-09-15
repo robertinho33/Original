@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 import {
     observeAdminAuth,
@@ -12,6 +12,10 @@ import {
 import {
     buildCustomerSummaries
 } from './customer-service.js';
+
+import {
+    getCustomerDetail
+} from './customer-detail-service.js';
 
 import {
     getOrderStatusLabel
@@ -45,6 +49,37 @@ const elements = {
 
     customersList:
         document.getElementById('adminCustomersList'),
+
+    customerDetail:
+        document.getElementById('adminCustomerDetail'),
+
+    customerDetailName:
+        document.getElementById('customerDetailName'),
+
+    customerDetailContact:
+        document.getElementById('customerDetailContact'),
+
+    customerDetailOrdersCount:
+        document.getElementById('customerDetailOrdersCount'),
+
+    customerDetailTotalSpent:
+        document.getElementById('customerDetailTotalSpent'),
+
+    customerDetailLastOrder:
+        document.getElementById('customerDetailLastOrder'),
+
+    customerDetailOrders:
+        document.getElementById('customerDetailOrders'),
+
+    customerCommunicationActions:
+        document.getElementById(
+            'customerCommunicationActions'
+        ),
+
+    closeCustomerDetailButton:
+        document.getElementById(
+            'closeCustomerDetailButton'
+        ),
 
     refreshButton:
         document.getElementById('refreshOrdersButton'),
@@ -184,7 +219,7 @@ function formatCustomerPhone(phone) {
         'Telefone não informado';
 }
 
-function createCustomerCard(customer) {
+function createCustomerCard(customer, orders) {
     const card =
         document.createElement('article');
 
@@ -282,6 +317,42 @@ function createCustomerCard(customer) {
         </div>
     `;
 
+    card.setAttribute(
+        'role',
+        'button'
+    );
+
+    card.setAttribute(
+        'tabindex',
+        '0'
+    );
+
+    const openDetail = () => {
+        openCustomerDetail(
+            customer,
+            orders
+        );
+    };
+
+    card.addEventListener(
+        'click',
+        openDetail
+    );
+
+    card.addEventListener(
+        'keydown',
+        event => {
+
+            if (
+                event.key === 'Enter' ||
+                event.key === ' '
+            ) {
+                event.preventDefault();
+                openDetail();
+            }
+        }
+    );
+
     return card;
 }
 
@@ -310,7 +381,10 @@ function renderCustomers(orders) {
 
     customers.forEach(customer => {
         fragment.appendChild(
-            createCustomerCard(customer)
+            createCustomerCard(
+                customer,
+                orders
+            )
         );
     });
 
@@ -318,6 +392,258 @@ function renderCustomers(orders) {
         fragment
     );
 }
+let selectedCustomerDetail = null;
+let selectedCustomerOrder = null;
+
+
+function formatCustomerMoney(value) {
+
+    const numericValue =
+        Number(value || 0);
+
+    return numericValue.toLocaleString(
+        'pt-BR',
+        {
+            style: 'currency',
+            currency: 'BRL'
+        }
+    );
+}
+
+
+function formatCustomerOrderDate(value) {
+
+    if (!value) {
+        return 'Data não informada';
+    }
+
+    const date =
+        new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return 'Data inválida';
+    }
+
+    return date.toLocaleDateString(
+        'pt-BR',
+        {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }
+    );
+}
+
+
+function renderCustomerOrderHistory() {
+
+    const container =
+        elements.customerDetailOrders;
+
+    container.innerHTML = '';
+
+    const orders =
+        selectedCustomerDetail?.orders || [];
+
+    if (!orders.length) {
+
+        container.innerHTML = `
+            <div class="admin-empty">
+                <strong>Nenhum pedido encontrado.</strong>
+            </div>
+        `;
+
+        return;
+    }
+
+    orders.forEach(order => {
+
+        const item =
+            document.createElement('button');
+
+        item.type = 'button';
+
+        item.className =
+            'admin-customer-history-item';
+
+        if (
+            selectedCustomerOrder &&
+            selectedCustomerOrder.id === order.id
+        ) {
+            item.classList.add('is-selected');
+        }
+
+        item.innerHTML = `
+            <span class="admin-customer-history-order">
+                <strong>
+                    ${escapeHtml(
+                        order.id || 'Pedido sem identificação'
+                    )}
+                </strong>
+
+                <span>
+                    ${formatCustomerOrderDate(
+                        order.createdAt
+                    )}
+                </span>
+            </span>
+
+            <span class="admin-customer-history-total">
+                ${formatCustomerMoney(order.total)}
+            </span>
+
+            <span class="admin-customer-history-status">
+                ${escapeHtml(
+                    order.logisticsStatus || 'new'
+                )}
+            </span>
+        `;
+
+        item.addEventListener(
+            'click',
+            () => {
+
+                selectedCustomerOrder =
+                    order;
+
+                renderCustomerOrderHistory();
+
+                renderCustomerCommunication();
+            }
+        );
+
+        container.appendChild(item);
+    });
+}
+
+
+function renderCustomerCommunication() {
+
+    const container =
+        elements.customerCommunicationActions;
+
+    container.innerHTML = '';
+
+    if (!selectedCustomerDetail) {
+        return;
+    }
+
+    if (!selectedCustomerOrder) {
+
+        container.innerHTML = `
+            <span class="admin-section-count">
+                Selecione um pedido
+            </span>
+        `;
+
+        return;
+    }
+
+    const whatsappButton =
+        document.createElement('button');
+
+    whatsappButton.type = 'button';
+
+    whatsappButton.className =
+        'admin-communication-button';
+
+    whatsappButton.textContent =
+        'WhatsApp';
+
+
+    const emailButton =
+        document.createElement('button');
+
+    emailButton.type = 'button';
+
+    emailButton.className =
+        'admin-communication-button secondary';
+
+    emailButton.textContent =
+        'E-mail';
+
+
+    container.append(
+        whatsappButton,
+        emailButton
+    );
+}
+
+
+function openCustomerDetail(
+    customer,
+    orders
+) {
+
+    const detail =
+        getCustomerDetail(
+            customer,
+            orders
+        );
+
+    if (!detail) {
+        return;
+    }
+
+    selectedCustomerDetail =
+        detail;
+
+    selectedCustomerOrder =
+        detail.lastOrder || null;
+
+    elements.customerDetailName.textContent =
+        detail.name;
+
+    const contactParts = [];
+
+    if (detail.email) {
+        contactParts.push(detail.email);
+    }
+
+    if (detail.phone) {
+        contactParts.push(
+            formatCustomerPhone(detail.phone)
+        );
+    }
+
+    elements.customerDetailContact.textContent =
+        contactParts.length
+            ? contactParts.join(' • ')
+            : 'Contato não informado';
+
+    elements.customerDetailOrdersCount.textContent =
+        String(detail.ordersCount);
+
+    elements.customerDetailTotalSpent.textContent =
+        formatCustomerMoney(detail.totalSpent);
+
+    elements.customerDetailLastOrder.textContent =
+        detail.lastOrder?.id || '—';
+
+    renderCustomerOrderHistory();
+
+    renderCustomerCommunication();
+
+    elements.customerDetail.hidden = false;
+
+    elements.customerDetail.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+
+function closeCustomerDetail() {
+
+    selectedCustomerDetail = null;
+    selectedCustomerOrder = null;
+
+    elements.customerDetail.hidden = true;
+
+    elements.customerDetailOrders.innerHTML = '';
+    elements.customerCommunicationActions.innerHTML = '';
+}
+
 function createOrderCard(order) {
     const card =
         document.createElement('article');
@@ -434,7 +760,7 @@ function createOrderCard(order) {
             </div>
 
             <div class="admin-order-data">
-                <span>Logística</span>
+                <span>LogÃ­stica</span>
                 <strong>
                     ${escapeHtml(logisticsLabel)}
                 </strong>
@@ -550,7 +876,7 @@ async function loadOrders() {
         );
 
         showMessage(
-            'Não foi possível carregar os pedidos.'
+            'NÃ£o foi possÃ­vel carregar os pedidos.'
         );
 
         elements.ordersList.innerHTML = '';
@@ -607,7 +933,7 @@ async function handleConfirmPayment(button) {
 
         showMessage(
             error?.message ||
-            'Não foi possível confirmar o pagamento.'
+            'NÃ£o foi possÃ­vel confirmar o pagamento.'
         );
 
         button.disabled = false;
@@ -631,7 +957,7 @@ async function handleAdvanceLogistics(button) {
 
     const confirmed =
         window.confirm(
-            `Avançar a etapa logística do pedido ${orderId}?`
+            `Avançar a etapa logÃ­stica do pedido ${orderId}?`
         );
 
     if (!confirmed) {
@@ -647,7 +973,7 @@ async function handleAdvanceLogistics(button) {
         await advanceLogistics(orderId);
 
         showMessage(
-            `Etapa logística do pedido ${orderId} atualizada com sucesso.`
+            `Etapa logÃ­stica do pedido ${orderId} atualizada com sucesso.`
         );
 
         await loadOrders();
@@ -655,13 +981,13 @@ async function handleAdvanceLogistics(button) {
     } catch (error) {
 
         console.error(
-            '[ADMIN] Erro ao avançar logística:',
+            '[ADMIN] Erro ao avanÃ§ar logÃ­stica:',
             error
         );
 
         showMessage(
             error?.message ||
-            'Não foi possível atualizar a etapa logística.'
+            'NÃ£o foi possÃ­vel atualizar a etapa logÃ­stica.'
         );
 
         button.disabled = false;
@@ -720,7 +1046,7 @@ elements.logoutButton.addEventListener(
             );
 
             showMessage(
-                'Não foi possível sair da conta.'
+                'NÃ£o foi possÃ­vel sair da conta.'
             );
         }
     }
@@ -742,3 +1068,8 @@ observeAdminAuth(user => {
 
     loadOrders();
 });
+
+
+
+
+

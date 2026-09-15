@@ -1,0 +1,417 @@
+{
+  "generatedAt": "2026-09-15T18:28:57.061Z",
+  "sourceDirectory": "data/catalog/sources",
+  "files": [
+    {
+      "file": "Brae.csv",
+      "encoding": "utf8-bom",
+      "delimiter": ";",
+      "totalRows": 339,
+      "columnCount": 8,
+      "columns": [
+        {
+          "original": "sku",
+          "normalized": "sku",
+          "role": "sku"
+        },
+        {
+          "original": "name",
+          "normalized": "name",
+          "role": "extra"
+        },
+        {
+          "original": "weight",
+          "normalized": "weight",
+          "role": "extra"
+        },
+        {
+          "original": "price",
+          "normalized": "price",
+          "role": "price"
+        },
+        {
+          "original": "category",
+          "normalized": "category",
+          "role": "category"
+        },
+        {
+          "original": "stock",
+          "normalized": "stock",
+          "role": "stock"
+        },
+        {
+          "original": "description",
+          "normalized": "description",
+          "role": "description"
+        },
+        {
+          "original": "image",
+          "normalized": "image",
+          "role": "image"
+        }
+      ],
+      "mappedFields": {
+        "sku": [
+          "sku"
+        ],
+        "name": [],
+        "price": [
+          "price"
+        ],
+        "stock": [
+          "stock"
+        ],
+        "category": [
+          "category"
+        ],
+        "description": [
+          "description"
+        ],
+        "image": [
+          "image"
+        ],
+        "weight": [],
+        "extra": [
+          "name",
+          "weight"
+        ]
+      },
+      "priceStats": {
+        "field": "price",
+        "validValues": 339,
+        "min": 49,
+        "max": 29584
+      },
+      "duplicateCandidates": {
+        "sku": [],
+        "name": []
+      },
+      "samples": [
+        {
+          "sku": "00000331",
+          "name": "INATIVO - Essential - Intense Repair Ampola Reparadora 13ml",
+          "weight": "13ml",
+          "price": "399.00",
+          "category": "",
+          "stock": "",
+          "description": "Uma dose concentrada de reparação para seus cabelos. A ampola Essential reconstrói e hidrata profundamente a estrutura do fio, resultando em maciez e brilho",
+          "image": "https://braehaircare.vtexassets.com/arquivos/ids/160324/Brae_Essential-Ampola-Reparacao-Intensa_13ml_Frente.jpg.jpg?v=638798887115370000"
+        },
+        {
+          "sku": "00000187",
+          "name": "Beach Hair Day - Spray Texturizador Efeito Ondas 260ml",
+          "weight": "260ml",
+          "price": "599.00",
+          "category": "",
+          "stock": "",
+          "description": "Crie ondas de praia naturais e com volume. Com proteção térmica, hidratação e ação anti-frizz, para um visual despojado e duradouro. Tenha o seu!",
+          "image": "https://braehaircare.vtexassets.com/arquivos/ids/160359/Brae_Beach-Hair-Day_Spray-Texturizador-Efeito-Ondas_260ml_Frente.jpg.jpg?v=638811969918870000"
+        },
+        {
+          "sku": "00000148",
+          "name": "Beauty Sleep - Sérum Noturno Nutritivo 100ml",
+          "weight": "100ml",
+          "price": "799.00",
+          "category": "",
+          "stock": "",
+          "description": "Sérum noturno que nutre profundamente, controla o frizz e proporciona brilho intenso enquanto você dorme. Fórmula leve que restaura os fios sem pesar.",
+          "image": "https://braehaircare.vtexassets.com/arquivos/ids/161823/Brae_Beauty-Sleep_Serum-Noturno-Nutritivo_100ml_Frente.jpg.jpg?v=639233512896930000"
+        },
+        {
+          "sku": "00000500",
+          "name": "Blonde Repair - Shampoo de Tratamento para Loiras 1L",
+          "weight": "1L",
+          "price": "2099.00",
+          "category": "",
+          "stock": "",
+          "description": "Tratamento profissional que limpa suavemente e reconstrói os fios descoloridos. Devolve a força, o brilho e a vitalidade para um loiro impecável. Confira!",
+          "image": "https://braehaircare.vtexassets.com/arquivos/ids/161091/Brae_Blonde-Repair_Shampoo-Tratamento-Loiras_1L_Frente--1-.jpg?v=638864697116030000"
+        },
+        {
+          "sku": "00000476",
+          "name": "Blonde Oil by Ana Paula Siebert - Ampola de Nutrição 13ml",
+          "weight": "13ml",
+          "price": "2195.00",
+          "category": "",
+          "stock": "",
+          "description": "Tratamento intensivo que restaura e fortalece os fios loiros. Proporciona reparação profunda e nutrição para um cabelo macio e brilhante. Experimente!",
+          "image": "https://braehaircare.vtexassets.com/arquivos/ids/160147/Brae_Blonde-Oil-Ampola-Nutricao-Regeneradora_13ml_Frente.jpg.jpg?v=638781747859700000"
+        }
+      ]
+    },
+    {
+      "file": "EcoBelle.csv",
+      "encoding": "utf8-bom",
+      "delimiter": ";",
+      "totalRows": 118,
+      "columnCount": 8,
+      "columns": [
+        {
+          "original": "sku",
+          "normalized": "sku",
+          "role": "sku"
+        },
+        {
+          "original": "name",
+          "normalized": "name",
+          "role": "extra"
+        },
+        {
+          "original": "weight",
+          "normalized": "weight",
+          "role": "extra"
+        },
+        {
+          "original": "price",
+          "normalized": "price",
+          "role": "price"
+        },
+        {
+          "original": "category",
+          "normalized": "category",
+          "role": "category"
+        },
+        {
+          "original": "stock",
+          "normalized": "stock",
+          "role": "stock"
+        },
+        {
+          "original": "description",
+          "normalized": "description",
+          "role": "description"
+        },
+        {
+          "original": "image",
+          "normalized": "image",
+          "role": "image"
+        }
+      ],
+      "mappedFields": {
+        "sku": [
+          "sku"
+        ],
+        "name": [],
+        "price": [
+          "price"
+        ],
+        "stock": [
+          "stock"
+        ],
+        "category": [
+          "category"
+        ],
+        "description": [
+          "description"
+        ],
+        "image": [
+          "image"
+        ],
+        "weight": [],
+        "extra": [
+          "name",
+          "weight"
+        ]
+      },
+      "priceStats": {
+        "field": "price",
+        "validValues": 118,
+        "min": 12.98,
+        "max": 1260
+      },
+      "duplicateCandidates": {
+        "sku": [],
+        "name": []
+      },
+      "samples": [
+        {
+          "sku": "8KWYN6U92",
+          "name": "Kit Lama Vulcânica La Boue EcoBelle 300g",
+          "weight": "300g",
+          "price": "250.00",
+          "category": "Ecobelle",
+          "stock": "in_stock",
+          "description": "",
+          "image": "https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/kit-lama-vulcanica-la-boue-ecobelle-300g-647a1f77743a3-large.png"
+        },
+        {
+          "sku": "YDMYK3MK4",
+          "name": "Máscara Líquida Liquid Mask EcoBelle 200 mL",
+          "weight": "200 mL",
+          "price": "109.00",
+          "category": "Ecobelle",
+          "stock": "in_stock",
+          "description": "",
+          "image": "https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/mascara-liquida-liquid-mask-ecobelle-200-ml-66fd5cae45ed1-large.png"
+        },
+        {
+          "sku": "NJTFJ9RNF",
+          "name": "Perfume Capilar EcoBelle 50 mL",
+          "weight": "50 mL",
+          "price": "94.99",
+          "category": "Ecobelle",
+          "stock": "in_stock",
+          "description": "",
+          "image": "https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/perfume-capilar-ecobelle-50-ml-6927b598619ae-large.png"
+        },
+        {
+          "sku": "PM32Q8G3S",
+          "name": "Kit Lama Vulcânica La Boue EcoBelle",
+          "weight": "",
+          "price": "500.00",
+          "category": "Ecobelle",
+          "stock": "in_stock",
+          "description": "",
+          "image": "https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/kit-lama-vulcanica-la-boue-ecobelle-647a1eb05cb0c-large.png"
+        },
+        {
+          "sku": "HJT8U9H6U",
+          "name": "Bye Quebra Eco Belle 250 mL",
+          "weight": "250 mL",
+          "price": "149.00",
+          "category": "Ecobelle",
+          "stock": "in_stock",
+          "description": "",
+          "image": "https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/bye-quebra-eco-belle-250ml-646d15a2abba5-large.png"
+        }
+      ]
+    },
+    {
+      "file": "Inovax.csv",
+      "encoding": "utf8-bom",
+      "delimiter": ";",
+      "totalRows": 66,
+      "columnCount": 8,
+      "columns": [
+        {
+          "original": "sku",
+          "normalized": "sku",
+          "role": "sku"
+        },
+        {
+          "original": "name",
+          "normalized": "name",
+          "role": "extra"
+        },
+        {
+          "original": "weight",
+          "normalized": "weight",
+          "role": "extra"
+        },
+        {
+          "original": "price",
+          "normalized": "price",
+          "role": "price"
+        },
+        {
+          "original": "category",
+          "normalized": "category",
+          "role": "category"
+        },
+        {
+          "original": "stock",
+          "normalized": "stock",
+          "role": "stock"
+        },
+        {
+          "original": "description",
+          "normalized": "description",
+          "role": "description"
+        },
+        {
+          "original": "image",
+          "normalized": "image",
+          "role": "image"
+        }
+      ],
+      "mappedFields": {
+        "sku": [
+          "sku"
+        ],
+        "name": [],
+        "price": [
+          "price"
+        ],
+        "stock": [
+          "stock"
+        ],
+        "category": [
+          "category"
+        ],
+        "description": [
+          "description"
+        ],
+        "image": [
+          "image"
+        ],
+        "weight": [],
+        "extra": [
+          "name",
+          "weight"
+        ]
+      },
+      "priceStats": {
+        "field": "price",
+        "validValues": 65,
+        "min": 40,
+        "max": 390
+      },
+      "duplicateCandidates": {
+        "sku": [],
+        "name": []
+      },
+      "samples": [
+        {
+          "sku": "",
+          "name": "Inovax",
+          "weight": "",
+          "price": "",
+          "category": "categoria-id-23792243 borda-principal\">",
+          "stock": "",
+          "description": "",
+          "image": "https://cdn.awsli.com.br/2873/2873879/logo/logo-footer-hsf2ld1l72.jpg"
+        },
+        {
+          "sku": "VWPBCV5N6",
+          "name": "Ampola Mágica Dourada Hidratação Instantânea 20ml",
+          "weight": "20ml",
+          "price": "60.00",
+          "category": "categoria-id-23792243 borda-principal\">",
+          "stock": "in_stock",
+          "description": "A Ampola Mágica Dourada",
+          "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381586115/whatsapp_image_2026-01-15_at_22-29-28-removebg-preview-6ajoxrcdnv.png"
+        },
+        {
+          "sku": "10864",
+          "name": "Ampola Mágica Dourada Hidratação Instantânea 15 ml",
+          "weight": "15 ml",
+          "price": "40.00",
+          "category": "categoria-id-23792243 borda-principal\">",
+          "stock": "in_stock",
+          "description": "A Ampola Mágica Dourada",
+          "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/398863207/ampola-intensive-hytration-20ml-nt91y0uu0v.png"
+        },
+        {
+          "sku": "10504",
+          "name": "Ampola Mágica Prata Reconstrução e Hidratação 15 ml",
+          "weight": "15 ml",
+          "price": "50.00",
+          "category": "categoria-id-23792243 borda-principal\">",
+          "stock": "in_stock",
+          "description": "A Ampola Prata de Reconstrução + Hidratação",
+          "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/398864348/ampola-intensive-reconstruction-20ml-9wn3671p4z.png"
+        },
+        {
+          "sku": "TKPMWSUGV",
+          "name": "Ampola Mágica Prata Reconstrução e Hidratação 20ml",
+          "weight": "20ml",
+          "price": "50.00",
+          "category": "categoria-id-23792243 borda-principal\">",
+          "stock": "in_stock",
+          "description": "A Ampola Prata de Reconstrução + Hidratação",
+          "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381586457/whatsapp_image_2026-01-15_at_22-29-53-removebg-preview-2ygga2s4or.png"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-15T18:44:57.693Z",
+  "sources": [
+    {
+      "id": "brae",
+      "name": "Braé",
+      "file": "Brae.csv",
+      "enabled": true,
+      "visible": true,
+      "featured": true
+    },
+    {
+      "id": "ecobelle",
+      "name": "EcoBelle",
+      "file": "EcoBelle.csv",
+      "enabled": true,
+      "visible": true,
+      "featured": true
+    },
+    {
+      "id": "inovax",
+      "name": "Inovax",
+      "file": "Inovax.csv",
+      "enabled": true,
+      "visible": true,
+      "featured": true
+    }
+  ]
+}

@@ -1,0 +1,379 @@
+{
+  "generatedAt": "2026-09-15T18:46:22.831Z",
+  "status": "PASS",
+  "rules": {
+    "duplicateImages": "WARNING",
+    "missingImageActiveProduct": "FAIL",
+    "missingImageInactiveProduct": "PASS",
+    "duplicateSku": "FAIL",
+    "invalidPrice": "FAIL",
+    "missingSku": "FAIL",
+    "missingName": "FAIL",
+    "missingSourceId": "FAIL"
+  },
+  "normalized": {
+    "total": 522,
+    "missingSku": 0,
+    "missingName": 0,
+    "invalidPrice": 0,
+    "missingSourceId": 0,
+    "missingImages": 2,
+    "inactiveWithoutImage": 2,
+    "duplicateImageGroups": 17
+  },
+  "duplicateImages": [
+    {
+      "image": "• Protege os fios contra danos causados por raios UV e poluição",
+      "count": 2,
+      "products": [
+        {
+          "sku": "00000760",
+          "name": "Kit High Protect Spray Protetor Térmico 200ml + Body Splash Perfect Muse Desodorante Colônia 200ml",
+          "sourceId": "brae"
+        },
+        {
+          "sku": "00000759",
+          "name": "Kit High Protect Spray Protetor Térmico 200ml + Body Splash Shine Glow Desodorante Colônia 200ml",
+          "sourceId": "brae"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/399110300/shampoo-antioxidante-300ml-k3fzpxbgps.png",
+      "count": 2,
+      "products": [
+        {
+          "sku": "10503",
+          "name": "BBCream Inovax Protetor Térmico 15 em 1 - 200 ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "4015601",
+          "name": "Bottox Orgânico Inovax Progressiva Inteligente 1 kg",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381080247/produtos_transparente_padding_medio-3l0afxgwwz.png",
+      "count": 3,
+      "products": [
+        {
+          "sku": "10217",
+          "name": "Condicionador Antiqueda Inovax Fortalecedor Biotonic 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10216",
+          "name": "Máscara Antiqueda Inovax Fortalecedor Biotonic 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10215",
+          "name": "Shampoo Antiqueda Inovax 300ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381605378/linha-plex-color-hc-1yu2uhcril.png",
+      "count": 3,
+      "products": [
+        {
+          "sku": "105030003",
+          "name": "Condicionador Blindage Inovax Protege a Cor e Selagem 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "105030002",
+          "name": "Máscara Blindage Inovax Tratamento Intensivo da Cor 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "105030001",
+          "name": "Shampoo Blindage Inovax Proteção da Cor e Brilho 300ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/375073268/mascara-cicatri-hair-hmz18mx3c8.png",
+      "count": 4,
+      "products": [
+        {
+          "sku": "401080003",
+          "name": "Condicionador Cicatrização Inovax Reconstrução e Nutrição 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "PRD00009",
+          "name": "Kit Cauterização Inovax Reconstrução e Nutrição 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10179",
+          "name": "Shampoo Cicatrização Inovax Reconstrução e Nutrição 1000ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "401080001",
+          "name": "Shampoo Cicatrização Inovax Reconstrução e Nutrição 300ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/399070906/kit-liso-leve-solto-home-care-rrfr13h5if.png",
+      "count": 3,
+      "products": [
+        {
+          "sku": "10856",
+          "name": "Condicionador Liso Leve e Solto 300 ml - Progressiva de Chuveiro",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10857",
+          "name": "Máscara Liso Leve e Solto - Progressiva de Chuveiro",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10855",
+          "name": "Shampoo Liso Leve e Solto",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381099797/linha-liso-maximo-hc-tc085ba1yp.png",
+      "count": 3,
+      "products": [
+        {
+          "sku": "401070003",
+          "name": "Condicionador Liso Máximo Inovax Fios Alinhados Anti-Frizz 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "401070002",
+          "name": "Máscara Liso Máximo Inovax Fios Alinhados Anti-Frizz 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "401070001",
+          "name": "Shampoo Liso Máximo Inovax Fios Alinhados Anti-Frizz 300ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/375074745/shampoo-absolut-blond-nd43j3wofo.png",
+      "count": 2,
+      "products": [
+        {
+          "sku": "105060003",
+          "name": "Condicionador Matizador Inovax Hidratação e Brilho 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10173",
+          "name": "Shampoo Matizador Inovax Hidratação e Brilho 1000ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/375064480/shampoo-super-forca-xfc39rby7x.png",
+      "count": 6,
+      "products": [
+        {
+          "sku": "401020003",
+          "name": "Condicionador Super Força Inovax Crescimento dos Fios Biotina 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "PRD00005",
+          "name": "Kit Super Força Inovax Crescimento dos Fios Biotina 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "PRD00016",
+          "name": "Kit Profissional Crescimento Capilar com Biotina",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "401020002",
+          "name": "Máscara Super Força Inovax Crescimento dos Fios Biotina 300g",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10838",
+          "name": "Máscara Super Força Inovax Crescimento dos Fios Biotina 1000g",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10862",
+          "name": "Shampoo Super Força Inovax Crescimento dos Fios Biotina 1000ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/375075096/condicionador-absolut-blond-rpbv3i645d.png",
+      "count": 2,
+      "products": [
+        {
+          "sku": "PRD00007",
+          "name": "Kit Blond Matizador Inovax Hidratação e Brilho 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "105060001",
+          "name": "Shampoo Matizador Inovax Hidratação e Brilho 300ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381452579/absolut_blond_mascara_1000g-ssy6hwoyjj.png",
+      "count": 3,
+      "products": [
+        {
+          "sku": "PRD00015",
+          "name": "Kit Profissional Matização e Platinação Silver",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "105060002",
+          "name": "Máscara Matizador Inovax Hidratação e Brilho 300g",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "104020001",
+          "name": "Reparador de Pontas Inovax Brilho e Reparação 30 ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/375080237/shampoo-divino-cachos-1a8gtv8owx.png",
+      "count": 2,
+      "products": [
+        {
+          "sku": "PRD00004",
+          "name": "Kit Cachos Divinos Inovax Hidratação E Proteção 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "401040002",
+          "name": "Máscara Cachos Divinos Inovax Nutrição e Definição 300ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381455051/liso_maximo_passo2_1000ml-sybn6lmah6.png",
+      "count": 2,
+      "products": [
+        {
+          "sku": "PRD00013",
+          "name": "Kit Profissional Liso Máximo Progressiva",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10141",
+          "name": "Progressiva Shampoo Liso Máximo Passo 1 Dilatter pH Control 1000ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381099055/linha-cicatri-hair-hc-snl5rftthq.png",
+      "count": 4,
+      "products": [
+        {
+          "sku": "PRD00011",
+          "name": "Kit Profissional Reconstrução Biológica e Nutrição Lipídica",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "PRD00014",
+          "name": "Kit S.O.S Inovax Reparação e Reconstrução 300ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "PRD00012",
+          "name": "Kit Profissional S.O.S Cauterização Carga de Queratina e Reconstrução",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "104010001",
+          "name": "Óleo de Argan Inovax Nutrição e Brilho Instantâneo 30ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381604470/total_repair_condicionador_300ml-gfepomzf0f.png",
+      "count": 2,
+      "products": [
+        {
+          "sku": "10027",
+          "name": "Máscara Total Repair Cabelos Oxidados e Quebradiços 1000g",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "401010005",
+          "name": "Shampoo Total Repair Inovax Restauração e Força 300ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381445461/total_repair_shampoo_1000ml-dwm0zobcwh.png",
+      "count": 2,
+      "products": [
+        {
+          "sku": "10159",
+          "name": "Queratina Cauterizadora Total Repair Finalizador Molecular 250ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10777",
+          "name": "Queratina Líquida Total Repair Pura Hidrolisada 300ml",
+          "sourceId": "inovax"
+        }
+      ]
+    },
+    {
+      "image": "https://cdn.awsli.com.br/300x300/2873/2873879/produto/381450375/total_repair_queratina_liquida-tg1u2w8wju.png",
+      "count": 2,
+      "products": [
+        {
+          "sku": "236",
+          "name": "Sabonete Líquido em Espuma Mousse 150ml",
+          "sourceId": "inovax"
+        },
+        {
+          "sku": "10160",
+          "name": "Shampoo Total Repair Queratina e Antioxidante 1000ml",
+          "sourceId": "inovax"
+        }
+      ]
+    }
+  ],
+  "productsWithoutImage": [
+    {
+      "sku": "721",
+      "name": "Go Curly Crespos | Para Cabelos Crespos | BRAÉ - Braé Hair Care - Site Oficial",
+      "sourceId": "brae",
+      "active": false
+    },
+    {
+      "sku": "132",
+      "name": "Produtos para Cabelos Loiros e Descoloridos | Matização - Braé Hair Care - Site Oficial",
+      "sourceId": "brae",
+      "active": false
+    }
+  ],
+  "duplicateSkus": [],
+  "failures": []
+}
