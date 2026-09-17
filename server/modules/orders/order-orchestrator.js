@@ -28,7 +28,7 @@ const {
   recordEvent
 } = require('../../infrastructure/audit');
 
-function reserveOrderStock(order) {
+async function reserveOrderStock(order) {
   const reservations = [];
 
   for (const item of order.items) {
@@ -66,7 +66,7 @@ function reserveOrderStock(order) {
   return reservations;
 }
 
-function createOrderWithPayment(payload, requestId) {
+async function createOrderWithPayment(payload, requestId) {
   const order = createOrder(payload);
 
   recordEvent({
@@ -132,7 +132,7 @@ function createOrderWithPayment(payload, requestId) {
   return updated;
 }
 
-function confirmPayment(orderNumber, requestId) {
+async function confirmPayment(orderNumber, requestId) {
   const order = getOrder(orderNumber);
 
   if (order.payment?.status === 'paid') {
@@ -165,3 +165,4 @@ module.exports = {
   confirmPayment,
   reserveOrderStock
 };
+

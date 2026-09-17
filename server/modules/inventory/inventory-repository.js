@@ -1,197 +1,235 @@
 ﻿'use strict';
 
-const fs = require('fs');
-const path = require('path');
+const { query } = require('../../infrastructure/postgres');
 
-const FILE = path.resolve(
-  process.cwd(),
-  'server',
-  'data',
-  'inventory',
-  'inventory.json'
-);
+function mapItem(row) {
+    if (!row) {
+        return null;
+    }
 
-function ensureFile() {
-  const directory =
-    path.dirname(FILE);
-
-  fs.mkdirSync(directory, {
-    recursive: true
-  });
-
-  if (!fs.existsSync(FILE)) {
-    fs.writeFileSync(
-      FILE,
-      JSON.stringify({
-        items: {},
-        reservations: {},
-        updatedAt: null
-      }, null, 2),
-      'utf8'
-    );
-  }
-}
-
-function readDatabase() {
-  ensureFile();
-
-  const raw =
-    fs.readFileSync(
-      FILE,
-      'utf8'
-    );
-
-  if (!raw.trim()) {
     return {
-      items: {},
-      reservations: {},
-      updatedAt: null
+        sku: row.sku,
+        product: row.product,
+        stock: Number(row.stock),
+        reserved: Number(row.reserved),
+        updatedAt: row.updated_at
     };
-  }
-
-  const database =
-    JSON.parse(raw);
-
-  database.items ||= {};
-  database.reservations ||= {};
-
-  return database;
 }
 
-function writeDatabase(database) {
-  database.updatedAt =
-    new Date().toISOString();
+function mapReservation(row) {
+    if (!row) {
+        return null;
+    }
 
-  const temporary =
-    `${FILE}.tmp`;
-
-  fs.writeFileSync(
-    temporary,
-    JSON.stringify(
-      database,
-      null,
-      2
-    ),
-    'utf8'
-  );
-
-  fs.renameSync(
-    temporary,
-    FILE
-  );
+    return {
+        id: row.reservation_id,
+        orderNumber: row.order_number,
+        sku: row.sku,
+        quantity: Number(row.quantity),
+        status: row.status,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+    };
 }
 
-function getItem(sku) {
-  const database =
-    readDatabase();
-
-  return database.items[sku] || null;
-}
-
-function getAllItems() {
-  const database =
-    readDatabase();
-
-  return Object.values(
-    database.items
-  );
-}
-
-function saveItem(item) {
-  if (!item?.sku) {
-    throw new Error(
-      'SKU obrigatória para estoque.'
+async function getItem(sku) {
+    const result = await query(
+        `
+        SELECT
+            sku,
+            product,
+            stock,
+            reserved,
+            updated_at
+        FROM inventory
+        WHERE sku = $1
+        `,
+        [String(sku)]
     );
-  }
 
-  const database =
-    readDatabase();
-
-  database.items[item.sku] = {
-    ...item,
-    sku: String(item.sku)
-  };
-
-  writeDatabase(database);
-
-  return database.items[item.sku];
+    return mapItem(result.rows[0]);
 }
 
-function saveReservation(reservation) {
-  if (!reservation?.id) {
-    throw new Error(
-      'Reserva inválida.'
+async function getAllItems() {
+    const result = await query(
+        `
+        SELECT
+            sku,
+            product,
+            stock,
+            reserved,
+            updated_at
+        FROM inventory
+        ORDER BY sku
+        `
     );
-  }
 
-  const database =
-    readDatabase();
-
-  database.reservations[
-    reservation.id
-  ] = reservation;
-
-  writeDatabase(database);
-
-  return reservation;
+    return result.rows.map(mapItem);
 }
 
-function getReservation(id) {
-  const database =
-    readDatabase();
+async function saveItem(item) {
+    if (!item || !item.sku) {
+        throw new Error('SKU obrigatória para estoque.');
+    }
 
-  return database.reservations[id] || null;
+    const result = await query(
+        `
+        INSERT INTO inventory (
+            sku,
+            product,
+            stock,
+            reserved
+        )
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (sku)
+        DO UPDATE SET
+            product = EXCLUDED.product,
+            stock = EXCLUDED.stock,
+            reserved = EXCLUDED.reserved,
+            updated_at = NOW()
+        RETURNING
+            sku,
+            product,
+            stock,
+            reserved,
+            updated_at
+        `,
+        [
+            String(item.sku),
+            item.product || null,
+            Number(item.stock || 0),
+            Number(item.reserved || 0)
+        ]
+    );
+
+    return mapItem(result.rows[0]);
 }
 
-function deleteReservation(id) {
-  const database =
-    readDatabase();
+async function updateItem(sku, changes = {}) {
+    const current = await getItem(sku);
 
-  delete database.reservations[id];
+    if (!current) {
+        return null;
+    }
 
-  writeDatabase(database);
+    const next = {
+        sku: current.sku,
+        product:
+            changes.product !== undefined
+                ? changes.product
+                : current.product,
+        stock:
+            changes.stock !== undefined
+                ? Number(changes.stock)
+                : current.stock,
+        reserved:
+            changes.reserved !== undefined
+                ? Number(changes.reserved)
+                : current.reserved
+    };
+
+    return saveItem(next);
 }
 
-function getAllReservations() {
-  const database =
-    readDatabase();
+async function saveReservation(reservation) {
+    if (!reservation || !reservation.id) {
+        throw new Error('Reserva inválida.');
+    }
 
-  return Object.values(
-    database.reservations
-  );
+    const result = await query(
+        `
+        INSERT INTO inventory_reservations (
+            reservation_id,
+            order_number,
+            sku,
+            quantity,
+            status
+        )
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (reservation_id)
+        DO UPDATE SET
+            order_number = EXCLUDED.order_number,
+            sku = EXCLUDED.sku,
+            quantity = EXCLUDED.quantity,
+            status = EXCLUDED.status,
+            updated_at = NOW()
+        RETURNING
+            reservation_id,
+            order_number,
+            sku,
+            quantity,
+            status,
+            created_at,
+            updated_at
+        `,
+        [
+            String(reservation.id),
+            reservation.orderNumber || null,
+            String(reservation.sku),
+            Number(reservation.quantity),
+            reservation.status || 'reserved'
+        ]
+    );
+
+    return mapReservation(result.rows[0]);
 }
 
-function updateItem(sku, patch) {
-  const database =
-    readDatabase();
+async function getReservation(id) {
+    const result = await query(
+        `
+        SELECT
+            reservation_id,
+            order_number,
+            sku,
+            quantity,
+            status,
+            created_at,
+            updated_at
+        FROM inventory_reservations
+        WHERE reservation_id = $1
+        `,
+        [String(id)]
+    );
 
-  const current =
-    database.items[sku];
+    return mapReservation(result.rows[0]);
+}
 
-  if (!current) {
-    return null;
-  }
+async function deleteReservation(id) {
+    await query(
+        `
+        DELETE FROM inventory_reservations
+        WHERE reservation_id = $1
+        `,
+        [String(id)]
+    );
+}
 
-  database.items[sku] = {
-    ...current,
-    ...patch,
-    sku
-  };
+async function getAllReservations() {
+    const result = await query(
+        `
+        SELECT
+            reservation_id,
+            order_number,
+            sku,
+            quantity,
+            status,
+            created_at,
+            updated_at
+        FROM inventory_reservations
+        ORDER BY created_at DESC
+        `
+    );
 
-  writeDatabase(database);
-
-  return database.items[sku];
+    return result.rows.map(mapReservation);
 }
 
 module.exports = {
-  readDatabase,
-  writeDatabase,
-  getItem,
-  getAllItems,
-  saveItem,
-  updateItem,
-  saveReservation,
-  getReservation,
-  deleteReservation,
-  getAllReservations
+    getItem,
+    getAllItems,
+    saveItem,
+    updateItem,
+    saveReservation,
+    getReservation,
+    deleteReservation,
+    getAllReservations
 };

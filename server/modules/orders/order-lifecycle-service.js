@@ -15,13 +15,13 @@ const repository =
 const audit =
   require('../../infrastructure/audit');
 
-function transitionOrder(
+async function transitionOrder(
   orderNumber,
   nextState,
   context = {}
 ) {
   const order =
-    repository.findByOrderNumber(
+    await repository.findByOrderNumber(
       orderNumber
     );
 
@@ -85,7 +85,7 @@ function transitionOrder(
   };
 
   const saved =
-    repository.update(
+    await repository.update(
       orderNumber,
       updated
     );
@@ -110,3 +110,4 @@ function transitionOrder(
 module.exports = {
   transitionOrder
 };
+

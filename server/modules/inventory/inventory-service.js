@@ -2,279 +2,236 @@
 
 const crypto = require('crypto');
 
-const repository =
-  require('./inventory-repository');
+const { AppError } = require('../../core/app-error');
+const repository = require('./inventory-repository');
 
-const {
-  AppError
-} = require('../../core/app-error');
+function normalizeQuantity(value) {
+    const quantity = Number(value);
 
-function normalizeQuantity(quantity) {
-  const value =
-    Number(quantity);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+        throw new AppError(
+            'Quantidade de estoque inválida.',
+            400,
+            'INVALID_QUANTITY'
+        );
+    }
 
-  if (
-    !Number.isInteger(value) ||
-    value <= 0
-  ) {
-    throw new AppError(
-      'Quantidade de estoque inválida.',
-      {
-        code: 'INVALID_STOCK_QUANTITY',
-        status: 400
-      }
-    );
-  }
-
-  return value;
+    return quantity;
 }
 
-function ensureStockItem(sku, stock = 0) {
-  const normalizedSku =
-    String(sku).trim();
+async function ensureStockItem({
+    sku,
+    product = null,
+    stock = 0
+}) {
+    const normalizedSku = String(sku || '').trim();
 
-  const existing =
-    repository.getItem(
-      normalizedSku
-    );
+    if (!normalizedSku) {
+        throw new AppError(
+            'SKU obrigatória.',
+            400,
+            'INVALID_SKU'
+        );
+    }
 
-  if (existing) {
-    return existing;
-  }
+    const existing = await repository.getItem(normalizedSku);
 
-  return repository.saveItem({
-    sku: normalizedSku,
-    stock: Math.max(
-      0,
-      Number(stock) || 0
-    ),
-    reserved: 0,
-    updatedAt:
-      new Date().toISOString()
-  });
+    if (existing) {
+        return existing;
+    }
+
+    return repository.saveItem({
+        sku: normalizedSku,
+        product,
+        stock: Number(stock || 0),
+        reserved: 0
+    });
 }
 
-function getAvailableStock(sku) {
-  const item =
-    repository.getItem(sku);
+async function getAvailableStock(sku) {
+    const item = await repository.getItem(sku);
 
-  if (!item) {
-    return 0;
-  }
+    if (!item) {
+        return 0;
+    }
 
-  return Math.max(
-    0,
-    Number(item.stock || 0) -
-    Number(item.reserved || 0)
-  );
+    return Math.max(
+        0,
+        Number(item.stock) - Number(item.reserved)
+    );
 }
 
-function reserve(sku, quantity, orderNumber) {
-  const normalizedQuantity =
-    normalizeQuantity(quantity);
+async function reserve({
+    sku,
+    quantity,
+    orderNumber = null,
+    product = null
+}) {
+    const normalizedSku = String(sku || '').trim();
+    const normalizedQuantity = normalizeQuantity(quantity);
 
-  const item =
-    repository.getItem(sku);
+    const item = await repository.getItem(normalizedSku);
 
-  if (!item) {
-    throw new AppError(
-      `SKU não encontrada no estoque: ${sku}`,
-      {
-        code: 'STOCK_ITEM_NOT_FOUND',
-        status: 404
-      }
-    );
-  }
+    if (!item) {
+        throw new AppError(
+            `Produto ${normalizedSku} não encontrado no estoque.`,
+            404,
+            'STOCK_ITEM_NOT_FOUND'
+        );
+    }
 
-  const available =
-    getAvailableStock(sku);
+    const available =
+        Number(item.stock) -
+        Number(item.reserved);
 
-  if (available < normalizedQuantity) {
-    throw new AppError(
-      `Estoque insuficiente para ${sku}.`,
-      {
-        code: 'INSUFFICIENT_STOCK',
-        status: 409,
-        details: {
-          sku,
-          requested: normalizedQuantity,
-          available
+    if (available < normalizedQuantity) {
+        throw new AppError(
+            `Estoque insuficiente para ${normalizedSku}.`,
+            409,
+            'INSUFFICIENT_STOCK'
+        );
+    }
+
+    const reservationId = crypto.randomUUID();
+
+    await repository.updateItem(
+        normalizedSku,
+        {
+            reserved:
+                Number(item.reserved) +
+                normalizedQuantity
         }
-      }
     );
-  }
 
-  const reservationId =
-    `res_${crypto.randomUUID()}`;
-
-  repository.updateItem(
-    sku,
-    {
-      reserved:
-        Number(item.reserved || 0) +
-        normalizedQuantity
-    }
-  );
-
-  const reservation = {
-    id: reservationId,
-    orderNumber,
-    sku,
-    quantity: normalizedQuantity,
-    status: 'reserved',
-    createdAt:
-      new Date().toISOString()
-  };
-
-  repository.saveReservation(
-    reservation
-  );
-
-  return reservation;
+    return repository.saveReservation({
+        id: reservationId,
+        orderNumber,
+        sku: normalizedSku,
+        quantity: normalizedQuantity,
+        status: 'reserved',
+        product
+    });
 }
 
-function release(reservationId) {
-  const reservation =
-    repository.getReservation(
-      reservationId
-    );
+async function release(reservationId) {
+    const reservation =
+        await repository.getReservation(
+            reservationId
+        );
 
-  if (!reservation) {
-    return null;
-  }
+    if (!reservation) {
+        throw new AppError(
+            'Reserva não encontrada.',
+            404,
+            'RESERVATION_NOT_FOUND'
+        );
+    }
 
-  if (
-    reservation.status !==
-    'reserved'
-  ) {
-    return reservation;
-  }
+    if (reservation.status !== 'reserved') {
+        return reservation;
+    }
 
-  const item =
-    repository.getItem(
-      reservation.sku
-    );
+    const item =
+        await repository.getItem(
+            reservation.sku
+        );
 
-  if (item) {
-    repository.updateItem(
-      reservation.sku,
-      {
-        reserved: Math.max(
-          0,
-          Number(item.reserved || 0) -
-          reservation.quantity
-        )
-      }
-    );
-  }
+    if (item) {
+        await repository.updateItem(
+            reservation.sku,
+            {
+                reserved: Math.max(
+                    0,
+                    Number(item.reserved) -
+                    Number(reservation.quantity)
+                )
+            }
+        );
+    }
 
-  const updated = {
-    ...reservation,
-    status: 'released',
-    releasedAt:
-      new Date().toISOString()
-  };
-
-  repository.saveReservation(
-    updated
-  );
-
-  return updated;
+    return repository.saveReservation({
+        ...reservation,
+        status: 'released'
+    });
 }
 
-function commit(reservationId) {
-  const reservation =
-    repository.getReservation(
-      reservationId
-    );
+async function commit(reservationId) {
+    const reservation =
+        await repository.getReservation(
+            reservationId
+        );
 
-  if (!reservation) {
-    return null;
-  }
-
-  if (
-    reservation.status ===
-    'committed'
-  ) {
-    return reservation;
-  }
-
-  if (
-    reservation.status !==
-    'reserved'
-  ) {
-    throw new AppError(
-      'Reserva não pode ser confirmada.',
-      {
-        code: 'INVALID_RESERVATION_STATE',
-        status: 409
-      }
-    );
-  }
-
-  const item =
-    repository.getItem(
-      reservation.sku
-    );
-
-  if (!item) {
-    throw new AppError(
-      'Item de estoque não encontrado.',
-      {
-        code: 'STOCK_ITEM_NOT_FOUND',
-        status: 404
-      }
-    );
-  }
-
-  const newStock =
-    Number(item.stock || 0) -
-    reservation.quantity;
-
-  const newReserved =
-    Math.max(
-      0,
-      Number(item.reserved || 0) -
-      reservation.quantity
-    );
-
-  if (newStock < 0) {
-    throw new AppError(
-      'Estoque inconsistente.',
-      {
-        code: 'STOCK_INCONSISTENCY',
-        status: 409
-      }
-    );
-  }
-
-  repository.updateItem(
-    reservation.sku,
-    {
-      stock: newStock,
-      reserved: newReserved
+    if (!reservation) {
+        throw new AppError(
+            'Reserva não encontrada.',
+            404,
+            'RESERVATION_NOT_FOUND'
+        );
     }
-  );
 
-  const updated = {
-    ...reservation,
-    status: 'committed',
-    committedAt:
-      new Date().toISOString()
-  };
+    if (reservation.status === 'committed') {
+        return reservation;
+    }
 
-  repository.saveReservation(
-    updated
-  );
+    if (reservation.status !== 'reserved') {
+        throw new AppError(
+            'Reserva não está disponível para confirmação.',
+            409,
+            'INVALID_RESERVATION_STATE'
+        );
+    }
 
-  return updated;
+    const item =
+        await repository.getItem(
+            reservation.sku
+        );
+
+    if (!item) {
+        throw new AppError(
+            'Produto não encontrado no estoque.',
+            404,
+            'STOCK_ITEM_NOT_FOUND'
+        );
+    }
+
+    const quantity =
+        Number(reservation.quantity);
+
+    if (
+        Number(item.stock) < quantity ||
+        Number(item.reserved) < quantity
+    ) {
+        throw new AppError(
+            'Estoque inconsistente para confirmação da reserva.',
+            409,
+            'STOCK_INCONSISTENCY'
+        );
+    }
+
+    await repository.updateItem(
+        reservation.sku,
+        {
+            stock:
+                Number(item.stock) -
+                quantity,
+            reserved:
+                Number(item.reserved) -
+                quantity
+        }
+    );
+
+    return repository.saveReservation({
+        ...reservation,
+        status: 'committed'
+    });
 }
 
 module.exports = {
-  ensureStockItem,
-  getAvailableStock,
-  reserve,
-  release,
-  commit
+    normalizeQuantity,
+    ensureStockItem,
+    getAvailableStock,
+    reserve,
+    release,
+    commit
 };
 

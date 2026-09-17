@@ -2,9 +2,9 @@
 
 const { AppError } = require('../../core/app-error');
 
-function assertUniqueOrder(orderRepository, orderNumber) {
+async function assertUniqueOrder(orderRepository, orderNumber) {
   const existing =
-    orderRepository.findByOrderNumber(orderNumber);
+    await orderRepository.findByOrderNumber(orderNumber);
 
   if (existing) {
     throw new AppError(
@@ -23,3 +23,4 @@ function assertUniqueOrder(orderRepository, orderNumber) {
 module.exports = {
   assertUniqueOrder
 };
+

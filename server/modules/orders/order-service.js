@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-function calculateOrderTotal({ items = [], shipping = 0, discount = 0 }) {
+async function calculateOrderTotal({ items = [], shipping = 0, discount = 0 }) {
   const subtotal = items.reduce((total, item) => {
     const quantity = Number(item.quantity);
     const unitPrice = Number(item.unitPrice);
@@ -25,3 +25,4 @@ function calculateOrderTotal({ items = [], shipping = 0, discount = 0 }) {
 }
 
 module.exports = { calculateOrderTotal };
+
