@@ -1,14 +1,14 @@
 ﻿'use strict';
 
 const orderRepository =
-  require('../orders/order-repository');
+  require('../../orders/order-repository');
 
 const catalogService =
-  require('../catalog/catalog-service');
+  require('../../catalog/catalog-service');
 
 const {
   getAllEvents
-} = require('../../infrastructure/audit-reader');
+} = require('../../../infrastructure/audit-reader');
 
 function getDashboard() {
   const orders =
@@ -115,3 +115,4 @@ module.exports = {
   getOrder,
   getAuditTrail
 };
+
