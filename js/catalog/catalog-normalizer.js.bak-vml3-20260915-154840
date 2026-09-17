@@ -1,0 +1,140 @@
+﻿'use strict';
+
+export function normalizeCatalogProduct(
+    product = {},
+    source = {}
+) {
+    const sourceId =
+        String(
+            product.sourceId ||
+            source.id ||
+            ''
+        )
+            .trim()
+            .toLowerCase();
+
+    const sourceName =
+        String(
+            product.sourceName ||
+            source.name ||
+            ''
+        )
+            .trim();
+
+    return {
+        sku:
+            String(product.sku || '')
+                .trim(),
+
+        name:
+            String(product.name || '')
+                .trim(),
+
+        weight:
+            String(product.weight || '')
+                .trim(),
+
+        price:
+            normalizePrice(product.price),
+
+        category:
+            String(product.category || '')
+                .trim(),
+
+        stock:
+            String(product.stock || '')
+                .trim(),
+
+        description:
+            String(product.description || '')
+                .trim(),
+
+        image:
+            String(product.image || '')
+                .trim(),
+
+        sourceId,
+
+        sourceName,
+
+        sourceUrl:
+            String(
+                product.sourceUrl || ''
+            )
+                .trim(),
+
+        active:
+            product.active !== false,
+
+        featured:
+            product.featured === true,
+
+        priority:
+            normalizePriority(
+                product.priority
+            )
+    };
+}
+
+function normalizePrice(value) {
+    if (typeof value === 'number') {
+        return Number.isFinite(value)
+            ? value
+            : 0;
+    }
+
+    const text =
+        String(value ?? '')
+            .trim();
+
+    if (!text) return 0;
+
+    const normalized =
+        text
+            .replace(/\s/g, '')
+            .replace(/^R\$/i, '')
+            .replace(/\./g, '')
+            .replace(',', '.');
+
+    const number =
+        Number(normalized);
+
+    return Number.isFinite(number)
+        ? number
+        : 0;
+}
+
+function normalizePriority(value) {
+    const number =
+        Number(value);
+
+    if (
+        !Number.isFinite(number) ||
+        number < 0
+    ) {
+        return 0;
+    }
+
+    return Math.floor(number);
+}
+
+export function normalizeCatalogProducts(
+    products = [],
+    source = {}
+) {
+    if (!Array.isArray(products)) {
+        return [];
+    }
+
+    return products
+        .map(product =>
+            normalizeCatalogProduct(
+                product,
+                source
+            )
+        )
+        .filter(product =>
+            product.sku &&
+            product.name
+        );
+}

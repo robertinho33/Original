@@ -1,0 +1,47 @@
+﻿'use strict';
+
+const CATALOG_PATH = 'data/catalog.json';
+
+function normalizeProduct(product = {}) {
+    return {
+        sku: String(product.sku || '').trim(),
+        name: String(product.name || '').trim(),
+        weight: String(product.weight || '').trim(),
+        price: Number(product.price) || 0,
+        category: String(product.category || '').trim(),
+        stock: String(product.stock || '').trim(),
+        description: String(product.description || '').trim(),
+        image: String(product.image || '').trim()
+    };
+}
+
+export async function loadProducts() {
+    const response = await fetch(CATALOG_PATH, {
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Não foi possível carregar o catálogo. HTTP ${response.status}`
+        );
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data.products)) {
+        throw new Error(
+            'Catálogo inválido: lista de produtos não encontrada.'
+        );
+    }
+
+    return data.products
+        .map(normalizeProduct)
+        .filter(product =>
+            product.sku &&
+            product.name
+        );
+}
+
+export {
+    normalizeProduct
+};

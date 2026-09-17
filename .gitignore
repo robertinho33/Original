@@ -1,12 +1,33 @@
+﻿# Dependências
 node_modules/
-*.bak
-*.bak-*
-backup-*/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ambiente
 .env
 .env.*
 !.env.example
+
+# Backups locais
+_backup*/
+_backups/
+
+# Relatórios e diagnósticos temporários
+BLOCO-*.txt
+CORE-*-STATUS.txt
+FASE-*-PASSO-A-PASSO.txt
+_AUDITORIA-*.txt
+_DIAGNOSTICO-*.txt
+_ETAPA-*.txt
+_ETAPAS-*.txt
+
+# Cache / build
+.vite/
 dist/
-.env.production
-server/data/logs/
-*.log
-server/backups/
+build/
+coverage/
+
+# Sistema
+.DS_Store
+Thumbs.db

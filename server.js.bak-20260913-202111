@@ -1,0 +1,43 @@
+const express = require('express');
+const cors = require('cors');
+const { MercadoPagoConfig, Payment } = require('mercadopago');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Adicione sua chave secreta (Production ou Test Access Token)
+const client = new MercadoPagoConfig({ 
+    accessToken:'TEST-1234567890...'
+});
+const payment = new Payment(client);
+
+app.post('/api/create-pix-payment', async (req, res) => {
+    try {
+        const order = req.body;
+
+        const body = {
+            transaction_amount: Number(order.financial.total),
+            description: `Pedido ${order.id} - Aurea Cosmetics`,
+            payment_method_id: 'pix',
+            payer: {
+                email: order.customer.email || 'cliente@email.com',
+                first_name: order.customer.name,
+            },
+        };
+
+        const response = await payment.create({ body });
+        const transactionData = response.point_of_interaction.transaction_data;
+
+        res.json({
+            success: true,
+            qr_code: transactionData.qr_code,
+            qr_code_base64: transactionData.qr_code_base64
+        });
+    } catch (error) {
+        console.error('Erro Mercado Pago:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.listen(3000, () => console.log('Servidor de pagamentos rodando na porta 3000'));

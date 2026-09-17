@@ -1,0 +1,106 @@
+﻿'use strict';
+
+const DEFAULT_HOME_LIMIT = 12;
+
+export function selectHomeProducts(
+    products = [],
+    {
+        limit = DEFAULT_HOME_LIMIT,
+        featuredOnly = true
+    } = {}
+) {
+    if (!Array.isArray(products)) {
+        return [];
+    }
+
+    const normalizedLimit =
+        Number(limit);
+
+    if (
+        !Number.isInteger(normalizedLimit) ||
+        normalizedLimit <= 0
+    ) {
+        return [];
+    }
+
+    let candidates =
+        products.filter(
+            product =>
+                product &&
+                product.active !== false
+        );
+
+    if (featuredOnly) {
+        candidates =
+            candidates.filter(
+                product =>
+                    product.featured === true
+            );
+    }
+
+    return candidates
+        .slice()
+        .sort(
+            (a, b) =>
+                Number(b.priority || 0) -
+                Number(a.priority || 0)
+        )
+        .slice(0, normalizedLimit);
+}
+
+export function markFeaturedProducts(
+    products = [],
+    selectedSkus = []
+) {
+    if (!Array.isArray(products)) {
+        return [];
+    }
+
+    const selected =
+        new Set(
+            selectedSkus.map(
+                sku =>
+                    String(sku || '')
+                        .trim()
+                        .toUpperCase()
+            )
+        );
+
+    return products.map(product => ({
+        ...product,
+        featured:
+            selected.has(
+                String(product.sku || '')
+                    .trim()
+                    .toUpperCase()
+            )
+    }));
+}
+
+export function sortCatalogProducts(
+    products = []
+) {
+    if (!Array.isArray(products)) {
+        return [];
+    }
+
+    return products
+        .slice()
+        .sort((a, b) => {
+            const priorityA =
+                Number(a.priority || 0);
+
+            const priorityB =
+                Number(b.priority || 0);
+
+            if (priorityA !== priorityB) {
+                return priorityB - priorityA;
+            }
+
+            return String(a.name || '')
+                .localeCompare(
+                    String(b.name || ''),
+                    'pt-BR'
+                );
+        });
+}

@@ -1,0 +1,73 @@
+﻿'use strict';
+
+import { loadEcoBelleProducts } from './sources/ecobelle-source.js';
+import { loadInovaxProducts } from './sources/inovax-source.js';
+import { loadBraeProducts } from './sources/brae-source.js';
+
+export const catalogSources = [
+    {
+        id: 'ecobelle',
+        name: 'EcoBelle',
+
+        loader: loadEcoBelleProducts,
+
+        enabled: true,
+        visible: true,
+        featured: true
+    },
+
+    {
+        id: 'inovax',
+        name: 'Inovax',
+
+        loader: loadInovaxProducts,
+
+        enabled: true,
+        visible: true,
+        featured: true
+    },
+
+    {
+        id: 'brae',
+        name: 'Braé',
+
+        loader: loadBraeProducts,
+
+        enabled: true,
+        visible: true,
+        featured: true
+    }
+];
+
+export function getEnabledCatalogSources() {
+    return catalogSources.filter(
+        source => source.enabled === true
+    );
+}
+
+export function getVisibleCatalogSources() {
+    return catalogSources.filter(
+        source =>
+            source.enabled === true &&
+            source.visible === true
+    );
+}
+
+export function getFeaturedCatalogSources() {
+    return catalogSources.filter(
+        source =>
+            source.enabled === true &&
+            source.visible === true &&
+            source.featured === true
+    );
+}
+
+export function getCatalogSource(sourceId) {
+    const normalizedId = String(sourceId || '')
+        .trim()
+        .toLowerCase();
+
+    return catalogSources.find(
+        source => source.id === normalizedId
+    ) || null;
+}

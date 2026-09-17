@@ -1,0 +1,149 @@
+﻿'use strict';
+
+import {
+    normalizeCatalogProducts
+} from '../catalog-normalizer.js';
+
+/**
+ * Adaptador seguro da fonte EcoBelle.
+ *
+ * Responsabilidades:
+ * - obter produtos da fonte externa;
+ * - validar a resposta;
+ * - converter para o contrato interno da AURÉA;
+ * - nunca alterar carrinho, checkout, PIX ou pedidos.
+ *
+ * IMPORTANTE:
+ * A URL da fonte permanece configurável.
+ * O adaptador não assume uma API externa sem confirmação.
+ */
+
+const ECOBELLE_SOURCE_URL = '';
+
+function validateSourceUrl(url) {
+    const value = String(url || '').trim();
+
+    if (!value) {
+        throw new Error(
+            'Fonte EcoBelle ainda não configurada.'
+        );
+    }
+
+    let parsedUrl;
+
+    try {
+        parsedUrl = new URL(value);
+    } catch {
+        throw new Error(
+            'URL da fonte EcoBelle inválida.'
+        );
+    }
+
+    if (!['https:', 'http:'].includes(parsedUrl.protocol)) {
+        throw new Error(
+            'A fonte EcoBelle deve utilizar HTTP ou HTTPS.'
+        );
+    }
+
+    return parsedUrl.toString();
+}
+
+function extractProducts(payload) {
+    if (Array.isArray(payload)) {
+        return payload;
+    }
+
+    if (Array.isArray(payload?.products)) {
+        return payload.products;
+    }
+
+    if (Array.isArray(payload?.data)) {
+        return payload.data;
+    }
+
+    if (Array.isArray(payload?.items)) {
+        return payload.items;
+    }
+
+    return [];
+}
+
+function mapEcoBelleProduct(product = {}) {
+    return {
+        sku: product.sku
+            ?? product.SKU
+            ?? product.reference
+            ?? '',
+
+        name: product.name
+            ?? product.nome
+            ?? product.title
+            ?? '',
+
+        weight: product.weight
+            ?? product.peso
+            ?? '',
+
+        price: product.price
+            ?? product.preco
+            ?? product.sale_price
+            ?? '',
+
+        category: product.category
+            ?? product.categoria
+            ?? '',
+
+        stock: product.stock
+            ?? product.estoque
+            ?? '',
+
+        description: product.description
+            ?? product.descricao
+            ?? '',
+
+        image: product.image
+            ?? product.image_url
+            ?? product.imagem
+            ?? ''
+    };
+}
+
+/**
+ * Carrega produtos da EcoBelle.
+ *
+ * Atualmente permanece desativado até confirmarmos
+ * a fonte estruturada oficial da loja.
+ */
+export async function loadEcoBelleProducts() {
+    const url = validateSourceUrl(ECOBELLE_SOURCE_URL);
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            Accept: 'application/json'
+        },
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Não foi possível carregar a fonte EcoBelle. HTTP ${response.status}`
+        );
+    }
+
+    const payload = await response.json();
+
+    const externalProducts = extractProducts(payload);
+
+    const mappedProducts = externalProducts.map(
+        mapEcoBelleProduct
+    );
+
+    return normalizeCatalogProducts(mappedProducts);
+}
+
+export {
+    ECOBELLE_SOURCE_URL,
+    extractProducts,
+    mapEcoBelleProduct
+};

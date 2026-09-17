@@ -1,0 +1,117 @@
+﻿'use strict';
+
+const crypto = require('crypto');
+
+const repository = require('./inventory-repository');
+const AppError = require('../../core/app-error');
+
+function normalizeQuantity(value) {
+    const quantity = Number(value);
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+        throw new AppError(
+            'Quantidade inválida.',
+            400,
+            'INVALID_QUANTITY'
+        );
+    }
+
+    return quantity;
+}
+
+async function ensureStockItem({
+    sku,
+    product = '',
+    stock = 0
+}) {
+    const normalizedSku = String(sku || '').trim();
+
+    if (!normalizedSku) {
+        throw new AppError(
+            'SKU obrigatório.',
+            400,
+            'INVALID_SKU'
+        );
+    }
+
+    const existing = await repository.getItem(normalizedSku);
+
+    if (existing) {
+        return existing;
+    }
+
+    return repository.saveItem({
+        sku: normalizedSku,
+        product,
+        stock: Number(stock) || 0,
+        reserved: 0
+    });
+}
+
+async function getAvailableStock(sku) {
+    const item = await repository.getItem(sku);
+
+    if (!item) {
+        return 0;
+    }
+
+    return Math.max(
+        Number(item.stock) - Number(item.reserved),
+        0
+    );
+}
+
+async function reserve(sku, quantity) {
+    const normalizedQuantity = normalizeQuantity(quantity);
+
+    const reservationId = crypto.randomUUID();
+
+    await repository.reserveAtomic(
+        sku,
+        normalizedQuantity,
+        reservationId
+    );
+
+    return {
+        reservationId,
+        sku,
+        quantity: normalizedQuantity,
+        status: 'reserved'
+    };
+}
+
+async function release(reservationId) {
+    const id = String(reservationId || '').trim();
+
+    if (!id) {
+        throw new AppError(
+            'Reserva inválida.',
+            400,
+            'INVALID_RESERVATION'
+        );
+    }
+
+    return repository.releaseAtomic(id);
+}
+
+async function commit(reservationId) {
+    const id = String(reservationId || '').trim();
+
+    if (!id) {
+        throw new AppError(
+            'Reserva inválida.',
+            400,
+            'INVALID_RESERVATION'
+        );
+    }
+
+    return repository.commitAtomic(id);
+}
+
+module.exports = {
+    ensureStockItem,
+    getAvailableStock,
+    reserve,
+    release,
+    commit
+};

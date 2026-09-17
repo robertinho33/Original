@@ -1,0 +1,147 @@
+﻿'use strict';
+
+export function isSourceEnabled(source) {
+    return source?.enabled === true;
+}
+
+export function isSourceVisible(source) {
+    return (
+        source?.enabled === true &&
+        source?.visible === true
+    );
+}
+
+export function isSourceFeatured(source) {
+    return (
+        source?.enabled === true &&
+        source?.visible === true &&
+        source?.featured === true
+    );
+}
+
+export function filterVisibleProducts(
+    products = [],
+    sources = []
+) {
+    if (!Array.isArray(products)) {
+        return [];
+    }
+
+    if (!Array.isArray(sources)) {
+        return [];
+    }
+
+    const visibleSourceIds = new Set(
+        sources
+            .filter(isSourceVisible)
+            .map(source => source.id)
+    );
+
+    return products.filter(product => {
+        if (!product) return false;
+
+        const sourceId =
+            String(product.sourceId || '')
+                .trim()
+                .toLowerCase();
+
+        return (
+            sourceId &&
+            visibleSourceIds.has(sourceId)
+        );
+    });
+}
+
+export function filterFeaturedProducts(
+    products = [],
+    sources = []
+) {
+    if (!Array.isArray(products)) {
+        return [];
+    }
+
+    if (!Array.isArray(sources)) {
+        return [];
+    }
+
+    const featuredSourceIds = new Set(
+        sources
+            .filter(isSourceFeatured)
+            .map(source => source.id)
+    );
+
+    return products.filter(product => {
+        if (!product) return false;
+
+        const sourceId =
+            String(product.sourceId || '')
+                .trim()
+                .toLowerCase();
+
+        return (
+            sourceId &&
+            featuredSourceIds.has(sourceId) &&
+            product.featured !== false
+        );
+    });
+}
+
+export function filterActiveProducts(
+    products = []
+) {
+    if (!Array.isArray(products)) {
+        return [];
+    }
+
+    return products.filter(
+        product =>
+            product &&
+            product.active !== false
+    );
+}
+
+export function getCatalogStats(
+    products = [],
+    sources = []
+) {
+    const visibleSourceIds = new Set(
+        sources
+            .filter(isSourceVisible)
+            .map(source => source.id)
+    );
+
+    const featuredSourceIds = new Set(
+        sources
+            .filter(isSourceFeatured)
+            .map(source => source.id)
+    );
+
+    const activeProducts =
+        filterActiveProducts(products);
+
+    const visibleProducts =
+        activeProducts.filter(product =>
+            visibleSourceIds.has(
+                String(product.sourceId || '')
+                    .trim()
+                    .toLowerCase()
+            )
+        );
+
+    const featuredProducts =
+        visibleProducts.filter(product =>
+            featuredSourceIds.has(
+                String(product.sourceId || '')
+                    .trim()
+                    .toLowerCase()
+            ) &&
+            product.featured !== false
+        );
+
+    return {
+        total: products.length,
+        active: activeProducts.length,
+        visible: visibleProducts.length,
+        featured: featuredProducts.length
+    };
+}

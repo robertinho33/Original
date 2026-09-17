@@ -1,0 +1,585 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="Finalize seu pedido na AUREA COSMETICS."
+    >
+
+    <title>Checkout | AUREA COSMETICS</title>
+
+    <link rel="stylesheet" href="../css/checkout.css">
+</head>
+
+<body>
+
+    <header class="checkout-header">
+        <div class="checkout-header-inner">
+            <a href="../index.html" class="brand">
+                <span class="brand-name">AUREA</span>
+                <span class="brand-subtitle">COSMETICS</span>
+            </a>
+
+            <a href="../index.html" class="back-link">
+                ← Voltar à loja
+            </a>
+        </div>
+    </header>
+
+    <main class="checkout-page">
+
+        <div class="checkout-container">
+
+            <div class="checkout-heading">
+                <p class="eyebrow">FINALIZAÇÃO</p>
+
+                <h1>
+                    Finalize seu
+                    <em>pedido.</em>
+                </h1>
+
+                <p>
+                    Confira seus dados e escolha a melhor forma de receber
+                    seus produtos.
+                </p>
+            </div>
+
+            <form id="checkoutForm" novalidate>
+
+                <!-- DADOS DO CLIENTE -->
+                <section class="checkout-section">
+
+                    <div class="section-heading">
+                        <span class="section-number">01</span>
+
+                        <div>
+                            <h2>Seus dados</h2>
+                            <p>Precisamos dessas informações para registrar seu pedido.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field field-full">
+                            <label for="customerName">
+                                Nome completo
+                            </label>
+
+                            <input
+                                type="text"
+                                id="customerName"
+                                name="customerName"
+                                autocomplete="name"
+                                placeholder="Digite seu nome completo"
+                                required
+                            >
+                        </div>
+
+                        <div class="field">
+                            <label for="customerEmail">
+                                E-mail
+                            </label>
+
+                            <input
+                                type="email"
+                                id="customerEmail"
+                                name="customerEmail"
+                                autocomplete="email"
+                                placeholder="seu@email.com"
+                                required
+                            >
+                        </div>
+
+                        <div class="field">
+                            <label for="customerPhone">
+                                WhatsApp / telefone
+                            </label>
+
+                            <input
+                                type="tel"
+                                id="customerPhone"
+                                name="customerPhone"
+                                autocomplete="tel"
+                                placeholder="(11) 99999-9999"
+                                required
+                            >
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ENTREGA -->
+                <section class="checkout-section">
+
+                    <div class="section-heading">
+                        <span class="section-number">02</span>
+
+                        <div>
+                            <h2>Entrega</h2>
+                            <p>Escolha como deseja receber seu pedido.</p>
+                        </div>
+                    </div>
+
+                    <div class="delivery-options">
+
+                        <label class="choice-card">
+
+                            <input
+                                type="radio"
+                                name="deliveryMethod"
+                                value="delivery"
+                                checked
+                            >
+
+                            <span class="choice-content">
+                                <strong>Entrega</strong>
+                                <small>
+                                    Receba seu pedido no endereço informado.
+                                </small>
+                            </span>
+
+                            <span class="choice-price">
+                                R$ 19,90
+                            </span>
+
+                        </label>
+
+
+                        <label class="choice-card">
+
+                            <input
+                                type="radio"
+                                name="deliveryMethod"
+                                value="pickup"
+                            >
+
+                            <span class="choice-content">
+                                <strong>Retirada</strong>
+                                <small>
+                                    Retire seu pedido diretamente conosco.
+                                </small>
+                            </span>
+
+                            <span class="choice-price">
+                                Grátis
+                            </span>
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- ENDEREÇO -->
+                    <div id="addressFields" class="address-area">
+
+                        <div class="form-grid">
+
+                            <div class="field">
+
+                                <label for="cep">
+                                    CEP
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="cep"
+                                    name="cep"
+                                    inputmode="numeric"
+                                    autocomplete="postal-code"
+                                    maxlength="9"
+                                    placeholder="00000-000"
+                                >
+
+                                <small id="cepStatus" class="field-status"></small>
+
+                            </div>
+
+                            <div class="field">
+
+                                <label for="street">
+                                    Rua
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="street"
+                                    name="street"
+                                    autocomplete="street-address"
+                                    placeholder="Rua / Avenida"
+                                >
+
+                            </div>
+
+                            <div class="field">
+
+                                <label for="number">
+                                    Número
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="number"
+                                    name="number"
+                                    placeholder="Número"
+                                >
+
+                            </div>
+
+                            <div class="field">
+
+                                <label for="complement">
+                                    Complemento
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="complement"
+                                    name="complement"
+                                    placeholder="Apartamento, bloco..."
+                                >
+
+                            </div>
+
+                            <div class="field">
+
+                                <label for="neighborhood">
+                                    Bairro
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="neighborhood"
+                                    name="neighborhood"
+                                >
+
+                            </div>
+
+                            <div class="field">
+
+                                <label for="city">
+                                    Cidade
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="city"
+                                    name="city"
+                                >
+
+                            </div>
+
+                            <div class="field">
+
+                                <label for="state">
+                                    Estado
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="state"
+                                    name="state"
+                                    maxlength="2"
+                                    placeholder="SP"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- PAGAMENTO -->
+                <section class="checkout-section">
+
+                    <div class="section-heading">
+                        <span class="section-number">03</span>
+
+                        <div>
+                            <h2>Pagamento</h2>
+                            <p>Escolha como deseja pagar seu pedido.</p>
+                        </div>
+                    </div>
+
+                    <div class="payment-options">
+
+                        <label class="choice-card">
+
+                            <input
+                                type="radio"
+                                name="paymentMethod"
+                                value="pix"
+                                checked
+                            >
+
+                            <span class="choice-content">
+                                <strong>PIX</strong>
+                                <small>
+                                    Receba o código PIX após confirmar o pedido.
+                                </small>
+                            </span>
+
+                        </label>
+
+
+                        <label class="choice-card">
+
+                            <input
+                                type="radio"
+                                name="paymentMethod"
+                                value="card"
+                            >
+
+                            <span class="choice-content">
+                                <strong>Cartão</strong>
+                                <small>
+                                    Pagamento com cartão.
+                                </small>
+                            </span>
+
+                        </label>
+
+
+                        <label class="choice-card">
+
+                            <input
+                                type="radio"
+                                name="paymentMethod"
+                                value="cash"
+                            >
+
+                            <span class="choice-content">
+                                <strong>Dinheiro</strong>
+                                <small>
+                                    Pagamento no recebimento ou retirada.
+                                </small>
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                </section>
+
+
+                <!-- OBSERVAÇÕES -->
+                <section class="checkout-section">
+
+                    <div class="section-heading">
+                        <span class="section-number">04</span>
+
+                        <div>
+                            <h2>Observações</h2>
+                            <p>Alguma informação adicional para o pedido?</p>
+                        </div>
+                    </div>
+
+                    <div class="field">
+
+                        <label for="orderNotes">
+                            Observações
+                        </label>
+
+                        <textarea
+                            id="orderNotes"
+                            name="orderNotes"
+                            rows="4"
+                            placeholder="Digite uma observação, se necessário..."
+                        ></textarea>
+
+                    </div>
+
+                </section>
+
+
+                <!-- RESUMO -->
+                <section class="checkout-summary">
+
+                    <div class="summary-heading">
+                        <div>
+                            <p class="eyebrow">SEU PEDIDO</p>
+                            <h2>Resumo</h2>
+                        </div>
+                    </div>
+
+                    <div id="checkoutItems" class="checkout-items">
+                        <!-- Produtos inseridos pelo checkout.js -->
+                    </div>
+
+                    <div class="summary-lines">
+
+                        <div class="summary-line">
+                            <span>Subtotal</span>
+                            <strong id="checkoutSubtotal">R$ 0,00</strong>
+                        </div>
+
+                        <div class="summary-line">
+                            <span>Entrega</span>
+                            <strong id="checkoutShipping">R$ 19,90</strong>
+                        </div>
+
+                        <div class="summary-line summary-total">
+                            <span>Total</span>
+                            <strong id="checkoutTotal">R$ 0,00</strong>
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        id="submitOrder"
+                        class="submit-button"
+                    >
+                        <span id="submitOrderText">
+                            Confirmar pedido
+                        </span>
+
+                        <span class="submit-arrow">
+                            →
+                        </span>
+                    </button>
+
+                    <p id="checkoutMessage" class="checkout-message" hidden></p>
+
+                </section>
+
+            </form>
+
+
+            <!-- SUCESSO -->
+            <section
+                id="checkoutSuccess"
+                class="checkout-success"
+                hidden
+            >
+
+                <div class="success-icon">
+                    ✓
+                </div>
+
+                <p class="eyebrow">
+                    PEDIDO RECEBIDO
+                </p>
+
+                <h2>
+                    Tudo certo,<br>
+                    <em>seu pedido foi registrado.</em>
+                </h2>
+
+                <p id="successMessage" class="success-message">
+                    Seu pedido foi registrado com sucesso.
+                </p>
+
+                <div class="success-order-number">
+
+                    <span>Número do pedido</span>
+
+                    <strong id="successOrderNumber">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <!-- PIX -->
+                <div
+                    id="pixPaymentContainer"
+                    class="pix-payment"
+                    hidden
+                >
+
+                    <div class="pix-heading">
+
+                        <p class="eyebrow">
+                            PAGAMENTO PIX
+                        </p>
+
+                        <h3>
+                            Finalize seu pagamento
+                        </h3>
+
+                        <p>
+                            Escaneie o QR Code ou copie o código PIX.
+                        </p>
+
+                    </div>
+
+                    <div class="pix-qr">
+
+                        <img
+                            id="pixQrCodeImage"
+                            src=""
+                            alt="QR Code para pagamento PIX"
+                        >
+
+                    </div>
+
+                    <div class="pix-copy">
+
+                        <label for="pixCopiaCola">
+                            PIX Copia e Cola
+                        </label>
+
+                        <div class="pix-copy-row">
+
+                            <input
+                                type="text"
+                                id="pixCopiaCola"
+                                readonly
+                            >
+
+                            <button
+                                type="button"
+                                id="btnCopyPix"
+                                class="copy-pix-button"
+                            >
+                                Copiar
+                            </button>
+
+                        </div>
+
+                        <small id="pixCopyStatus"></small>
+
+                    </div>
+
+                </div>
+
+
+                <a
+                    href="../index.html"
+                    class="primary-link"
+                >
+                    Voltar à loja
+                    <span>→</span>
+                </a>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <footer class="checkout-footer">
+        <p>
+            © AUREA COSMETICS — Todos os direitos reservados.
+        </p>
+    </footer>
+
+
+    <script
+        type="module"
+        src="../js/checkout/checkout.js"
+    ></script>
+
+</body>
+
+</html>
