@@ -1,0 +1,43 @@
+﻿AUREA COSMETICS — FASE 17
+
+DEPLOY
+OK — Render Blueprint
+OK — Node runtime
+OK — npm ci --omit=dev
+OK — npm start
+OK — healthcheck
+
+DOMINIO
+OK — www.fiosperfeitos.com.br
+OK — fiosperfeitos.com.br
+OK — HTTPS documentado
+
+VARIAVEIS
+OK — NODE_ENV
+OK — PORT
+OK — AUREA_ADMIN_TOKEN
+OK — CORS_ORIGINS
+
+PERSISTENCIA
+OK — Persistent Disk
+OK — /app/server/data
+OK — pedidos
+OK — inventario
+OK — auditoria
+
+PRESERVADOS
+PIX
+CHECKOUT
+CATALOGO
+CARRINHO
+
+PROXIMO PASSO
+
+1. Commitar render.yaml e documentação.
+2. Criar o Web Service na Render.
+3. Configurar AUREA_ADMIN_TOKEN como Secret.
+4. Configurar/verificar Persistent Disk.
+5. Adicionar os domínios.
+6. Aplicar os registros DNS fornecidos pela Render.
+7. Aguardar HTTPS.
+8. Só então executar o teste final de produção.

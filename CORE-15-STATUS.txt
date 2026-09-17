@@ -1,0 +1,57 @@
+﻿AUREA COSMETICS
+STATUS — CORE 15
+
+ARQUITETURA
+OK — Node/Express
+OK — módulos de domínio
+OK — pedidos
+OK — inventário
+OK — clientes
+OK — endereço
+OK — frete
+OK — pagamentos
+OK — PIX
+OK — auditoria
+OK — autenticação administrativa
+OK — ciclo de vida dos pedidos
+OK — observabilidade
+OK — health/readiness
+OK — Docker
+OK — persistência
+OK — backup
+
+FRONTEND
+OK — catálogo
+OK — carrinho
+OK — checkout
+OK — CEP
+OK — frete
+OK — PIX
+OK — histórico
+OK — rastreamento
+OK — mobile
+OK — UTF-8
+
+PRODUÇÃO
+OK — Node 22
+OK — Docker
+OK — healthcheck
+OK — graceful shutdown
+OK — configuração por ambiente
+OK — validação de produção
+OK — documentação operacional
+
+NÃO ALTERAR NESTE FECHAMENTO
+PIX
+CHECKOUT
+CATÁLOGO
+CARRINHO
+
+PRÓXIMO PASSO
+
+Publicação real em infraestrutura Node,
+configuração de domínio/HTTPS,
+variáveis de ambiente e persistência.
+
+Os testes finais devem ser executados
+somente depois da publicação real.

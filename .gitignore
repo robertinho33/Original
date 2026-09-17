@@ -6,3 +6,7 @@ backup-*/
 .env.*
 !.env.example
 dist/
+.env.production
+server/data/logs/
+*.log
+server/backups/

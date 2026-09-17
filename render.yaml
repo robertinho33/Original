@@ -1,0 +1,43 @@
+﻿services:
+
+  - type: web
+
+    name: aurea-cosmetics
+
+    runtime: node
+
+    plan: starter
+
+    region: ohio
+
+    branch: main
+
+    buildCommand: npm ci --omit=dev
+
+    startCommand: npm start
+
+    healthCheckPath: /api/health
+
+    autoDeploy: true
+
+    envVars:
+
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 3000
+
+      - key: AUREA_ADMIN_TOKEN
+        sync: false
+
+      - key: CORS_ORIGINS
+        value: https://www.fiosperfeitos.com.br,https://fiosperfeitos.com.br
+
+    disk:
+
+      name: aurea-data
+
+      mountPath: /app/server/data
+
+      sizeGB: 10
