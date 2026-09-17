@@ -1,4 +1,5 @@
-﻿const orderRoutes = require('./server/modules/orders/order-routes');
+﻿const aureaAdminRoutes = require("./server/modules/admin/admin-routes");
+const orderRoutes = require('./server/modules/orders/order-routes');
 const { applyHttpFoundation } = require('./server/core/http');
 const { errorHandler } = require('./server/infrastructure/error-handler');
 const { registerGracefulShutdown } = require('./server/infrastructure/shutdown');
@@ -31,12 +32,18 @@ const PIX_MERCHANT_NAME = 'AUREA COSMETICS';
 =========================================================
 */
 
-app.use(cors());
-app.use(express.json());
-app.use('/api/orders', orderRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/monitoring', monitoringRoutes);
+app.use(
+app.use('/api/admin', aureaAdminRoutes);cors());
+app.use(
+app.use('/api/admin', aureaAdminRoutes);express.json());
+app.use(
+app.use('/api/admin', aureaAdminRoutes);'/api/orders', orderRoutes);
+app.use(
+app.use('/api/admin', aureaAdminRoutes);'/api/admin', adminRoutes);
+app.use(
+app.use('/api/admin', aureaAdminRoutes);'/api/inventory', inventoryRoutes);
+app.use(
+app.use('/api/admin', aureaAdminRoutes);'/api/monitoring', monitoringRoutes);
 
 /*
 =========================================================
@@ -382,6 +389,7 @@ app.post(
 */
 
 app.use(
+app.use('/api/admin', aureaAdminRoutes);
     express.static(__dirname)
 );
 
@@ -428,6 +436,7 @@ app.listen(
         console.log('');
     }
 );
+
 
 
 

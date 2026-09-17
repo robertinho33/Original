@@ -1,78 +1,148 @@
-﻿'use strict';
+﻿const adminService = require("../services/admin-service");
 
-const { buildOrderTimeline } = require('../../orders/order-timeline');
-
-const adminService =
-  require('../services/admin-service');
-
-function dashboard(req, res) {
-  const data =
-    adminService.getDashboard();
-
-  res.json({
-    success: true,
-    data
-  });
+async function dashboard(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getDashboard()
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
-function orders(req, res) {
-  const data =
-    adminService.listOrders(
-      req.query || {}
-    );
-
-  res.json({
-    success: true,
-    data
-  });
+async function orders(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getOrders()
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
-function order(req, res) {
-  const data =
-    adminService.getOrder(
-      req.params.orderNumber
-    );
-
-  if (!data) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: 'ORDER_NOT_FOUND',
-        message: 'Pedido não encontrado.'
-      }
-    });
-  }
-
-  return res.json({
-    success: true,
-    data
-  });
+async function products(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getProducts()
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
-function audit(req, res) {
-  res.json({
-    success: true,
-    data: adminService.getAuditTrail()
-  });
+async function categories(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getCategories()
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
-function orderTimeline(req, res) {
-  const data =
-    buildOrderTimeline(
-      req.params.orderNumber
-    );
+async function inventory(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getInventory()
+        });
+    } catch (error) {
+        next(error);
+    }
+}
 
-  return res.json({
-    success: true,
-    data
-  });
+async function customers(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getCustomers()
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function finance(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getFinance()
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function coupons(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getCoupons()
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function logistics(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getLogistics()
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function reports(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getReports()
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function audit(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getAudit()
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function settings(req, res, next) {
+    try {
+        res.json({
+            success: true,
+            data: await adminService.getSettings()
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
 module.exports = {
-  dashboard,
-  orders,
-  order,
-  audit,
-  orderTimeline
+    dashboard,
+    orders,
+    products,
+    categories,
+    inventory,
+    customers,
+    finance,
+    coupons,
+    logistics,
+    reports,
+    audit,
+    settings
 };
-

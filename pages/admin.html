@@ -1,327 +1,409 @@
-<!doctype html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta
-        name="description"
-        content="Painel administrativo Auréa Cosmetics."
-    >
-
-    <title>Auréa â€” Painel Administrativo</title>
-
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/admin.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURÉA Admin</title>
+  <link rel="stylesheet" href="../css/admin.css">
 </head>
 
 <body>
 
+<div class="admin-app">
+
+  <aside class="admin-sidebar">
+
+    <div class="admin-brand">
+      <strong>AURÉA</strong>
+      <span>ADMIN • COSMETICS</span>
+    </div>
+
+    <nav class="admin-nav">
+
+      <button class="admin-nav-item active" data-section="dashboard">
+        <span>▦</span> Dashboard
+      </button>
+
+      <button class="admin-nav-item" data-section="orders">
+        <span>🛒</span> Pedidos
+      </button>
+
+      <button class="admin-nav-item" data-section="products">
+        <span>▣</span> Produtos
+      </button>
+
+      <button class="admin-nav-item" data-section="categories">
+        <span>◈</span> Categorias
+      </button>
+
+      <button class="admin-nav-item" data-section="inventory">
+        <span>▤</span> Estoque
+      </button>
+
+      <button class="admin-nav-item" data-section="customers">
+        <span>♙</span> Clientes
+      </button>
+
+      <button class="admin-nav-item" data-section="finance">
+        <span>◉</span> Financeiro
+      </button>
+
+      <button class="admin-nav-item" data-section="coupons">
+        <span>◇</span> Cupons
+      </button>
+
+      <button class="admin-nav-item" data-section="logistics">
+        <span>⌁</span> Logística
+      </button>
+
+      <button class="admin-nav-item" data-section="reports">
+        <span>▥</span> Relatórios
+      </button>
+
+      <button class="admin-nav-item" data-section="audit">
+        <span>⌕</span> Auditoria
+      </button>
+
+      <button class="admin-nav-item" data-section="settings">
+        <span>⚙</span> Configurações
+      </button>
+
+    </nav>
+
+    <div class="admin-sidebar-footer">
+
+      <div class="admin-user">
+        <div class="admin-avatar">A</div>
+
+        <div>
+          <strong>Administrador</strong>
+          <span>Acesso total</span>
+        </div>
+      </div>
+
+      <button id="adminLogout" class="admin-logout">
+        Sair
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <main class="admin-main">
+
     <header class="admin-header">
 
-        <div class="admin-header-brand">
-            <span class="admin-brand-mark">A</span>
+      <div>
+        <h1 id="adminPageTitle">Dashboard</h1>
 
-            <div>
-                <strong>AURÃ‰A</strong>
-                <small>ADMINISTRAÃ‡ÃƒO</small>
-            </div>
+        <p id="adminPageDescription">
+          Visão geral da operação da AURÉA
+        </p>
+      </div>
+
+      <div class="admin-header-actions">
+
+        <button class="admin-icon-button">
+          🔔
+        </button>
+
+        <div class="admin-profile">
+          <div class="admin-avatar">A</div>
+
+          <div>
+            <strong>Administrador</strong>
+            <span>Administrador</span>
+          </div>
         </div>
 
-        <div class="admin-header-actions">
-
-            <span
-                id="adminUserEmail"
-                class="admin-user-email"
-            ></span>
-
-            <button
-                id="adminLogoutButton"
-                class="admin-logout-button"
-                type="button"
-            >
-                Sair
-            </button>
-
-        </div>
+      </div>
 
     </header>
 
 
-    <main class="admin-main">
+    <section class="admin-content">
 
-        <section class="admin-intro">
+      <!-- DASHBOARD -->
 
-            <div>
-                <p class="eyebrow">
-                    CONTROLE DA LOJA
-                </p>
+      <div id="section-dashboard" class="admin-section active">
 
-                <h1>
-                    Painel de <em>pedidos.</em>
-                </h1>
+        <div class="admin-metrics">
 
-                <p class="admin-intro-description">
-                    Acompanhe pedidos, confirme pagamentos,
-                    atualize entregas e consulte seus clientes.
-                </p>
+          <article class="metric-card">
+            <span>Faturamento</span>
+            <strong>R$ 12.480,00</strong>
+            <small>Período atual</small>
+          </article>
+
+          <article class="metric-card">
+            <span>Pedidos</span>
+            <strong>148</strong>
+            <small>Pedidos registrados</small>
+          </article>
+
+          <article class="metric-card">
+            <span>Clientes</span>
+            <strong>96</strong>
+            <small>Clientes cadastrados</small>
+          </article>
+
+          <article class="metric-card">
+            <span>Ticket médio</span>
+            <strong>R$ 84,32</strong>
+            <small>Valor médio por pedido</small>
+          </article>
+
+        </div>
+
+
+        <div class="dashboard-grid">
+
+          <article class="admin-panel sales-panel">
+
+            <div class="panel-header">
+
+              <div>
+                <h2>Vendas</h2>
+                <span>Desempenho dos últimos meses</span>
+              </div>
+
+              <select>
+                <option>Últimos 6 meses</option>
+                <option>Últimos 12 meses</option>
+              </select>
+
             </div>
 
-            <div class="admin-summary">
+            <div class="sales-chart">
 
-                <div class="admin-summary-card">
-                    <span>Pedidos</span>
-                    <strong id="ordersCount">0</strong>
-                </div>
+              <div class="chart-column">
+                <div class="chart-bar" style="height:45%"></div>
+                <span>ABR</span>
+              </div>
 
-                <div class="admin-summary-card">
-                    <span>Aguardando PIX</span>
-                    <strong id="pendingPaymentsCount">0</strong>
-                </div>
+              <div class="chart-column">
+                <div class="chart-bar" style="height:60%"></div>
+                <span>MAI</span>
+              </div>
 
-                <div class="admin-summary-card">
-                    <span>Em andamento</span>
-                    <strong id="activeOrdersCount">0</strong>
-                </div>
+              <div class="chart-column">
+                <div class="chart-bar" style="height:54%"></div>
+                <span>JUN</span>
+              </div>
+
+              <div class="chart-column">
+                <div class="chart-bar" style="height:72%"></div>
+                <span>JUL</span>
+              </div>
+
+              <div class="chart-column">
+                <div class="chart-bar" style="height:68%"></div>
+                <span>AGO</span>
+              </div>
+
+              <div class="chart-column">
+                <div class="chart-bar active" style="height:91%"></div>
+                <span>SET</span>
+              </div>
 
             </div>
 
-        </section>
+          </article>
 
 
-        <section class="admin-customers-section">
+          <article class="admin-panel">
 
-            <div class="admin-section-heading">
+            <div class="panel-header">
+              <div>
+                <h2>Operação</h2>
+                <span>Status atual</span>
+              </div>
+            </div>
 
+            <div class="operation-list">
+
+              <div>
+                <span>Pagamentos pendentes</span>
+                <strong>5</strong>
+              </div>
+
+              <div>
+                <span>Pedidos para envio</span>
+                <strong>12</strong>
+              </div>
+
+              <div>
+                <span>Reservas de estoque</span>
+                <strong>18</strong>
+              </div>
+
+              <div>
+                <span>Cupons ativos</span>
+                <strong>7</strong>
+              </div>
+
+            </div>
+
+          </article>
+
+        </div>
+
+
+        <div class="dashboard-grid">
+
+          <article class="admin-panel">
+
+            <div class="panel-header">
+
+              <div>
+                <h2>Pedidos recentes</h2>
+                <span>Últimas movimentações</span>
+              </div>
+
+              <button
+                class="admin-button"
+                data-section-link="orders"
+              >
+                Ver todos
+              </button>
+
+            </div>
+
+            <div class="table-wrapper">
+
+              <table class="admin-table">
+
+                <thead>
+                  <tr>
+                    <th>Pedido</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  <tr>
+                    <td>AUR-MU5WXTNF</td>
+                    <td>Cliente</td>
+                    <td>R$ 136,72</td>
+                    <td>
+                      <span class="status warning">
+                        Aguardando PIX
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>AUR-MU5WX8P2</td>
+                    <td>Cliente</td>
+                    <td>R$ 219,80</td>
+                    <td>
+                      <span class="status success">
+                        Pago
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>AUR-MU5WV4K1</td>
+                    <td>Cliente</td>
+                    <td>R$ 89,90</td>
+                    <td>
+                      <span class="status info">
+                        Enviado
+                      </span>
+                    </td>
+                  </tr>
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </article>
+
+
+          <article class="admin-panel">
+
+            <div class="panel-header">
+
+              <div>
+                <h2>Estoque crítico</h2>
+                <span>Produtos com baixo estoque</span>
+              </div>
+
+              <button
+                class="admin-button"
+                data-section-link="inventory"
+              >
+                Estoque
+              </button>
+
+            </div>
+
+            <div class="stock-list">
+
+              <div class="stock-item">
                 <div>
-                    <p class="eyebrow">
-                        RELACIONAMENTO
-                    </p>
-
-                    <h2>
-                        Clientes
-                    </h2>
+                  <strong>Acid Absolut Repair</strong>
+                  <span>SKU VEHZKS3RJ</span>
                 </div>
 
-                <span
-                    id="customersCount"
-                    class="admin-section-count"
-                >
-                    0 clientes
-                </span>
+                <b>3 un.</b>
+              </div>
 
-            </div>
-
-
-            <div
-                id="adminCustomersEmpty"
-                class="admin-empty"
-                hidden
-            >
-                <strong>Nenhum cliente encontrado.</strong>
-
-                <p>
-                    Os clientes aparecerão aqui depois que
-                    pedidos forem realizados.
-                </p>
-            </div>
-
-
-            <div
-                id="adminCustomersList"
-                class="admin-customers-list"
-            ></div>
-
-        </section>
-
-
-        <section
-            id="adminCustomerDetail"
-            class="admin-customer-detail"
-            hidden
-        >
-
-            <div class="admin-customer-detail-header">
-
+              <div class="stock-item">
                 <div>
-
-                    <p class="eyebrow">
-                        CLIENTE
-                    </p>
-
-                    <h2 id="customerDetailName">
-                        Cliente
-                    </h2>
-
-                    <p
-                        id="customerDetailContact"
-                        class="admin-customer-detail-contact"
-                    ></p>
-
+                  <strong>Máscara Repair</strong>
+                  <span>SKU AUR-MSK-02</span>
                 </div>
 
-                <button
-                    id="closeCustomerDetailButton"
-                    class="admin-detail-close-button"
-                    type="button"
-                >
-                    Fechar
-                </button>
+                <b>5 un.</b>
+              </div>
 
-            </div>
-
-
-            <div class="admin-customer-detail-summary">
-
-                <div class="admin-summary-card">
-                    <span>Pedidos</span>
-                    <strong id="customerDetailOrdersCount">
-                        0
-                    </strong>
-                </div>
-
-                <div class="admin-summary-card">
-                    <span>Total gasto</span>
-                    <strong id="customerDetailTotalSpent">
-                        R$ 0,00
-                    </strong>
-                </div>
-
-                <div class="admin-summary-card">
-                    <span>Último pedido</span>
-                    <strong id="customerDetailLastOrder">
-                        —
-                    </strong>
-                </div>
-
-            </div>
-
-
-            <div class="admin-customer-history">
-
-                <div class="admin-section-heading">
-
-                    <div>
-                        <p class="eyebrow">
-                            HISTÓRICO
-                        </p>
-
-                        <h3>
-                            Pedidos do cliente
-                        </h3>
-                    </div>
-
-                </div>
-
-                <div
-                    id="customerDetailOrders"
-                    class="admin-customer-history-list"
-                ></div>
-
-            </div>
-
-
-            <div class="admin-customer-communication">
-
+              <div class="stock-item">
                 <div>
-
-                    <p class="eyebrow">
-                        COMUNICAÇÃO
-                    </p>
-
-                    <h3>
-                        Agradecer pela compra
-                    </h3>
-
-                    <p>
-                        Selecione um pedido para preparar
-                        uma mensagem personalizada.
-                    </p>
-
+                  <strong>Finalizador Premium</strong>
+                  <span>SKU AUR-FIN-07</span>
                 </div>
 
-                <div
-                    id="customerCommunicationActions"
-                    class="admin-communication-actions"
-                ></div>
+                <b>2 un.</b>
+              </div>
 
             </div>
 
-        </section>
+          </article>
+
+        </div>
+
+      </div>
 
 
-        <section class="admin-orders-section">
+      <!-- MÓDULOS -->
 
-            <div class="admin-section-heading">
+      <div id="section-orders" class="admin-section"></div>
+      <div id="section-products" class="admin-section"></div>
+      <div id="section-categories" class="admin-section"></div>
+      <div id="section-inventory" class="admin-section"></div>
+      <div id="section-customers" class="admin-section"></div>
+      <div id="section-finance" class="admin-section"></div>
+      <div id="section-coupons" class="admin-section"></div>
+      <div id="section-logistics" class="admin-section"></div>
+      <div id="section-reports" class="admin-section"></div>
+      <div id="section-audit" class="admin-section"></div>
+      <div id="section-settings" class="admin-section"></div>
 
-                <div>
-                    <p class="eyebrow">
-                        OPERAÃ‡ÃƒO
-                    </p>
+    </section>
 
-                    <h2>
-                        Pedidos recentes
-                    </h2>
-                </div>
+  </main>
 
-                <button
-                    id="refreshOrdersButton"
-                    class="admin-refresh-button"
-                    type="button"
-                >
-                    Atualizar
-                </button>
+</div>
 
-            </div>
-
-
-            <div
-                id="adminMessage"
-                class="admin-message"
-                role="status"
-                aria-live="polite"
-                hidden
-            ></div>
-
-
-            <div
-                id="adminOrdersLoading"
-                class="admin-loading"
-            >
-                Carregando pedidos...
-            </div>
-
-
-            <div
-                id="adminOrdersEmpty"
-                class="admin-empty"
-                hidden
-            >
-                <strong>Nenhum pedido encontrado.</strong>
-
-                <p>
-                    Quando um pedido for realizado na loja,
-                    ele aparecerá aqui.
-                </p>
-            </div>
-
-
-            <div
-                id="adminOrdersList"
-                class="admin-orders-list"
-            ></div>
-
-        </section>
-
-    </main>
-
-
-    <script
-        type="module"
-        src="../js/admin/admin.js"
-    ></script>
+<script type="module" src="../js/admin/admin.js"></script>
 
 </body>
-
 </html>

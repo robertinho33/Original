@@ -3,7 +3,7 @@
 const service =
   require('./inventory-service');
 
-function list(req, res) {
+async function list(req, res) {
   const repository =
     require('./inventory-repository');
 
@@ -13,7 +13,7 @@ function list(req, res) {
   });
 }
 
-function reservations(req, res) {
+async function reservations(req, res) {
   const repository =
     require('./inventory-repository');
 
@@ -28,3 +28,4 @@ module.exports = {
   list,
   reservations
 };
+

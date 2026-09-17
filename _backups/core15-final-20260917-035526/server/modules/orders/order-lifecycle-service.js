@@ -1,0 +1,112 @@
+﻿'use strict';
+
+const {
+  ORDER_STATES,
+  canTransition
+} = require('./order-lifecycle');
+
+const {
+  AppError
+} = require('../../core/app-error');
+
+const repository =
+  require('./order-repository');
+
+const audit =
+  require('../../infrastructure/audit');
+
+function transitionOrder(
+  orderNumber,
+  nextState,
+  context = {}
+) {
+  const order =
+    repository.findByOrderNumber(
+      orderNumber
+    );
+
+  if (!order) {
+    throw new AppError(
+      'Pedido não encontrado.',
+      {
+        code: 'ORDER_NOT_FOUND',
+        status: 404
+      }
+    );
+  }
+
+  const currentState =
+    order.status ||
+    ORDER_STATES.AWAITING_PAYMENT;
+
+  if (
+    !canTransition(
+      currentState,
+      nextState
+    )
+  ) {
+    throw new AppError(
+      `Transição inválida: ${currentState} → ${nextState}.`,
+      {
+        code: 'INVALID_ORDER_TRANSITION',
+        status: 409,
+        details: {
+          orderNumber,
+          from: currentState,
+          to: nextState
+        }
+      }
+    );
+  }
+
+  const updated = {
+    ...order,
+
+    status: nextState,
+
+    updatedAt:
+      new Date().toISOString(),
+
+    lifecycle: {
+      ...(order.lifecycle || {}),
+
+      previousStatus:
+        currentState,
+
+      currentStatus:
+        nextState,
+
+      lastTransitionAt:
+        new Date().toISOString(),
+
+      lastTransitionBy:
+        context.actor || 'system'
+    }
+  };
+
+  const saved =
+    repository.update(
+      orderNumber,
+      updated
+    );
+
+  audit.recordEvent({
+    type: 'ORDER_STATUS_CHANGED',
+    orderNumber,
+    requestId:
+      context.requestId || null,
+
+    data: {
+      from: currentState,
+      to: nextState,
+      actor:
+        context.actor || 'system'
+    }
+  });
+
+  return saved;
+}
+
+module.exports = {
+  transitionOrder
+};

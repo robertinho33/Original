@@ -1,0 +1,25 @@
+﻿============================================================
+AUREA — DIFERENCA LOCAL x COMMIT 544c735
+============================================================
+
+
+===== index.html =====
+Nenhuma diferenca textual encontrada.
+
+===== css\style.css =====
+Nenhuma diferenca textual encontrada.
+
+===== css\checkout.css =====
+Nenhuma diferenca textual encontrada.
+
+===== js\checkout\checkout.js =====
+Nenhuma diferenca textual encontrada.
+
+===== js\admin\admin.js =====
+Nenhuma diferenca textual encontrada.
+
+===== pages\admin.html =====
+Nenhuma diferenca textual encontrada.
+
+===== pages\checkout.html =====
+Nenhuma diferenca textual encontrada.

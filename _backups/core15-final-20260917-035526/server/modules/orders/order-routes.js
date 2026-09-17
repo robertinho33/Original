@@ -1,0 +1,46 @@
+﻿'use strict';
+
+const { requireAdmin } = require('../../core/admin-auth');
+
+const express = require('express');
+const lifecycleController = require('./order-lifecycle-controller');
+
+const { createCompleteOrderController, getCompleteOrderController } = require('./complete-order-controller');
+
+const { createOrderWithPaymentController } = require('./order-orchestrator-controller');
+
+const {
+  createOrderController,
+  getOrderController,
+  listOrdersController
+} = require('./order-controller');
+
+const router = express.Router();
+
+router.post('/', createOrderController);
+
+router.post('/complete', createCompleteOrderController);
+
+router.post('/transaction', createOrderWithPaymentController);
+
+router.get('/', listOrdersController);
+
+router.get('/:orderNumber', getOrderController);
+
+router.get('/:orderNumber/complete', getCompleteOrderController);
+
+router.get(
+  '/lifecycle/states',
+  lifecycleController.states
+);
+
+router.patch(
+  '/:orderNumber/status',
+  requireAdmin, lifecycleController.changeStatus
+);
+
+module.exports = router;
+
+
+
+

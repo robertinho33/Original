@@ -1,0 +1,37 @@
+﻿AUREA COSMETICS
+DIAGNÓSTICO UTF-8 — ARQUIVOS ATIVOS
+Data: 16/09/2026 22:51:31
+
+Arquivos analisados: 69
+Arquivos afetados: 27
+Total de marcadores: 519
+
+ARQUIVOS AFETADOS
+-----------------
+105 - js\orders\produtos.csv
+61 - data\produtos.csv
+59 - data\catalog\_staging\catalog-normalized.json
+59 - data\catalog\catalog-runtime.json
+54 - data\catalog\sources\Brae.csv
+41 - data\_staging\catalog-preview-block10.json
+24 - data\catalog.json
+20 - index.html
+14 - js\admin\admin.js
+12 - pages\checkout.html
+12 - data\catalog\manifests\catalog-forensic-audit.json
+11 - pages\admin.html
+10 - js\checkout\checkout.js
+8 - data\catalog\sources\Inovax.csv
+7 - js\app.js
+4 - data\catalog\manifests\csv-diagnostic.json
+4 - data\_staging\catalog-audit-block11.json
+2 - js\catalog\sources\ecobelle-source.js
+2 - data\catalog\sources\EcoBelle.csv
+2 - server.js
+2 - data\catalog\manifests\catalog-integral-audit.json
+1 - README.md
+1 - _AUDITORIA-07-08-09-20260916-224616.txt
+1 - css\style.css
+1 - _AUDITORIA-07-08-09-20260916-223952.txt
+1 - js\orders\logistics-status.js
+1 - js\orders\order-history.js

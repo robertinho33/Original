@@ -1,1075 +1,1185 @@
-'use strict';
-
-import {
-    observeAdminAuth,
-    logoutAdmin
-} from '../auth/admin-auth.js';
-
-import {
-    getAllOrders
-} from '../orders/order-service.js';
-
-import {
-    buildCustomerSummaries
-} from './customer-service.js';
-
-import {
-    getCustomerDetail
-} from './customer-detail-service.js';
-
-import {
-    getOrderStatusLabel
-} from '../orders/order-status.js';
-
-import {
-    getLogisticsStatusLabel,
-    LOGISTICS_FLOW
-} from '../orders/logistics-status.js';
-
-import {
-    confirmPayment,
-    advanceLogistics
-} from '../orders/order-admin-service.js';
-
-const elements = {
-    userEmail: document.getElementById('adminUserEmail'),
-    logoutButton: document.getElementById('adminLogoutButton'),
-
-    ordersCount: document.getElementById('ordersCount'),
-    pendingPaymentsCount:
-        document.getElementById('pendingPaymentsCount'),
-    activeOrdersCount:
-        document.getElementById('activeOrdersCount'),
-
-    customersCount:
-        document.getElementById('customersCount'),
-
-    customersEmpty:
-        document.getElementById('adminCustomersEmpty'),
-
-    customersList:
-        document.getElementById('adminCustomersList'),
-
-    customerDetail:
-        document.getElementById('adminCustomerDetail'),
-
-    customerDetailName:
-        document.getElementById('customerDetailName'),
-
-    customerDetailContact:
-        document.getElementById('customerDetailContact'),
-
-    customerDetailOrdersCount:
-        document.getElementById('customerDetailOrdersCount'),
-
-    customerDetailTotalSpent:
-        document.getElementById('customerDetailTotalSpent'),
-
-    customerDetailLastOrder:
-        document.getElementById('customerDetailLastOrder'),
-
-    customerDetailOrders:
-        document.getElementById('customerDetailOrders'),
-
-    customerCommunicationActions:
-        document.getElementById(
-            'customerCommunicationActions'
-        ),
-
-    closeCustomerDetailButton:
-        document.getElementById(
-            'closeCustomerDetailButton'
-        ),
-
-    refreshButton:
-        document.getElementById('refreshOrdersButton'),
-
-    message:
-        document.getElementById('adminMessage'),
-
-    loading:
-        document.getElementById('adminOrdersLoading'),
-
-    empty:
-        document.getElementById('adminOrdersEmpty'),
-
-    ordersList:
-        document.getElementById('adminOrdersList')
+﻿const MODULES = {
+    dashboard: "Dashboard",
+    orders: "Pedidos",
+    products: "Produtos",
+    categories: "Categorias",
+    inventory: "Estoque",
+    customers: "Clientes",
+    finance: "Financeiro",
+    coupons: "Cupons",
+    logistics: "Logística",
+    reports: "Relatórios",
+    audit: "Auditoria",
+    settings: "Configurações"
 };
 
-function showMessage(message) {
-    elements.message.textContent = message;
-    elements.message.hidden = false;
-}
+const API_BASE = "/api/admin";
 
-function clearMessage() {
-    elements.message.textContent = '';
-    elements.message.hidden = true;
-}
+const state = {
+    cache: {},
+    loading: false
+};
 
-function setLoading(loading) {
-    elements.loading.hidden = !loading;
-    elements.refreshButton.disabled = loading;
-}
+async function api(module) {
+    if (state.cache[module]) {
+        return state.cache[module];
+    }
 
-function formatCurrency(value) {
-    const amount = Number(value || 0);
-
-    return amount.toLocaleString(
-        'pt-BR',
+    const response = await fetch(
+        `${API_BASE}/${module}`,
         {
-            style: 'currency',
-            currency: 'BRL'
+            headers: {
+                Accept: "application/json"
+            }
         }
     );
+
+    if (!response.ok) {
+        throw new Error(
+            `Falha ao carregar ${module}: HTTP ${response.status}`
+        );
+    }
+
+    const payload = await response.json();
+
+    if (!payload.success) {
+        throw new Error(
+            payload.message || `Falha ao carregar ${module}`
+        );
+    }
+
+    state.cache[module] = payload.data;
+
+    return payload.data;
 }
 
-function formatDate(value) {
+function money(value) {
+    return new Intl.NumberFormat(
+        "pt-BR",
+        {
+            style: "currency",
+            currency: "BRL"
+        }
+    ).format(Number(value || 0));
+}
+
+function number(value) {
+    return new Intl.NumberFormat(
+        "pt-BR"
+    ).format(Number(value || 0));
+}
+
+function date(value) {
     if (!value) {
-        return 'Data não informada';
+        return "—";
     }
 
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return 'Data inválida';
-    }
-
-    return date.toLocaleString(
-        'pt-BR',
+    return new Intl.DateTimeFormat(
+        "pt-BR",
         {
-            dateStyle: 'short',
-            timeStyle: 'short'
+            dateStyle: "short",
+            timeStyle: "short"
         }
-    );
+    ).format(new Date(value));
 }
 
-function getCustomerName(order) {
-    return order?.customer?.name ||
-        'Cliente não informado';
-}
+function statusClass(status) {
+    const value = String(status || "").toLowerCase();
 
-function getPaymentLabel(order) {
-    const status =
-        order?.payment?.status || 'pending';
-
-    switch (status) {
-        case 'confirmed':
-            return 'Confirmado';
-
-        case 'cancelled':
-        case 'rejected':
-            return 'Cancelado';
-
-        case 'pending':
-        default:
-            return 'Aguardando';
-    }
-}
-
-function getPaymentClass(order) {
-    const status =
-        order?.payment?.status || 'pending';
-
-    return `payment-${status}`;
-}
-
-function escapeHtml(value) {
-    return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-function getNextLogisticsStatus(order) {
-    const currentStatus =
-        order?.logistics?.status || 'new';
-
-    const currentIndex =
-        LOGISTICS_FLOW.indexOf(currentStatus);
-
-    if (currentIndex === -1) {
-        return null;
+    if (
+        value.includes("paid") ||
+        value.includes("pago") ||
+        value.includes("active") ||
+        value.includes("ativo") ||
+        value.includes("success") ||
+        value.includes("sucesso") ||
+        value.includes("delivered") ||
+        value.includes("enviado")
+    ) {
+        return "success";
     }
 
-    return LOGISTICS_FLOW[currentIndex + 1] || null;
-}
-
-function formatCustomerPhone(phone) {
-    const digits = String(phone || '')
-        .replace(/\D/g, '');
-
-    if (digits.length === 11) {
-        return digits.replace(
-            /^(\d{2})(\d{5})(\d{4})$/,
-            '($1) $2-$3'
-        );
+    if (
+        value.includes("pending") ||
+        value.includes("pendente") ||
+        value.includes("prepar") ||
+        value.includes("aguard")
+    ) {
+        return "warning";
     }
 
-    if (digits.length === 10) {
-        return digits.replace(
-            /^(\d{2})(\d{4})(\d{4})$/,
-            '($1) $2-$3'
-        );
+    if (
+        value.includes("cancel") ||
+        value.includes("error") ||
+        value.includes("erro") ||
+        value.includes("expired") ||
+        value.includes("inactive")
+    ) {
+        return "danger";
     }
 
-    return String(phone || '').trim() ||
-        'Telefone não informado';
+    return "info";
 }
 
-function createCustomerCard(customer, orders) {
-    const card =
-        document.createElement('article');
+function status(value) {
+    return `
+        <span class="status ${statusClass(value)}">
+            ${value || "—"}
+        </span>
+    `;
+}
 
-    card.className =
-        'admin-customer-card';
+function metricCard(
+    label,
+    value,
+    detail
+) {
+    return `
+        <article class="admin-metric">
+            <span>${label}</span>
+            <strong>${value}</strong>
+            <small>${detail}</small>
+        </article>
+    `;
+}
 
-    const customerName =
-        escapeHtml(
-            customer.name ||
-            'Cliente não informado'
-        );
-
-    const customerEmail =
-        escapeHtml(
-            customer.email ||
-            'E-mail não informado'
-        );
-
-    const customerPhone =
-        escapeHtml(
-            formatCustomerPhone(
-                customer.phone
-            )
-        );
-
-    const ordersCount =
-        Number(customer.ordersCount || 0);
-
-    const totalSpent =
-        formatCurrency(
-            customer.totalSpent
-        );
-
-    const lastOrderId =
-        escapeHtml(
-            customer.lastOrderId ||
-            '—'
-        );
-
-    const lastOrderAt =
-        formatDate(
-            customer.lastOrderAt
-        );
-
-    card.innerHTML = `
-        <div class="admin-customer-card-header">
-
-            <div>
-                <h3 class="admin-customer-name">
-                    ${customerName}
-                </h3>
-
-                <p class="admin-customer-email">
-                    ${customerEmail}
-                </p>
+function table(
+    headers,
+    rows
+) {
+    if (!rows.length) {
+        return `
+            <div class="empty-module">
+                <div class="empty-module-icon">◈</div>
+                <strong>Nenhum registro</strong>
+                <span>Não existem dados disponíveis para esta área.</span>
             </div>
+        `;
+    }
 
-            <span class="admin-customer-orders">
-                ${ordersCount}
-                ${ordersCount === 1 ? 'pedido' : 'pedidos'}
-            </span>
+    return `
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        ${headers
+                            .map(header => `<th>${header}</th>`)
+                            .join("")}
+                    </tr>
+                </thead>
 
-        </div>
-
-        <div class="admin-customer-card-body">
-
-            <div class="admin-customer-data">
-                <span>Telefone</span>
-                <strong>
-                    ${customerPhone}
-                </strong>
-            </div>
-
-            <div class="admin-customer-data">
-                <span>Total comprado</span>
-                <strong>
-                    ${totalSpent}
-                </strong>
-            </div>
-
-            <div class="admin-customer-data">
-                <span>Último pedido</span>
-                <strong>
-                    ${lastOrderId}
-                </strong>
-            </div>
-
-            <div class="admin-customer-data">
-                <span>Data do último pedido</span>
-                <strong>
-                    ${lastOrderAt}
-                </strong>
-            </div>
-
+                <tbody>
+                    ${rows.join("")}
+                </tbody>
+            </table>
         </div>
     `;
-
-    card.setAttribute(
-        'role',
-        'button'
-    );
-
-    card.setAttribute(
-        'tabindex',
-        '0'
-    );
-
-    const openDetail = () => {
-        openCustomerDetail(
-            customer,
-            orders
-        );
-    };
-
-    card.addEventListener(
-        'click',
-        openDetail
-    );
-
-    card.addEventListener(
-        'keydown',
-        event => {
-
-            if (
-                event.key === 'Enter' ||
-                event.key === ' '
-            ) {
-                event.preventDefault();
-                openDetail();
-            }
-        }
-    );
-
-    return card;
 }
 
-function renderCustomers(orders) {
-    const customers =
-        buildCustomerSummaries(orders);
-
-    elements.customersList.innerHTML = '';
-
-    elements.customersCount.textContent =
-        `${customers.length} ${
-            customers.length === 1
-                ? 'cliente'
-                : 'clientes'
-        }`;
-
-    elements.customersEmpty.hidden =
-        customers.length !== 0;
-
-    if (!customers.length) {
-        return;
-    }
-
-    const fragment =
-        document.createDocumentFragment();
-
-    customers.forEach(customer => {
-        fragment.appendChild(
-            createCustomerCard(
-                customer,
-                orders
-            )
-        );
-    });
-
-    elements.customersList.appendChild(
-        fragment
-    );
-}
-let selectedCustomerDetail = null;
-let selectedCustomerOrder = null;
-
-
-function formatCustomerMoney(value) {
-
-    const numericValue =
-        Number(value || 0);
-
-    return numericValue.toLocaleString(
-        'pt-BR',
-        {
-            style: 'currency',
-            currency: 'BRL'
-        }
-    );
-}
-
-
-function formatCustomerOrderDate(value) {
-
-    if (!value) {
-        return 'Data não informada';
-    }
-
-    const date =
-        new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return 'Data inválida';
-    }
-
-    return date.toLocaleDateString(
-        'pt-BR',
-        {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        }
-    );
-}
-
-
-function renderCustomerOrderHistory() {
-
-    const container =
-        elements.customerDetailOrders;
-
-    container.innerHTML = '';
-
-    const orders =
-        selectedCustomerDetail?.orders || [];
-
-    if (!orders.length) {
-
-        container.innerHTML = `
-            <div class="admin-empty">
-                <strong>Nenhum pedido encontrado.</strong>
-            </div>
-        `;
-
-        return;
-    }
-
-    orders.forEach(order => {
-
-        const item =
-            document.createElement('button');
-
-        item.type = 'button';
-
-        item.className =
-            'admin-customer-history-item';
-
-        if (
-            selectedCustomerOrder &&
-            selectedCustomerOrder.id === order.id
-        ) {
-            item.classList.add('is-selected');
-        }
-
-        item.innerHTML = `
-            <span class="admin-customer-history-order">
-                <strong>
-                    ${escapeHtml(
-                        order.id || 'Pedido sem identificação'
-                    )}
-                </strong>
-
-                <span>
-                    ${formatCustomerOrderDate(
-                        order.createdAt
-                    )}
-                </span>
-            </span>
-
-            <span class="admin-customer-history-total">
-                ${formatCustomerMoney(order.total)}
-            </span>
-
-            <span class="admin-customer-history-status">
-                ${escapeHtml(
-                    order.logisticsStatus || 'new'
-                )}
-            </span>
-        `;
-
-        item.addEventListener(
-            'click',
-            () => {
-
-                selectedCustomerOrder =
-                    order;
-
-                renderCustomerOrderHistory();
-
-                renderCustomerCommunication();
-            }
-        );
-
-        container.appendChild(item);
-    });
-}
-
-
-function renderCustomerCommunication() {
-
-    const container =
-        elements.customerCommunicationActions;
-
-    container.innerHTML = '';
-
-    if (!selectedCustomerDetail) {
-        return;
-    }
-
-    if (!selectedCustomerOrder) {
-
-        container.innerHTML = `
-            <span class="admin-section-count">
-                Selecione um pedido
-            </span>
-        `;
-
-        return;
-    }
-
-    const whatsappButton =
-        document.createElement('button');
-
-    whatsappButton.type = 'button';
-
-    whatsappButton.className =
-        'admin-communication-button';
-
-    whatsappButton.textContent =
-        'WhatsApp';
-
-
-    const emailButton =
-        document.createElement('button');
-
-    emailButton.type = 'button';
-
-    emailButton.className =
-        'admin-communication-button secondary';
-
-    emailButton.textContent =
-        'E-mail';
-
-
-    container.append(
-        whatsappButton,
-        emailButton
-    );
-}
-
-
-function openCustomerDetail(
-    customer,
-    orders
+function moduleShell(
+    title,
+    description,
+    actions,
+    content
 ) {
+    return `
+        <section class="module-panel">
 
-    const detail =
-        getCustomerDetail(
-            customer,
-            orders
-        );
+            <div class="module-toolbar">
+                <div>
+                    <h2>${title}</h2>
+                    <p>${description}</p>
+                </div>
 
-    if (!detail) {
-        return;
-    }
-
-    selectedCustomerDetail =
-        detail;
-
-    selectedCustomerOrder =
-        detail.lastOrder || null;
-
-    elements.customerDetailName.textContent =
-        detail.name;
-
-    const contactParts = [];
-
-    if (detail.email) {
-        contactParts.push(detail.email);
-    }
-
-    if (detail.phone) {
-        contactParts.push(
-            formatCustomerPhone(detail.phone)
-        );
-    }
-
-    elements.customerDetailContact.textContent =
-        contactParts.length
-            ? contactParts.join(' • ')
-            : 'Contato não informado';
-
-    elements.customerDetailOrdersCount.textContent =
-        String(detail.ordersCount);
-
-    elements.customerDetailTotalSpent.textContent =
-        formatCustomerMoney(detail.totalSpent);
-
-    elements.customerDetailLastOrder.textContent =
-        detail.lastOrder?.id || '—';
-
-    renderCustomerOrderHistory();
-
-    renderCustomerCommunication();
-
-    elements.customerDetail.hidden = false;
-
-    elements.customerDetail.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
-}
-
-
-function closeCustomerDetail() {
-
-    selectedCustomerDetail = null;
-    selectedCustomerOrder = null;
-
-    elements.customerDetail.hidden = true;
-
-    elements.customerDetailOrders.innerHTML = '';
-    elements.customerCommunicationActions.innerHTML = '';
-}
-
-function createOrderCard(order) {
-    const card =
-        document.createElement('article');
-
-    card.className = 'admin-order-card';
-
-    const orderId =
-        order?.id ||
-        order?.orderId ||
-        '';
-
-    const safeOrderId =
-        escapeHtml(orderId);
-
-    const status =
-        order?.status || 'new';
-
-    const logisticsStatus =
-        order?.logistics?.status || 'new';
-
-    const paymentStatus =
-        order?.payment?.status || 'pending';
-
-    const customerName =
-        escapeHtml(
-            getCustomerName(order)
-        );
-
-    const paymentLabel =
-        getPaymentLabel(order);
-
-    const logisticsLabel =
-        getLogisticsStatusLabel(
-            logisticsStatus
-        );
-
-    let actionHtml = '';
-
-    if (paymentStatus === 'pending') {
-
-        actionHtml = `
-            <button
-                class="admin-action-button primary"
-                type="button"
-                data-action="confirm-payment"
-                data-order-id="${safeOrderId}"
-            >
-                Confirmar pagamento PIX
-            </button>
-        `;
-
-    } else if (paymentStatus === 'confirmed') {
-
-        const nextStatus =
-            getNextLogisticsStatus(order);
-
-        if (nextStatus) {
-
-            const nextLabel =
-                getLogisticsStatusLabel(
-                    nextStatus
-                );
-
-            actionHtml = `
-                <button
-                    class="admin-action-button primary"
-                    type="button"
-                    data-action="advance-logistics"
-                    data-order-id="${safeOrderId}"
-                >
-                    Avançar: ${escapeHtml(nextLabel)}
-                </button>
-            `;
-        }
-    }
-
-    card.innerHTML = `
-        <div class="admin-order-card-header">
-
-            <div>
-                <h3 class="admin-order-id">
-                    ${safeOrderId}
-                </h3>
-
-                <div class="admin-order-date">
-                    ${formatDate(order?.createdAt)}
+                <div class="module-actions">
+                    ${actions || ""}
                 </div>
             </div>
 
-            <span class="admin-order-status">
-                ${escapeHtml(
-                    getOrderStatusLabel(status)
-                )}
-            </span>
+            ${content}
 
-        </div>
-
-        <div class="admin-order-card-body">
-
-            <div class="admin-order-data">
-                <span>Cliente</span>
-                <strong>
-                    ${customerName}
-                </strong>
-            </div>
-
-            <div class="admin-order-data">
-                <span>Pagamento</span>
-                <strong class="${escapeHtml(
-                    getPaymentClass(order)
-                )}">
-                    ${escapeHtml(paymentLabel)}
-                </strong>
-            </div>
-
-            <div class="admin-order-data">
-                <span>Logística</span>
-                <strong>
-                    ${escapeHtml(logisticsLabel)}
-                </strong>
-            </div>
-
-            <div class="admin-order-data">
-                <span>Total</span>
-                <strong>
-                    ${formatCurrency(order?.total)}
-                </strong>
-            </div>
-
-        </div>
-
-        <div class="admin-order-card-footer">
-
-            ${actionHtml}
-
-        </div>
+        </section>
     `;
-
-    return card;
 }
 
-function renderOrders(orders) {
-    elements.ordersList.innerHTML = '';
+function loading() {
+    return `
+        <section class="module-panel">
+            <div class="admin-loading">
+                <div class="admin-loading-spinner"></div>
+                <strong>Carregando ${MODULES[currentSection()]}</strong>
+                <span>Consultando dados da AURÉA.</span>
+            </div>
+        </section>
+    `;
+}
 
-    elements.empty.hidden =
-        orders.length !== 0;
+function errorView(error) {
+    return `
+        <section class="module-panel">
+            <div class="admin-error">
+                <div class="empty-module-icon">!</div>
+                <strong>Não foi possível carregar os dados.</strong>
+                <span>${error.message}</span>
+                <button
+                    class="admin-button primary"
+                    data-admin-retry
+                >
+                    Tentar novamente
+                </button>
+            </div>
+        </section>
+    `;
+}
 
-    if (!orders.length) {
-        return;
-    }
+function currentSection() {
+    const active = document.querySelector(
+        ".admin-section.active"
+    );
 
-    const sortedOrders =
-        [...orders].sort(
-            (a, b) => {
+    return active
+        ? active.id.replace("section-", "")
+        : "dashboard";
+}
 
-                const dateA =
-                    new Date(
-                        a?.createdAt || 0
-                    ).getTime();
+async function renderDashboard() {
+    const data = await api("dashboard");
 
-                const dateB =
-                    new Date(
-                        b?.createdAt || 0
-                    ).getTime();
+    return moduleShell(
+        "Dashboard",
+        "Visão geral da operação AURÉA em tempo real.",
+        `
+            <button
+                class="admin-button"
+                data-admin-refresh
+            >
+                Atualizar
+            </button>
+        `,
+        `
+            <div class="admin-summary-grid">
 
-                return dateB - dateA;
-            }
-        );
+                ${metricCard(
+                    "Faturamento",
+                    money(data.revenue),
+                    "Receita de pedidos pagos"
+                )}
 
-    const fragment =
-        document.createDocumentFragment();
+                ${metricCard(
+                    "Pedidos",
+                    number(data.orders),
+                    "Pedidos registrados"
+                )}
 
-    sortedOrders.forEach(order => {
-        fragment.appendChild(
-            createOrderCard(order)
-        );
-    });
+                ${metricCard(
+                    "Clientes",
+                    number(data.customers),
+                    "Clientes cadastrados"
+                )}
 
-    elements.ordersList.appendChild(
-        fragment
+                ${metricCard(
+                    "Ticket médio",
+                    money(data.averageTicket),
+                    "Pedidos pagos"
+                )}
+
+            </div>
+
+            <div class="admin-summary-grid">
+
+                ${metricCard(
+                    "Estoque crítico",
+                    number(data.lowStock),
+                    "Produtos abaixo do mínimo"
+                )}
+
+                ${metricCard(
+                    "Pagamentos pendentes",
+                    number(data.pendingPayments),
+                    "Aguardando pagamento"
+                )}
+
+                ${metricCard(
+                    "Para expedir",
+                    number(data.ordersToShip),
+                    "Pedidos na logística"
+                )}
+
+                ${metricCard(
+                    "Pedidos pagos",
+                    number(data.paidOrders),
+                    "Pedidos confirmados"
+                )}
+
+            </div>
+        `
     );
 }
 
-function renderSummary(orders) {
+async function renderOrders() {
+    const rows = await api("orders");
 
-    const pendingPayments =
-        orders.filter(order =>
-            (order?.payment?.status || 'pending') ===
-            'pending'
+    return moduleShell(
+        "Pedidos",
+        "Pedidos registrados no banco de dados.",
+        `
+            <button
+                class="admin-button"
+                data-admin-refresh
+            >
+                Atualizar
+            </button>
+        `,
+        table(
+            [
+                "Pedido",
+                "Cliente",
+                "Pagamento",
+                "Total",
+                "Status",
+                "Data"
+            ],
+            rows.map(item => `
+                <tr>
+                    <td>
+                        <strong>${item.order_number}</strong>
+                    </td>
+
+                    <td>
+                        ${item.customer_name || "Cliente"}
+                    </td>
+
+                    <td>
+                        ${status(item.payment_status)}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${money(item.total_amount)}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${status(item.status)}
+                    </td>
+
+                    <td>
+                        ${date(item.created_at)}
+                    </td>
+                </tr>
+            `)
+        )
+    );
+}
+
+async function renderProducts() {
+    const rows = await api("products");
+
+    return moduleShell(
+        "Produtos",
+        "Catálogo comercial conectado ao PostgreSQL.",
+        `
+            <button class="admin-button primary">
+                + Produto
+            </button>
+        `,
+        table(
+            [
+                "SKU",
+                "Produto",
+                "Categoria",
+                "Preço",
+                "Disponível",
+                "Status"
+            ],
+            rows.map(item => `
+                <tr>
+                    <td>
+                        <strong>${item.sku}</strong>
+                    </td>
+
+                    <td>
+                        ${item.name}
+                    </td>
+
+                    <td>
+                        ${item.category || "—"}
+                    </td>
+
+                    <td>
+                        ${money(item.price)}
+                    </td>
+
+                    <td>
+                        ${number(item.available_quantity)}
+                    </td>
+
+                    <td>
+                        ${item.active
+                            ? status("Ativo")
+                            : status("Inativo")}
+                    </td>
+                </tr>
+            `)
+        )
+    );
+}
+
+async function renderCategories() {
+    const rows = await api("categories");
+
+    return moduleShell(
+        "Categorias",
+        "Categorias vinculadas diretamente aos produtos.",
+        `
+            <button class="admin-button primary">
+                + Categoria
+            </button>
+        `,
+        table(
+            [
+                "Categoria",
+                "Slug",
+                "Produtos",
+                "Status"
+            ],
+            rows.map(item => `
+                <tr>
+                    <td>
+                        <strong>${item.name}</strong>
+                    </td>
+
+                    <td>${item.slug}</td>
+
+                    <td>
+                        ${number(item.product_count)}
+                    </td>
+
+                    <td>
+                        ${item.active
+                            ? status("Ativo")
+                            : status("Inativo")}
+                    </td>
+                </tr>
+            `)
+        )
+    );
+}
+
+async function renderInventory() {
+    const rows = await api("inventory");
+
+    return moduleShell(
+        "Estoque",
+        "Disponibilidade, reservas e estoque mínimo.",
+        `
+            <button class="admin-button">
+                Movimentações
+            </button>
+
+            <button class="admin-button primary">
+                Entrada de estoque
+            </button>
+        `,
+        table(
+            [
+                "SKU",
+                "Produto",
+                "Estoque",
+                "Reservado",
+                "Disponível",
+                "Mínimo"
+            ],
+            rows.map(item => `
+                <tr>
+                    <td>
+                        <strong>${item.sku}</strong>
+                    </td>
+
+                    <td>${item.name}</td>
+
+                    <td>
+                        ${number(item.stock_quantity)}
+                    </td>
+
+                    <td>
+                        ${number(item.reserved_quantity)}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${number(item.available_quantity)}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${number(item.minimum_stock)}
+                    </td>
+                </tr>
+            `)
+        )
+    );
+}
+
+async function renderCustomers() {
+    const rows = await api("customers");
+
+    return moduleShell(
+        "Clientes",
+        "Base de clientes consolidada.",
+        `
+            <button class="admin-button">
+                Exportar
+            </button>
+        `,
+        table(
+            [
+                "Cliente",
+                "E-mail",
+                "Telefone",
+                "Pedidos",
+                "Total gasto",
+                "Cadastro"
+            ],
+            rows.map(item => `
+                <tr>
+                    <td>
+                        <strong>${item.name}</strong>
+                    </td>
+
+                    <td>${item.email || "—"}</td>
+
+                    <td>${item.phone || "—"}</td>
+
+                    <td>
+                        ${number(item.order_count)}
+                    </td>
+
+                    <td>
+                        ${money(item.total_spent)}
+                    </td>
+
+                    <td>
+                        ${date(item.created_at)}
+                    </td>
+                </tr>
+            `)
+        )
+    );
+}
+
+async function renderFinance() {
+    const data = await api("finance");
+
+    return moduleShell(
+        "Financeiro",
+        "Indicadores financeiros derivados dos pedidos.",
+        `
+            <button
+                class="admin-button"
+                data-admin-refresh
+            >
+                Atualizar
+            </button>
+        `,
+        `
+            <div class="admin-summary-grid">
+
+                ${metricCard(
+                    "Faturamento",
+                    money(data.revenue),
+                    "Pedidos pagos"
+                )}
+
+                ${metricCard(
+                    "Pedidos",
+                    number(data.total_orders),
+                    "Total registrado"
+                )}
+
+                ${metricCard(
+                    "Ticket médio",
+                    money(data.average_ticket),
+                    "Pedidos pagos"
+                )}
+
+                ${metricCard(
+                    "Pagamentos pendentes",
+                    money(data.pending_revenue),
+                    "Valor aguardando pagamento"
+                )}
+
+            </div>
+
+            <div class="module-card">
+                <h3>Descontos concedidos</h3>
+                <strong class="finance-highlight">
+                    ${money(data.discounts)}
+                </strong>
+            </div>
+        `
+    );
+}
+
+async function renderCoupons() {
+    const rows = await api("coupons");
+
+    return moduleShell(
+        "Cupons",
+        "Campanhas promocionais armazenadas no banco.",
+        `
+            <button class="admin-button primary">
+                + Novo cupom
+            </button>
+        `,
+        table(
+            [
+                "Código",
+                "Tipo",
+                "Desconto",
+                "Uso",
+                "Validade",
+                "Status"
+            ],
+            rows.map(item => `
+                <tr>
+                    <td>
+                        <strong>${item.code}</strong>
+                    </td>
+
+                    <td>${item.type}</td>
+
+                    <td>
+                        ${money(item.discount_value)}
+                    </td>
+
+                    <td>
+                        ${number(item.usage_count)}
+                        /
+                        ${item.usage_limit || "∞"}
+                    </td>
+
+                    <td>
+                        ${date(item.expires_at)}
+                    </td>
+
+                    <td>
+                        ${status(item.computed_status)}
+                    </td>
+                </tr>
+            `)
+        )
+    );
+}
+
+async function renderLogistics() {
+    const rows = await api("logistics");
+
+    return moduleShell(
+        "Logística",
+        "Expedição e entrega vinculadas aos pedidos.",
+        `
+            <button class="admin-button primary">
+                Gerar expedição
+            </button>
+        `,
+        table(
+            [
+                "Pedido",
+                "Cliente",
+                "Método",
+                "Transportadora",
+                "Rastreamento",
+                "Status",
+                "Previsão"
+            ],
+            rows.map(item => `
+                <tr>
+                    <td>
+                        <strong>${item.order_number}</strong>
+                    </td>
+
+                    <td>
+                        ${item.customer_name || "Cliente"}
+                    </td>
+
+                    <td>
+                        ${item.method}
+                    </td>
+
+                    <td>
+                        ${item.carrier || "—"}
+                    </td>
+
+                    <td>
+                        ${item.tracking_code || "—"}
+                    </td>
+
+                    <td>
+                        ${status(item.status)}
+                    </td>
+
+                    <td>
+                        ${item.estimated_delivery
+                            ? new Intl.DateTimeFormat(
+                                "pt-BR"
+                            ).format(
+                                new Date(
+                                    item.estimated_delivery
+                                )
+                            )
+                            : "—"}
+                    </td>
+                </tr>
+            `)
+        )
+    );
+}
+
+async function renderReports() {
+    const data = await api("reports");
+    const summary = data.summary || {};
+
+    return moduleShell(
+        "Relatórios",
+        "Indicadores comerciais calculados pelo PostgreSQL.",
+        `
+            <button class="admin-button">
+                Atualizar
+            </button>
+
+            <button class="admin-button primary">
+                Exportar
+            </button>
+        `,
+        `
+            <div class="admin-summary-grid">
+
+                ${metricCard(
+                    "Faturamento",
+                    money(summary.revenue),
+                    "Pedidos pagos"
+                )}
+
+                ${metricCard(
+                    "Pedidos",
+                    number(summary.orders),
+                    "Período consolidado"
+                )}
+
+                ${metricCard(
+                    "Ticket médio",
+                    money(summary.average_ticket),
+                    "Pedidos pagos"
+                )}
+
+                ${metricCard(
+                    "Produtos vendidos",
+                    number(
+                        (data.products || [])
+                            .reduce(
+                                (sum, item) =>
+                                    sum +
+                                    Number(
+                                        item.quantity || 0
+                                    ),
+                                0
+                            )
+                    ),
+                    "Unidades vendidas"
+                )}
+
+            </div>
+
+            <div class="module-subgrid">
+
+                <div class="module-card">
+                    <h3>Produtos por faturamento</h3>
+
+                    ${table(
+                        [
+                            "Produto",
+                            "Unidades",
+                            "Faturamento"
+                        ],
+                        (data.products || []).map(
+                            item => `
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            ${item.product_name}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        ${number(item.quantity)}
+                                    </td>
+
+                                    <td>
+                                        ${money(item.revenue)}
+                                    </td>
+                                </tr>
+                            `
+                        )
+                    )}
+                </div>
+
+                <div class="module-card">
+                    <h3>Pedidos por status</h3>
+
+                    ${table(
+                        [
+                            "Status",
+                            "Total"
+                        ],
+                        (data.orderStatus || []).map(
+                            item => `
+                                <tr>
+                                    <td>
+                                        ${status(item.status)}
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            ${number(item.total)}
+                                        </strong>
+                                    </td>
+                                </tr>
+                            `
+                        )
+                    )}
+                </div>
+
+            </div>
+        `
+    );
+}
+
+async function renderAudit() {
+    const rows = await api("audit");
+
+    return moduleShell(
+        "Auditoria",
+        "Registro real das operações administrativas.",
+        `
+            <button class="admin-button">
+                Atualizar
+            </button>
+
+            <button class="admin-button primary">
+                Exportar log
+            </button>
+        `,
+        table(
+            [
+                "Data",
+                "Usuário",
+                "Ação",
+                "Entidade",
+                "Resultado"
+            ],
+            rows.map(item => `
+                <tr>
+                    <td>${date(item.created_at)}</td>
+
+                    <td>
+                        ${item.user_name}
+                    </td>
+
+                    <td>
+                        <strong>${item.action}</strong>
+                    </td>
+
+                    <td>
+                        ${item.entity_type || "—"}
+                        ${item.entity_id
+                            ? ` #${item.entity_id}`
+                            : ""}
+                    </td>
+
+                    <td>
+                        ${status(item.result)}
+                    </td>
+                </tr>
+            `)
+        )
+    );
+}
+
+async function renderSettings() {
+    const data = await api("settings");
+
+    return moduleShell(
+        "Configurações",
+        "Informações operacionais da AURÉA.",
+        `
+            <button class="admin-button primary">
+                Salvar alterações
+            </button>
+        `,
+        `
+            <div class="settings-grid">
+
+                <section class="settings-card">
+
+                    <div class="settings-icon">
+                        ◈
+                    </div>
+
+                    <div class="settings-heading">
+                        <h3>Loja</h3>
+                        <span>
+                            Informações gerais da operação.
+                        </span>
+                    </div>
+
+                    <label>Nome</label>
+                    <input
+                        class="admin-input"
+                        value="AURÉA COSMETICS"
+                    >
+
+                    <label>Descrição</label>
+                    <input
+                        class="admin-input"
+                        value="Beauty • Care • Ritual"
+                    >
+
+                    <button class="admin-button primary">
+                        Salvar
+                    </button>
+
+                </section>
+
+                <section class="settings-card">
+
+                    <div class="settings-icon">
+                        ◇
+                    </div>
+
+                    <div class="settings-heading">
+                        <h3>Base operacional</h3>
+                        <span>
+                            Informações vindas do PostgreSQL.
+                        </span>
+                    </div>
+
+                    <div class="settings-data-row">
+                        <span>Produtos</span>
+                        <strong>
+                            ${number(data.products)}
+                        </strong>
+                    </div>
+
+                    <div class="settings-data-row">
+                        <span>Categorias</span>
+                        <strong>
+                            ${number(data.categories)}
+                        </strong>
+                    </div>
+
+                    <div class="settings-data-row">
+                        <span>Clientes</span>
+                        <strong>
+                            ${number(data.customers)}
+                        </strong>
+                    </div>
+
+                </section>
+
+            </div>
+        `
+    );
+}
+
+const RENDERERS = {
+    dashboard: renderDashboard,
+    orders: renderOrders,
+    products: renderProducts,
+    categories: renderCategories,
+    inventory: renderInventory,
+    customers: renderCustomers,
+    finance: renderFinance,
+    coupons: renderCoupons,
+    logistics: renderLogistics,
+    reports: renderReports,
+    audit: renderAudit,
+    settings: renderSettings
+};
+
+async function renderSection(name) {
+    const target = document.getElementById(
+        `section-${name}`
+    );
+
+    if (!target) {
+        return;
+    }
+
+    target.innerHTML = loading();
+
+    try {
+        const renderer = RENDERERS[name];
+
+        if (!renderer) {
+            throw new Error(
+                `Módulo ${name} não possui renderer.`
+            );
+        }
+
+        target.innerHTML = await renderer();
+
+        bindDynamicActions(target);
+
+    } catch (error) {
+        console.error(
+            "[AUREA ADMIN]",
+            error
         );
 
-    const activeOrders =
-        orders.filter(order => {
+        target.innerHTML = errorView(error);
 
-            const logisticsStatus =
-                order?.logistics?.status || 'new';
+        const retry = target.querySelector(
+            "[data-admin-retry]"
+        );
 
-            return logisticsStatus !== 'delivered';
+        if (retry) {
+            retry.addEventListener(
+                "click",
+                () => {
+                    delete state.cache[name];
+                    renderSection(name);
+                }
+            );
+        }
+    }
+}
+
+function bindDynamicActions(target) {
+    const refresh = target.querySelector(
+        "[data-admin-refresh]"
+    );
+
+    if (refresh) {
+        refresh.addEventListener(
+            "click",
+            () => {
+                const section = currentSection();
+
+                delete state.cache[section];
+
+                renderSection(section);
+            }
+        );
+    }
+}
+
+function showSection(name) {
+    document
+        .querySelectorAll(".admin-section")
+        .forEach(section => {
+            section.classList.remove("active");
         });
 
-    elements.ordersCount.textContent =
-        orders.length;
+    const target = document.getElementById(
+        `section-${name}`
+    );
 
-    elements.pendingPaymentsCount.textContent =
-        pendingPayments.length;
-
-    elements.activeOrdersCount.textContent =
-        activeOrders.length;
-}
-
-async function loadOrders() {
-
-    clearMessage();
-    setLoading(true);
-
-    try {
-
-        const orders =
-            await getAllOrders();
-
-        renderSummary(orders);
-        renderCustomers(orders);
-        renderOrders(orders);
-
-    } catch (error) {
-
-        console.error(
-            '[ADMIN] Erro ao carregar pedidos:',
-            error
-        );
-
-        showMessage(
-            'Não foi possível carregar os pedidos.'
-        );
-
-        elements.ordersList.innerHTML = '';
-        elements.empty.hidden = false;
-
-    } finally {
-
-        setLoading(false);
-    }
-}
-
-async function handleConfirmPayment(button) {
-
-    const orderId =
-        button.dataset.orderId;
-
-    if (!orderId) {
-        showMessage(
-            'Pedido sem identificação.'
-        );
-
-        return;
+    if (target) {
+        target.classList.add("active");
     }
 
-    const confirmed =
-        window.confirm(
-            `Confirmar o pagamento PIX do pedido ${orderId}?`
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-    button.disabled = true;
-    button.textContent =
-        'Confirmando...';
-
-    try {
-
-        await confirmPayment(orderId);
-
-        showMessage(
-            `Pagamento do pedido ${orderId} confirmado com sucesso.`
-        );
-
-        await loadOrders();
-
-    } catch (error) {
-
-        console.error(
-            '[ADMIN] Erro ao confirmar pagamento:',
-            error
-        );
-
-        showMessage(
-            error?.message ||
-            'Não foi possível confirmar o pagamento.'
-        );
-
-        button.disabled = false;
-        button.textContent =
-            'Confirmar pagamento PIX';
-    }
-}
-
-async function handleAdvanceLogistics(button) {
-
-    const orderId =
-        button.dataset.orderId;
-
-    if (!orderId) {
-        showMessage(
-            'Pedido sem identificação.'
-        );
-
-        return;
-    }
-
-    const confirmed =
-        window.confirm(
-            `Avançar a etapa logística do pedido ${orderId}?`
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-    button.disabled = true;
-    button.textContent =
-        'Atualizando...';
-
-    try {
-
-        await advanceLogistics(orderId);
-
-        showMessage(
-            `Etapa logística do pedido ${orderId} atualizada com sucesso.`
-        );
-
-        await loadOrders();
-
-    } catch (error) {
-
-        console.error(
-            '[ADMIN] Erro ao avançar logística:',
-            error
-        );
-
-        showMessage(
-            error?.message ||
-            'Não foi possível atualizar a etapa logística.'
-        );
-
-        button.disabled = false;
-        button.textContent =
-            'Avançar etapa';
-    }
-}
-
-elements.ordersList.addEventListener(
-    'click',
-    event => {
-
-        const paymentButton =
-            event.target.closest(
-                '[data-action="confirm-payment"]'
+    document
+        .querySelectorAll(".admin-nav-item")
+        .forEach(item => {
+            item.classList.toggle(
+                "active",
+                item.dataset.section === name
             );
+        });
 
-        if (paymentButton) {
-            handleConfirmPayment(paymentButton);
-            return;
-        }
+    const title = document.querySelector(
+        "[data-admin-title]"
+    );
 
-        const logisticsButton =
-            event.target.closest(
-                '[data-action="advance-logistics"]'
-            );
+    if (title) {
+        title.textContent =
+            MODULES[name] || "Administração";
+    }
 
-        if (logisticsButton) {
-            handleAdvanceLogistics(logisticsButton);
-        }
+    renderSection(name);
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        document
+            .querySelectorAll(".admin-nav-item")
+            .forEach(item => {
+
+                item.addEventListener(
+                    "click",
+                    event => {
+                        event.preventDefault();
+
+                        const section =
+                            item.dataset.section;
+
+                        if (section) {
+                            showSection(section);
+                        }
+                    }
+                );
+            });
+
+        document
+            .querySelectorAll("[data-section-link]")
+            .forEach(item => {
+
+                item.addEventListener(
+                    "click",
+                    event => {
+                        event.preventDefault();
+
+                        const section =
+                            item.dataset.sectionLink;
+
+                        if (section) {
+                            showSection(section);
+                        }
+                    }
+                );
+            });
+
+        document
+            .querySelectorAll("[data-admin-logout]")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+                        window.location.href =
+                            "../index.html";
+                    }
+                );
+            });
+
+        showSection("dashboard");
     }
 );
 
-elements.refreshButton.addEventListener(
-    'click',
-    loadOrders
-);
+window.AUREA_ADMIN = {
+    modules: MODULES,
+    showSection,
+    refresh(module) {
+        delete state.cache[module];
 
-elements.logoutButton.addEventListener(
-    'click',
-    async () => {
-
-        try {
-
-            await logoutAdmin();
-
-            window.location.replace(
-                './admin-login.html'
-            );
-
-        } catch (error) {
-
-            console.error(
-                '[ADMIN AUTH] Erro ao sair:',
-                error
-            );
-
-            showMessage(
-                'Não foi possível sair da conta.'
-            );
-        }
+        return renderSection(module);
     }
-);
-
-observeAdminAuth(user => {
-
-    if (!user) {
-
-        window.location.replace(
-            './admin-login.html'
-        );
-
-        return;
-    }
-
-    elements.userEmail.textContent =
-        user.email || '';
-
-    loadOrders();
-});
-
-
-
-
-
+};
