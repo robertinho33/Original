@@ -1,13 +1,23 @@
+﻿const orderRoutes = require('./server/modules/orders/order-routes');
+const { applyHttpFoundation } = require('./server/core/http');
+const { errorHandler } = require('./server/infrastructure/error-handler');
+const { registerGracefulShutdown } = require('./server/infrastructure/shutdown');
+const { logger } = require('./server/infrastructure/logger');
 const express = require('express');
+const { adminRoutes } = require('./server/modules/admin');
+const { inventoryRoutes } = require('./server/modules/inventory');
+const monitoringRoutes = require('./server/infrastructure/monitoring/monitoring-routes');
 const cors = require('cors');
 const QRCode = require('qrcode');
 
 const app = express();
+
+applyHttpFoundation(app);
 const PORT = process.env.PORT || 3000;
 
 /*
 =========================================================
- CONFIGURAÇÃO PIX
+ CONFIGURAÃ‡ÃƒO PIX
 =========================================================
 */
 
@@ -23,10 +33,14 @@ const PIX_MERCHANT_NAME = 'AUREA COSMETICS';
 
 app.use(cors());
 app.use(express.json());
+app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/monitoring', monitoringRoutes);
 
 /*
 =========================================================
- UTILITÁRIOS PIX
+ UTILITÃRIOS PIX
 =========================================================
 */
 
@@ -85,7 +99,7 @@ function crc16(payload) {
 
 /*
 =========================================================
- NORMALIZAÇÃO DO TXID
+ NORMALIZAÃ‡ÃƒO DO TXID
 =========================================================
 */
 
@@ -114,7 +128,7 @@ function createPixPayload({ amount, orderId }) {
         numericAmount <= 0
     ) {
         throw new Error(
-            'Valor inválido para o PIX.'
+            'Valor invÃ¡lido para o PIX.'
         );
     }
 
@@ -231,7 +245,7 @@ function createPixPayload({ amount, orderId }) {
 
 /*
 =========================================================
- API — CRIAR PIX
+ API â€” CRIAR PIX
 =========================================================
 */
 
@@ -259,7 +273,7 @@ app.post(
                 return res.status(400).json({
                     success: false,
                     message:
-                        'Valor do pedido inválido.'
+                        'Valor do pedido invÃ¡lido.'
                 });
             }
 
@@ -363,7 +377,7 @@ app.post(
 
 /*
 =========================================================
- ARQUIVOS ESTÁTICOS
+ ARQUIVOS ESTÃTICOS
 =========================================================
 */
 
@@ -380,6 +394,7 @@ app.use(
 
 app.listen(
     PORT,
+    '0.0.0.0',
     () => {
 
         console.log('');
@@ -387,7 +402,7 @@ app.listen(
             '========================================'
         );
         console.log(
-            ' AUREA COSMETICS — SERVIDOR'
+            ' AUREA COSMETICS â€” SERVIDOR'
         );
         console.log(
             '========================================'
@@ -413,3 +428,9 @@ app.listen(
         console.log('');
     }
 );
+
+
+
+
+
+
