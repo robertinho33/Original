@@ -30,7 +30,7 @@ let modalQuantity = 1;
 let lastProductTriggerEl = null;
 
 /* =========================================================
-   ESTADO DOS FILTROS E PAGINAÇÃO
+   ESTADO DOS FILTROS E PAGINA�?�fO
    ========================================================= */
 const ITEMS_PER_PAGE = 8;
 let currentPage = 1;
@@ -157,7 +157,7 @@ function removeFromCart(sku) {
 }
 
 /* =========================================================
-   VML-14 — CAMADA DE CATÁLOGO
+   VML-14 �?" CAMADA DE CATÁLOGO
    ========================================================= */
 
 function normalizeCatalogText(value) {
@@ -235,7 +235,7 @@ async function getCatalogResults() {
     };
 
     return searchProducts(
-        catalogProducts,
+        catalogSearch,
         filters
     );
 }
@@ -543,7 +543,7 @@ async function renderCatalog() {
                             <div
                                 class="product-image-placeholder"
                             >
-                                AURÉA
+                                AUR�?A
                             </div>
                         `;
 
@@ -659,7 +659,7 @@ async function renderCatalog() {
 }
 
 /* =========================================================
-   SACOLA — RENDER & MODAIS
+   SACOLA �?" RENDER & MODAIS
    ========================================================= */
 
 function renderCart() {
@@ -1096,23 +1096,7 @@ filtersEl?.addEventListener('click', event => {
 
     currentCategory = button.dataset.category || 'todos';
     currentPage = 1;
-    renderProducts();
-});
-
-// Evento de Busca por Texto
-searchInputEl?.addEventListener('input', event => {
-        catalogSearch = searchInputEl.value.trim();
-        catalogPage = 1;
-    currentSearchQuery = event.target.value;
-    currentPage = 1;
-    renderProducts();
-});
-
-// Evento de Ordenação por Preço/Nome
-sortSelectEl?.addEventListener('change', event => {
-    currentSortOption = event.target.value;
-    currentPage = 1;
-    renderProducts();
+    renderCatalog();
 });
 
 // Evento de Clique na Paginação estilo Google
@@ -1121,7 +1105,7 @@ paginationEl?.addEventListener('click', event => {
     if (!button || button.disabled) return;
 
     currentPage = Number(button.dataset.page);
-    renderProducts();
+    renderCatalog();
 
     window.scrollTo({
         top: productsEl.offsetTop - 80,
@@ -1178,7 +1162,7 @@ document.querySelector('#checkout')?.addEventListener('click', () => {
 });
 
 /* =========================================================
-   INICIALIZAÇÃO
+   INICIALIZA�?�fO
    ========================================================= */
 
 async function init() {
@@ -1186,6 +1170,10 @@ async function init() {
         cart = loadCart();
 
         await refreshCatalog();
+
+        renderFilters();
+
+        await renderCatalog();
 
         renderCart();
 

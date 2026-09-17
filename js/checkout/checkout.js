@@ -1,4 +1,4 @@
-﻿import { ORDER_STATUS } from '../orders/order-status.js';
+import { ORDER_STATUS } from '../orders/order-status.js';
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
 import { fetchAddressByCep } from './address-service.js';
@@ -6,18 +6,21 @@ import { saveOrder as persistOrder } from '../orders/order-service.js';
 
 
 /* =========================================================
-   CONFIGURAÃ‡ÃƒO
+   CONFIGURA�?�fO
    ========================================================= */
 
 const CART_STORAGE_KEY = 'aurea-cart';
 const CATALOG_PATH = '../data/produtos.csv';
 const DELIVERY_COST = 19.90;
-const PIX_API_URL = 'https://aurea-pix-api.onrender.com/api/create-pix-payment';
+
+const PIX_API_URL =
+    'https://aurea-pix-api.onrender.com/api/create-pix-payment';
 
 let products = [];
 let cart = [];
 let submitting = false;
 let appliedCoupon = null;
+
 
 const COUPONS = Object.freeze({
     AUREA10: Object.freeze({
@@ -33,76 +36,120 @@ const COUPONS = Object.freeze({
    ========================================================= */
 
 const elements = {
-    form: document.getElementById('checkoutForm'),
 
-    customerName: document.getElementById('customerName'),
-    customerEmail: document.getElementById('customerEmail'),
-    customerPhone: document.getElementById('customerPhone'),
+    form:
+        document.getElementById('checkoutForm'),
 
-    deliveryMethod: document.querySelectorAll(
-        'input[name="deliveryMethod"]'
-    ),
+    customerName:
+        document.getElementById('customerName'),
 
-    addressFields: document.getElementById('addressFields'),
+    customerEmail:
+        document.getElementById('customerEmail'),
 
-    cep: document.getElementById('cep'),
-    cepStatus: document.getElementById('cepStatus'),
+    customerPhone:
+        document.getElementById('customerPhone'),
 
-    street: document.getElementById('street'),
-    number: document.getElementById('number'),
-    complement: document.getElementById('complement'),
-    neighborhood: document.getElementById('neighborhood'),
-    city: document.getElementById('city'),
-    state: document.getElementById('state'),
+    deliveryMethod:
+        document.querySelectorAll(
+            'input[name="deliveryMethod"]'
+        ),
 
-    paymentMethod: document.querySelectorAll(
-        'input[name="paymentMethod"]'
-    ),
+    addressFields:
+        document.getElementById('addressFields'),
 
-    orderNotes: document.getElementById('orderNotes'),
+    cep:
+        document.getElementById('cep'),
 
-    checkoutItems: document.getElementById('checkoutItems'),
-    checkoutSubtotal: document.getElementById('checkoutSubtotal'),
-    checkoutShipping: document.getElementById('checkoutShipping'),
-    checkoutDiscount: document.getElementById('checkoutDiscount'),
-    checkoutTotal: document.getElementById('checkoutTotal'),
-    couponCode: document.getElementById('couponCode'),
-    applyCoupon: document.getElementById('applyCoupon'),
-    couponMessage: document.getElementById('couponMessage'),
+    cepStatus:
+        document.getElementById('cepStatus'),
 
-    submitOrder: document.getElementById('submitOrder'),
-    submitOrderText: document.getElementById('submitOrderText'),
+    street:
+        document.getElementById('street'),
 
-    checkoutMessage: document.getElementById('checkoutMessage'),
+    number:
+        document.getElementById('number'),
 
-    checkoutSuccess: document.getElementById('checkoutSuccess'),
-    successMessage: document.getElementById('successMessage'),
-    successOrderNumber: document.getElementById('successOrderNumber'),
+    complement:
+        document.getElementById('complement'),
 
-    pixPaymentContainer: document.getElementById(
-        'pixPaymentContainer'
-    ),
+    neighborhood:
+        document.getElementById('neighborhood'),
 
-    pixQrCodeImage: document.getElementById(
-        'pixQrCodeImage'
-    ),
+    city:
+        document.getElementById('city'),
 
-    pixCopiaCola: document.getElementById(
-        'pixCopiaCola'
-    ),
+    state:
+        document.getElementById('state'),
 
-    btnCopyPix: document.getElementById(
-        'btnCopyPix'
-    ),
+    paymentMethod:
+        document.querySelectorAll(
+            'input[name="paymentMethod"]'
+        ),
 
-    pixCopyStatus: document.getElementById(
-        'pixCopyStatus'
-    )
+    orderNotes:
+        document.getElementById('orderNotes'),
+
+    checkoutItems:
+        document.getElementById('checkoutItems'),
+
+    checkoutSubtotal:
+        document.getElementById('checkoutSubtotal'),
+
+    checkoutShipping:
+        document.getElementById('checkoutShipping'),
+
+    checkoutDiscount:
+        document.getElementById('checkoutDiscount'),
+
+    checkoutTotal:
+        document.getElementById('checkoutTotal'),
+
+    couponCode:
+        document.getElementById('couponCode'),
+
+    applyCoupon:
+        document.getElementById('applyCoupon'),
+
+    couponMessage:
+        document.getElementById('couponMessage'),
+
+    submitOrder:
+        document.getElementById('submitOrder'),
+
+    submitOrderText:
+        document.getElementById('submitOrderText'),
+
+    checkoutMessage:
+        document.getElementById('checkoutMessage'),
+
+    checkoutSuccess:
+        document.getElementById('checkoutSuccess'),
+
+    successMessage:
+        document.getElementById('successMessage'),
+
+    successOrderNumber:
+        document.getElementById('successOrderNumber'),
+
+    pixPaymentContainer:
+        document.getElementById('pixPaymentContainer'),
+
+    pixQrCodeImage:
+        document.getElementById('pixQrCodeImage'),
+
+    pixCopiaCola:
+        document.getElementById('pixCopiaCola'),
+
+    btnCopyPix:
+        document.getElementById('btnCopyPix'),
+
+    pixCopyStatus:
+        document.getElementById('pixCopyStatus')
 };
 
 
 /* =========================================================
-   UTILITÃRIOS
+   UTILITÁRIOS
    ========================================================= */
 
 function formatCurrency(value) {
@@ -135,10 +182,6 @@ function parsePrice(value) {
         return 0;
     }
 
-    /*
-     * Formato brasileiro:
-     * 1.234,56 -> 1234.56
-     */
     if (text.includes(',')) {
 
         text = text
@@ -148,10 +191,6 @@ function parsePrice(value) {
         return Number.parseFloat(text) || 0;
     }
 
-    /*
-     * Formato simples:
-     * 1234.56
-     */
     return Number.parseFloat(text) || 0;
 }
 
@@ -179,15 +218,15 @@ function escapeHtml(value) {
 
 function onlyDigits(value) {
 
-    return String(value ?? '').replace(/\D/g, '');
+    return String(value ?? '')
+        .replace(/\D/g, '');
 }
+
 
 function normalizePhoneDigits(value) {
 
     let digits = onlyDigits(value);
 
-    // Remove o código do país do Brasil
-    // somente quando houver 13 dígitos.
     if (
         digits.length === 13 &&
         digits.startsWith('55')
@@ -236,34 +275,27 @@ function parseCsvLine(line) {
         const char = line[i];
         const next = line[i + 1];
 
-        if (char === '"' && insideQuotes && next === '"') {
-
+        if (
+            char === '"' &&
+            insideQuotes &&
+            next === '"'
+        ) {
             current += '"';
             i += 1;
-
             continue;
         }
 
         if (char === '"') {
-
             insideQuotes = !insideQuotes;
-
             continue;
         }
 
-        if (char === ';' && !insideQuotes) {
-
+        if (
+            (char === ';' || char === ',') &&
+            !insideQuotes
+        ) {
             result.push(current);
             current = '';
-
-            continue;
-        }
-
-        if (char === ',' && !insideQuotes) {
-
-            result.push(current);
-            current = '';
-
             continue;
         }
 
@@ -287,24 +319,28 @@ function parseCsv(text) {
         return [];
     }
 
-    const headers = parseCsvLine(lines[0])
-        .map(header => header.trim());
+    const headers =
+        parseCsvLine(lines[0])
+            .map(header => header.trim());
 
-    return lines.slice(1).map(line => {
+    return lines
+        .slice(1)
+        .map(line => {
 
-        const values = parseCsvLine(line);
+            const values =
+                parseCsvLine(line);
 
-        const item = {};
+            const item = {};
 
-        headers.forEach((header, index) => {
+            headers.forEach(
+                (header, index) => {
+                    item[header] =
+                        values[index] ?? '';
+                }
+            );
 
-            item[header] = values[index] ?? '';
-
+            return item;
         });
-
-        return item;
-
-    });
 }
 
 
@@ -315,6 +351,7 @@ function parseCsv(text) {
 function normalizeProduct(product) {
 
     return {
+
         sku:
             product.SKU ??
             product.sku ??
@@ -329,15 +366,16 @@ function normalizeProduct(product) {
             product.nome ??
             'Produto',
 
-        price: parsePrice(
-            product['Pre\u00E7o'] ??
-            product.Preco ??
-            product['pre\u00E7o'] ??
-            product.preco ??
-            product.Price ??
-            product.price ??
-            0
-        ),
+        price:
+            parsePrice(
+                product['Preço'] ??
+                product.Preco ??
+                product['preço'] ??
+                product.preco ??
+                product.Price ??
+                product.price ??
+                0
+            ),
 
         image:
             product.Imagem ??
@@ -352,9 +390,9 @@ function normalizeProduct(product) {
             '',
 
         description:
-            product['Descri\u00E7\u00E3o'] ??
+            product['Descrição'] ??
             product.Descricao ??
-            product['descri\u00E7Ã£o'] ??
+            product['descrição'] ??
             product.descricao ??
             ''
     };
@@ -363,21 +401,25 @@ function normalizeProduct(product) {
 
 async function loadProducts() {
 
-    const response = await fetch(CATALOG_PATH, {
-        cache: 'no-store'
-    });
+    const response =
+        await fetch(CATALOG_PATH, {
+            cache: 'no-store'
+        });
 
     if (!response.ok) {
+
         throw new Error(
-            `NÃ£o foi possÃ­vel carregar o catÃ¡logo. HTTP ${response.status}`
+            `Não foi possível carregar o catálogo. HTTP ${response.status}`
         );
     }
 
-    const text = await response.text();
+    const text =
+        await response.text();
 
-    products = parseCsv(text)
-        .map(normalizeProduct)
-        .filter(product => product.sku);
+    products =
+        parseCsv(text)
+            .map(normalizeProduct)
+            .filter(product => product.sku);
 
     return products;
 }
@@ -391,15 +433,17 @@ function loadCart() {
 
     try {
 
-        const stored = localStorage.getItem(
-            CART_STORAGE_KEY
-        );
+        const stored =
+            localStorage.getItem(
+                CART_STORAGE_KEY
+            );
 
         if (!stored) {
             return [];
         }
 
-        const parsed = JSON.parse(stored);
+        const parsed =
+            JSON.parse(stored);
 
         if (!Array.isArray(parsed)) {
             return [];
@@ -422,33 +466,39 @@ function loadCart() {
 function normalizeCartItem(item) {
 
     return {
-        sku: String(
-            item.sku ??
-            item.SKU ??
-            item.codigo ??
-            item.code ??
-            ''
-        ).trim(),
 
-        quantity: Math.max(
-            1,
-            Number(
-                item.quantity ??
-                item.quantidade ??
-                item.qty ??
-                1
-            ) || 1
-        )
+        sku:
+            String(
+                item.sku ??
+                item.SKU ??
+                item.codigo ??
+                item.code ??
+                ''
+            ).trim(),
+
+        quantity:
+            Math.max(
+                1,
+                Number(
+                    item.quantity ??
+                    item.quantidade ??
+                    item.qty ??
+                    1
+                ) || 1
+            )
     };
 }
 
 
 function findProductBySku(sku) {
 
-    const normalizedSku = normalizeText(sku);
+    const normalizedSku =
+        normalizeText(sku);
 
-    return products.find(product =>
-        normalizeText(product.sku) === normalizedSku
+    return products.find(
+        product =>
+            normalizeText(product.sku) ===
+            normalizedSku
     );
 }
 
@@ -458,19 +508,24 @@ function getCartItems() {
     return cart
         .map(item => {
 
-            const normalized = normalizeCartItem(item);
+            const normalized =
+                normalizeCartItem(item);
 
-            const product = findProductBySku(
-                normalized.sku
-            );
+            const product =
+                findProductBySku(
+                    normalized.sku
+                );
 
             if (!product) {
                 return null;
             }
 
             return {
+
                 ...normalized,
+
                 product,
+
                 total:
                     product.price *
                     normalized.quantity
@@ -488,7 +543,8 @@ function getSubtotal() {
 
     return getCartItems()
         .reduce(
-            (total, item) => total + item.total,
+            (total, item) =>
+                total + item.total,
             0
         );
 }
@@ -510,15 +566,23 @@ function getShipping() {
 }
 
 
-function getDiscount(subtotal = getSubtotal()) {
+function getDiscount(
+    subtotal = getSubtotal()
+) {
 
     if (!appliedCoupon) {
         return 0;
     }
 
-    if (appliedCoupon.type === 'percentage') {
+    if (
+        appliedCoupon.type ===
+        'percentage'
+    ) {
         return Number(
-            (subtotal * (appliedCoupon.value / 100)).toFixed(2)
+            (
+                subtotal *
+                (appliedCoupon.value / 100)
+            ).toFixed(2)
         );
     }
 
@@ -528,22 +592,40 @@ function getDiscount(subtotal = getSubtotal()) {
 
 function getTotal() {
 
-    const subtotal = getSubtotal();
-    const shipping = getShipping();
-    const discount = getDiscount(subtotal);
+    const subtotal =
+        getSubtotal();
+
+    const shipping =
+        getShipping();
+
+    const discount =
+        getDiscount(subtotal);
 
     return Math.max(
         0,
-        Number((subtotal - discount + shipping).toFixed(2))
+        Number(
+            (
+                subtotal -
+                discount +
+                shipping
+            ).toFixed(2)
+        )
     );
 }
 
 
+/* =========================================================
+   CUPOM
+   ========================================================= */
+
 function applyCouponCode() {
 
-    const code = String(
-        elements.couponCode?.value || ''
-    ).trim().toUpperCase();
+    const code =
+        String(
+            elements.couponCode?.value || ''
+        )
+        .trim()
+        .toUpperCase();
 
     if (!code) {
 
@@ -558,7 +640,8 @@ function applyCouponCode() {
         return;
     }
 
-    const coupon = COUPONS[code];
+    const coupon =
+        COUPONS[code];
 
     if (!coupon) {
 
@@ -573,7 +656,8 @@ function applyCouponCode() {
         return;
     }
 
-    appliedCoupon = coupon;
+    appliedCoupon =
+        coupon;
 
     if (elements.couponMessage) {
         elements.couponMessage.textContent =
@@ -585,18 +669,19 @@ function applyCouponCode() {
 
 
 /* =========================================================
-   RENDER CARRINHO
+   RENDERIZA�?�fO DO CARRINHO
    ========================================================= */
 
 function renderCart() {
 
-    const items = getCartItems();
+    const items =
+        getCartItems();
 
     if (!items.length) {
 
         elements.checkoutItems.innerHTML = `
             <div class="empty-cart">
-                Seu carrinho estÃ¡ vazio.
+                Seu carrinho está vazio.
             </div>
         `;
 
@@ -606,50 +691,53 @@ function renderCart() {
     }
 
     elements.checkoutItems.innerHTML =
-        items.map(item => {
+        items
+            .map(item => {
 
-            const image = item.product.image
-                ? item.product.image
-                : '';
+                const image =
+                    item.product.image
+                        ? item.product.image
+                        : '';
 
-            const imageHtml = image
-                ? `
-                    <img
-                        class="checkout-item-image"
-                        src="${escapeHtml(image)}"
-                        alt="${escapeHtml(item.product.name)}"
-                    >
-                `
-                : `
-                    <div class="checkout-item-image"></div>
+                const imageHtml =
+                    image
+                        ? `
+                            <img
+                                class="checkout-item-image"
+                                src="${escapeHtml(image)}"
+                                alt="${escapeHtml(item.product.name)}"
+                            >
+                        `
+                        : `
+                            <div class="checkout-item-image"></div>
+                        `;
+
+                return `
+                    <article class="checkout-item">
+
+                        ${imageHtml}
+
+                        <div class="checkout-item-info">
+
+                            <p class="checkout-item-name">
+                                ${escapeHtml(item.product.name)}
+                            </p>
+
+                            <p class="checkout-item-meta">
+                                ${item.quantity} �-
+                                ${formatCurrency(item.product.price)}
+                            </p>
+
+                        </div>
+
+                        <strong class="checkout-item-price">
+                            ${formatCurrency(item.total)}
+                        </strong>
+
+                    </article>
                 `;
-
-            return `
-                <article class="checkout-item">
-
-                    ${imageHtml}
-
-                    <div class="checkout-item-info">
-
-                        <p class="checkout-item-name">
-                            ${escapeHtml(item.product.name)}
-                        </p>
-
-                        <p class="checkout-item-meta">
-                            ${item.quantity} Ã—
-                            ${formatCurrency(item.product.price)}
-                        </p>
-
-                    </div>
-
-                    <strong class="checkout-item-price">
-                        ${formatCurrency(item.total)}
-                    </strong>
-
-                </article>
-            `;
-
-        }).join('');
+            })
+            .join('');
 
     updateTotals();
 }
@@ -657,26 +745,41 @@ function renderCart() {
 
 function updateTotals() {
 
-    const subtotal = getSubtotal();
-    const shipping = getShipping();
-    const discount = getDiscount(subtotal);
-    const total = getTotal();
+    const subtotal =
+        getSubtotal();
 
-    elements.checkoutSubtotal.textContent =
-        formatCurrency(subtotal);
+    const shipping =
+        getShipping();
 
-    elements.checkoutShipping.textContent =
-        shipping > 0
-            ? formatCurrency(shipping)
-            : 'GrÃ¡tis';
+    const discount =
+        getDiscount(subtotal);
 
-    elements.checkoutDiscount.textContent =
-        discount > 0
-            ? `- ${formatCurrency(discount)}`
-            : formatCurrency(0);
+    const total =
+        getTotal();
 
-    elements.checkoutTotal.textContent =
-        formatCurrency(total);
+    if (elements.checkoutSubtotal) {
+        elements.checkoutSubtotal.textContent =
+            formatCurrency(subtotal);
+    }
+
+    if (elements.checkoutShipping) {
+        elements.checkoutShipping.textContent =
+            shipping > 0
+                ? formatCurrency(shipping)
+                : 'Grátis';
+    }
+
+    if (elements.checkoutDiscount) {
+        elements.checkoutDiscount.textContent =
+            discount > 0
+                ? `- ${formatCurrency(discount)}`
+                : formatCurrency(0);
+    }
+
+    if (elements.checkoutTotal) {
+        elements.checkoutTotal.textContent =
+            formatCurrency(total);
+    }
 }
 
 
@@ -686,24 +789,43 @@ function updateTotals() {
 
 function updateDeliveryFields() {
 
-    const delivery = getDeliveryMethod();
+    const delivery =
+        getDeliveryMethod();
 
-    const isDelivery = delivery === 'delivery';
+    const isDelivery =
+        delivery === 'delivery';
+
+    if (!elements.addressFields) {
+        return;
+    }
 
     elements.addressFields.classList.toggle(
         'is-disabled',
         !isDelivery
     );
 
-    const addressInputs = elements.addressFields
-        .querySelectorAll('input');
+    const addressInputs =
+        elements.addressFields.querySelectorAll(
+            'input, select, textarea'
+        );
+
+    const requiredAddressFields = [
+        elements.cep,
+        elements.street,
+        elements.number,
+        elements.neighborhood,
+        elements.city,
+        elements.state
+    ];
 
     addressInputs.forEach(input => {
 
-        input.disabled = !isDelivery;
+        input.disabled =
+            !isDelivery;
 
-        input.required = isDelivery;
-
+        input.required =
+            isDelivery &&
+            requiredAddressFields.includes(input);
     });
 
     updateTotals();
@@ -716,7 +838,9 @@ function updateDeliveryFields() {
 
 function formatCep(value) {
 
-    const digits = onlyDigits(value).slice(0, 8);
+    const digits =
+        onlyDigits(value)
+            .slice(0, 8);
 
     if (digits.length <= 5) {
         return digits;
@@ -728,34 +852,46 @@ function formatCep(value) {
 
 async function handleCep() {
 
-    const cep = onlyDigits(elements.cep.value);
+    if (!elements.cep) {
+        return;
+    }
 
-    elements.cep.value = formatCep(cep);
+    const cep =
+        onlyDigits(
+            elements.cep.value
+        );
+
+    elements.cep.value =
+        formatCep(cep);
 
     if (cep.length !== 8) {
 
-        elements.cepStatus.textContent = '';
+        if (elements.cepStatus) {
+            elements.cepStatus.textContent =
+                '';
+        }
 
         return;
     }
 
-    elements.cepStatus.textContent =
-        'Consultando endereÃ§o...';
+    if (elements.cepStatus) {
+        elements.cepStatus.textContent =
+            'Consultando endereço...';
+
+        elements.cepStatus.style.color =
+            '';
+    }
 
     try {
 
-        const address = await fetchAddressByCep(cep);
+        const address =
+            await fetchAddressByCep(cep);
 
         if (!address) {
             throw new Error(
-                'CEP nÃ£o encontrado.'
+                'CEP não encontrado.'
             );
         }
-
-        /*
-         * Aceita os nomes mais comuns retornados
-         * pelo address-service.
-         */
 
         elements.street.value =
             address.street ??
@@ -777,13 +913,16 @@ async function handleCep() {
             address.uf ??
             '';
 
-        elements.cepStatus.textContent =
-            'EndereÃ§o preenchido automaticamente.';
+        if (elements.cepStatus) {
 
-        elements.cepStatus.style.color =
-            'var(--success)';
+            elements.cepStatus.textContent =
+                'Endereço preenchido automaticamente.';
 
-        elements.number.focus();
+            elements.cepStatus.style.color =
+                'var(--success)';
+        }
+
+        elements.number?.focus();
 
     } catch (error) {
 
@@ -792,42 +931,57 @@ async function handleCep() {
             error
         );
 
-        elements.cepStatus.textContent =
-            'NÃ£o foi possÃ­vel localizar este CEP.';
+        if (elements.cepStatus) {
 
-        elements.cepStatus.style.color =
-            'var(--danger)';
+            elements.cepStatus.textContent =
+                'Não foi possível localizar este CEP.';
+
+            elements.cepStatus.style.color =
+                'var(--danger)';
+        }
     }
 }
 
 
 /* =========================================================
-   VALIDAÃ‡ÃƒO
+   VALIDA�?�fO
    ========================================================= */
 
 function clearValidation() {
 
     elements.form
-        .querySelectorAll('.field.invalid')
+        ?.querySelectorAll(
+            '.field.invalid, .checkout-field.invalid'
+        )
         .forEach(field => {
 
-            field.classList.remove('invalid');
-
+            field.classList.remove(
+                'invalid'
+            );
         });
 }
 
 
 function markInvalid(input) {
 
+    if (!input) {
+        return;
+    }
+
     input
-        .closest('.field')
+        .closest(
+            '.field, .checkout-field'
+        )
         ?.classList.add('invalid');
 }
 
 
 function validateRequired(input) {
 
-    if (!input.value.trim()) {
+    if (
+        !input ||
+        !String(input.value ?? '').trim()
+    ) {
 
         markInvalid(input);
 
@@ -841,7 +995,17 @@ function validateRequired(input) {
 function validateEmail(email) {
 
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        .test(email.trim());
+        .test(
+            String(email ?? '').trim()
+        );
+}
+
+
+function validatePhone(phone) {
+
+    return (
+        normalizePhoneDigits(phone).length >= 10
+    );
 }
 
 
@@ -849,31 +1013,50 @@ function validateForm() {
 
     clearValidation();
 
-    const delivery = getDeliveryMethod();
+    const delivery =
+        getDeliveryMethod();
 
     let valid = true;
 
-    if (!validateRequired(elements.customerName)) {
+    if (
+        !validateRequired(
+            elements.customerName
+        )
+    ) {
         valid = false;
     }
 
     if (
-        !elements.customerEmail.value.trim() ||
-        !validateEmail(elements.customerEmail.value)
+        !elements.customerEmail?.value.trim() ||
+        !validateEmail(
+            elements.customerEmail.value
+        )
     ) {
 
-        markInvalid(elements.customerEmail);
+        markInvalid(
+            elements.customerEmail
+        );
 
         valid = false;
     }
 
-    if (!validateRequired(elements.customerPhone)) {
+    if (
+        !validatePhone(
+            elements.customerPhone?.value
+        )
+    ) {
+
+        markInvalid(
+            elements.customerPhone
+        );
+
         valid = false;
     }
 
     if (delivery === 'delivery') {
 
         const requiredAddress = [
+
             elements.cep,
             elements.street,
             elements.number,
@@ -884,31 +1067,55 @@ function validateForm() {
 
         requiredAddress.forEach(input => {
 
-            if (!input.value.trim()) {
-
-                markInvalid(input);
-
+            if (
+                !validateRequired(input)
+            ) {
                 valid = false;
             }
-
         });
 
         if (
-            onlyDigits(elements.cep.value).length !== 8
+            onlyDigits(
+                elements.cep?.value
+            ).length !== 8
         ) {
 
-            markInvalid(elements.cep);
+            markInvalid(
+                elements.cep
+            );
 
             valid = false;
         }
     }
 
-    const items = getCartItems();
+    const paymentMethod =
+        document.querySelector(
+            'input[name="paymentMethod"]:checked'
+        );
+
+    if (!paymentMethod) {
+
+        const paymentError =
+            document.querySelector(
+                '[data-payment-error]'
+            );
+
+        if (paymentError) {
+
+            paymentError.textContent =
+                'Selecione uma forma de pagamento.';
+        }
+
+        valid = false;
+    }
+
+    const items =
+        getCartItems();
 
     if (!items.length) {
 
         showMessage(
-            'Seu carrinho estÃ¡ vazio. Adicione produtos antes de finalizar o pedido.'
+            'Seu carrinho está vazio. Adicione produtos antes de finalizar o pedido.'
         );
 
         valid = false;
@@ -924,27 +1131,40 @@ function validateForm() {
 
 function showMessage(message) {
 
-    elements.checkoutMessage.textContent = message;
+    if (!elements.checkoutMessage) {
+        return;
+    }
 
-    elements.checkoutMessage.hidden = false;
+    elements.checkoutMessage.textContent =
+        message;
+
+    elements.checkoutMessage.hidden =
+        false;
 }
 
 
 function hideMessage() {
 
-    elements.checkoutMessage.hidden = true;
+    if (!elements.checkoutMessage) {
+        return;
+    }
 
-    elements.checkoutMessage.textContent = '';
+    elements.checkoutMessage.hidden =
+        true;
+
+    elements.checkoutMessage.textContent =
+        '';
 }
 
 
 /* =========================================================
-   DADOS DO FORMULÃRIO
+   DADOS DO CLIENTE
    ========================================================= */
 
 function getCustomerData() {
 
     return {
+
         name:
             elements.customerName.value.trim(),
 
@@ -961,18 +1181,39 @@ function getCustomerData() {
 
 function getAddressData() {
 
-    if (getDeliveryMethod() !== 'delivery') {
+    if (
+        getDeliveryMethod() !==
+        'delivery'
+    ) {
         return null;
     }
 
     return {
-        cep: formatCep(elements.cep.value),
-        street: elements.street.value.trim(),
-        number: elements.number.value.trim(),
-        complement: elements.complement.value.trim(),
-        neighborhood: elements.neighborhood.value.trim(),
-        city: elements.city.value.trim(),
-        state: elements.state.value.trim().toUpperCase()
+
+        cep:
+            formatCep(
+                elements.cep.value
+            ),
+
+        street:
+            elements.street.value.trim(),
+
+        number:
+            elements.number.value.trim(),
+
+        complement:
+            elements.complement.value.trim(),
+
+        neighborhood:
+            elements.neighborhood.value.trim(),
+
+        city:
+            elements.city.value.trim(),
+
+        state:
+            elements.state.value
+                .trim()
+                .toUpperCase()
     };
 }
 
@@ -981,7 +1222,7 @@ function getPaymentMethod() {
 
     return document.querySelector(
         'input[name="paymentMethod"]:checked'
-    )?.value ?? 'pix';
+    )?.value ?? null;
 }
 
 
@@ -991,58 +1232,102 @@ function getPaymentMethod() {
 
 function createOrder() {
 
-    const items = getCartItems();
+    const items =
+        getCartItems();
 
-    const subtotal = getSubtotal();
-    const shipping = getShipping();
-    const discount = getDiscount(subtotal);
-    const total = getTotal();
+    const subtotal =
+        getSubtotal();
 
-    const deliveryMethod = getDeliveryMethod();
-    const paymentMethod = getPaymentMethod();
+    const shipping =
+        getShipping();
 
-    const now = new Date();
+    const discount =
+        getDiscount(subtotal);
+
+    const total =
+        getTotal();
+
+    const deliveryMethod =
+        getDeliveryMethod();
+
+    const paymentMethod =
+        getPaymentMethod();
+
+    if (!paymentMethod) {
+        throw new Error(
+            'Selecione uma forma de pagamento.'
+        );
+    }
+
+    const now =
+        new Date();
 
     const orderId =
         `AUR-${now.getTime().toString(36).toUpperCase()}`;
 
-
     const order = {
 
-        id: orderId,
+        id:
+            orderId,
 
         orderId,
 
-        status: ORDER_STATUS.NEW,
+        status:
+            ORDER_STATUS.NEW,
 
-        createdAt: now.toISOString(),
+        createdAt:
+            now.toISOString(),
 
-        customer: getCustomerData(),
+        customer:
+            getCustomerData(),
 
         delivery: {
-            method: deliveryMethod,
-            address: getAddressData()
+
+            method:
+                deliveryMethod,
+
+            address:
+                getAddressData()
         },
 
         payment: {
-            method: paymentMethod,
-            status: 'pending'
+
+            method:
+                paymentMethod,
+
+            status:
+                'pending'
         },
 
         logistics: {
-            status: LOGISTICS_STATUS.NEW
+
+            status:
+                LOGISTICS_STATUS.NEW
         },
 
         history: [],
 
-        items: items.map(item => ({
-            sku: item.product.sku,
-            name: item.product.name,
-            quantity: item.quantity,
-            unitPrice: item.product.price,
-            total: item.total,
-            image: item.product.image
-        })),
+        items:
+            items.map(item => ({
+
+                sku:
+                    item.product.sku,
+
+                name:
+                    item.product.name,
+
+                quantity:
+                    item.quantity,
+
+                unitPrice:
+                    item.product.price,
+
+                total:
+                    item.total,
+
+                image:
+                    item.product.image
+            })),
 
         subtotal,
 
@@ -1052,30 +1337,46 @@ function createOrder() {
 
         total,
 
-        coupon: appliedCoupon
-            ? {
-                code: appliedCoupon.code,
-                type: appliedCoupon.type,
-                value: appliedCoupon.value
-            }
-            : null,
+        coupon:
+            appliedCoupon
+                ? {
+                    code:
+                        appliedCoupon.code,
 
-        notes: elements.orderNotes.value.trim(),
+                    type:
+                        appliedCoupon.type,
 
-        source: 'website',
+                    value:
+                        appliedCoupon.value
+                }
+                : null,
 
-        currency: 'BRL'
+        notes:
+            elements.orderNotes?.value.trim() ?? '',
+
+        source:
+            'website',
+
+        currency:
+            'BRL'
     };
-
 
     appendOrderEvent(
         order,
         ORDER_EVENT.ORDER_CREATED
     );
 
-
     return order;
 }
+
+
+/* =========================================================
+   PIX
+   =========================================================
+   IMPORTANTE:
+   A lógica de geração PIX abaixo permanece preservada.
+   A validação/UX do PIX pertence à ETAPA 05/12.
+   ========================================================= */
 
 async function createPixPayment(order) {
 
@@ -1084,18 +1385,21 @@ async function createPixPayment(order) {
         order.total
     );
 
-    const response = await fetch(
-        PIX_API_URL,
-        {
-            method: 'POST',
+    const response =
+        await fetch(
+            PIX_API_URL,
+            {
+                method: 'POST',
 
-            headers: {
-                'Content-Type': 'application/json'
-            },
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
 
-            body: JSON.stringify(order)
-        }
-    );
+                body:
+                    JSON.stringify(order)
+            }
+        );
 
     if (!response.ok) {
 
@@ -1104,13 +1408,17 @@ async function createPixPayment(order) {
         );
     }
 
-    const result = await response.json();
+    const result =
+        await response.json();
 
-    if (!result || result.success !== true) {
+    if (
+        !result ||
+        result.success !== true
+    ) {
 
         throw new Error(
             result?.message ||
-            'O servidor nÃ£o conseguiu criar o pagamento PIX.'
+            'O servidor não conseguiu criar o pagamento PIX.'
         );
     }
 
@@ -1122,9 +1430,10 @@ function getPixQrSource(result) {
 
     if (result.qr_code_base64) {
 
-        return result.qr_code_base64.startsWith('data:')
-            ? result.qr_code_base64
-            : `data:image/png;base64,${result.qr_code_base64}`;
+        return result.qr_code_base64
+            .startsWith('data:')
+                ? result.qr_code_base64
+                : `data:image/png;base64,${result.qr_code_base64}`;
     }
 
     if (result.qr_code) {
@@ -1133,9 +1442,10 @@ function getPixQrSource(result) {
 
     if (result.qrCodeBase64) {
 
-        return result.qrCodeBase64.startsWith('data:')
-            ? result.qrCodeBase64
-            : `data:image/png;base64,${result.qrCodeBase64}`;
+        return result.qrCodeBase64
+            .startsWith('data:')
+                ? result.qrCodeBase64
+                : `data:image/png;base64,${result.qrCodeBase64}`;
     }
 
     return '';
@@ -1157,13 +1467,16 @@ function getPixCopyCode(result) {
 
 function renderPixPayment(result) {
 
-    const qrSource = getPixQrSource(result);
-    const copyCode = getPixCopyCode(result);
+    const qrSource =
+        getPixQrSource(result);
+
+    const copyCode =
+        getPixCopyCode(result);
 
     if (!qrSource && !copyCode) {
 
         throw new Error(
-            'O servidor criou o PIX, mas nÃ£o retornou os dados do pagamento.'
+            'O servidor criou o PIX, mas não retornou os dados do pagamento.'
         );
     }
 
@@ -1172,11 +1485,13 @@ function renderPixPayment(result) {
         elements.pixQrCodeImage.src =
             qrSource;
 
-        elements.pixQrCodeImage.hidden = false;
+        elements.pixQrCodeImage.hidden =
+            false;
 
     } else {
 
-        elements.pixQrCodeImage.hidden = true;
+        elements.pixQrCodeImage.hidden =
+            true;
     }
 
     elements.pixCopiaCola.value =
@@ -1192,6 +1507,7 @@ function renderPixPayment(result) {
    ========================================================= */
 
 function showSuccess(order) {
+
     const trackOrderButton =
         document.getElementById(
             'trackOrderButton'
@@ -1205,30 +1521,44 @@ function showSuccess(order) {
             )}`;
     }
 
+    if (elements.form) {
+        elements.form.hidden =
+            true;
+    }
 
-    elements.form.hidden = true;
+    if (elements.checkoutSuccess) {
 
-    elements.checkoutSuccess.hidden = false;
+        elements.checkoutSuccess.hidden =
+            false;
+    }
 
-    elements.successOrderNumber.textContent =
-        order.orderId;
+    if (elements.successOrderNumber) {
+
+        elements.successOrderNumber.textContent =
+            order.orderId;
+    }
 
     const paymentMethod =
         order.payment.method;
 
     if (paymentMethod === 'pix') {
 
-        elements.successMessage.textContent =
-            'Seu pedido foi registrado. Gere o pagamento PIX abaixo para concluir a compra.';
+        if (elements.successMessage) {
+
+            elements.successMessage.textContent =
+                'Seu pedido foi registrado. Gere o pagamento PIX abaixo para concluir a compra.';
+        }
 
     } else {
 
-        elements.successMessage.textContent =
-            'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os prÃ³ximos passos.';
+        if (elements.successMessage) {
 
+            elements.successMessage.textContent =
+                'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os próximos passos.';
+        }
     }
 
-    elements.checkoutSuccess.scrollIntoView({
+    elements.checkoutSuccess?.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
     });
@@ -1242,7 +1572,7 @@ function showSuccess(order) {
 async function copyPixCode() {
 
     const code =
-        elements.pixCopiaCola.value.trim();
+        elements.pixCopiaCola?.value.trim();
 
     if (!code) {
         return;
@@ -1250,24 +1580,34 @@ async function copyPixCode() {
 
     try {
 
-        await navigator.clipboard.writeText(code);
+        await navigator.clipboard.writeText(
+            code
+        );
 
-        elements.pixCopyStatus.textContent =
-            'CÃ³digo PIX copiado.';
+        if (elements.pixCopyStatus) {
+
+            elements.pixCopyStatus.textContent =
+                'Código PIX copiado.';
+        }
 
     } catch (error) {
 
         console.warn(
-            '[PIX] Clipboard indisponÃ­vel:',
+            '[PIX] Clipboard indisponível:',
             error
         );
 
         elements.pixCopiaCola.select();
 
-        document.execCommand('copy');
+        document.execCommand(
+            'copy'
+        );
 
-        elements.pixCopyStatus.textContent =
-            'CÃ³digo PIX copiado.';
+        if (elements.pixCopyStatus) {
+
+            elements.pixCopyStatus.textContent =
+                'Código PIX copiado.';
+        }
     }
 }
 
@@ -1288,7 +1628,10 @@ async function handleSubmit(event) {
 
     if (!validateForm()) {
 
-        if (!elements.checkoutMessage.hidden) {
+        if (
+            elements.checkoutMessage &&
+            !elements.checkoutMessage.hidden
+        ) {
             return;
         }
 
@@ -1301,29 +1644,37 @@ async function handleSubmit(event) {
 
     submitting = true;
 
-    elements.submitOrder.disabled = true;
+    elements.submitOrder.disabled =
+        true;
 
     elements.submitOrderText.textContent =
         'Processando pedido...';
 
     try {
 
-        const order = createOrder();
+        const order =
+            createOrder();
 
         console.log(
             '[CHECKOUT] Pedido criado:',
             order
         );
 
+
         /*
          * O PIX precisa ser gerado antes da primeira
-         * gravação do pedido no Firestore.
+         * gravação do pedido.
          *
          * Assim o pedido é salvo somente uma vez.
          */
-        if (order.payment.method === 'pix') {
 
-            elements.pixPaymentContainer.hidden = false;
+        if (
+            order.payment.method ===
+            'pix'
+        ) {
+
+            elements.pixPaymentContainer.hidden =
+                false;
 
             elements.pixPaymentContainer.innerHTML = `
                 <div class="pix-heading">
@@ -1346,7 +1697,9 @@ async function handleSubmit(event) {
             try {
 
                 const pixResult =
-                    await createPixPayment(order);
+                    await createPixPayment(
+                        order
+                    );
 
                 order.payment.pixCode =
                     pixResult.pix_code;
@@ -1358,8 +1711,11 @@ async function handleSubmit(event) {
                     order,
                     ORDER_EVENT.PIX_GENERATED,
                     {
-                        amount: pixResult.amount,
-                        pixKey: pixResult.pix_key
+                        amount:
+                            pixResult.amount,
+
+                        pixKey:
+                            pixResult.pix_key
                     }
                 );
 
@@ -1439,12 +1795,14 @@ async function handleSubmit(event) {
                         'pixCopyStatus'
                     );
 
-                elements.btnCopyPix.addEventListener(
+                elements.btnCopyPix?.addEventListener(
                     'click',
                     copyPixCode
                 );
 
-                renderPixPayment(pixResult);
+                renderPixPayment(
+                    pixResult
+                );
 
                 console.log(
                     '[PIX] Pagamento criado com sucesso.'
@@ -1464,21 +1822,40 @@ async function handleSubmit(event) {
             }
         }
 
+
         /*
-         * ÚNICA gravação do pedido.
+         * �sNICA gravação do pedido.
          *
          * No caso do PIX, o objeto já contém:
+         *
          * - pixCode
          * - pixGeneratedAt
          * - PIX_GENERATED
          */
-        await persistOrder(order);
+
+        await persistOrder(
+            order
+        );
+
 
         localStorage.removeItem(
             CART_STORAGE_KEY
         );
 
-        showSuccess(order);
+
+        showSuccess(
+            order
+        );
+
+
+        /*
+         * O pedido foi concluído.
+         * Não deixamos o botão continuar bloqueado
+         * como se ainda estivesse processando.
+         */
+
+        elements.submitOrderText.textContent =
+            'Pedido finalizado.';
 
     } catch (error) {
 
@@ -1492,55 +1869,77 @@ async function handleSubmit(event) {
             'Não foi possível finalizar o pedido. Tente novamente.'
         );
 
-        elements.submitOrder.disabled = false;
+        elements.submitOrder.disabled =
+            false;
 
         elements.submitOrderText.textContent =
             'Finalizar pedido';
 
-        submitting = false;
+        submitting =
+            false;
     }
 }
+
+
+/* =========================================================
+   EVENTOS
+   ========================================================= */
+
 function setupEvents() {
 
-    elements.form.addEventListener(
+    elements.form?.addEventListener(
         'submit',
         handleSubmit
     );
 
 
-    elements.deliveryMethod.forEach(input => {
+    elements.deliveryMethod.forEach(
+        input => {
 
-        input.addEventListener(
-            'change',
-            updateDeliveryFields
-        );
-
-    });
-
-
-    elements.cep.addEventListener(
-        'input',
-        () => {
-
-            elements.cep.value =
-                formatCep(elements.cep.value);
-
+            input.addEventListener(
+                'change',
+                updateDeliveryFields
+            );
         }
     );
 
 
-    elements.cep.addEventListener(
+    elements.cep?.addEventListener(
+        'input',
+        () => {
+
+            elements.cep.value =
+                formatCep(
+                    elements.cep.value
+                );
+
+            if (
+                elements.cepStatus &&
+                onlyDigits(
+                    elements.cep.value
+                ).length < 8
+            ) {
+                elements.cepStatus.textContent =
+                    '';
+            }
+        }
+    );
+
+
+    elements.cep?.addEventListener(
         'blur',
         handleCep
     );
 
-    elements.customerPhone.addEventListener(
+
+    elements.customerPhone?.addEventListener(
         'input',
         () => {
 
             elements.customerPhone.value =
-                formatPhone(elements.customerPhone.value);
-
+                formatPhone(
+                    elements.customerPhone.value
+                );
         }
     );
 
@@ -1556,20 +1955,43 @@ function setupEvents() {
         event => {
 
             if (event.key === 'Enter') {
+
                 event.preventDefault();
+
                 applyCouponCode();
             }
-
         }
     );
 
 
-    /*
-     * Limpa o estado de erro quando o usuÃ¡rio
-     * comeÃ§a a corrigir um campo.
-     */
+    elements.paymentMethod.forEach(
+        input => {
+
+            input.addEventListener(
+                'change',
+                () => {
+
+                    const paymentError =
+                        document.querySelector(
+                            '[data-payment-error]'
+                        );
+
+                    if (paymentError) {
+                        paymentError.textContent =
+                            '';
+                    }
+
+                    hideMessage();
+                }
+            );
+        }
+    );
+
+
     elements.form
-        .querySelectorAll('input, textarea')
+        ?.querySelectorAll(
+            'input, textarea, select'
+        )
         .forEach(input => {
 
             input.addEventListener(
@@ -1577,20 +1999,36 @@ function setupEvents() {
                 () => {
 
                     input
-                        .closest('.field')
-                        ?.classList.remove('invalid');
+                        .closest(
+                            '.field, .checkout-field'
+                        )
+                        ?.classList.remove(
+                            'invalid'
+                        );
 
                     hideMessage();
-
                 }
             );
 
+            input.addEventListener(
+                'change',
+                () => {
+
+                    input
+                        .closest(
+                            '.field, .checkout-field'
+                        )
+                        ?.classList.remove(
+                            'invalid'
+                        );
+                }
+            );
         });
 }
 
 
 /* =========================================================
-   INICIALIZAÃ‡ÃƒO
+   INICIALIZA�?�fO
    ========================================================= */
 
 async function init() {
@@ -1601,15 +2039,63 @@ async function init() {
 
     try {
 
-        cart = loadCart();
+        cart =
+            loadCart();
+
+        if (!cart.length) {
+
+            showMessage(
+                'Sua sacola está vazia. Volte à loja e adicione produtos.'
+            );
+
+            if (elements.submitOrder) {
+                elements.submitOrder.disabled =
+                    true;
+            }
+
+            return;
+        }
+
 
         await loadProducts();
+
+
+        cart =
+            cart
+                .map(normalizeCartItem)
+                .filter(
+                    item =>
+                        findProductBySku(
+                            item.sku
+                        )
+                );
+
+
+        if (!cart.length) {
+
+            localStorage.removeItem(
+                CART_STORAGE_KEY
+            );
+
+            showMessage(
+                'Os produtos da sua sacola não estão mais disponíveis.'
+            );
+
+            if (elements.submitOrder) {
+                elements.submitOrder.disabled =
+                    true;
+            }
+
+            return;
+        }
+
 
         renderCart();
 
         updateDeliveryFields();
 
         setupEvents();
+
 
         console.log(
             '[CHECKOUT] Inicializado com sucesso.'
@@ -1618,27 +2104,20 @@ async function init() {
     } catch (error) {
 
         console.error(
-            '[CHECKOUT] Falha na inicializaÃ§Ã£o:',
+            '[CHECKOUT] Falha na inicialização:',
             error
         );
 
         showMessage(
-            'NÃ£o foi possÃ­vel carregar o checkout. Atualize a pÃ¡gina e tente novamente.'
+            'Não foi possível carregar o checkout. Atualize a página e tente novamente.'
         );
 
-        elements.submitOrder.disabled = true;
+        if (elements.submitOrder) {
+            elements.submitOrder.disabled =
+                true;
+        }
     }
 }
 
 
 init();
-
-
-
-
-
-
-
-
-
-

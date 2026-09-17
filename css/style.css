@@ -786,7 +786,7 @@ body.modal-open {
 }
 
 /* =========================================================
-   V9 — DETALHE DO PRODUTO
+   V9 ??" DETALHE DO PRODUTO
    ========================================================= */
 
 #productModal {
@@ -862,7 +862,7 @@ body.modal-open {
 }
 
 /* =========================================================
-   V10 — REFINAMENTO VISUAL DO DETALHE DO PRODUTO
+   V10 ??" REFINAMENTO VISUAL DO DETALHE DO PRODUTO
    ========================================================= */
 
 .product-modal {
@@ -1413,11 +1413,11 @@ body.modal-open {
 }
 
 /* =========================================================
-   VML-17E — CATÁLOGO AURÉA
+   VML-17E ??" CAT?LOGO AUR??A
    Refinamento visual isolado
    ========================================================= */
 
-/* ---------- ÁREA PRINCIPAL DO CATÁLOGO ---------- */
+/* ---------- ?REA PRINCIPAL DO CAT?LOGO ---------- */
 
 #products {
     display: grid;
@@ -1458,7 +1458,7 @@ body.modal-open {
     outline-offset: 3px;
 }
 
-/* ---------- ÁREA VISUAL ---------- */
+/* ---------- ?REA VISUAL ---------- */
 
 #products .product-visual {
     position: relative;
@@ -1528,7 +1528,7 @@ body.modal-open {
     backdrop-filter: blur(8px);
 }
 
-/* ---------- INFORMAÇÕES ---------- */
+/* ---------- INFORMA???.ES ---------- */
 
 #products .product-info {
     display: flex;
@@ -1564,7 +1564,7 @@ body.modal-open {
     line-height: 1.3;
 }
 
-/* ---------- PREÇO + SACOLA ---------- */
+/* ---------- PRE??O + SACOLA ---------- */
 
 #products .product-bottom {
     display: flex;
@@ -1616,7 +1616,7 @@ body.modal-open {
     outline-offset: 3px;
 }
 
-/* ---------- CONTROLES DO CATÁLOGO ---------- */
+/* ---------- CONTROLES DO CAT?LOGO ---------- */
 
 #filters {
     display: flex;
@@ -1693,7 +1693,7 @@ body.modal-open {
     gap: 8px;
 }
 
-/* ---------- PAGINAÇÃO ---------- */
+/* ---------- PAGINA???fO ---------- */
 
 #pagination {
     display: flex;
@@ -1859,7 +1859,7 @@ body.modal-open {
 /* ============================================================
    AUREA_DISCOVERY_LAYER_V1
    Camada isolada de descoberta de produtos.
-   Não altera carrinho, checkout, PIX ou pedidos.
+   N?o altera carrinho, checkout, PIX ou pedidos.
    ============================================================ */
 
 .aurea-ritual-discovery {
@@ -1999,5 +1999,171 @@ body.modal-open {
 
     .aurea-ritual-card {
         min-height: auto;
+    }
+}
+
+/* AUREA MOBILE SAFETY �?" ETAPA 07/12 */
+
+/* Evita cálculo incorreto de largura em telas pequenas */
+html {
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+/* Evita overflow acidental causado por conteúdo */
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Elementos de formulário nunca ultrapassam o viewport */
+input,
+select,
+textarea,
+button {
+    max-width: 100%;
+}
+
+/* Proteção geral para tabelas e conteúdos largos */
+table {
+    max-width: 100%;
+}
+
+/* Regras principais para telas pequenas */
+@media (max-width: 768px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        margin: 0;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    button {
+        max-width: 100%;
+    }
+}
+
+/* Celulares */
+@media (max-width: 480px) {
+
+    .container,
+    .section-container,
+    .checkout-container,
+    .checkout-content,
+    .products-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .cart-drawer,
+    .product-modal,
+    .modal-content {
+        max-width: calc(100vw - 24px);
+    }
+}
+
+/* AUREA MOBILE SAFETY — ETAPA 07/12 */
+
+/* Evita cálculo incorreto de largura em telas pequenas */
+html {
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+/* Evita overflow acidental causado por conteúdo */
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Elementos de formulário nunca ultrapassam o viewport */
+input,
+select,
+textarea,
+button {
+    max-width: 100%;
+}
+
+/* Proteção geral para tabelas e conteúdos largos */
+table {
+    max-width: 100%;
+}
+
+/* Regras principais para telas pequenas */
+@media (max-width: 768px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        margin: 0;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    button {
+        max-width: 100%;
+    }
+}
+
+/* Celulares */
+@media (max-width: 480px) {
+
+    .container,
+    .section-container,
+    .checkout-container,
+    .checkout-content,
+    .products-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .cart-drawer,
+    .product-modal,
+    .modal-content {
+        max-width: calc(100vw - 24px);
     }
 }

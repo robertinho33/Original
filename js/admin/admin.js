@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import {
     observeAdminAuth,
@@ -760,7 +760,7 @@ function createOrderCard(order) {
             </div>
 
             <div class="admin-order-data">
-                <span>LogÃ­stica</span>
+                <span>Logística</span>
                 <strong>
                     ${escapeHtml(logisticsLabel)}
                 </strong>
@@ -876,7 +876,7 @@ async function loadOrders() {
         );
 
         showMessage(
-            'NÃ£o foi possÃ­vel carregar os pedidos.'
+            'Não foi possível carregar os pedidos.'
         );
 
         elements.ordersList.innerHTML = '';
@@ -933,7 +933,7 @@ async function handleConfirmPayment(button) {
 
         showMessage(
             error?.message ||
-            'NÃ£o foi possÃ­vel confirmar o pagamento.'
+            'Não foi possível confirmar o pagamento.'
         );
 
         button.disabled = false;
@@ -957,7 +957,7 @@ async function handleAdvanceLogistics(button) {
 
     const confirmed =
         window.confirm(
-            `Avançar a etapa logÃ­stica do pedido ${orderId}?`
+            `Avançar a etapa logística do pedido ${orderId}?`
         );
 
     if (!confirmed) {
@@ -973,7 +973,7 @@ async function handleAdvanceLogistics(button) {
         await advanceLogistics(orderId);
 
         showMessage(
-            `Etapa logÃ­stica do pedido ${orderId} atualizada com sucesso.`
+            `Etapa logística do pedido ${orderId} atualizada com sucesso.`
         );
 
         await loadOrders();
@@ -981,13 +981,13 @@ async function handleAdvanceLogistics(button) {
     } catch (error) {
 
         console.error(
-            '[ADMIN] Erro ao avanÃ§ar logÃ­stica:',
+            '[ADMIN] Erro ao avançar logística:',
             error
         );
 
         showMessage(
             error?.message ||
-            'NÃ£o foi possÃ­vel atualizar a etapa logÃ­stica.'
+            'Não foi possível atualizar a etapa logística.'
         );
 
         button.disabled = false;
@@ -1046,7 +1046,7 @@ elements.logoutButton.addEventListener(
             );
 
             showMessage(
-                'NÃ£o foi possÃ­vel sair da conta.'
+                'Não foi possível sair da conta.'
             );
         }
     }
