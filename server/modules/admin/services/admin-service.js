@@ -5,12 +5,6 @@ const {
 
 function emptyDashboard() {
     
-        if (result && Array.isArray(result.pendingPayments)) {
-          result.pendingPayments = result.pendingPayments.filter(item => {
-            const st = String(item.payment_status || item.status || '').toLowerCase();
-            return st === 'pending' || st === 'aguardando' || st === 'pendente';
-          });
-        }
         return {
         metrics: {
             revenue: 0,
