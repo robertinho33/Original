@@ -1,0 +1,246 @@
+﻿============================================================
+AUREA — DIAGNOSTICO POSTGRESQL parte 1/
+============================================================
+
+[1] BOOTSTRAP.JS
+------------------------------------------------------------
+'use strict';
+
+const { checkDatabase } = require('./postgres');
+const { initializeDatabase } = require('./database/postgres-init');
+
+async function bootstrapDatabase() {
+    console.log('[DATABASE] Verificando PostgreSQL...');
+
+    const health = await checkDatabase();
+
+    if (health.status !== 'ok') {
+        throw new Error(
+            'PostgreSQL não configurado. Defina DATABASE_URL.'
+        );
+    }
+
+    console.log('[DATABASE] Conexão estabelecida.');
+
+    await initializeDatabase();
+
+    console.log('[DATABASE] Estrutura verificada.');
+}
+
+if (require.main === module) {
+    bootstrapDatabase()
+        .then(() => {
+            console.log('[DATABASE] Bootstrap concluído.');
+        })
+        .catch((error) => {
+            console.error(
+                '[DATABASE] Falha no bootstrap:',
+                error.message
+            );
+
+            process.exitCode = 1;
+        });
+}
+
+module.exports = {
+    bootstrapDatabase
+};
+
+
+[2] POSTGRES-INIT.JS
+------------------------------------------------------------
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const { query } = require('../postgres');
+
+const schemaPath = path.join(__dirname, 'schema.sql');
+
+async function initializeDatabase() {
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+
+    await query(schema);
+
+    console.log('[DATABASE] PostgreSQL inicializado.');
+}
+
+module.exports = {
+    initializeDatabase
+};
+
+
+[3] MIGRATE-ADMIN.JS
+------------------------------------------------------------
+require("dotenv").config();
+
+const fs = require("fs");
+const path = require("path");
+const { Pool } = require("pg");
+
+const DATABASE_URL = (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRESQL_URL ||
+    ""
+).trim();
+
+if (!DATABASE_URL) {
+    throw new Error("DATABASE_URL nÃ£o configurada.");
+}
+
+const pool = new Pool({
+    connectionString: DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 3,
+    connectionTimeoutMillis: 15000,
+    idleTimeoutMillis: 30000
+});
+
+async function main() {
+    const client = await pool.connect();
+
+    try {
+        await client.query("BEGIN");
+
+        const migrationPath = path.join(
+            __dirname,
+            "migrations",
+            "007-admin-database-consolidation.sql"
+        );
+
+        let sql = fs.readFileSync(migrationPath, "utf8");
+
+        // Remove BOM UTF-8.
+        sql = sql.replace(/^\uFEFF/, "");
+
+        console.log("[DB] Executando 007-admin-database-consolidation.sql");
+
+        await client.query(sql);
+
+        await client.query("COMMIT");
+
+        console.log("[DB] OK: consolidaÃ§Ã£o PostgreSQL concluÃ­da.");
+    } catch (error) {
+        try {
+            await client.query("ROLLBACK");
+        } catch {}
+
+        console.error("[DB] FALHA:", error.message);
+
+        throw error;
+    } finally {
+        client.release();
+        await pool.end();
+    }
+}
+
+main().catch(() => {
+    process.exitCode = 1;
+});
+
+[4] CONEXOES ENCONTRADAS NO SERVER
+------------------------------------------------------------
+server\infrastructure\database\bootstrap.js :3 : const { checkDatabase } = require('./postgres');
+server\infrastructure\database\bootstrap.js :4 : const { initializeDatabase } = require('./database/postgres-init');
+server\infrastructure\database\bootstrap.js :13 : 'PostgreSQL não configurado. Defina DATABASE_URL.'
+server\infrastructure\database\migrate-admin.js :7 : const DATABASE_URL = (
+server\infrastructure\database\migrate-admin.js :8 : process.env.DATABASE_URL ||
+server\infrastructure\database\migrate-admin.js :14 : if (!DATABASE_URL) {
+server\infrastructure\database\migrate-admin.js :15 : throw new Error("DATABASE_URL não configurada.");
+server\infrastructure\database\migrate-admin.js :18 : const pool = new Pool({
+server\infrastructure\database\migrate-admin.js :19 : connectionString: DATABASE_URL,
+server\infrastructure\database\migrate-admin.js :20 : ssl: { rejectUnauthorized: false },
+server\infrastructure\database\migrate-all.js :5 : const { query } = require('../postgres');
+server\infrastructure\database\migrate-orders.js :6 : const { query } = require('../postgres');
+server\infrastructure\database\postgres-init.js :5 : const { query } = require('../postgres');
+server\infrastructure\audit-postgres.js :4 : const { transaction } = require('./postgres');
+server\infrastructure\audit-postgres.js :81 : const result = await require('./postgres').query(
+server\infrastructure\postgres.js :8 : } = require('./postgres');
+server\infrastructure\postgres.js :12 : throw new Error('DATABASE_URL não configurada.');
+server\modules\admin\controllers\admin-health-controller.js :1 : const { query } = require("../repositories/admin-db");
+server\modules\admin\repositories\admin-consolidated-report-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-coupon-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-customer-filter-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-customer-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-dashboard-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-db.js :7 : process.env.DATABASE_URL ||
+server\modules\admin\repositories\admin-db.js :14 : function getPool() {
+server\modules\admin\repositories\admin-db.js :20 : throw new Error("DATABASE_URL não configurada.");
+server\modules\admin\repositories\admin-db.js :23 : pool = new Pool({
+server\modules\admin\repositories\admin-db.js :27 : ssl: {
+server\modules\admin\repositories\admin-db.js :28 : rejectUnauthorized: false
+server\modules\admin\repositories\admin-db.js :51 : const database = getPool();
+server\modules\admin\repositories\admin-db.js :62 : const database = getPool();
+server\modules\admin\repositories\admin-db.js :81 : async function closePool() {
+server\modules\admin\repositories\admin-finance-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-global-search-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-inventory-history-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-inventory-repository.js :1 : const { query, transaction } = require("./admin-db");
+server\modules\admin\repositories\admin-operational-dashboard-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-order-filter-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-order-repository.js :1 : const { query, transaction } = require("./admin-db");
+server\modules\admin\repositories\admin-overview-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-permission-repository.js :3 : } = require("./admin-db");
+server\modules\admin\repositories\admin-product-filter-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-product-repository.js :1 : const { query, transaction } = require("./admin-db");
+server\modules\admin\repositories\admin-profile-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-report-repository.js :2 : require("../repositories/admin-db");
+server\modules\admin\repositories\admin-schema.js :1 : const db = require("../repositories/admin-db");
+server\modules\admin\repositories\admin-settings-repository.js :1 : const { query, transaction } = require("./admin-db");
+server\modules\admin\repositories\admin-shipment-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\admin-write-repository.js :1 : const { transaction } = require("./admin-db");
+server\modules\admin\repositories\audit-entity-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\audit-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\category-status-repository.js :2 : require("./admin-db");
+server\modules\admin\repositories\category-write-repository.js :1 : const { transaction } = require("./admin-db");
+server\modules\admin\repositories\commercial-history-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\coupon-metrics-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\coupon-status-repository.js :2 : require("./admin-db");
+server\modules\admin\repositories\coupon-write-repository.js :1 : const { transaction } = require("./admin-db");
+server\modules\admin\repositories\customer-details-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\customer-metrics-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\customer-report-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\customer-search-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\customer-status-repository.js :2 : require("./admin-db");
+server\modules\admin\repositories\daily-sales-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\db-summary-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\final-admin-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\finance-details-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\finance-metrics-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\inventory-adjustment-repository.js :2 : require("./admin-db");
+server\modules\admin\repositories\inventory-history-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\logistics-details-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\notification-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\operational-reports-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\operations-overview-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\order-details-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\order-filter-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\pending-payments-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\product-admin-repository.js :1 : const { query, transaction } = require("./admin-db");
+server\modules\admin\repositories\product-filter-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\product-report-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\product-status-repository.js :2 : require("./admin-db");
+server\modules\admin\repositories\product-write-repository.js :1 : const { query, transaction } = require("./admin-db");
+server\modules\admin\repositories\reservation-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\shipping-queue-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\stock-alert-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\stock-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\repositories\tracking-repository.js :1 : const { query } = require("./admin-db");
+server\modules\admin\services\admin-service.js :1 : const db = require("../repositories/admin-db");
+server\modules\inventory\inventory-repository-postgres.js :3 : const { query, transaction } = require('../../infrastructure/postgres');
+server\modules\inventory\inventory-repository.js :3 : const { query } = require('../../infrastructure/postgres');
+server\modules\orders\order-repository.js :6 : } = require('../../infrastructure/database');
+server\modules\orders\postgres-order-repository.js :3 : const { query } = require('../../infrastructure/postgres');
+
+[5] SCRIPTS DE BANCO
+------------------------------------------------------------
+bootstrap.js
+migrate-admin.js
+migrate-all.js
+migrate-orders.js
+postgres-init.js
+
+============================================================
+FIM DO DIAGNOSTICO
+============================================================

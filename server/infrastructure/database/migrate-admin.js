@@ -1,76 +1,66 @@
-﻿const fs = require("fs");
+require("dotenv").config();
+
+const fs = require("fs");
 const path = require("path");
+const { Pool } = require("pg");
 
-function findPg() {
-    const candidates = [
-        process.env.DATABASE_URL,
-        process.env.POSTGRES_URL,
-        process.env.POSTGRESQL_URL
-    ];
+const DATABASE_URL = (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRESQL_URL ||
+    ""
+).trim();
 
-    return candidates.find(Boolean);
+if (!DATABASE_URL) {
+    throw new Error("DATABASE_URL não configurada.");
 }
 
-async function migrate() {
-    const connectionString = findPg();
+const pool = new Pool({
+    connectionString: DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 3,
+    connectionTimeoutMillis: 15000,
+    idleTimeoutMillis: 30000
+});
 
-    if (!connectionString) {
-        console.log("[DB] DATABASE_URL não configurada.");
-        console.log("[DB] Migração criada e pronta para execução.");
-        return;
-    }
-
-    let pg;
-
-    try {
-        pg = require("pg");
-    } catch {
-        throw new Error(
-            "Dependência 'pg' não encontrada."
-        );
-    }
-
-    const client = new pg.Client({
-        connectionString,
-        ssl: process.env.NODE_ENV === "production"
-            ? { rejectUnauthorized: false }
-            : undefined
-    });
-
-    await client.connect();
-
-    const migrationPath = path.join(
-        __dirname,
-        "migrations",
-        "001-aurea-admin-consolidation.sql"
-    );
-
-    const sql = fs.readFileSync(
-        migrationPath,
-        "utf8"
-    );
+async function main() {
+    const client = await pool.connect();
 
     try {
         await client.query("BEGIN");
+
+        const migrationPath = path.join(
+            __dirname,
+            "migrations",
+            "007-admin-database-consolidation.sql"
+        );
+
+        let sql = fs.readFileSync(migrationPath, "utf8");
+
+        // Remove BOM UTF-8.
+        sql = sql.replace(/^\uFEFF/, "");
+
+        console.log("[DB] Executando 007-admin-database-consolidation.sql");
+
         await client.query(sql);
+
         await client.query("COMMIT");
 
-        console.log(
-            "[DB] AUREA — banco administrativo consolidado."
-        );
+        console.log("[DB] OK: consolidação PostgreSQL concluída.");
     } catch (error) {
-        await client.query("ROLLBACK");
+        try {
+            await client.query("ROLLBACK");
+        } catch {}
+
+        console.error("[DB] FALHA:", error.message);
+
         throw error;
     } finally {
-        await client.end();
+        client.release();
+        await pool.end();
     }
 }
 
-migrate().catch(error => {
-    console.error(
-        "[DB] Falha na consolidação:",
-        error.message
-    );
-
+main().catch(() => {
     process.exitCode = 1;
 });

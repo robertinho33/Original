@@ -1,409 +1,210 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AURÉA Admin</title>
-  <link rel="stylesheet" href="../css/admin.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="AURÉA COSMETICS — painel administrativo da operação."
+    >
+
+    <title>AURÉA ADMIN • COSMETICS</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-layout.css">
+    <link rel="stylesheet" href="../css/admin-polish.css">
 </head>
 
-<body>
+<body class="admin-page">
 
-<div class="admin-app">
+    <div class="admin-shell">
 
-  <aside class="admin-sidebar">
+        <aside class="admin-sidebar">
 
-    <div class="admin-brand">
-      <strong>AURÉA</strong>
-      <span>ADMIN • COSMETICS</span>
+            <div class="admin-brand">
+                <a href="../index.html" class="admin-brand-link">
+                    <strong>AURÉA</strong>
+                    <span>ADMIN • COSMETICS</span>
+                </a>
+            </div>
+
+            <nav class="admin-navigation" aria-label="Navegação administrativa">
+
+                <button
+                    type="button"
+                    class="admin-nav-item active"
+                    data-admin-section="dashboard"
+                >
+                    <span aria-hidden="true">▦</span>
+                    <span>Dashboard</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="orders"
+                >
+                    <span aria-hidden="true">🛒</span>
+                    <span>Pedidos</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="products"
+                >
+                    <span aria-hidden="true">▣</span>
+                    <span>Produtos</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="categories"
+                >
+                    <span aria-hidden="true">◈</span>
+                    <span>Categorias</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="inventory"
+                >
+                    <span aria-hidden="true">▤</span>
+                    <span>Estoque</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="customers"
+                >
+                    <span aria-hidden="true">♙</span>
+                    <span>Clientes</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="finance"
+                >
+                    <span aria-hidden="true">◉</span>
+                    <span>Financeiro</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="coupons"
+                >
+                    <span aria-hidden="true">◇</span>
+                    <span>Cupons</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="logistics"
+                >
+                    <span aria-hidden="true">⌁</span>
+                    <span>Logística</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="reports"
+                >
+                    <span aria-hidden="true">▥</span>
+                    <span>Relatórios</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="audit"
+                >
+                    <span aria-hidden="true">⌕</span>
+                    <span>Auditoria</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-admin-section="settings"
+                >
+                    <span aria-hidden="true">⚙</span>
+                    <span>Configurações</span>
+                </button>
+
+            </nav>
+
+        </aside>
+
+        <main class="admin-main">
+
+            <header class="admin-header">
+
+                <div class="admin-header-title">
+                    <span class="admin-mobile-brand">AURÉA</span>
+                    <span id="adminSectionTitle">Dashboard</span>
+                </div>
+
+                <div class="admin-header-actions">
+
+                    <button
+                        type="button"
+                        class="admin-icon-button"
+                        aria-label="Notificações"
+                        title="Notificações"
+                    >
+                        🔔
+                    </button>
+
+                    <div class="admin-user">
+
+                        <div class="admin-user-avatar">
+                            A
+                        </div>
+
+                        <div class="admin-user-info">
+                            <strong>Administrador</strong>
+                            <span>Acesso total</span>
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        id="adminLogout"
+                        class="admin-logout-button"
+                    >
+                        Sair
+                    </button>
+
+                </div>
+
+            </header>
+
+            <section
+                id="admin-root"
+                class="admin-root"
+                aria-live="polite"
+            >
+                <div class="admin-loading">
+                    Carregando ambiente administrativo...
+                </div>
+            </section>
+
+        </main>
+
     </div>
 
-    <nav class="admin-nav">
-
-      <button class="admin-nav-item active" data-section="dashboard">
-        <span>▦</span> Dashboard
-      </button>
-
-      <button class="admin-nav-item" data-section="orders">
-        <span>🛒</span> Pedidos
-      </button>
-
-      <button class="admin-nav-item" data-section="products">
-        <span>▣</span> Produtos
-      </button>
-
-      <button class="admin-nav-item" data-section="categories">
-        <span>◈</span> Categorias
-      </button>
-
-      <button class="admin-nav-item" data-section="inventory">
-        <span>▤</span> Estoque
-      </button>
-
-      <button class="admin-nav-item" data-section="customers">
-        <span>♙</span> Clientes
-      </button>
-
-      <button class="admin-nav-item" data-section="finance">
-        <span>◉</span> Financeiro
-      </button>
-
-      <button class="admin-nav-item" data-section="coupons">
-        <span>◇</span> Cupons
-      </button>
-
-      <button class="admin-nav-item" data-section="logistics">
-        <span>⌁</span> Logística
-      </button>
-
-      <button class="admin-nav-item" data-section="reports">
-        <span>▥</span> Relatórios
-      </button>
-
-      <button class="admin-nav-item" data-section="audit">
-        <span>⌕</span> Auditoria
-      </button>
-
-      <button class="admin-nav-item" data-section="settings">
-        <span>⚙</span> Configurações
-      </button>
-
-    </nav>
-
-    <div class="admin-sidebar-footer">
-
-      <div class="admin-user">
-        <div class="admin-avatar">A</div>
-
-        <div>
-          <strong>Administrador</strong>
-          <span>Acesso total</span>
-        </div>
-      </div>
-
-      <button id="adminLogout" class="admin-logout">
-        Sair
-      </button>
-
-    </div>
-
-  </aside>
-
-
-  <main class="admin-main">
-
-    <header class="admin-header">
-
-      <div>
-        <h1 id="adminPageTitle">Dashboard</h1>
-
-        <p id="adminPageDescription">
-          Visão geral da operação da AURÉA
-        </p>
-      </div>
-
-      <div class="admin-header-actions">
-
-        <button class="admin-icon-button">
-          🔔
-        </button>
-
-        <div class="admin-profile">
-          <div class="admin-avatar">A</div>
-
-          <div>
-            <strong>Administrador</strong>
-            <span>Administrador</span>
-          </div>
-        </div>
-
-      </div>
-
-    </header>
-
-
-    <section class="admin-content">
-
-      <!-- DASHBOARD -->
-
-      <div id="section-dashboard" class="admin-section active">
-
-        <div class="admin-metrics">
-
-          <article class="metric-card">
-            <span>Faturamento</span>
-            <strong>R$ 12.480,00</strong>
-            <small>Período atual</small>
-          </article>
-
-          <article class="metric-card">
-            <span>Pedidos</span>
-            <strong>148</strong>
-            <small>Pedidos registrados</small>
-          </article>
-
-          <article class="metric-card">
-            <span>Clientes</span>
-            <strong>96</strong>
-            <small>Clientes cadastrados</small>
-          </article>
-
-          <article class="metric-card">
-            <span>Ticket médio</span>
-            <strong>R$ 84,32</strong>
-            <small>Valor médio por pedido</small>
-          </article>
-
-        </div>
-
-
-        <div class="dashboard-grid">
-
-          <article class="admin-panel sales-panel">
-
-            <div class="panel-header">
-
-              <div>
-                <h2>Vendas</h2>
-                <span>Desempenho dos últimos meses</span>
-              </div>
-
-              <select>
-                <option>Últimos 6 meses</option>
-                <option>Últimos 12 meses</option>
-              </select>
-
-            </div>
-
-            <div class="sales-chart">
-
-              <div class="chart-column">
-                <div class="chart-bar" style="height:45%"></div>
-                <span>ABR</span>
-              </div>
-
-              <div class="chart-column">
-                <div class="chart-bar" style="height:60%"></div>
-                <span>MAI</span>
-              </div>
-
-              <div class="chart-column">
-                <div class="chart-bar" style="height:54%"></div>
-                <span>JUN</span>
-              </div>
-
-              <div class="chart-column">
-                <div class="chart-bar" style="height:72%"></div>
-                <span>JUL</span>
-              </div>
-
-              <div class="chart-column">
-                <div class="chart-bar" style="height:68%"></div>
-                <span>AGO</span>
-              </div>
-
-              <div class="chart-column">
-                <div class="chart-bar active" style="height:91%"></div>
-                <span>SET</span>
-              </div>
-
-            </div>
-
-          </article>
-
-
-          <article class="admin-panel">
-
-            <div class="panel-header">
-              <div>
-                <h2>Operação</h2>
-                <span>Status atual</span>
-              </div>
-            </div>
-
-            <div class="operation-list">
-
-              <div>
-                <span>Pagamentos pendentes</span>
-                <strong>5</strong>
-              </div>
-
-              <div>
-                <span>Pedidos para envio</span>
-                <strong>12</strong>
-              </div>
-
-              <div>
-                <span>Reservas de estoque</span>
-                <strong>18</strong>
-              </div>
-
-              <div>
-                <span>Cupons ativos</span>
-                <strong>7</strong>
-              </div>
-
-            </div>
-
-          </article>
-
-        </div>
-
-
-        <div class="dashboard-grid">
-
-          <article class="admin-panel">
-
-            <div class="panel-header">
-
-              <div>
-                <h2>Pedidos recentes</h2>
-                <span>Últimas movimentações</span>
-              </div>
-
-              <button
-                class="admin-button"
-                data-section-link="orders"
-              >
-                Ver todos
-              </button>
-
-            </div>
-
-            <div class="table-wrapper">
-
-              <table class="admin-table">
-
-                <thead>
-                  <tr>
-                    <th>Pedido</th>
-                    <th>Cliente</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-
-                  <tr>
-                    <td>AUR-MU5WXTNF</td>
-                    <td>Cliente</td>
-                    <td>R$ 136,72</td>
-                    <td>
-                      <span class="status warning">
-                        Aguardando PIX
-                      </span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>AUR-MU5WX8P2</td>
-                    <td>Cliente</td>
-                    <td>R$ 219,80</td>
-                    <td>
-                      <span class="status success">
-                        Pago
-                      </span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>AUR-MU5WV4K1</td>
-                    <td>Cliente</td>
-                    <td>R$ 89,90</td>
-                    <td>
-                      <span class="status info">
-                        Enviado
-                      </span>
-                    </td>
-                  </tr>
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-          </article>
-
-
-          <article class="admin-panel">
-
-            <div class="panel-header">
-
-              <div>
-                <h2>Estoque crítico</h2>
-                <span>Produtos com baixo estoque</span>
-              </div>
-
-              <button
-                class="admin-button"
-                data-section-link="inventory"
-              >
-                Estoque
-              </button>
-
-            </div>
-
-            <div class="stock-list">
-
-              <div class="stock-item">
-                <div>
-                  <strong>Acid Absolut Repair</strong>
-                  <span>SKU VEHZKS3RJ</span>
-                </div>
-
-                <b>3 un.</b>
-              </div>
-
-              <div class="stock-item">
-                <div>
-                  <strong>Máscara Repair</strong>
-                  <span>SKU AUR-MSK-02</span>
-                </div>
-
-                <b>5 un.</b>
-              </div>
-
-              <div class="stock-item">
-                <div>
-                  <strong>Finalizador Premium</strong>
-                  <span>SKU AUR-FIN-07</span>
-                </div>
-
-                <b>2 un.</b>
-              </div>
-
-            </div>
-
-          </article>
-
-        </div>
-
-      </div>
-
-
-      <!-- MÓDULOS -->
-
-      <div id="section-orders" class="admin-section"></div>
-      <div id="section-products" class="admin-section"></div>
-      <div id="section-categories" class="admin-section"></div>
-      <div id="section-inventory" class="admin-section"></div>
-      <div id="section-customers" class="admin-section"></div>
-      <div id="section-finance" class="admin-section"></div>
-      <div id="section-coupons" class="admin-section"></div>
-      <div id="section-logistics" class="admin-section"></div>
-      <div id="section-reports" class="admin-section"></div>
-      <div id="section-audit" class="admin-section"></div>
-      <div id="section-settings" class="admin-section"></div>
-
-    </section>
-
-  </main>
-
-</div>
-
-<script type="module" src="../js/admin/admin.js"></script>
+    <script type="module" src="../js/admin/admin.js"></script>
 
 </body>
+
 </html>

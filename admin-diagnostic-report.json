@@ -1,0 +1,27 @@
+﻿{
+    "generated_at":  "2026-09-18 07:41:29",
+    "project":  "C:\\Users\\sou_r\\Desktop\\Loja\\Original",
+    "results":  {
+                    "dotenv":  "true",
+                    "token_length":  "44",
+                    "database_url":  "true",
+                    "server_port_3000":  true,
+                    "db_identity":  "{\"error\":\"SSL/TLS required\"}",
+                    "table_count":  1,
+                    "tables":  "{\"error\":\"SSL/TLS required\"}",
+                    "row_counts":  "{\"error\":\"SSL/TLS required\"}",
+                    "overview":  {
+
+                                 },
+                    "timeline":  {
+
+                                 },
+                    "alerts":  {
+
+                               },
+                    "dashboard":  {
+
+                                  },
+                    "admin_file_count":  129
+                }
+}

@@ -1,0 +1,203 @@
+﻿/* =========================================================
+   AUREA ADMIN — DISTRIBUIÇÃO DO HEADER E BUSCA
+   ========================================================= */
+
+.admin-header {
+    display: grid !important;
+    grid-template-columns: minmax(180px, 1fr) minmax(260px, 420px) auto !important;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.admin-header > * {
+    min-width: 0;
+}
+
+/* Área central da busca */
+.admin-global-search,
+.admin-search,
+.admin-header-search {
+    width: 100% !important;
+    max-width: 420px !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    justify-self: center;
+}
+
+/* Caso o container da busca exista */
+.admin-global-search-wrapper,
+.admin-search-wrapper,
+.admin-header-search-wrapper {
+    width: 100%;
+    max-width: 420px;
+    min-width: 0;
+    justify-self: center;
+    position: relative;
+}
+
+/* Área de ações à direita */
+.admin-header-actions,
+.admin-actions,
+.admin-header > .actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    min-width: max-content;
+}
+
+/* Botões do topo */
+.admin-header-actions button,
+.admin-actions button {
+    white-space: nowrap;
+}
+
+/* Evita que qualquer input global herde largura excessiva */
+.admin-header input[type="search"],
+.admin-header input[type="text"] {
+    width: 100%;
+    max-width: 420px;
+}
+
+/* Resultado da busca acompanha o campo */
+.admin-global-results {
+    width: 100%;
+    max-width: 420px;
+    box-sizing: border-box;
+}
+
+/* Toolbar das páginas */
+.admin-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.admin-toolbar > * {
+    min-width: 0;
+}
+
+.admin-toolbar-search {
+    width: 260px !important;
+    max-width: 320px !important;
+    min-width: 180px !important;
+    flex: 0 1 320px !important;
+}
+
+/* Área de filtros e ações */
+.admin-toolbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+/* Títulos não devem ser comprimidos */
+.admin-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-section-header > div:first-child {
+    min-width: 0;
+    flex: 1;
+}
+
+/* Desktop amplo */
+@media (min-width: 1200px) {
+    .admin-header {
+        grid-template-columns: minmax(220px, 1fr) 420px auto !important;
+    }
+}
+
+/* Notebook */
+@media (max-width: 1100px) {
+    .admin-header {
+        grid-template-columns: 1fr 340px auto !important;
+        gap: 14px;
+    }
+
+    .admin-global-search,
+    .admin-search,
+    .admin-header-search,
+    .admin-global-search-wrapper,
+    .admin-search-wrapper,
+    .admin-header-search-wrapper {
+        max-width: 340px !important;
+    }
+}
+
+/* Tablet */
+@media (max-width: 850px) {
+    .admin-header {
+        grid-template-columns: 1fr auto !important;
+    }
+
+    .admin-global-search-wrapper,
+    .admin-search-wrapper,
+    .admin-header-search-wrapper {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        max-width: none;
+    }
+
+    .admin-global-search,
+    .admin-search,
+    .admin-header-search {
+        max-width: none !important;
+    }
+
+    .admin-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-toolbar-search {
+        width: 100% !important;
+        max-width: none !important;
+        flex-basis: auto !important;
+    }
+
+    .admin-toolbar-actions {
+        margin-left: 0;
+        justify-content: flex-start;
+    }
+}
+
+/* Celular */
+@media (max-width: 560px) {
+    .admin-header {
+        display: flex !important;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .admin-header-actions,
+    .admin-actions,
+    .admin-header > .actions {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+
+    .admin-global-search-wrapper,
+    .admin-search-wrapper,
+    .admin-header-search-wrapper {
+        order: 3;
+    }
+
+    .admin-section-header {
+        flex-direction: column;
+    }
+}

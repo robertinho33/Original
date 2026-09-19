@@ -1,0 +1,18 @@
+﻿<script type="module">
+
+const token =
+    localStorage.getItem(
+        "aurea-admin-token"
+    ) ||
+    sessionStorage.getItem(
+        "aurea-admin-token"
+    );
+
+if (!token) {
+    window.location.replace(
+        "./admin-login.html"
+    );
+}
+
+</script>
+

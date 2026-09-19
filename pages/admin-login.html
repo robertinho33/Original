@@ -2,116 +2,74 @@
 <html lang="pt-BR">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta
-        name="description"
-        content="Acesso administrativo Auréa Cosmetics."
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Auréa — Administração</title>
+    <title>AURÉA — Administração</title>
 
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/admin-login.css">
+    <link
+        rel="stylesheet"
+        href="../css/admin.css"
+    >
+
 </head>
 
 <body>
 
-    <main class="admin-login">
+<main class="admin-login">
 
-        <section class="admin-login-card">
+    <section class="admin-login-card">
 
-            <div class="admin-login-brand">
-                <span>A</span>
-                <strong>AURÉA</strong>
-            </div>
+        <div class="admin-login-brand">
+            AURÉA
+            <span>COSMETICS</span>
+        </div>
 
-            <p class="eyebrow">
-                ÁREA ADMINISTRATIVA
-            </p>
+        <h1>Administração</h1>
 
-            <h1>
-                Acesso ao<br>
-                <em>controle da loja.</em>
-            </h1>
+        <p>
+            Acesse o ambiente operacional
+            da AURÉA Cosmetics.
+        </p>
 
-            <p class="admin-login-description">
-                Entre para acompanhar pedidos, confirmar pagamentos
-                e atualizar o status de entrega.
-            </p>
+        <form id="adminLoginForm">
 
-            <form id="adminLoginForm" novalidate>
+            <label for="adminToken">
+                Token administrativo
+            </label>
 
-                <div class="admin-field">
-
-                    <label for="adminEmail">
-                        E-mail
-                    </label>
-
-                    <input
-                        id="adminEmail"
-                        name="email"
-                        type="email"
-                        autocomplete="username"
-                        placeholder="seu e-mail"
-                        required
-                    >
-
-                </div>
-
-                <div class="admin-field">
-
-                    <label for="adminPassword">
-                        Senha
-                    </label>
-
-                    <input
-                        id="adminPassword"
-                        name="password"
-                        type="password"
-                        autocomplete="current-password"
-                        placeholder="Sua senha"
-                        required
-                    >
-
-                </div>
-
-                <div
-                    id="adminLoginError"
-                    class="admin-login-error"
-                    role="alert"
-                    aria-live="polite"
-                    hidden
-                ></div>
-
-                <button
-                    id="adminLoginButton"
-                    class="primary admin-login-button"
-                    type="submit"
-                >
-                    Entrar
-                    <span>➔</span>
-                </button>
-
-            </form>
-
-            <a
-                class="admin-back-link"
-                href="../index.html"
+            <input
+                id="adminToken"
+                type="password"
+                autocomplete="off"
+                required
             >
-                ← Voltar para a loja
-            </a>
 
-        </section>
+            <button
+                id="adminLoginButton"
+                type="submit"
+            >
+                Entrar
+            </button>
 
-    </main>
+            <div
+                id="adminLoginError"
+                class="admin-login-error"
+                hidden
+            ></div>
 
-    <script
-        type="module"
-        src="../js/auth/admin-login.js"
-    ></script>
+        </form>
+
+    </section>
+
+</main>
+
+<script type="module" src="../js/admin/admin-login.js"></script>
 
 </body>
-
 </html>
