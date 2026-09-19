@@ -31,3 +31,5 @@ coverage/
 # Sistema
 .DS_Store
 Thumbs.db
+.env copy
+serviceAccountKey.json
