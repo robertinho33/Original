@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #f5f4f0;
   --surface: #ffffff;
   --sidebar: #20201d;
@@ -1977,5 +1977,174 @@ button {
 
     .admin-json {
         font-size: 11px;
+    }
+}
+
+
+/* ============================================================
+   AUREA ADMIN — MENU COMPACTO
+   ============================================================ */
+
+.admin-app {
+    grid-template-columns: 205px minmax(0, 1fr);
+}
+
+.admin-sidebar {
+    width: 205px;
+    padding: 18px 11px;
+}
+
+.admin-brand {
+    padding: 4px 10px 18px;
+}
+
+.admin-brand strong {
+    font-size: 18px;
+    letter-spacing: .14em;
+}
+
+.admin-brand span {
+    font-size: 8px;
+    letter-spacing: .12em;
+}
+
+.admin-nav {
+    gap: 2px;
+}
+
+.admin-nav-item {
+    min-height: 37px;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+}
+
+.admin-nav-item span {
+    width: 18px;
+    min-width: 18px;
+    font-size: 13px;
+}
+
+.admin-sidebar-footer {
+    padding-top: 12px;
+}
+
+.admin-user {
+    gap: 8px;
+    padding: 12px 7px;
+}
+
+.admin-avatar {
+    width: 31px;
+    height: 31px;
+    flex-basis: 31px;
+    font-size: 10px;
+}
+
+.admin-user strong {
+    font-size: 10px;
+}
+
+.admin-user span {
+    font-size: 8px;
+}
+
+.admin-logout {
+    padding: 8px;
+    font-size: 10px;
+}
+
+.admin-content {
+    padding: 24px 26px 40px;
+}
+
+
+/* ============================================================
+   MENU COMPACTO EM TELAS MÉDIAS
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .admin-app {
+        grid-template-columns: 190px minmax(0, 1fr);
+    }
+
+    .admin-sidebar {
+        width: 190px;
+        padding-left: 9px;
+        padding-right: 9px;
+    }
+
+    .admin-nav-item {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+}
+
+
+/* ============================================================
+   TABLET / MOBILE
+   ============================================================ */
+
+@media (max-width: 720px) {
+
+    .admin-app {
+        display: block;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        min-height: auto;
+        padding: 12px;
+    }
+
+    .admin-brand {
+        padding: 3px 8px 12px;
+    }
+
+    .admin-nav {
+        display: grid;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+        gap: 5px;
+    }
+
+    .admin-nav-item {
+        justify-content: center;
+        min-height: 38px;
+        padding: 8px 6px;
+        text-align: center;
+    }
+
+    .admin-nav-item span {
+        width: auto;
+        min-width: 0;
+    }
+
+    .admin-sidebar-footer {
+        display: none;
+    }
+
+    .admin-content {
+        padding: 18px;
+    }
+}
+
+
+/* ============================================================
+   CELULAR
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+    .admin-nav {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-nav-item {
+        justify-content: flex-start;
+        text-align: left;
     }
 }
