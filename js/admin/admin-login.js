@@ -38,7 +38,7 @@ function setLoading(loading) {
 async function authenticate(token) {
 
     const response = await fetch(
-        "/api/admin/dashboard",
+        "https://aurea-pix-api.onrender.com/api/admin/dashboard",
         {
             method: "GET",
 
