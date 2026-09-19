@@ -1,4 +1,4 @@
-﻿const API_BASE = "/api/admin";
+﻿const API_BASE = "https://aurea-pix-api.onrender.com/api/admin";
 
 function getAdminToken() {
     return (
@@ -115,3 +115,4 @@ export const adminApi = {
 };
 
 export { getAdminToken };
+
