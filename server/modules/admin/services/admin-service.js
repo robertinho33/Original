@@ -161,12 +161,27 @@ async function getDashboard() {
 
         if (orders.paymentStatus) {
 
+            const paymentStatusColumn =
+                quoteIdentifier(orders.paymentStatus);
+
+            const orderStatusColumn =
+                orders.status
+                    ? quoteIdentifier(orders.status)
+                    : "NULL";
+
             const pendingPaymentsResult = await db.query(`
                 SELECT
-                    ${recentColumns.join(",\n                    ")}
+                    ${recentColumns.join(",\n                    ")},
+                    ${paymentStatusColumn} AS payment_status
                 FROM "orders"
-                WHERE LOWER(COALESCE(payment_status::text, status::text, '')) IN ('pending', 'aguardando', 'pendente')
-            ORDER BY
+                WHERE LOWER(
+                    COALESCE(
+                        ${paymentStatusColumn}::text,
+                        ${orderStatusColumn}::text,
+                        ''
+                    )
+                ) IN ('pending', 'aguardando', 'pendente')
+                ORDER BY
                     ${
                         orders.createdAt
                             ? `${quoteIdentifier(orders.createdAt)} DESC`
@@ -175,7 +190,17 @@ async function getDashboard() {
                 LIMIT 20
             `);
 
-            result.pendingPayments = pendingPaymentsResult.rows.filter(row => ['pending', 'aguardando', 'pendente'].includes(String(row.payment_status || row.status || '').toLowerCase()));
+            result.pendingPayments =
+                pendingPaymentsResult.rows.filter(row =>
+                    ['pending', 'aguardando', 'pendente']
+                        .includes(
+                            String(
+                                row.payment_status ||
+                                row.status ||
+                                ''
+                            ).toLowerCase()
+                        )
+                );
         }
     }
 
@@ -597,3 +622,4 @@ module.exports = {
     getAudit,
     getSettings
 };
+
