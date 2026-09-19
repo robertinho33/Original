@@ -2148,3 +2148,164 @@ button {
         text-align: left;
     }
 }
+
+/* ============================================================
+   AUREA ADMIN — LAYOUT DEFINITIVO
+   Corrige admin-shell/admin-navigation usados pelo HTML atual.
+   ============================================================ */
+
+.admin-shell {
+    display: grid !important;
+    grid-template-columns: 205px minmax(0, 1fr) !important;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.admin-shell > .admin-sidebar {
+    grid-column: 1;
+    grid-row: 1;
+    width: 205px !important;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    align-self: start;
+}
+
+.admin-shell > .admin-main {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+.admin-navigation {
+    display: grid;
+    gap: 2px;
+}
+
+.admin-navigation .admin-nav-item {
+    width: 100%;
+    min-height: 37px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+}
+
+.admin-navigation .admin-nav-item span:first-child {
+    width: 18px;
+    min-width: 18px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.admin-main {
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.admin-root {
+    width: 100%;
+    min-width: 0;
+    padding: 24px 26px 40px;
+}
+
+.admin-header {
+    width: 100%;
+}
+
+.module-panel,
+.admin-module-data {
+    width: 100%;
+    min-width: 0;
+}
+
+.admin-table-wrap {
+    max-width: 100%;
+}
+
+.admin-table {
+    min-width: 760px;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .admin-shell {
+        grid-template-columns: 190px minmax(0, 1fr) !important;
+    }
+
+    .admin-shell > .admin-sidebar {
+        width: 190px !important;
+    }
+
+    .admin-root {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 720px) {
+
+    .admin-shell {
+        display: block !important;
+    }
+
+    .admin-shell > .admin-sidebar {
+        width: 100% !important;
+        min-height: auto;
+        position: static;
+    }
+
+    .admin-shell > .admin-main {
+        width: 100%;
+    }
+
+    .admin-navigation {
+        display: grid;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+        gap: 5px;
+    }
+
+    .admin-navigation .admin-nav-item {
+        justify-content: center;
+        min-height: 38px;
+        padding: 8px 6px;
+        text-align: center;
+    }
+
+    .admin-navigation .admin-nav-item span:first-child {
+        width: auto;
+        min-width: 0;
+    }
+
+    .admin-root {
+        padding: 18px;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .admin-navigation {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-navigation .admin-nav-item {
+        justify-content: flex-start;
+        text-align: left;
+    }
+}
