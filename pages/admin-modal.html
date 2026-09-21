@@ -1,4 +1,4 @@
-﻿<div
+﻿<div<div
     id="adminModal"
     class="admin-modal"
     aria-hidden="true"
@@ -6,30 +6,26 @@
     <div
         class="admin-modal-backdrop"
         data-admin-modal-close
+        tabindex="-1"
     ></div>
 
     <div
         class="admin-modal-dialog"
         role="dialog"
         aria-modal="true"
+        aria-labelledby="adminModalTitle"
     >
-
-        <div class="admin-modal-header">
-
-            <h2 id="adminModalTitle">
-                Administração
-            </h2>
-
+        <header class="admin-modal-header">
+            <h2 id="adminModalTitle">Administração</h2>
             <button
                 type="button"
                 class="admin-modal-close"
                 data-admin-modal-close
-                aria-label="Fechar"
+                aria-label="Fechar modal"
             >
-                ×
+                &times;
             </button>
-
-        </div>
+        </header>
 
         <div
             id="adminModalContent"

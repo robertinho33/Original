@@ -1,4 +1,4 @@
-'use strict';
+a'use strict';
 
 import {
     loadProducts,
@@ -7,7 +7,8 @@ import {
     loadSources
 } from './catalog/catalog-service.js';
 import { formatCurrency } from './utils/formatters.js';
-
+
+
 
 const CATALOG_PAGE_SIZE = 24;
 
