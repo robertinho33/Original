@@ -22,7 +22,6 @@ if (form) {
         const password = tokenInput ? tokenInput.value : "";
 
         try {
-            // Autentica o e-mail Master usando a senha/token digitada
             const userCredential = await signInWithEmailAndPassword(auth, MASTER_EMAIL, password);
 
             if (userCredential.user.email !== MASTER_EMAIL) {
@@ -34,8 +33,6 @@ if (form) {
             }
 
             console.log("[LOGIN] Autenticado com sucesso no Firebase Auth!");
-            
-            // Redireciona para o painel principal
             window.location.href = "admin.html";
         } catch (error) {
             console.error("[LOGIN] Erro ao autenticar:", error);
@@ -47,7 +44,6 @@ if (form) {
     });
 }
 
-// Observador para verificar se a sessão Master já está ativa
 onAuthStateChanged(auth, (user) => {
     if (user && user.email === MASTER_EMAIL) {
         console.log("[AUTH] Usuário Master ativo:", user.email);
