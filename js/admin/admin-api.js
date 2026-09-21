@@ -123,6 +123,8 @@ const adminApi = {
    ============================================================ */
 
 window.AdminAPI = {
+    ...adminApi,
+
     get: (path, options = {}) =>
         request(path, {
             ...options,
