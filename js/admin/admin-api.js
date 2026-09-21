@@ -149,3 +149,4 @@ window.AdminAPI = {
             method: "DELETE"
         })
 };
+export { adminApi, getAdminToken };
