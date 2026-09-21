@@ -1,4 +1,5 @@
-﻿import { adminApi } from "../admin-api.js";
+const adminApi = window.AdminAPI;
+
 import {
     money,
     number,
