@@ -1,4 +1,4 @@
-﻿require("dotenv").config();
+require("dotenv").config();
 const aureaAdminRoutes = require("./server/modules/admin/admin-routes");
 const orderRoutes = require('./server/modules/orders/order-routes');
 const { applyHttpFoundation } = require('./server/core/http');
@@ -38,7 +38,28 @@ const PIX_MERCHANT_NAME = 'AUREA COSMETICS';
 // MIDDLEWARE
 // =========================================================
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'https://www.fiosperfeitos.com.br',
+        'https://fiosperfeitos.com.br',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000'
+    ],
+    methods: [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'OPTIONS'
+    ],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization'
+    ],
+    credentials: true,
+    optionsSuccessStatus: 204
+}));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 
