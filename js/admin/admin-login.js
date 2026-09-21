@@ -1,26 +1,55 @@
 import { auth } from "../firebase-config.js";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Função para realizar o login
-async function loginAdmin(email, password) {
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+const form = document.getElementById("adminLoginForm");
+const tokenInput = document.getElementById("adminToken");
+const errorDiv = document.getElementById("adminLoginError");
+
+const MASTER_EMAIL = "robertinho33@gmail.com";
+
+if (form) {
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
         
-        if (userCredential.user.email !== "robertinho33@gmail.com") {
-            alert("Acesso restrito ao administrador Master.");
-            return;
+        if (errorDiv) {
+            errorDiv.hidden = true;
+            errorDiv.textContent = "";
         }
 
-        console.log("Autenticado com sucesso como Master:", userCredential.user.email);
-        window.location.reload(); // Recarrega para aplicar o token nas chamadas da API
-    } catch (error) {
-        console.error("Erro ao realizar login:", error.message);
-    }
+        const password = tokenInput ? tokenInput.value : "";
+
+        try {
+            // Autentica o e-mail Master usando a senha/token digitada
+            const userCredential = await signInWithEmailAndPassword(auth, MASTER_EMAIL, password);
+
+            if (userCredential.user.email !== MASTER_EMAIL) {
+                if (errorDiv) {
+                    errorDiv.textContent = "Acesso restrito ao administrador Master.";
+                    errorDiv.hidden = false;
+                }
+                return;
+            }
+
+            console.log("[LOGIN] Autenticado com sucesso no Firebase Auth!");
+            
+            // Redireciona para o painel principal
+            window.location.href = "admin.html";
+        } catch (error) {
+            console.error("[LOGIN] Erro ao autenticar:", error);
+            if (errorDiv) {
+                errorDiv.textContent = "Token/Senha inválido ou não autorizado.";
+                errorDiv.hidden = false;
+            }
+        }
+    });
 }
 
-// Observador para verificar se o usuário já está logado ao carregar a página
+// Observador para verificar se a sessão Master já está ativa
 onAuthStateChanged(auth, (user) => {
-    if (user && user.email === "robertinho33@gmail.com") {
+    if (user && user.email === MASTER_EMAIL) {
         console.log("[AUTH] Usuário Master ativo:", user.email);
     } else {
         console.warn("[AUTH] Nenhum usuário autorizado ativo. Realize o login no painel.");
