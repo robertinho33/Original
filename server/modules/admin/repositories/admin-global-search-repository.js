@@ -1,53 +1,67 @@
-﻿const { query } = require("./admin-db");
+﻿"use strict";
 
-async function search(term) {
-    const value = `%${String(term || "").trim()}%`;
+const {
+    getFirestore
+} = require("../../../infrastructure/firebase/firebase-admin");
 
-    if (String(term || "").trim().length < 2) {
-        return [];
+const COLLECTIONS = [
+    "orders",
+    "products",
+    "users",
+    "categories"
+];
+
+function db() {
+    return getFirestore();
+}
+
+async function getCollection(name) {
+    const snapshot = await db()
+        .collection(name)
+        .get();
+
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    }));
+}
+
+function normalize(value) {
+    return String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+}
+
+function matches(item, term) {
+    const search = normalize(term);
+
+    if (!search) {
+        return false;
     }
 
-    const result = await query(
-        `
-        SELECT *
-        FROM (
-            SELECT
-                'product' AS type,
-                id::text AS id,
-                name AS title,
-                sku AS reference
-            FROM products
-            WHERE name ILIKE $1
-               OR sku ILIKE $1
+    return normalize(JSON.stringify(item)).includes(search);
+}
 
-            UNION ALL
+async function search(term) {
+    const results = [];
 
-            SELECT
-                'customer' AS type,
-                id::text AS id,
-                name AS title,
-                email AS reference
-            FROM customers
-            WHERE name ILIKE $1
-               OR email ILIKE $1
+    for (const collection of COLLECTIONS) {
+        const items = await getCollection(collection);
 
-            UNION ALL
+        for (const item of items) {
+            if (!matches(item, term)) {
+                continue;
+            }
 
-            SELECT
-                'order' AS type,
-                id::text AS id,
-                order_number AS title,
-                status AS reference
-            FROM orders
-            WHERE order_number ILIKE $1
-        ) results
-        ORDER BY title
-        LIMIT 50
-        `,
-        [value]
-    );
+            results.push({
+                ...item,
+                collection
+            });
+        }
+    }
 
-    return result.rows;
+    return results;
 }
 
 module.exports = {

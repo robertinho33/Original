@@ -1,6 +1,4 @@
-﻿"use strict";
-
-const express = require("express");
+﻿const express = require("express");
 
 const adminAuth =
     require("./admin-auth");
@@ -13,9 +11,14 @@ const overviewController =
 
 const globalSearchController =
     require("./controllers/admin-global-search-controller");
+const reportsRepository =
+    require("./repositories/final-admin-repository");
 
-const firestoreRepository =
-    require("./repositories/admin-firestore-report-repository");
+const operationsRepository =
+    require("./repositories/operations-overview-repository");
+
+const commercialRepository =
+    require("./repositories/commercial-history-repository");
 
 const router = express.Router();
 
@@ -25,18 +28,65 @@ router.use(adminAuth);
    PRINCIPAIS MÓDULOS
    ============================================================ */
 
-router.get("/dashboard", adminController.dashboard);
-router.get("/orders", adminController.orders);
-router.get("/products", adminController.products);
-router.get("/categories", adminController.categories);
-router.get("/inventory", adminController.inventory);
-router.get("/customers", adminController.customers);
-router.get("/finance", adminController.finance);
-router.get("/coupons", adminController.coupons);
-router.get("/logistics", adminController.logistics);
-router.get("/reports", adminController.reports);
-router.get("/audit", adminController.audit);
-router.get("/settings", adminController.settings);
+router.get(
+    "/dashboard",
+    adminController.dashboard
+);
+
+router.get(
+    "/orders",
+    adminController.orders
+);
+
+router.get(
+    "/products",
+    adminController.products
+);
+
+router.get(
+    "/categories",
+    adminController.categories
+);
+
+router.get(
+    "/inventory",
+    adminController.inventory
+);
+
+router.get(
+    "/customers",
+    adminController.customers
+);
+
+router.get(
+    "/finance",
+    adminController.finance
+);
+
+router.get(
+    "/coupons",
+    adminController.coupons
+);
+
+router.get(
+    "/logistics",
+    adminController.logistics
+);
+
+router.get(
+    "/reports",
+    adminController.reports
+);
+
+router.get(
+    "/audit",
+    adminController.audit
+);
+
+router.get(
+    "/settings",
+    adminController.settings
+);
 
 /* ============================================================
    DASHBOARD OPERACIONAL
@@ -58,7 +108,7 @@ router.get(
 );
 
 /* ============================================================
-   RELATÓRIOS — FIRESTORE
+   RELATÓRIOS
    ============================================================ */
 
 router.get(
@@ -67,7 +117,8 @@ router.get(
         try {
             res.json({
                 success: true,
-                data: await firestoreRepository.salesReport()
+                data:
+                    await reportsRepository.salesReport()
             });
         } catch (error) {
             console.error(
@@ -89,7 +140,8 @@ router.get(
         try {
             res.json({
                 success: true,
-                data: await firestoreRepository.productReport()
+                data:
+                    await reportsRepository.productReport()
             });
         } catch (error) {
             console.error(
@@ -111,7 +163,8 @@ router.get(
         try {
             res.json({
                 success: true,
-                data: await firestoreRepository.customerReport()
+                data:
+                    await reportsRepository.customerReport()
             });
         } catch (error) {
             console.error(
@@ -137,16 +190,13 @@ router.get(
         try {
             res.json({
                 success: true,
-                data: await firestoreRepository.getOrderHistory(
-                    req.params.id
-                )
+                data:
+                    await commercialRepository
+                        .getOrderHistory(
+                            req.params.id
+                        )
             });
         } catch (error) {
-            console.error(
-                "[ADMIN ORDER HISTORY]",
-                error
-            );
-
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -162,17 +212,12 @@ router.get(
             res.json({
                 success: true,
                 data:
-                    await firestoreRepository
+                    await commercialRepository
                         .getCustomerCommercialHistory(
                             req.params.id
                         )
             });
         } catch (error) {
-            console.error(
-                "[ADMIN CUSTOMER HISTORY]",
-                error
-            );
-
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -192,15 +237,10 @@ router.get(
             res.json({
                 success: true,
                 data:
-                    await firestoreRepository
+                    await operationsRepository
                         .getInventoryMovements()
             });
         } catch (error) {
-            console.error(
-                "[ADMIN INVENTORY MOVEMENTS]",
-                error
-            );
-
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -220,15 +260,10 @@ router.get(
             res.json({
                 success: true,
                 data:
-                    await firestoreRepository
+                    await operationsRepository
                         .getShippingQueue()
             });
         } catch (error) {
-            console.error(
-                "[ADMIN SHIPPING QUEUE]",
-                error
-            );
-
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -248,15 +283,10 @@ router.get(
             res.json({
                 success: true,
                 data:
-                    await firestoreRepository
+                    await operationsRepository
                         .getFinancialOverview()
             });
         } catch (error) {
-            console.error(
-                "[ADMIN FINANCE OVERVIEW]",
-                error
-            );
-
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -273,5 +303,5 @@ router.get(
     "/search",
     globalSearchController.search
 );
-
 module.exports = router;
+

@@ -1,0 +1,1309 @@
+﻿import { adminApi } from "./admin-api.js";
+
+import {
+    renderOperationalEnvironment
+} from "./modules/operational-environment.js";
+
+
+const root =
+    document.querySelector("#admin-root");
+
+
+const navigation =
+    document.querySelectorAll(
+        "[data-admin-section]"
+    );
+
+
+const sections = [
+    "dashboard",
+    "orders",
+    "products",
+    "categories",
+    "inventory",
+    "customers",
+    "finance",
+    "coupons",
+    "logistics",
+    "reports",
+    "audit",
+    "settings"
+];
+
+
+const state = {
+    section: "dashboard",
+    ready: false
+};
+
+
+function setActiveNavigation(section) {
+
+    navigation.forEach(item => {
+
+        item.classList.toggle(
+            "active",
+            item.dataset.adminSection === section
+        );
+
+    });
+}
+
+
+function shell(
+    title,
+    subtitle = ""
+) {
+
+    return `
+        <section class="module-panel">
+
+            <div class="module-panel-header">
+
+                <div>
+
+                    <span class="module-eyebrow">
+                        AURÉA ADMIN
+                    </span>
+
+                    <h2>
+                        ${escapeHtml(title)}
+                    </h2>
+
+                    ${
+                        subtitle
+                            ? `<p>${escapeHtml(subtitle)}</p>`
+                            : ""
+                    }
+
+                </div>
+
+            </div>
+
+            <div class="admin-loading">
+                Preparando módulo...
+            </div>
+
+        </section>
+    `;
+}
+
+
+async function load(section) {
+
+    if (!root) {
+
+        console.error(
+            "[AUREA ADMIN] #admin-root não encontrado."
+        );
+
+        return;
+    }
+
+
+    if (!sections.includes(section)) {
+
+        console.warn(
+            "[AUREA ADMIN] Seção desconhecida:",
+            section
+        );
+
+        section = "dashboard";
+    }
+
+
+    state.section = section;
+
+
+    setActiveNavigation(section);
+
+
+    if (section === "dashboard") {
+
+        await renderOperationalEnvironment(
+            root
+        );
+
+        updateHeader(
+            "Dashboard",
+            "Visão geral da operação da AURÉA"
+        );
+
+        return;
+    }
+
+
+    const labels = {
+
+        orders: [
+            "Pedidos",
+            "Gestão completa dos pedidos."
+        ],
+
+        products: [
+            "Produtos",
+            "Catálogo, SKU, preços e disponibilidade."
+        ],
+
+        categories: [
+            "Categorias",
+            "Organização do catálogo."
+        ],
+
+        inventory: [
+            "Estoque",
+            "Saldo, movimentações e reservas."
+        ],
+
+        customers: [
+            "Clientes",
+            "Base comercial e histórico."
+        ],
+
+        finance: [
+            "Financeiro",
+            "Receitas, pagamentos e indicadores."
+        ],
+
+        coupons: [
+            "Cupons",
+            "Campanhas e desempenho comercial."
+        ],
+
+        logistics: [
+            "Logística",
+            "Expedição, envio e rastreamento."
+        ],
+
+        reports: [
+            "Relatórios",
+            "Inteligência operacional e comercial."
+        ],
+
+        audit: [
+            "Auditoria",
+            "Histórico das operações administrativas."
+        ],
+
+        settings: [
+            "Configurações",
+            "Parâmetros centrais da AURÉA."
+        ]
+
+    };
+
+
+    const info =
+        labels[section] || [
+            "AURÉA ADMIN",
+            ""
+        ];
+
+
+    updateHeader(
+        info[0],
+        info[1]
+    );
+
+
+    root.innerHTML =
+        shell(
+            info[0],
+            info[1]
+        );
+
+
+    await loadModuleData(section);
+}
+
+
+function updateHeader(
+    title,
+    description
+) {
+
+    const titleElement =
+        document.querySelector(
+            "#adminPageTitle"
+        );
+
+    const descriptionElement =
+        document.querySelector(
+            "#adminPageDescription"
+        );
+
+
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+
+
+    if (descriptionElement) {
+        descriptionElement.textContent =
+            description;
+    }
+}
+
+
+async function loadModuleData(
+    section
+) {
+
+    const content =
+        root.querySelector(
+            ".admin-loading"
+        );
+
+
+    if (!content) {
+        return;
+    }
+
+
+    try {
+
+        let response;
+
+
+        switch (section) {
+
+            case "orders":
+                response =
+                    await adminApi.orders();
+                break;
+
+            case "products":
+                response =
+                    await adminApi.products();
+                break;
+
+            case "categories":
+                response =
+                    await adminApi.categories();
+                break;
+
+            case "inventory":
+                response =
+                    await adminApi.inventory();
+                break;
+
+            case "customers":
+                response =
+                    await adminApi.customers();
+                break;
+
+            case "finance":
+                response =
+                    await adminApi.finance();
+                break;
+
+            case "coupons":
+                response =
+                    await adminApi.coupons();
+                break;
+
+            case "logistics":
+                response =
+                    await adminApi.logistics();
+                break;
+
+            case "reports":
+                response =
+                    await adminApi.reports();
+                break;
+
+            case "audit":
+                response =
+                    await adminApi.audit();
+                break;
+
+            case "settings":
+                response =
+                    await adminApi.settings();
+                break;
+
+            default:
+                response = {
+                    success: true,
+                    data: []
+                };
+        }
+
+
+        const data =
+            response?.data ?? [];
+
+
+        const count =
+            Array.isArray(data)
+                ? data.length
+                : 1;
+
+
+        if (section === "orders") {
+
+            renderOrders(
+                content,
+                Array.isArray(data)
+                    ? data
+                    : []
+            );
+
+            return;
+        }
+
+
+        content.outerHTML = `
+
+            <div class="admin-module-data">
+
+                <div class="admin-metrics-grid">
+
+                    <article class="admin-metric-card">
+
+                        <span>
+                            Registros carregados
+                        </span>
+
+                        <strong>
+                            ${count}
+                        </strong>
+
+                    </article>
+
+
+                    <article class="admin-metric-card">
+
+                        <span>
+                            Fonte
+                        </span>
+
+                        <strong>
+                            PostgreSQL
+                        </strong>
+
+                    </article>
+
+                </div>
+
+
+                <div class="module-panel">
+
+                    <div class="module-panel-header">
+
+                        <h3>
+                            Dados operacionais
+                        </h3>
+
+                    </div>
+
+                    <pre class="admin-json">${
+                        escapeHtml(
+                            JSON.stringify(
+                                data,
+                                null,
+                                2
+                            )
+                        )
+                    }</pre>
+
+                </div>
+
+            </div>
+        `;
+
+    } catch (error) {
+
+        content.outerHTML = `
+
+            <div class="admin-error">
+
+                ${escapeHtml(
+                    error?.message ||
+                    "Erro ao carregar módulo."
+                )}
+
+            </div>
+        `;
+    }
+}
+
+
+function renderOrders(
+    loadingElement,
+    orders
+) {
+
+    const rows =
+        orders.map(
+            order => {
+
+                const customerName =
+                    order?.customer?.name ||
+                    "Cliente não informado";
+
+                const total =
+                    order?.total_amount ??
+                    order?.total ??
+                    order?.totals?.total ??
+                    0;
+
+                const status =
+                    order?.status ||
+                    "unknown";
+
+                const paymentStatus =
+                    order?.payment_status ||
+                    order?.payment?.status ||
+                    "unknown";
+
+                return `
+
+                    <tr>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    order?.order_number ||
+                                    order?.id ||
+                                    "—"
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                customerName
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatCurrency(total)}
+                        </td>
+
+                        <td>
+                            ${renderStatus(status)}
+                        </td>
+
+                        <td>
+                            ${renderStatus(paymentStatus)}
+                        </td>
+
+                        <td>
+                            <div class="table-actions">
+
+                                <button
+                                    type="button"
+                                    class="admin-button"
+                                    data-order-details="${escapeHtml(
+                                        order?.id || ""
+                                    )}"
+                                >
+                                    Ver detalhes
+                                </button>
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                `;
+            }
+        ).join("");
+
+
+    loadingElement.outerHTML = `
+
+        <div class="admin-module-data">
+
+            <div class="admin-metrics-grid">
+
+                <article class="admin-metric-card">
+
+                    <span>
+                        Registros carregados
+                    </span>
+
+                    <strong>
+                        ${orders.length}
+                    </strong>
+
+                </article>
+
+
+                <article class="admin-metric-card">
+
+                    <span>
+                        Fonte
+                    </span>
+
+                    <strong>
+                        PostgreSQL
+                    </strong>
+
+                </article>
+
+            </div>
+
+
+            <div class="module-panel">
+
+                <div class="module-panel-header">
+
+                    <div>
+
+                        <span class="module-eyebrow">
+                            AURÉA ADMIN
+                        </span>
+
+                        <h3>
+                            Pedidos
+                        </h3>
+
+                        <p>
+                            Gestão completa dos pedidos.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="admin-table-wrap">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Pedido
+                                </th>
+
+                                <th>
+                                    Cliente
+                                </th>
+
+                                <th>
+                                    Total
+                                </th>
+
+                                <th>
+                                    Pedido
+                                </th>
+
+                                <th>
+                                    Pagamento
+                                </th>
+
+                                <th>
+                                    Ações
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            ${
+                                rows ||
+                                `
+                                    <tr>
+                                        <td colspan="6">
+                                            Nenhum pedido encontrado.
+                                        </td>
+                                    </tr>
+                                `
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+}
+
+
+function renderStatus(
+    status
+) {
+
+    const normalized =
+        String(
+            status || "unknown"
+        ).toLowerCase();
+
+
+    const labels = {
+
+        paid: "Pago",
+        pending: "Pendente",
+        aguardando: "Aguardando",
+        pendente: "Pendente",
+        cancelled: "Cancelado",
+        canceled: "Cancelado",
+        shipped: "Enviado",
+        delivered: "Entregue",
+        processing: "Processando",
+        unknown: "Não informado"
+
+    };
+
+
+    return `
+        <span class="admin-status">
+            ${escapeHtml(
+                labels[normalized] ||
+                status
+            )}
+        </span>
+    `;
+}
+
+
+function formatCurrency(
+    value
+) {
+
+    const number =
+        Number(
+            String(value ?? "0")
+                .replace(",", ".")
+        );
+
+
+    return new Intl.NumberFormat(
+        "pt-BR",
+        {
+            style: "currency",
+            currency: "BRL"
+        }
+    ).format(
+        Number.isFinite(number)
+            ? number
+            : 0
+    );
+}
+
+
+async function openOrderDetails(
+    orderId
+) {
+
+    if (!orderId) {
+        return;
+    }
+
+
+    createOrderModal();
+
+
+    const modal =
+        document.querySelector(
+            "#adminOrderModal"
+        );
+
+
+    const content =
+        modal?.querySelector(
+            ".admin-modal-content"
+        );
+
+
+    if (!modal || !content) {
+        return;
+    }
+
+
+    modal.classList.add(
+        "is-open"
+    );
+
+
+    content.innerHTML = `
+        <div class="admin-loading">
+            Carregando pedido...
+        </div>
+    `;
+
+
+    try {
+
+        const response =
+            await adminApi.orderDetails(
+                orderId
+            );
+
+
+        const order =
+            response?.data ||
+            response?.order ||
+            response;
+
+
+        renderOrderDetails(
+            content,
+            order
+        );
+
+    } catch (error) {
+
+        content.innerHTML = `
+
+            <div class="admin-error">
+
+                ${escapeHtml(
+                    error?.message ||
+                    "Não foi possível carregar o pedido."
+                )}
+
+            </div>
+
+        `;
+    }
+}
+
+
+function createOrderModal() {
+
+    if (
+        document.querySelector(
+            "#adminOrderModal"
+        )
+    ) {
+        return;
+    }
+
+
+    const modal =
+        document.createElement(
+            "div"
+        );
+
+
+    modal.id =
+        "adminOrderModal";
+
+    modal.className =
+        "admin-modal";
+
+    modal.innerHTML = `
+
+        <div
+            class="admin-modal-backdrop"
+            data-close-order-modal
+        ></div>
+
+
+        <div
+            class="admin-modal-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="adminOrderModalTitle"
+        >
+
+            <div class="admin-modal-header">
+
+                <h2 id="adminOrderModalTitle">
+                    Detalhes do pedido
+                </h2>
+
+                <button
+                    type="button"
+                    class="admin-modal-close"
+                    aria-label="Fechar"
+                    data-close-order-modal
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="admin-modal-content">
+                <div class="admin-loading">
+                    Carregando pedido...
+                </div>
+            </div>
+
+        </div>
+    `;
+
+
+    document.body.appendChild(
+        modal
+    );
+
+
+    modal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.closest(
+                    "[data-close-order-modal]"
+                )
+            ) {
+
+                modal.classList.remove(
+                    "is-open"
+                );
+
+            }
+
+        }
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                modal.classList.remove(
+                    "is-open"
+                );
+
+            }
+
+        }
+    );
+}
+
+
+function renderOrderDetails(
+    content,
+    order
+) {
+
+    const customer =
+        order?.customer ||
+        {};
+
+    const totals =
+        order?.totals ||
+        {};
+
+    const items =
+        Array.isArray(
+            order?.items
+        )
+            ? order.items
+            : [];
+
+
+    const total =
+        order?.total_amount ??
+        order?.total ??
+        totals.total ??
+        0;
+
+
+    const subtotal =
+        order?.subtotal ??
+        totals.subtotal ??
+        0;
+
+
+    const shippingCost =
+        order?.shipping_cost ??
+        0;
+
+
+    const discount =
+        order?.discount ??
+        0;
+
+
+    const itemRows =
+        items.length
+            ? items.map(
+                item => `
+
+                    <tr>
+
+                        <td>
+                            ${escapeHtml(
+                                item?.name ||
+                                "Produto"
+                            )}
+                        </td>
+
+                        <td>
+                            ${Number(
+                                item?.quantity || 0
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatCurrency(
+                                item?.price || 0
+                            )}
+                        </td>
+
+                    </tr>
+
+                `
+            ).join("")
+            : `
+
+                <tr>
+
+                    <td colspan="3">
+                        Nenhum item registrado.
+                    </td>
+
+                </tr>
+            `;
+
+
+    const orderNumber =
+        order?.order_number ||
+        order?.id ||
+        "Pedido";
+
+
+    const status =
+        order?.status ||
+        "unknown";
+
+
+    const paymentStatus =
+        order?.payment_status ||
+        order?.payment?.status ||
+        "unknown";
+
+
+    const shipping =
+        order?.shipping ||
+        null;
+
+
+    const createdAt =
+        order?.created_at
+            ? new Date(
+                order.created_at
+            ).toLocaleString(
+                "pt-BR"
+            )
+            : "—";
+
+
+    const shippingHtml =
+        shipping
+            ? `
+                <div class="admin-order-section">
+
+                    <h3>
+                        Entrega
+                    </h3>
+
+                    <pre class="admin-json">${escapeHtml(
+                        JSON.stringify(
+                            shipping,
+                            null,
+                            2
+                        )
+                    )}</pre>
+
+                </div>
+            `
+            : `
+                <div class="admin-order-section">
+
+                    <h3>
+                        Entrega
+                    </h3>
+
+                    <p>
+                        Nenhuma informação de entrega registrada.
+                    </p>
+
+                </div>
+            `;
+
+
+    content.innerHTML = `
+
+        <div class="admin-order-details">
+
+            <div class="admin-order-section">
+
+                <h3>
+                    Pedido ${escapeHtml(
+                        orderNumber
+                    )}
+                </h3>
+
+                <p>
+                    Criado em ${escapeHtml(
+                        createdAt
+                    )}
+                </p>
+
+            </div>
+
+
+            <div class="admin-order-section">
+
+                <h3>
+                    Cliente
+                </h3>
+
+                <p>
+                    <strong>
+                        ${escapeHtml(
+                            customer?.name ||
+                            "Não informado"
+                        )}
+                    </strong>
+                </p>
+
+                <p>
+                    ${escapeHtml(
+                        customer?.email ||
+                        "E-mail não informado"
+                    )}
+                </p>
+
+            </div>
+
+
+            <div class="admin-order-section">
+
+                <h3>
+                    Status
+                </h3>
+
+                <p>
+                    Pedido:
+                    ${renderStatus(status)}
+                </p>
+
+                <p>
+                    Pagamento:
+                    ${renderStatus(paymentStatus)}
+                </p>
+
+            </div>
+
+
+            <div class="admin-order-section">
+
+                <h3>
+                    Itens
+                </h3>
+
+                <div class="admin-table-wrap">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Produto</th>
+                                <th>Qtd.</th>
+                                <th>Preço</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                            ${itemRows}
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-order-section">
+
+                <h3>
+                    Totais
+                </h3>
+
+                <p>
+                    Subtotal:
+                    <strong>
+                        ${formatCurrency(
+                            subtotal
+                        )}
+                    </strong>
+                </p>
+
+                <p>
+                    Frete:
+                    <strong>
+                        ${formatCurrency(
+                            shippingCost
+                        )}
+                    </strong>
+                </p>
+
+                <p>
+                    Desconto:
+                    <strong>
+                        ${formatCurrency(
+                            discount
+                        )}
+                    </strong>
+                </p>
+
+                <p>
+                    Total:
+                    <strong>
+                        ${formatCurrency(
+                            total
+                        )}
+                    </strong>
+                </p>
+
+            </div>
+
+
+            ${shippingHtml}
+
+        </div>
+    `;
+}
+
+
+function escapeHtml(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+}
+
+
+navigation.forEach(item => {
+
+    item.addEventListener(
+        "click",
+        event => {
+
+            event.preventDefault();
+
+            load(
+                item.dataset.adminSection
+            );
+
+        }
+    );
+
+});
+
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const detailsButton =
+            event.target.closest(
+                "[data-order-details]"
+            );
+
+
+        if (detailsButton) {
+
+            openOrderDetails(
+                detailsButton.dataset.orderDetails
+            );
+
+            return;
+        }
+
+
+        const refreshButton =
+            event.target.closest(
+                "[data-refresh-admin]"
+            );
+
+
+        if (!refreshButton) {
+            return;
+        }
+
+
+        load(
+            state.section
+        );
+    }
+);
+
+
+const logoutButton =
+    document.querySelector(
+        "#adminLogout"
+    );
+
+
+logoutButton?.addEventListener(
+    "click",
+    () => {
+
+        localStorage.removeItem(
+            "aurea-admin-token"
+        );
+
+        sessionStorage.removeItem(
+            "aurea-admin-token"
+        );
+
+        window.location.replace(
+            "./admin-login.html"
+        );
+    }
+);
+
+
+window.AUREA_ADMIN = {
+
+    state,
+
+    load,
+
+    refresh: () =>
+        load(state.section)
+
+};
+
+
+state.ready = true;
+
+
+load("dashboard");

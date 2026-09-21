@@ -1,134 +1,265 @@
-﻿const { query } = require("./admin-db");
+﻿"use strict";
+
+const {
+    getFirestore
+} = require("../../../infrastructure/firebase/firebase-admin");
+
+const ORDERS = "orders";
+const PRODUCTS = "products";
+const TRACKING = "orderTracking";
+
+function db() {
+    return getFirestore();
+}
+
+async function getCollection(name) {
+    const snapshot = await db()
+        .collection(name)
+        .get();
+
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    }));
+}
+
+function money(value) {
+    const number = Number(value || 0);
+    return Number.isFinite(number) ? number : 0;
+}
+
+function toDate(value) {
+    if (!value) return null;
+
+    if (typeof value.toDate === "function") {
+        return value.toDate();
+    }
+
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime())
+        ? null
+        : date;
+}
+
+function startOfDay(date) {
+    const result = new Date(date);
+
+    result.setHours(0, 0, 0, 0);
+
+    return result;
+}
 
 async function getAdminOverview() {
-    const [
-        sales,
-        orders,
-        customers,
-        products,
-        inventory,
-        payments,
-        shipping,
-        coupons
-    ] = await Promise.all([
-        query(`
-            SELECT
-                COALESCE(SUM(total), 0) AS revenue,
-                COUNT(*) AS orders
-            FROM orders
-            WHERE created_at >= CURRENT_DATE
-        `),
+    const [orders, products, tracking] =
+        await Promise.all([
+            getCollection(ORDERS),
+            getCollection(PRODUCTS),
+            getCollection(TRACKING)
+        ]);
 
-        query(`
-            SELECT
-                COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE status IN ('pending','awaiting_payment')) AS pending,
-                COUNT(*) FILTER (WHERE status IN ('processing','paid')) AS processing,
-                COUNT(*) FILTER (WHERE status IN ('shipped','in_transit')) AS shipping
-            FROM orders
-        `),
+    const today = startOfDay(new Date());
 
-        query(`
-            SELECT COUNT(*) AS total
-            FROM customers
-        `),
+    const todayOrders = orders.filter(order => {
+        const date = toDate(order.createdAt);
 
-        query(`
-            SELECT COUNT(*) AS total
-            FROM products
-        `),
+        return date &&
+            startOfDay(date).getTime() === today.getTime();
+    });
 
-        query(`
-            SELECT
-                COUNT(*) FILTER (WHERE stock <= 0) AS out_of_stock,
-                COUNT(*) FILTER (WHERE stock > 0 AND stock <= 5) AS low_stock,
-                COALESCE(SUM(stock), 0) AS units
-            FROM products
-        `),
+    const revenueToday = todayOrders.reduce(
+        (sum, order) =>
+            sum + money(order.total),
+        0
+    );
 
-        query(`
-            SELECT
-                COUNT(*) FILTER (WHERE status IN ('pending','awaiting_payment')) AS pending,
-                COALESCE(SUM(amount) FILTER (
-                    WHERE status IN ('pending','awaiting_payment')
-                ), 0) AS pending_amount
-            FROM payments
-        `),
+    const pendingPayments = orders.filter(order => {
+        const status =
+            order.payment?.status ||
+            order.paymentStatus ||
+            "pending";
 
-        query(`
-            SELECT COUNT(*) AS pending
-            FROM shipments
-            WHERE status IN ('pending','processing','ready_to_ship')
-        `),
+        return String(status).toLowerCase() === "pending";
+    });
 
-        query(`
-            SELECT COUNT(*) AS active
-            FROM coupons
-            WHERE active = TRUE
-        `)
-    ]);
+    const pendingShipments = orders.filter(order => {
+        const status =
+            order.logistics?.status ||
+            order.logisticsStatus ||
+            "new";
+
+        return ![
+            "delivered",
+            "completed"
+        ].includes(
+            String(status).toLowerCase()
+        );
+    });
 
     return {
-        revenue: Number(sales.rows[0]?.revenue || 0),
-        ordersToday: Number(sales.rows[0]?.orders || 0),
-        orders: orders.rows[0],
-        customers: Number(customers.rows[0]?.total || 0),
-        products: Number(products.rows[0]?.total || 0),
-        inventory: inventory.rows[0],
-        payments: payments.rows[0],
-        shipping: Number(shipping.rows[0]?.pending || 0),
-        coupons: Number(coupons.rows[0]?.active || 0)
+        faturamentoHoje: revenueToday,
+        pedidosHoje: todayOrders.length,
+        pedidosTotal: orders.length,
+        produtos: products.length,
+
+        estoqueBaixo: products.filter(product => {
+            const stock = Number(
+                product.stock ??
+                product.estoque ??
+                0
+            );
+
+            return stock > 0 && stock <= 5;
+        }).length,
+
+        semEstoque: products.filter(product => {
+            const stock = Number(
+                product.stock ??
+                product.estoque ??
+                0
+            );
+
+            return stock <= 0;
+        }).length,
+
+        pagamentosPendentes:
+            pendingPayments.length,
+
+        enviosPendentes:
+            pendingShipments.length,
+
+        vendasRecentes: orders
+            .sort((a, b) => {
+                const da =
+                    toDate(a.createdAt)?.getTime() || 0;
+
+                const db =
+                    toDate(b.createdAt)?.getTime() || 0;
+
+                return db - da;
+            })
+            .slice(0, 10)
     };
 }
 
 async function getSalesTimeline(days = 30) {
-    const result = await query(`
-        SELECT
-            DATE(created_at) AS day,
-            COUNT(*) AS orders,
-            COALESCE(SUM(total), 0) AS revenue
-        FROM orders
-        WHERE created_at >= CURRENT_DATE - ($1::INTEGER - 1)
-        GROUP BY DATE(created_at)
-        ORDER BY day
-    `, [days]);
+    const orders = await getCollection(ORDERS);
 
-    return result.rows;
+    const now = new Date();
+
+    const start = new Date(now);
+
+    start.setDate(
+        start.getDate() - Number(days)
+    );
+
+    start.setHours(0, 0, 0, 0);
+
+    const timeline = {};
+
+    for (const order of orders) {
+        const date = toDate(order.createdAt);
+
+        if (!date || date < start) {
+            continue;
+        }
+
+        const key =
+            date.toISOString().slice(0, 10);
+
+        if (!timeline[key]) {
+            timeline[key] = {
+                date: key,
+                orders: 0,
+                revenue: 0
+            };
+        }
+
+        timeline[key].orders += 1;
+        timeline[key].revenue +=
+            money(order.total);
+    }
+
+    return Object.values(timeline)
+        .sort((a, b) =>
+            a.date.localeCompare(b.date)
+        );
 }
 
 async function getOperationalAlerts() {
-    const result = await query(`
-        SELECT *
-        FROM (
-            SELECT
-                'stock' AS type,
-                'Estoque baixo' AS title,
-                COUNT(*)::TEXT || ' produto(s) precisam de reposição' AS message
-            FROM products
-            WHERE stock > 0 AND stock <= 5
+    const [orders, products, tracking] =
+        await Promise.all([
+            getCollection(ORDERS),
+            getCollection(PRODUCTS),
+            getCollection(TRACKING)
+        ]);
 
-            UNION ALL
+    const alerts = [];
 
-            SELECT
-                'payment',
-                'Pagamentos pendentes',
-                COUNT(*)::TEXT || ' pagamento(s) aguardando confirmação'
-            FROM payments
-            WHERE status IN ('pending','awaiting_payment')
+    const lowStock = products.filter(product => {
+        const stock = Number(
+            product.stock ??
+            product.estoque ??
+            0
+        );
 
-            UNION ALL
+        return stock >= 0 && stock <= 5;
+    });
 
-            SELECT
-                'shipping',
-                'Pedidos para envio',
-                COUNT(*)::TEXT || ' pedido(s) aguardando expedição'
-            FROM shipments
-            WHERE status IN ('pending','processing','ready_to_ship')
-        ) alerts
-        WHERE message NOT LIKE '0 %'
-    `);
+    if (lowStock.length > 0) {
+        alerts.push({
+            type: "stock",
+            severity: "warning",
+            count: lowStock.length,
+            message:
+                `${lowStock.length} produto(s) com estoque baixo.`
+        });
+    }
 
-    return result.rows;
+    const pendingPayments = orders.filter(order => {
+        const status =
+            order.payment?.status ||
+            order.paymentStatus ||
+            "pending";
+
+        return String(status).toLowerCase() === "pending";
+    });
+
+    if (pendingPayments.length > 0) {
+        alerts.push({
+            type: "payment",
+            severity: "warning",
+            count: pendingPayments.length,
+            message:
+                `${pendingPayments.length} pagamento(s) pendente(s).`
+        });
+    }
+
+    const pendingShipping = tracking.filter(item => {
+        const status =
+            item.status ||
+            item.logisticsStatus ||
+            "";
+
+        return ![
+            "delivered",
+            "completed"
+        ].includes(
+            String(status).toLowerCase()
+        );
+    });
+
+    if (pendingShipping.length > 0) {
+        alerts.push({
+            type: "shipping",
+            severity: "info",
+            count: pendingShipping.length,
+            message:
+                `${pendingShipping.length} envio(s) em aberto.`
+        });
+    }
+
+    return alerts;
 }
 
 module.exports = {
