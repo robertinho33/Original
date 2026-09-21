@@ -1,4 +1,4 @@
-﻿const API_BASE = "https://aurea-pix-api.onrender.com/api/admin";
+const API_BASE = "https://aurea-pix-api.onrender.com/api/admin";
 
 function getAdminToken() {
     return (
@@ -43,7 +43,7 @@ async function request(path, options = {}) {
     return data;
 }
 
-export const adminApi = {
+const adminApi = {
     overview: () => request("/overview"),
     timeline: (days = 30) =>
         request(`/overview/timeline?days=${days}`),
@@ -114,7 +114,7 @@ export const adminApi = {
         request("/finance/overview")
 };
 
-export { getAdminToken };
+
 
 
 
