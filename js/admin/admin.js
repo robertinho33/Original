@@ -834,7 +834,7 @@ function renderProducts(content, products) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -950,7 +950,7 @@ function renderCategories(content, categories) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -1182,7 +1182,7 @@ function renderCustomers(content, customers) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -1311,7 +1311,7 @@ function renderFinance(content, finance) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -1422,7 +1422,7 @@ function renderCoupons(content, coupons) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -1563,7 +1563,7 @@ function renderLogistics(content, shipments) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -1837,7 +1837,7 @@ function renderAudit(content, logs) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -1949,7 +1949,7 @@ function renderSettings(content, settings) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -2127,7 +2127,7 @@ function renderOrders(content, orders) {
 
                 ${metricCard(
                     "Fonte",
-                    "PostgreSQL"
+                    "Firebase / Firestore"
                 )}
 
             </div>
@@ -2722,3 +2722,4 @@ document.addEventListener(
    ============================================================ */
 
 load("dashboard");
+
