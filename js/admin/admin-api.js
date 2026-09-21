@@ -18,7 +18,7 @@ import {
 const ROUTE_TO_COLLECTION = {
     "/products": "products",
     "/categories": "categories",
-    "/inventory": "products", // O estoque usa a coleção de produtos
+    "/inventory": "inventory", // Alterado para bater com a coleção "inventory" do Firestore
     "/orders": "orders",
     "/customers": "customers",
     "/finance": "finance",
