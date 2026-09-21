@@ -203,18 +203,22 @@
 
     </div>
 
-    <script src="../js/admin/admin-api.js"></script>
-    <script src="../js/admin/admin-login.js"></script>
+    <!-- Módulo da API deve ser carregado primeiro com type="module" -->
+    <script type="module" src="../js/admin/admin-api.js"></script>
+    
+    <!-- Scripts de autenticação e controle principal -->
+    <script type="module" src="../js/admin/admin-login.js"></script>
     <script type="module" src="../js/admin/admin.js"></script>
-    <script src="../js/admin/admin-categories.js"></script>
-    <script src="../js/admin/admin-inventory.js"></script>
-    <script src="../js/admin/admin-customers.js"></script>
-    <script src="../js/admin/admin-finance.js"></script>
-    <script src="../js/admin/admin-coupons.js"></script>
-    <script src="../js/admin/admin-logistics.js"></script>
-    <script src="../js/admin/admin-reports.js"></script>
-    <script src="../js/admin/admin-audit.js"></script>
-    <script src="../js/admin/admin-settings.js"></script>
+    <!-- Submódulos administrativos (com defer para aguardarem a AdminAPI) -->
+    <script defer src="../js/admin/admin-categories.js"></script>
+    <script defer src="../js/admin/admin-inventory.js"></script>
+    <script defer src="../js/admin/admin-customers.js"></script>
+    <script defer src="../js/admin/admin-finance.js"></script>
+    <script defer src="../js/admin/admin-coupons.js"></script>
+    <script defer src="../js/admin/admin-logistics.js"></script>
+    <script defer src="../js/admin/admin-reports.js"></script>
+    <script defer src="../js/admin/admin-audit.js"></script>
+    <script defer src="../js/admin/admin-settings.js"></script>
 
 </body>
 
