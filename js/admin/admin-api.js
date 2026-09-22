@@ -18,7 +18,7 @@ import {
 const ROUTE_TO_COLLECTION = {
     "/products": "products",
     "/categories": "categories",
-    "/inventory": "inventory", // Alterado para bater com a coleção "inventory" do Firestore
+    "/inventory": "inventory",
     "/orders": "orders",
     "/customers": "customers",
     "/finance": "finance",
@@ -43,8 +43,46 @@ function parseEndpoint(endpoint) {
     return { collectionName, docId };
 }
 
-// Objeto Global AdminAPI compatível com todos os módulos do painel
-window.AdminAPI = {
+// Classe/Objeto AdminAPI compatível com todos os módulos do painel
+export const adminApi = {
+    /**
+     * Métricas consolidadas do Dashboard
+     */
+    async overview() {
+        try {
+            const [orders, products, customers] = await Promise.all([
+                this.get("/orders"),
+                this.get("/products"),
+                this.get("/customers")
+            ]);
+
+            const totalOrders = Array.isArray(orders) ? orders.length : 0;
+            const totalProducts = Array.isArray(products) ? products.length : 0;
+            const totalCustomers = Array.isArray(customers) ? customers.length : 0;
+
+            const totalRevenue = Array.isArray(orders) 
+                ? orders.reduce((acc, order) => acc + (Number(order.total) || 0), 0)
+                : 0;
+
+            return {
+                totalOrders,
+                totalProducts,
+                totalCustomers,
+                totalRevenue,
+                recentOrders: Array.isArray(orders) ? orders.slice(0, 5) : []
+            };
+        } catch (error) {
+            console.error("[AdminAPI] Erro ao carregar métricas de overview:", error);
+            return {
+                totalOrders: 0,
+                totalProducts: 0,
+                totalCustomers: 0,
+                totalRevenue: 0,
+                recentOrders: []
+            };
+        }
+    },
+
     /**
      * GET: Busca todos os documentos ou um documento específico
      */
@@ -142,5 +180,9 @@ window.AdminAPI = {
         }
     }
 };
+
+// Vincula no window para compatibilidade com scripts clássicos (qualquer uma das chamadas funcionará)
+window.adminApi = adminApi;
+window.AdminAPI = adminApi;
 
 console.log("[ADMIN] AdminAPI conectada com sucesso ao Firebase Firestore!");
