@@ -4,12 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta
-        name="description"
-        content="AURÉA COSMETICS — painel administrativo da operação."
-    >
-
+    <meta name="description" content="AURÉA COSMETICS — painel administrativo da operação.">
     <title>AURÉA ADMIN • COSMETICS</title>
 
     <link rel="stylesheet" href="../css/admin.css">
@@ -22,7 +17,6 @@
     <div class="admin-shell">
 
         <aside class="admin-sidebar">
-
             <div class="admin-brand">
                 <a href="../index.html" class="admin-brand-link">
                     <strong>AURÉA</strong>
@@ -31,194 +25,95 @@
             </div>
 
             <nav class="admin-navigation" aria-label="Navegação administrativa">
-
-                <button
-                    type="button"
-                    class="admin-nav-item active"
-                    data-admin-section="dashboard"
-                >
+                <button type="button" class="admin-nav-item active" data-admin-section="dashboard">
                     <span aria-hidden="true">📊</span>
                     <span>Dashboard</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="orders"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="orders">
                     <span aria-hidden="true">🛒</span>
                     <span>Pedidos</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="products"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="products">
                     <span aria-hidden="true">📦</span>
                     <span>Produtos</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="categories"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="categories">
                     <span aria-hidden="true">🏷️</span>
                     <span>Categorias</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="inventory"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="inventory">
                     <span aria-hidden="true">🏬</span>
                     <span>Estoque</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="customers"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="customers">
                     <span aria-hidden="true">👥</span>
                     <span>Clientes</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="finance"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="finance">
                     <span aria-hidden="true">💰</span>
                     <span>Financeiro</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="coupons"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="coupons">
                     <span aria-hidden="true">🎟️</span>
                     <span>Cupons</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="logistics"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="logistics">
                     <span aria-hidden="true">🚚</span>
                     <span>Logística</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="reports"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="reports">
                     <span aria-hidden="true">📈</span>
                     <span>Relatórios</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="audit"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="audit">
                     <span aria-hidden="true">🔍</span>
                     <span>Auditoria</span>
                 </button>
-
-                <button
-                    type="button"
-                    class="admin-nav-item"
-                    data-admin-section="settings"
-                >
+                <button type="button" class="admin-nav-item" data-admin-section="settings">
                     <span aria-hidden="true">⚙️</span>
                     <span>Configurações</span>
                 </button>
-
             </nav>
-
         </aside>
 
         <main class="admin-main">
-
             <header class="admin-header">
-
                 <div class="admin-header-title">
                     <span class="admin-mobile-brand">AURÉA</span>
                     <span id="adminSectionTitle">Dashboard</span>
                 </div>
 
                 <div class="admin-header-actions">
-
-                    <button
-                        type="button"
-                        class="admin-icon-button"
-                        aria-label="Notificações"
-                        title="Notificações"
-                    >
+                    <button type="button" class="admin-icon-button" aria-label="Notificações" title="Notificações">
                         🔔
                     </button>
 
                     <div class="admin-user">
-
-                        <div class="admin-user-avatar">
-                            A
-                        </div>
-
+                        <div class="admin-user-avatar">A</div>
                         <div class="admin-user-info">
                             <strong>Administrador</strong>
                             <span>Acesso total</span>
                         </div>
-
                     </div>
 
-                    <button
-                        type="button"
-                        id="adminLogout"
-                        class="admin-logout-button"
-                    >
+                    <button type="button" id="adminLogout" class="admin-logout-button">
                         Sair
                     </button>
-
                 </div>
-
             </header>
 
-            <section
-                id="admin-root"
-                class="admin-root"
-                aria-live="polite"
-            >
+            <section id="admin-root" class="admin-root" aria-live="polite">
                 <div class="admin-loading">
                     Carregando ambiente administrativo...
                 </div>
             </section>
-
         </main>
 
     </div>
 
-    <!-- Módulo da API deve ser carregado primeiro com type="module" -->
+    <!-- Módulo Principal de Inicialização e Autenticação -->
     <script type="module" src="../js/admin/admin-api.js"></script>
-    
-    <!-- Scripts de autenticação e controle principal -->
-    <script type="module" src="../js/admin/admin-login.js"></script>
     <script type="module" src="../js/admin/admin.js"></script>
-    <!-- Submódulos administrativos (com defer para aguardarem a AdminAPI) -->
-    <script defer src="../js/admin/admin-categories.js"></script>
-    <script defer src="../js/admin/admin-inventory.js"></script>
-    <script defer src="../js/admin/admin-customers.js"></script>
-    <script defer src="../js/admin/admin-finance.js"></script>
-    <script defer src="../js/admin/admin-coupons.js"></script>
-    <script defer src="../js/admin/admin-logistics.js"></script>
-    <script defer src="../js/admin/admin-reports.js"></script>
-    <script defer src="../js/admin/admin-audit.js"></script>
-    <script defer src="../js/admin/admin-settings.js"></script>
 
 </body>
 
