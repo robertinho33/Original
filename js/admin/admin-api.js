@@ -1,41 +1,80 @@
-"use strict";
+﻿"use strict";
 
-const API_BASE = "https://aurea-pix-api.onrender.com/api/admin";
+import {
+    getAdminIdToken
+} from "../auth/admin-auth.js";
 
-function getAdminToken() {
-    return (
-        localStorage.getItem("aurea-admin-token") ||
-        sessionStorage.getItem("aurea-admin-token") ||
-        ""
-    );
-}
+const API_BASE =
+    "https://aurea-pix-api.onrender.com/api/admin";
 
-async function request(path, options = {}) {
-    const token = getAdminToken();
+async function request(
+    path,
+    options = {}
+) {
 
-    const response = await fetch(`${API_BASE}${path}`, {
-        ...options,
-        headers: {
-            "Content-Type": "application/json",
-            ...(options.headers || {}),
-            ...(token
-                ? {
-                      Authorization: `Bearer ${token}`
-                  }
-                : {})
-        }
-    });
+    let token =
+        await getAdminIdToken(false);
 
-    const contentType = response.headers.get("content-type") || "";
+    const makeRequest =
+        async currentToken => {
 
-    const data = contentType.includes("application/json")
-        ? await response.json()
-        : {
-              success: false,
-              error: await response.text()
-          };
+            return fetch(
+                `${API_BASE}${path}`,
+                {
+                    ...options,
 
-    if (!response.ok || data.success === false) {
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        ...(options.headers || {}),
+
+                        Authorization:
+                            `Bearer ${currentToken}`
+                    }
+                }
+            );
+        };
+
+    let response =
+        await makeRequest(token);
+
+    /*
+     * Se o token estiver expirado,
+     * força renovação do Firebase e
+     * tenta novamente uma única vez.
+     */
+
+    if (response.status === 401) {
+
+        token =
+            await getAdminIdToken(true);
+
+        response =
+            await makeRequest(token);
+    }
+
+    const contentType =
+        response.headers.get(
+            "content-type"
+        ) || "";
+
+    const data =
+        contentType.includes(
+            "application/json"
+        )
+            ? await response.json()
+            : {
+                  success: false,
+                  error:
+                      await response.text()
+              };
+
+    if (
+        !response.ok ||
+        data.success === false
+    ) {
+
         throw new Error(
             data.error ||
             data.message ||
@@ -46,140 +85,171 @@ async function request(path, options = {}) {
     return data;
 }
 
-
-/* =========================================================
-   API ADMINISTRATIVA
-   ========================================================= */
-
 const adminApi = {
 
-    /* Dashboard */
+    overview:
+        () => request("/overview"),
 
-    overview: () =>
-        request("/overview"),
+    timeline:
+        (days = 30) =>
+            request(
+                `/overview/timeline?days=${days}`
+            ),
 
-    timeline: (days = 30) =>
-        request(`/overview/timeline?days=${days}`),
+    alerts:
+        () => request("/overview/alerts"),
 
-    alerts: () =>
-        request("/overview/alerts"),
+    dashboard:
+        () => request("/dashboard"),
 
-    dashboard: () =>
-        request("/dashboard"),
+    orders:
+        () =>
+            window.AdminFirebaseOrders.list(),
 
+    orderDetails:
+        orderId =>
+            window.AdminFirebaseOrders.details(
+                orderId
+            ),
 
-    /* Operação */
+    products:
+        () => request("/products"),
 
-    orders: () =>
-        request("/orders"),
+    categories:
+        () => request("/categories"),
 
-    products: () =>
-        request("/products"),
+    inventory:
+        () => request("/inventory"),
 
-    categories: () =>
-        request("/categories"),
+    customers:
+        () => request("/customers"),
 
-    inventory: () =>
-        request("/inventory"),
+    finance:
+        () => request("/finance"),
 
-    customers: () =>
-        request("/customers"),
+    coupons:
+        () => request("/coupons"),
 
-    finance: () =>
-        request("/finance"),
+    logistics:
+        () => request("/logistics"),
 
-    coupons: () =>
-        request("/coupons"),
+    reports:
+        () => request("/reports"),
 
-    logistics: () =>
-        request("/logistics"),
+    audit:
+        () => request("/audit"),
 
-    reports: () =>
-        request("/reports"),
+    settings:
+        () => request("/settings"),
 
-    audit: () =>
-        request("/audit"),
+    salesReport:
+        () => request("/reports/sales"),
 
-    settings: () =>
-        request("/settings"),
+    productReport:
+        () => request("/reports/products"),
 
+    customerReport:
+        () => request("/reports/customers"),
 
-    /* Relatórios */
+    globalSearch:
+        term =>
+            request(
+                `/search?q=${encodeURIComponent(term)}`
+            ),
 
-    salesReport: () =>
-        request("/reports/sales"),
+    orderHistory:
+        id =>
+            request(
+                `/orders/${encodeURIComponent(id)}/history`
+            ),
 
-    productReport: () =>
-        request("/reports/products"),
+    customerHistory:
+        id =>
+            request(
+                `/customers/${encodeURIComponent(id)}/history`
+            ),
 
-    customerReport: () =>
-        request("/reports/customers"),
+    inventoryMovements:
+        () =>
+            request(
+                "/inventory/movements"
+            ),
 
+    shippingQueue:
+        () =>
+            request(
+                "/logistics/queue"
+            ),
 
-    /* Busca */
-
-    globalSearch: (term) =>
-        request(`/search?q=${encodeURIComponent(term)}`),
-
-
-    /* Histórico */
-
-    orderHistory: (id) =>
-        request(`/orders/${encodeURIComponent(id)}/history`),
-
-    customerHistory: (id) =>
-        request(`/customers/${encodeURIComponent(id)}/history`),
-
-
-    /* Estoque / logística */
-
-    inventoryMovements: () =>
-        request("/inventory/movements"),
-
-    shippingQueue: () =>
-        request("/logistics/queue"),
-
-    financialOverview: () =>
-        request("/finance/overview")
+    financialOverview:
+        () =>
+            request(
+                "/finance/overview"
+            )
 };
-
-
-/* =========================================================
-   COMPATIBILIDADE COM MÓDULOS EXISTENTES
-   ========================================================= */
 
 window.AdminAPI = {
     ...adminApi,
 
-    get: (path, options = {}) =>
-        request(path, {
-            ...options,
-            method: "GET"
-        }),
+    get:
+        (path, options = {}) =>
+            request(
+                path,
+                {
+                    ...options,
+                    method: "GET"
+                }
+            ),
 
-    post: (path, body, options = {}) =>
-        request(path, {
-            ...options,
-            method: "POST",
-            body: JSON.stringify(body)
-        }),
+    post:
+        (
+            path,
+            body,
+            options = {}
+        ) =>
+            request(
+                path,
+                {
+                    ...options,
+                    method: "POST",
+                    body:
+                        JSON.stringify(body)
+                }
+            ),
 
-    put: (path, body, options = {}) =>
-        request(path, {
-            ...options,
-            method: "PUT",
-            body: JSON.stringify(body)
-        }),
+    put:
+        (
+            path,
+            body,
+            options = {}
+        ) =>
+            request(
+                path,
+                {
+                    ...options,
+                    method: "PUT",
+                    body:
+                        JSON.stringify(body)
+                }
+            ),
 
-    delete: (path, options = {}) =>
-        request(path, {
-            ...options,
-            method: "DELETE"
-        })
+    delete:
+        (
+            path,
+            options = {}
+        ) =>
+            request(
+                path,
+                {
+                    ...options,
+                    method: "DELETE"
+                }
+            )
 };
 
+window.adminApi =
+    window.AdminAPI;
 
-/* Compatibilidade adicional */
-window.adminApi = window.AdminAPI;
-
-console.log("[ADMIN] AdminAPI conectada ao backend Firebase/Firestore.");
+console.log(
+    "[ADMIN] AdminAPI conectada ao Firebase Auth."
+);

@@ -1,18 +1,28 @@
-﻿<script type="module">
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>AURÉA — Autenticação</title>
+</head>
+<body>
 
-const token =
-    localStorage.getItem(
-        "aurea-admin-token"
-    ) ||
-    sessionStorage.getItem(
-        "aurea-admin-token"
-    );
+<script type="module">
 
-if (!token) {
-    window.location.replace(
-        "./admin-login.html"
-    );
-}
+import {
+    observeAdminAuth
+} from "../js/auth/admin-auth.js";
+
+observeAdminAuth(user => {
+
+    if (!user) {
+        window.location.replace(
+            "./admin-login.html"
+        );
+    }
+
+});
 
 </script>
 
+</body>
+</html>
