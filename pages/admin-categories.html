@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AURÉA • Categorias</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-layout.css">
+    <link rel="stylesheet" href="../css/admin-polish.css">
+</head>
+
+<body>
+
+    <main class="admin-page">
+
+        <header class="admin-page-header">
+            <div>
+                <div class="admin-eyebrow">AURÉA • ADMIN</div>
+
+                <h1>Categorias</h1>
+
+                <p>
+                    Estrutura comercial do catálogo
+                </p>
+            </div>
+
+            <a href="./admin.html" class="admin-button">
+                ← Voltar ao painel
+            </a>
+        </header>
+
+        <section class="admin-card">
+
+            <h2>Nova categoria</h2>
+
+            <p>
+                Cadastre uma categoria comercial.
+            </p>
+
+            <form id="categoryForm">
+
+                <label>
+                    Nome
+                    <input
+                        id="categoryName"
+                        name="name"
+                        type="text"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Descrição
+                    <input
+                        id="categoryDescription"
+                        name="description"
+                        type="text"
+                    >
+                </label>
+
+                <label>
+                    Ordem
+                    <input
+                        id="categorySortOrder"
+                        name="sortOrder"
+                        type="number"
+                        value="0"
+                        min="0"
+                    >
+                </label>
+
+                <button type="submit" class="admin-button">
+                    Criar categoria
+                </button>
+
+            </form>
+
+            <div id="categoryFormResult"></div>
+
+        </section>
+
+        <section class="admin-card">
+
+            <h2>Categorias cadastradas</h2>
+
+            <div id="categoryList">
+                <strong>V03-CATEGORIAS-BOOT</strong>
+                <p>Inicializando...</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script type="module">
+        const target = document.getElementById("categoryList");
+
+        target.innerHTML = `
+            <strong>V03-CATEGORIAS-01</strong>
+            <p>JavaScript da página iniciou.</p>
+        `;
+
+        import("../js/admin/admin-categories.js")
+            .then(() => {
+                console.log("[AUREA] admin-categories.js carregado.");
+            })
+            .catch(error => {
+                console.error(
+                    "[AUREA] Falha ao carregar admin-categories.js:",
+                    error
+                );
+
+                target.innerHTML = `
+                    <strong>ERRO AO CARREGAR SCRIPT</strong>
+                    <p>${String(error.message || error)}</p>
+                `;
+            });
+    </script>
+
+</body>
+</html>
