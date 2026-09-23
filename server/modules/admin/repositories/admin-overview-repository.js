@@ -1,18 +1,24 @@
-﻿"use strict";
+"use strict";
 
 const {
     getFirestore
 } = require("../../../infrastructure/firebase/firebase-admin");
 
+const {
+    calculateIndicators,
+    buildOperationalAlerts
+} = require("../services/firestore-admin-indicators");
+
 const ORDERS = "orders";
 const PRODUCTS = "products";
+const USERS = "users";
 const TRACKING = "orderTracking";
 
 function db() {
     return getFirestore();
 }
 
-async function getCollection(name) {
+async function collection(name) {
     const snapshot = await db()
         .collection(name)
         .get();
@@ -25,11 +31,16 @@ async function getCollection(name) {
 
 function money(value) {
     const number = Number(value || 0);
-    return Number.isFinite(number) ? number : 0;
+
+    return Number.isFinite(number)
+        ? number
+        : 0;
 }
 
-function toDate(value) {
-    if (!value) return null;
+function dateValue(value) {
+    if (!value) {
+        return null;
+    }
 
     if (typeof value.toDate === "function") {
         return value.toDate();
@@ -42,224 +53,131 @@ function toDate(value) {
         : date;
 }
 
-function startOfDay(date) {
-    const result = new Date(date);
-
-    result.setHours(0, 0, 0, 0);
-
-    return result;
-}
-
 async function getAdminOverview() {
-    const [orders, products, tracking] =
-        await Promise.all([
-            getCollection(ORDERS),
-            getCollection(PRODUCTS),
-            getCollection(TRACKING)
-        ]);
+    const [
+        orders,
+        products,
+        users,
+        tracking
+    ] = await Promise.all([
+        collection(ORDERS),
+        collection(PRODUCTS),
+        collection(USERS),
+        collection(TRACKING)
+    ]);
 
-    const today = startOfDay(new Date());
+    const today = new Date();
 
     const todayOrders = orders.filter(order => {
-        const date = toDate(order.createdAt);
+        const date = dateValue(order.createdAt);
 
-        return date &&
-            startOfDay(date).getTime() === today.getTime();
-    });
+        if (!date) {
+            return false;
+        }
 
-    const revenueToday = todayOrders.reduce(
-        (sum, order) =>
-            sum + money(order.total),
-        0
-    );
-
-    const pendingPayments = orders.filter(order => {
-        const status =
-            order.payment?.status ||
-            order.paymentStatus ||
-            "pending";
-
-        return String(status).toLowerCase() === "pending";
-    });
-
-    const pendingShipments = orders.filter(order => {
-        const status =
-            order.logistics?.status ||
-            order.logisticsStatus ||
-            "new";
-
-        return ![
-            "delivered",
-            "completed"
-        ].includes(
-            String(status).toLowerCase()
+        return (
+            date.getFullYear() === today.getFullYear() &&
+            date.getMonth() === today.getMonth() &&
+            date.getDate() === today.getDate()
         );
     });
 
+    const todayRevenue = todayOrders.reduce(
+        (sum, order) => sum + money(order.total),
+        0
+    );
+
+    const indicators = calculateIndicators({
+        orders,
+        products,
+        tracking
+    });
+
     return {
-        faturamentoHoje: revenueToday,
+        faturamentoHoje: todayRevenue,
         pedidosHoje: todayOrders.length,
-        pedidosTotal: orders.length,
+
+        clientes: users.length,
         produtos: products.length,
 
-        estoqueBaixo: products.filter(product => {
-            const stock = Number(
-                product.stock ??
-                product.estoque ??
-                0
-            );
-
-            return stock > 0 && stock <= 5;
-        }).length,
-
-        semEstoque: products.filter(product => {
-            const stock = Number(
-                product.stock ??
-                product.estoque ??
-                0
-            );
-
-            return stock <= 0;
-        }).length,
+        estoqueBaixo: indicators.estoqueBaixo,
+        semEstoque: indicators.semEstoque,
 
         pagamentosPendentes:
-            pendingPayments.length,
+            indicators.pagamentosPendentes,
 
         enviosPendentes:
-            pendingShipments.length,
-
-        vendasRecentes: orders
-            .sort((a, b) => {
-                const da =
-                    toDate(a.createdAt)?.getTime() || 0;
-
-                const db =
-                    toDate(b.createdAt)?.getTime() || 0;
-
-                return db - da;
-            })
-            .slice(0, 10)
+            indicators.enviosPendentes
     };
 }
 
+async function getOperationalAlerts() {
+    const [
+        orders,
+        products,
+        tracking
+    ] = await Promise.all([
+        collection(ORDERS),
+        collection(PRODUCTS),
+        collection(TRACKING)
+    ]);
+
+    const indicators = calculateIndicators({
+        orders,
+        products,
+        tracking
+    });
+
+    return buildOperationalAlerts(indicators);
+}
+
 async function getSalesTimeline(days = 30) {
-    const orders = await getCollection(ORDERS);
+    const orders = await collection(ORDERS);
+
+    const safeDays = Math.min(
+        Math.max(Number(days || 30), 1),
+        365
+    );
 
     const now = new Date();
 
     const start = new Date(now);
+    start.setDate(start.getDate() - safeDays);
 
-    start.setDate(
-        start.getDate() - Number(days)
-    );
-
-    start.setHours(0, 0, 0, 0);
-
-    const timeline = {};
+    const grouped = new Map();
 
     for (const order of orders) {
-        const date = toDate(order.createdAt);
+        const date = dateValue(order.createdAt);
 
         if (!date || date < start) {
             continue;
         }
 
-        const key =
-            date.toISOString().slice(0, 10);
+        const key = new Intl.DateTimeFormat(
+            "en-CA",
+            {
+                timeZone: "America/Sao_Paulo"
+            }
+        ).format(date);
 
-        if (!timeline[key]) {
-            timeline[key] = {
+        if (!grouped.has(key)) {
+            grouped.set(key, {
                 date: key,
                 orders: 0,
                 revenue: 0
-            };
+            });
         }
 
-        timeline[key].orders += 1;
-        timeline[key].revenue +=
-            money(order.total);
+        const item = grouped.get(key);
+
+        item.orders += 1;
+        item.revenue += money(order.total);
     }
 
-    return Object.values(timeline)
+    return Array.from(grouped.values())
         .sort((a, b) =>
             a.date.localeCompare(b.date)
         );
-}
-
-async function getOperationalAlerts() {
-    const [orders, products, tracking] =
-        await Promise.all([
-            getCollection(ORDERS),
-            getCollection(PRODUCTS),
-            getCollection(TRACKING)
-        ]);
-
-    const alerts = [];
-
-    const lowStock = products.filter(product => {
-        const stock = Number(
-            product.stock ??
-            product.estoque ??
-            0
-        );
-
-        return stock >= 0 && stock <= 5;
-    });
-
-    if (lowStock.length > 0) {
-        alerts.push({
-            type: "stock",
-            severity: "warning",
-            count: lowStock.length,
-            message:
-                `${lowStock.length} produto(s) com estoque baixo.`
-        });
-    }
-
-    const pendingPayments = orders.filter(order => {
-        const status =
-            order.payment?.status ||
-            order.paymentStatus ||
-            "pending";
-
-        return String(status).toLowerCase() === "pending";
-    });
-
-    if (pendingPayments.length > 0) {
-        alerts.push({
-            type: "payment",
-            severity: "warning",
-            count: pendingPayments.length,
-            message:
-                `${pendingPayments.length} pagamento(s) pendente(s).`
-        });
-    }
-
-    const pendingShipping = tracking.filter(item => {
-        const status =
-            item.status ||
-            item.logisticsStatus ||
-            "";
-
-        return ![
-            "delivered",
-            "completed"
-        ].includes(
-            String(status).toLowerCase()
-        );
-    });
-
-    if (pendingShipping.length > 0) {
-        alerts.push({
-            type: "shipping",
-            severity: "info",
-            count: pendingShipping.length,
-            message:
-                `${pendingShipping.length} envio(s) em aberto.`
-        });
-    }
-
-    return alerts;
 }
 
 module.exports = {

@@ -1,0 +1,334 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AURÉA — Pedidos</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+
+    <style>
+        .orders-page {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .orders-header h1 {
+            margin: 0;
+        }
+
+        .orders-header p {
+            margin: 6px 0 0;
+            opacity: .7;
+        }
+
+        .orders-actions button,
+        .order-view-button,
+        #saveOrderStatus {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .orders-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .orders-card {
+            padding: 20px;
+            border-radius: 12px;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,.08);
+        }
+
+        .orders-card-label {
+            display: block;
+            font-size: 13px;
+            opacity: .65;
+            margin-bottom: 8px;
+        }
+
+        .orders-card strong {
+            font-size: 28px;
+        }
+
+        .orders-table-wrapper {
+            overflow-x: auto;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,.08);
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1050px;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid rgba(0,0,0,.07);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .orders-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            opacity: .65;
+        }
+
+        .orders-empty {
+            padding: 50px 20px;
+            text-align: center;
+            opacity: .65;
+        }
+
+        .orders-loading,
+        .orders-error {
+            text-align: center !important;
+            padding: 40px !important;
+        }
+
+        .order-details {
+            margin-top: 28px;
+            padding: 24px;
+            border-radius: 12px;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,.08);
+        }
+
+        .order-details-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .order-details-header h2 {
+            margin: 4px 0 0;
+        }
+
+        .order-details-label {
+            font-size: 11px;
+            letter-spacing: .08em;
+            opacity: .6;
+        }
+
+        .order-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .order-details-grid section,
+        .order-items,
+        .order-status-editor,
+        .order-history {
+            padding: 18px;
+            border-radius: 10px;
+            background: rgba(0,0,0,.025);
+            margin-bottom: 18px;
+        }
+
+        .order-details-grid h3,
+        .order-items h3,
+        .order-status-editor h3,
+        .order-history h3 {
+            margin-top: 0;
+        }
+
+        .order-items table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .order-items th,
+        .order-items td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0,0,0,.07);
+            text-align: left;
+        }
+
+        .status-editor-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-editor-row select {
+            min-width: 220px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,.15);
+            font: inherit;
+        }
+
+        .order-history ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        @media (max-width: 800px) {
+            .orders-page {
+                padding: 18px;
+            }
+
+            .orders-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .orders-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .order-details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-editor-row {
+                flex-direction: column;
+            }
+
+            .status-editor-row select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="orders-page">
+
+        <header class="orders-header">
+            <div>
+                <h1>AURÉA Pedidos</h1>
+                <p>Pedidos registrados no Firestore.</p>
+            </div>
+
+            <div class="orders-actions">
+                <button
+                    type="button"
+                    id="refreshOrders"
+                >
+                    Atualizar
+                </button>
+            </div>
+        </header>
+
+        <section class="orders-summary">
+
+            <article class="orders-card">
+                <span class="orders-card-label">
+                    Total
+                </span>
+
+                <strong id="ordersTotal">
+                    0
+                </strong>
+            </article>
+
+            <article class="orders-card">
+                <span class="orders-card-label">
+                    Em andamento
+                </span>
+
+                <strong id="ordersPending">
+                    0
+                </strong>
+            </article>
+
+            <article class="orders-card">
+                <span class="orders-card-label">
+                    Pagos
+                </span>
+
+                <strong id="ordersPaid">
+                    0
+                </strong>
+            </article>
+
+            <article class="orders-card">
+                <span class="orders-card-label">
+                    Cancelados
+                </span>
+
+                <strong id="ordersCancelled">
+                    0
+                </strong>
+            </article>
+
+        </section>
+
+        <section class="orders-table-wrapper">
+
+            <table class="orders-table">
+
+                <thead>
+                    <tr>
+                        <th>Pedido</th>
+                        <th>Cliente</th>
+                        <th>E-mail</th>
+                        <th>Status</th>
+                        <th>Pagamento</th>
+                        <th>Total</th>
+                        <th>Data</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+
+                <tbody id="ordersTableBody">
+                </tbody>
+
+            </table>
+
+            <div
+                id="ordersEmpty"
+                class="orders-empty"
+                hidden
+            >
+                Nenhum pedido registrado ainda.
+            </div>
+
+        </section>
+
+        <section
+            id="orderDetails"
+            class="order-details"
+            hidden
+        >
+        </section>
+
+    </main>
+
+    <script type="module">
+        import {
+            waitForAuthorizedAdmin
+        } from '../js/auth/admin-guard.js';
+
+        await waitForAuthorizedAdmin();
+
+        import('../js/admin/admin-orders.js');
+    </script>
+
+</body>
+</html>

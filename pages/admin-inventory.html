@@ -1,0 +1,674 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURÉA • Estoque</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-layout.css">
+    <link rel="stylesheet" href="../css/admin-polish.css">
+
+    <style>
+        .inventory-page {
+            padding: 32px;
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .inventory-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .inventory-header p {
+            margin: 0;
+            opacity: .7;
+        }
+
+        .inventory-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .inventory-button {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 16px;
+            cursor: pointer;
+            font: inherit;
+            text-decoration: none;
+        }
+
+        .inventory-button.primary {
+            background: #111;
+            color: #fff;
+        }
+
+        .inventory-button.secondary {
+            background: #eee;
+            color: #111;
+        }
+
+        .inventory-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .inventory-card {
+            padding: 20px;
+            border: 1px solid #e5e5e5;
+            border-radius: 14px;
+            background: #fff;
+        }
+
+        .inventory-card strong {
+            display: block;
+            font-size: 28px;
+            margin-top: 6px;
+        }
+
+        .inventory-toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .inventory-toolbar input,
+        .inventory-toolbar select {
+            min-height: 44px;
+            padding: 0 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fff;
+            font: inherit;
+        }
+
+        .inventory-toolbar input {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .inventory-table-wrap {
+            overflow-x: auto;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 14px;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .inventory-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            opacity: .65;
+        }
+
+        .inventory-product strong,
+        .inventory-product small {
+            display: block;
+        }
+
+        .inventory-product small {
+            margin-top: 4px;
+            opacity: .6;
+        }
+
+        .inventory-status {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .inventory-status[data-status="OK"] {
+            background: #e8f5e9;
+        }
+
+        .inventory-status[data-status="BAIXO"] {
+            background: #fff4d6;
+        }
+
+        .inventory-status[data-status="ZERADO"] {
+            background: #fde8e8;
+        }
+
+        .inventory-row-actions {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .inventory-row-actions button {
+            border: 1px solid #ddd;
+            background: #fff;
+            border-radius: 8px;
+            padding: 7px 10px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .inventory-empty {
+            padding: 40px !important;
+            text-align: center !important;
+            opacity: .65;
+        }
+
+        .inventory-message {
+            display: none;
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: #f5f5f5;
+        }
+
+        .inventory-message.visible {
+            display: block;
+        }
+
+        @media (max-width: 800px) {
+            .inventory-page {
+                padding: 18px;
+            }
+
+            .inventory-header {
+                flex-direction: column;
+            }
+
+            .inventory-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+<script type="module">
+import { waitForAuthorizedAdmin } from '../js/auth/admin-guard.js';
+
+await waitForAuthorizedAdmin();
+</script>
+</head>
+
+<body>
+
+<main class="inventory-page">
+
+    <header class="inventory-header">
+
+        <div>
+            <p>AURÉA • ADMIN</p>
+            <h1>Estoque</h1>
+            <p>Controle operacional do estoque dos produtos.</p>
+        </div>
+
+        <div class="inventory-actions">
+
+            <a
+                class="inventory-button secondary"
+                href="./admin.html"
+            >
+                ← Voltar ao painel
+            </a>
+
+            <button
+                id="refreshInventory"
+                class="inventory-button primary"
+                type="button"
+            >
+                Atualizar
+            </button>
+
+        </div>
+
+    </header>
+
+    <div
+        id="inventoryMessage"
+        class="inventory-message"
+        role="status"
+    ></div>
+
+    <section class="inventory-summary">
+
+        <article class="inventory-card">
+            <span>Total de produtos</span>
+            <strong id="totalProducts">0</strong>
+        </article>
+
+        <article class="inventory-card">
+            <span>Estoque normal</span>
+            <strong id="normalProducts">0</strong>
+        </article>
+
+        <article class="inventory-card">
+            <span>Estoque baixo</span>
+            <strong id="lowProducts">0</strong>
+        </article>
+
+        <article class="inventory-card">
+            <span>Sem estoque</span>
+            <strong id="zeroProducts">0</strong>
+        </article>
+
+    </section>
+
+    <section class="inventory-toolbar">
+
+        <input
+            id="inventorySearch"
+            type="search"
+            placeholder="Buscar por produto ou SKU..."
+            autocomplete="off"
+        >
+
+        <select id="inventoryStatus">
+            <option value="ALL">Todos os estoques</option>
+            <option value="OK">Estoque normal</option>
+            <option value="BAIXO">Estoque baixo</option>
+            <option value="ZERADO">Sem estoque</option>
+        </select>
+
+    </section>
+
+    <section class="inventory-table-wrap">
+
+        <table class="inventory-table">
+
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th>Estoque</th>
+                    <th>Mínimo</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody id="inventoryList">
+                <tr>
+                    <td colspan="6" class="inventory-empty">
+                        Carregando estoque...
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </section>
+
+</main>
+
+<script type="module">
+
+import {
+    listInventory,
+    updateInventory
+} from '../js/admin/inventory-repository.js';
+
+const state = {
+    items: []
+};
+
+const elements = {
+    list: document.querySelector('#inventoryList'),
+    search: document.querySelector('#inventorySearch'),
+    status: document.querySelector('#inventoryStatus'),
+    total: document.querySelector('#totalProducts'),
+    normal: document.querySelector('#normalProducts'),
+    low: document.querySelector('#lowProducts'),
+    zero: document.querySelector('#zeroProducts'),
+    refresh: document.querySelector('#refreshInventory'),
+    message: document.querySelector('#inventoryMessage')
+};
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function showMessage(message) {
+    elements.message.textContent = message;
+    elements.message.classList.add('visible');
+
+    window.clearTimeout(showMessage.timer);
+
+    showMessage.timer = window.setTimeout(() => {
+        elements.message.classList.remove('visible');
+    }, 4000);
+}
+
+function updateSummary(items) {
+    elements.total.textContent = items.length;
+
+    elements.normal.textContent =
+        items.filter(item => item.status === 'OK').length;
+
+    elements.low.textContent =
+        items.filter(item => item.status === 'BAIXO').length;
+
+    elements.zero.textContent =
+        items.filter(item => item.status === 'ZERADO').length;
+}
+
+function getFilteredItems() {
+    const search =
+        elements.search.value.trim().toLowerCase();
+
+    const status =
+        elements.status.value;
+
+    return state.items.filter(item => {
+
+        const name =
+            String(item.name || '').toLowerCase();
+
+        const sku =
+            String(item.sku || '').toLowerCase();
+
+        const matchesSearch =
+            !search ||
+            name.includes(search) ||
+            sku.includes(search);
+
+        const matchesStatus =
+            status === 'ALL' ||
+            item.status === status;
+
+        return matchesSearch && matchesStatus;
+    });
+}
+
+function render() {
+    const items = getFilteredItems();
+
+    if (!items.length) {
+        elements.list.innerHTML = `
+            <tr>
+                <td colspan="6" class="inventory-empty">
+                    Nenhum produto encontrado.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    elements.list.innerHTML = items.map(item => `
+        <tr>
+
+            <td>
+                <div class="inventory-product">
+                    <strong>
+                        ${escapeHtml(item.name)}
+                    </strong>
+
+                    <small>
+                        SKU: ${escapeHtml(item.sku)}
+                    </small>
+                </div>
+            </td>
+
+            <td>
+                ${escapeHtml(
+                    item.categoryName ||
+                    'Sem categoria'
+                )}
+            </td>
+
+            <td>
+                <strong>${item.stock}</strong>
+            </td>
+
+            <td>
+                ${item.minimumStock}
+            </td>
+
+            <td>
+                <span
+                    class="inventory-status"
+                    data-status="${escapeHtml(item.status)}"
+                >
+                    ${escapeHtml(item.status)}
+                </span>
+            </td>
+
+            <td>
+                <div class="inventory-row-actions">
+
+                    <button
+                        type="button"
+                        data-action="entry"
+                        data-id="${escapeHtml(item.id)}"
+                    >
+                        Entrada
+                    </button>
+
+                    <button
+                        type="button"
+                        data-action="exit"
+                        data-id="${escapeHtml(item.id)}"
+                    >
+                        Saída
+                    </button>
+
+                    <button
+                        type="button"
+                        data-action="adjustment"
+                        data-id="${escapeHtml(item.id)}"
+                    >
+                        Ajustar
+                    </button>
+
+                </div>
+            </td>
+
+        </tr>
+    `).join('');
+}
+
+async function load() {
+
+    elements.list.innerHTML = `
+        <tr>
+            <td colspan="6" class="inventory-empty">
+                Carregando estoque...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        state.items =
+            await listInventory();
+
+        updateSummary(state.items);
+
+        render();
+
+        showMessage(
+            `${state.items.length} produtos carregados.`
+        );
+
+    } catch (error) {
+
+        console.error(
+            '[AUREA] Erro no estoque:',
+            error
+        );
+
+        elements.list.innerHTML = `
+            <tr>
+                <td colspan="6" class="inventory-empty">
+                    Erro ao carregar estoque:
+                    ${escapeHtml(error.message)}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+async function performMovement(
+    productId,
+    type
+) {
+
+    const item =
+        state.items.find(
+            product => product.id === productId
+        );
+
+    if (!item) {
+        return;
+    }
+
+    const label =
+        type === 'adjustment'
+            ? 'Novo estoque'
+            : type === 'entry'
+                ? 'Quantidade de entrada'
+                : 'Quantidade de saída';
+
+    const quantityText =
+        window.prompt(
+            `${label} para "${item.name}":`,
+            type === 'adjustment'
+                ? String(item.stock)
+                : '1'
+        );
+
+    if (quantityText === null) {
+        return;
+    }
+
+    const quantity =
+        Number(quantityText.trim());
+
+    if (
+        !Number.isInteger(quantity) ||
+        quantity < 0
+    ) {
+
+        window.alert(
+            'Informe uma quantidade inteira maior ou igual a zero.'
+        );
+
+        return;
+    }
+
+    if (
+        type === 'exit' &&
+        quantity > item.stock
+    ) {
+
+        window.alert(
+            `Estoque insuficiente. Disponível: ${item.stock}.`
+        );
+
+        return;
+    }
+
+    const reason =
+        window.prompt(
+            'Motivo da movimentação (opcional):',
+            ''
+        );
+
+    if (reason === null) {
+        return;
+    }
+
+    try {
+
+        await updateInventory(
+            productId,
+            quantity,
+            type,
+            reason
+        );
+
+        showMessage(
+            'Estoque atualizado com sucesso.'
+        );
+
+        await load();
+
+    } catch (error) {
+
+        console.error(
+            '[AUREA] Erro na movimentação:',
+            error
+        );
+
+        window.alert(
+            `Não foi possível atualizar o estoque.\n\n${error.message}`
+        );
+    }
+}
+
+elements.search.addEventListener(
+    'input',
+    render
+);
+
+elements.status.addEventListener(
+    'change',
+    render
+);
+
+elements.refresh.addEventListener(
+    'click',
+    load
+);
+
+elements.list.addEventListener(
+    'click',
+    event => {
+
+        const button =
+            event.target.closest(
+                'button[data-action]'
+            );
+
+        if (!button) {
+            return;
+        }
+
+        performMovement(
+            button.dataset.id,
+            button.dataset.action
+        );
+    }
+);
+
+load();
+
+</script>
+
+</body>
+</html>

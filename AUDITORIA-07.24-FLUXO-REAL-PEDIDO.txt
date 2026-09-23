@@ -1,0 +1,703 @@
+﻿============================================================
+ AUREA — AUDITORIA 07.24/11
+ FLUXO REAL DE CRIACAO DO PEDIDO
+ SOMENTE LEITURA — CODIGO
+ NENHUM BANCO ACESSADO
+ NENHUM DADO ALTERADO
+============================================================
+
+[01] CHECKOUT — createOrder()
+------------------------------------------------------------
+1210:        city:
+1211:            elements.city.value.trim(),
+1212:
+1213:        state:
+1214:            elements.state.value
+1215:                .trim()
+1216:                .toUpperCase()
+1217:    };
+1218:}
+1219:
+1220:
+1221:function getPaymentMethod() {
+1222:
+1223:    return document.querySelector(
+1224:        'input[name="paymentMethod"]:checked'
+1225:    )?.value ?? null;
+1226:}
+1227:
+1228:
+1229:/* =========================================================
+1230:   PEDIDO
+1231:   ========================================================= */
+1232:
+1233:function createOrder() {
+1234:
+1235:    const items =
+1236:        getCartItems();
+1237:
+1238:    const subtotal =
+1239:        getSubtotal();
+1240:
+1241:    const shipping =
+1242:        getShipping();
+1243:
+1244:    const discount =
+1245:        getDiscount(subtotal);
+1246:
+1247:    const total =
+1248:        getTotal();
+1249:
+1250:    const deliveryMethod =
+1251:        getDeliveryMethod();
+1252:
+1253:    const paymentMethod =
+1254:        getPaymentMethod();
+1255:
+1256:    if (!paymentMethod) {
+1257:        throw new Error(
+1258:            'Selecione uma forma de pagamento.'
+1259:        );
+1260:    }
+1261:
+1262:    const now =
+1263:        new Date();
+1264:
+1265:    const orderId =
+1266:        `AUR-${now.getTime().toString(36).toUpperCase()}`;
+1267:
+1268:    const order = {
+1269:
+1270:        id:
+1271:            orderId,
+1272:
+1273:        orderId,
+1274:
+1275:        status:
+1276:            ORDER_STATUS.NEW,
+1277:
+1278:        createdAt:
+1279:            now.toISOString(),
+1280:
+1281:        customer:
+1282:            getCustomerData(),
+1283:
+1284:        delivery: {
+1285:
+1286:            method:
+1287:                deliveryMethod,
+1288:
+1289:            address:
+1290:                getAddressData()
+1291:        },
+1292:
+1293:        payment: {
+1294:
+1295:            method:
+1296:                paymentMethod,
+1297:
+1298:            status:
+1299:                'pending'
+1300:        },
+1301:
+1302:        logistics: {
+1303:
+1304:            status:
+1305:                LOGISTICS_STATUS.NEW
+1306:        },
+1307:
+1308:        history: [],
+1309:
+1310:        items:
+
+[02] ORDER SERVICE
+------------------------------------------------------------
+1:'use strict';
+2:
+3:import { 
+4:    saveOrder as repositorySaveOrder,
+5:    findOrderById as repositoryFindOrderById,
+6:    loadOrders as repositoryLoadOrders,
+7:    updateOrder as repositoryUpdateOrder
+8:} from './order-repository.js';
+9:
+10:export async function saveOrder(order) {
+11:    if (!order || typeof order !== 'object') {
+12:        throw new Error('Pedido inválido.');
+13:    }
+14:
+15:    if (!order.id) {
+16:        throw new Error('Pedido sem identificação.');
+17:    }
+18:
+19:    if (!order.customer?.name) {
+20:        throw new Error('Pedido sem cliente.');
+21:    }
+22:
+23:    if (!Array.isArray(order.items) || !order.items.length) {
+24:        throw new Error('Pedido sem produtos.');
+25:    }
+26:
+27:    const subtotal = Number(order.financial?.subtotal ?? order.subtotal);
+28:    const shipping = Number(order.financial?.shipping ?? order.shipping);
+29:    const total = Number(order.financial?.total ?? order.total);
+30:
+31:    if (!Number.isFinite(subtotal) || !Number.isFinite(shipping) || !Number.isFinite(total)) {
+32:        throw new Error('Pedido sem informações financeiras válidas.');
+33:    }
+34:
+35:    order.status = order.status || 'new';
+36:    
+37:    if (!order.payment) order.payment = {};
+38:    order.payment.status = order.payment.status || 'pending';
+39:
+40:    if (!order.logistics) order.logistics = {};
+41:    order.logistics.status = order.logistics.status || 'new';
+42:
+43:    if (!Array.isArray(order.history)) {
+44:        order.history = [
+45:            {
+46:                status: order.status,
+47:                updatedAt: new Date().toISOString(),
+48:                note: 'Pedido criado no checkout'
+49:            }
+50:        ];
+51:    }
+52:
+53:    return await repositorySaveOrder(order);
+54:}
+55:
+56:export async function getOrderById(orderId) {
+57:    return await repositoryFindOrderById(orderId);
+58:}
+59:
+60:export async function getAllOrders() {
+61:    return await repositoryLoadOrders();
+62:}
+63:
+64:export async function updateOrder(order) {
+65:    return await repositoryUpdateOrder(order);
+66:}
+
+[03] ORDER CONTROLLER
+------------------------------------------------------------
+1:'use strict';
+2:
+3:const orderService = require('./order-persistence');
+4:
+5:function createOrderController(req, res, next) {
+6:  try {
+7:    const order = orderService.createOrder(req.body || {});
+8:
+9:    res.status(201).json({
+10:      success: true,
+11:      data: order,
+12:      requestId: req.requestId
+13:    });
+14:  } catch (error) {
+15:    next(error);
+16:  }
+17:}
+18:
+19:function getOrderController(req, res, next) {
+20:  try {
+21:    const order = orderService.getOrder(
+22:      String(req.params.orderNumber || '').trim()
+23:    );
+24:
+25:    res.status(200).json({
+26:      success: true,
+27:      data: order,
+28:      requestId: req.requestId
+29:    });
+30:  } catch (error) {
+31:    next(error);
+32:  }
+33:}
+34:
+35:function listOrdersController(req, res, next) {
+36:  try {
+37:    const limit = Math.min(
+38:      Math.max(Number(req.query.limit) || 100, 1),
+39:      100
+40:    );
+41:
+42:    const offset = Math.max(
+43:      Number(req.query.offset) || 0,
+44:      0
+45:    );
+46:
+47:    const orders = orderService.listOrders({
+48:      limit,
+49:      offset
+50:    });
+51:
+52:    res.status(200).json({
+53:      success: true,
+54:      data: orders,
+55:      pagination: {
+56:        limit,
+57:        offset,
+58:        count: orders.length
+59:      },
+60:      requestId: req.requestId
+61:    });
+62:  } catch (error) {
+63:    next(error);
+64:  }
+65:}
+66:
+67:module.exports = {
+68:  createOrderController,
+69:  getOrderController,
+70:  listOrdersController
+71:};
+
+[04] ORDER ORCHESTRATOR
+------------------------------------------------------------
+1:'use strict';
+2:
+3:const { AppError } = require('../../core/app-error');
+4:
+5:const {
+6:  createOrder,
+7:  getOrder,
+8:  updateOrder
+9:} = require('./order-persistence');
+10:
+11:const {
+12:  reserveProductStock
+13:} = require('../inventory/inventory-domain');
+14:
+15:const {
+16:  findProductBySku
+17:} = require('../catalog/catalog-service');
+18:
+19:const {
+20:  createPaymentIntent
+21:} = require('../payments/payment-service');
+22:
+23:const {
+24:  createPixReference
+25:} = require('../payments/pix-provider');
+26:
+27:const {
+28:  recordEvent
+29:} = require('../../infrastructure/audit');
+30:
+31:async function reserveOrderStock(order) {
+32:  const reservations = [];
+33:
+34:  for (const item of order.items) {
+35:    const product = findProductBySku(item.sku);
+36:
+37:    if (!product) {
+38:      throw new AppError(
+39:        `Produto ${item.sku} não encontrado.`,
+40:        {
+41:          code: 'PRODUCT_NOT_FOUND',
+42:          status: 404
+43:        }
+44:      );
+45:    }
+46:
+47:    const updated = reserveProductStock(
+48:      {
+49:        ...product,
+50:        stock:
+51:          product.Estoque ??
+52:          product.estoque ??
+53:          product.stock ??
+54:          0
+55:      },
+56:      item.quantity
+57:    );
+58:
+59:    reservations.push({
+60:      sku: item.sku,
+61:      quantity: item.quantity,
+62:      remainingStock: updated.stock
+63:    });
+64:  }
+65:
+66:  return reservations;
+67:}
+68:
+69:async function createOrderWithPayment(payload, requestId) {
+70:  const order = createOrder(payload);
+71:
+72:  recordEvent({
+73:    type: 'ORDER_CREATED',
+74:    orderNumber: order.orderNumber,
+75:    requestId,
+76:    data: {
+77:      total: order.totals.total
+78:    }
+79:  });
+80:
+81:  const reservations = reserveOrderStock(order);
+82:
+83:  recordEvent({
+84:    type: 'STOCK_RESERVED',
+85:    orderNumber: order.orderNumber,
+86:    requestId,
+87:    data: {
+88:      reservations
+89:    }
+90:  });
+91:
+92:  const payment = createPaymentIntent({
+93:    orderNumber: order.orderNumber,
+94:    amount: order.totals.total,
+95:    method: order.payment?.method || 'pix'
+96:  });
+97:
+98:  const paymentReference =
+99:    payment.method === 'pix'
+100:      ? createPixReference({
+101:          orderNumber: order.orderNumber,
+102:          amount: order.totals.total
+103:        })
+104:      : null;
+105:
+106:  const updated = updateOrder(
+107:    order.orderNumber,
+108:    {
+109:      status: 'confirmed',
+110:      payment: {
+111:        ...order.payment,
+112:        ...payment,
+113:        reference: paymentReference
+114:      },
+115:      stock: {
+116:        status: 'reserved',
+117:        reservations
+118:      }
+119:    }
+120:  );
+121:
+122:  recordEvent({
+123:    type: 'PAYMENT_INTENT_CREATED',
+124:    orderNumber: order.orderNumber,
+125:    requestId,
+126:    data: {
+127:      method: payment.method,
+128:      amount: payment.amount
+129:    }
+130:  });
+131:
+132:  return updated;
+133:}
+134:
+135:async function confirmPayment(orderNumber, requestId) {
+136:  const order = getOrder(orderNumber);
+137:
+138:  if (order.payment?.status === 'paid') {
+139:    return order;
+140:  }
+141:
+142:  const updated = updateOrder(
+143:    orderNumber,
+144:    {
+145:      status: 'processing',
+146:      payment: {
+147:        ...order.payment,
+148:        status: 'paid',
+149:        paidAt: new Date().toISOString()
+150:      }
+151:    }
+152:  );
+153:
+154:  recordEvent({
+155:    type: 'PAYMENT_CONFIRMED',
+156:    orderNumber,
+157:    requestId
+158:  });
+159:
+160:  return updated;
+161:}
+162:
+163:module.exports = {
+164:  createOrderWithPayment,
+165:  confirmPayment,
+166:  reserveOrderStock
+167:};
+168:
+
+[05] ORDER PERSISTENCE
+------------------------------------------------------------
+1:'use strict';
+2:
+3:const { AppError } = require('../../core/app-error');
+4:const repository = require('./order-repository');
+5:const { prepareOrder } = require('./order-authority');
+6:
+7:async function createOrder(payload) {
+8:  const order = prepareOrder(payload);
+9:
+10:  const existing = await repository.findByOrderNumber(order.orderNumber);
+11:
+12:  if (existing) {
+13:    throw new AppError(
+14:      'Conflito ao gerar pedido.',
+15:      {
+16:        code: 'ORDER_CONFLICT',
+17:        status: 409
+18:      }
+19:    );
+20:  }
+21:
+22:  return await repository.create(order);
+23:}
+24:
+25:async function getOrder(orderNumber) {
+26:  const order = await repository.findByOrderNumber(orderNumber);
+27:
+28:  if (!order) {
+29:    throw new AppError(
+30:      'Pedido não encontrado.',
+31:      {
+32:        code: 'ORDER_NOT_FOUND',
+33:        status: 404
+34:      }
+35:    );
+36:  }
+37:
+38:  return order;
+39:}
+40:
+41:async function listOrders(options) {
+42:  return await repository.findAll(options);
+43:}
+44:
+45:async function updateOrder(orderNumber, changes) {
+46:  const updated = await repository.update(orderNumber, changes);
+47:
+48:  if (!updated) {
+49:    throw new AppError(
+50:      'Pedido não encontrado.',
+51:      {
+52:        code: 'ORDER_NOT_FOUND',
+53:        status: 404
+54:      }
+55:    );
+56:  }
+57:
+58:  return updated;
+59:}
+60:
+61:module.exports = {
+62:  createOrder,
+63:  getOrder,
+64:  listOrders,
+65:  updateOrder
+66:};
+67:
+
+[06] POSTGRES ORDER REPOSITORY
+------------------------------------------------------------
+1:'use strict';
+2:
+3:const { query } = require('../../infrastructure/postgres');
+4:
+5:function normalizeOrder(order) {
+6:    return {
+7:        ...order,
+8:        orderNumber:
+9:            order.orderNumber ??
+10:            order.order_number,
+11:
+12:        createdAt:
+13:            order.createdAt ??
+14:            order.created_at,
+15:
+16:        updatedAt:
+17:            order.updatedAt ??
+18:            order.updated_at
+19:    };
+20:}
+21:
+22:async function createOrder(order) {
+23:    const normalized = normalizeOrder(order);
+24:
+25:    const result = await query(
+26:        `
+27:        INSERT INTO orders (
+28:            order_number,
+29:            status,
+30:            customer,
+31:            items,
+32:            shipping,
+33:            payment,
+34:            totals,
+35:            metadata,
+36:            created_at,
+37:            updated_at
+38:        )
+39:        VALUES (
+40:            $1,
+41:            $2,
+42:            $3::jsonb,
+43:            $4::jsonb,
+44:            $5::jsonb,
+45:            $6::jsonb,
+46:            $7::jsonb,
+47:            $8::jsonb,
+48:            COALESCE($9::timestamptz, NOW()),
+49:            COALESCE($10::timestamptz, NOW())
+50:        )
+51:        RETURNING *
+52:        `,
+53:        [
+54:            normalized.orderNumber,
+55:            normalized.status ?? 'awaiting_payment',
+56:            JSON.stringify(normalized.customer ?? {}),
+57:            JSON.stringify(normalized.items ?? []),
+58:            JSON.stringify(normalized.shipping ?? null),
+59:            JSON.stringify(normalized.payment ?? null),
+60:            JSON.stringify(normalized.totals ?? {}),
+61:            JSON.stringify(normalized.metadata ?? {}),
+62:            normalized.createdAt ?? null,
+63:            normalized.updatedAt ?? null
+64:        ]
+65:    );
+66:
+67:    return mapRow(result.rows[0]);
+68:}
+69:
+70:async function findByOrderNumber(orderNumber) {
+71:    const result = await query(
+72:        `
+73:        SELECT *
+74:        FROM orders
+75:        WHERE order_number = $1
+76:        LIMIT 1
+77:        `,
+78:        [orderNumber]
+79:    );
+80:
+81:    return result.rows.length
+82:        ? mapRow(result.rows[0])
+83:        : null;
+84:}
+85:
+86:async function findAll(options = {}) {
+87:    const limit = Math.min(
+88:        Math.max(Number(options.limit) || 100, 1),
+89:        1000
+90:    );
+91:
+92:    const offset = Math.max(
+93:        Number(options.offset) || 0,
+94:        0
+95:    );
+96:
+97:    const result = await query(
+98:        `
+99:        SELECT *
+100:        FROM orders
+
+[07] ORCHESTRATOR CONTROLLER
+------------------------------------------------------------
+1:'use strict';
+2:
+3:const {
+4:  createOrderWithPayment
+5:} = require('./order-orchestrator');
+6:
+7:function createOrderWithPaymentController(req, res, next) {
+8:  try {
+9:    const order = createOrderWithPayment(
+10:      req.body || {},
+11:      req.requestId
+12:    );
+13:
+14:    res.status(201).json({
+15:      success: true,
+16:      data: order,
+17:      requestId: req.requestId
+18:    });
+19:  } catch (error) {
+20:    next(error);
+21:  }
+22:}
+23:
+24:module.exports = {
+25:  createOrderWithPaymentController
+26:};
+
+[08] ROUTAS
+------------------------------------------------------------
+1:'use strict';
+2:
+3:const { requireAdmin } = require('../../core/admin-auth');
+4:
+5:const express = require('express');
+6:const lifecycleController = require('./order-lifecycle-controller');
+7:
+8:const { createCompleteOrderController, getCompleteOrderController } = require('./complete-order-controller');
+9:
+10:const { createOrderWithPaymentController } = require('./order-orchestrator-controller');
+11:
+12:const {
+13:  createOrderController,
+14:  getOrderController,
+15:  listOrdersController
+16:} = require('./order-controller');
+17:
+18:const router = express.Router();
+19:
+20:router.post('/', createOrderController);
+21:
+22:router.post('/complete', createCompleteOrderController);
+23:
+24:router.post('/transaction', createOrderWithPaymentController);
+25:
+26:router.get('/', listOrdersController);
+27:
+28:router.get('/:orderNumber', getOrderController);
+29:
+30:router.get('/:orderNumber/complete', getCompleteOrderController);
+31:
+32:router.get(
+33:  '/lifecycle/states',
+34:  lifecycleController.states
+35:);
+36:
+37:router.patch(
+38:  '/:orderNumber/status',
+39:  requireAdmin, lifecycleController.changeStatus
+40:);
+41:
+42:module.exports = router;
+43:
+44:
+45:
+46:
+
+[09] IDENTIDADE — LINHAS RELEVANTES
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:43: customerName:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:46: customerEmail:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:49: customerPhone:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:362: name:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1168: name:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1171: email:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1174: phone:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1281: customer:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1316: name:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\payment-service.js:53: cardholderName: dadosCartao.nome,
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\payment-service.js:92: customer: {
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\payment-service.js:93: name: dadosCliente.nomeCompleto,
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\payment-service.js:95: email: dadosCliente.email,
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\payment-service.js:96: mobilePhone: dadosCliente.telefone
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\orders\complete-order-builder.js:44: customer: customerShipping.customer,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\orders\complete-order-builder.js:53: customer: customerShipping.customer,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\orders\postgres-order-repository.js:177: customer: row.customer,
+
+============================================================
+ [07.24/11] CONCLUIDO
+ SOMENTE LEITURA — CODIGO
+ NENHUM BANCO ACESSADO
+ NENHUM DADO ALTERADO
+============================================================

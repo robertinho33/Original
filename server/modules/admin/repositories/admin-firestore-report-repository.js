@@ -1,8 +1,13 @@
-﻿"use strict";
+"use strict";
 
 const {
     getFirestore
 } = require("../../../infrastructure/firebase/firebase-admin");
+
+const {
+    isShipmentOpen,
+    isPaymentPending
+} = require("../services/firestore-admin-indicators");
 
 const ORDERS = "orders";
 const TRACKING = "orderTracking";
@@ -27,11 +32,16 @@ async function collection(name) {
 
 function money(value) {
     const number = Number(value || 0);
-    return Number.isFinite(number) ? number : 0;
+
+    return Number.isFinite(number)
+        ? number
+        : 0;
 }
 
 function dateValue(value) {
-    if (!value) return null;
+    if (!value) {
+        return null;
+    }
 
     if (typeof value.toDate === "function") {
         return value.toDate();
@@ -48,8 +58,11 @@ async function getOrders() {
     const orders = await collection(ORDERS);
 
     return orders.sort((a, b) => {
-        const da = dateValue(a.createdAt)?.getTime() || 0;
-        const db = dateValue(b.createdAt)?.getTime() || 0;
+        const da =
+            dateValue(a.createdAt)?.getTime() || 0;
+
+        const db =
+            dateValue(b.createdAt)?.getTime() || 0;
 
         return db - da;
     });
@@ -103,8 +116,7 @@ async function salesReport() {
     const orders = await getOrders();
 
     const totalRevenue = orders.reduce(
-        (sum, order) =>
-            sum + money(order.total),
+        (sum, order) => sum + money(order.total),
         0
     );
 
@@ -169,26 +181,13 @@ async function getCustomerCommercialHistory(id) {
 }
 
 async function getInventoryMovements() {
-    const inventory = await getInventory();
-
-    return inventory;
+    return getInventory();
 }
 
 async function getShippingQueue() {
     const tracking = await collection(TRACKING);
 
-    return tracking.filter(item => {
-        const status = String(
-            item.status ||
-            item.logisticsStatus ||
-            ""
-        ).toLowerCase();
-
-        return ![
-            "delivered",
-            "completed"
-        ].includes(status);
-    });
+    return tracking.filter(isShipmentOpen);
 }
 
 async function getFinancialOverview() {
@@ -196,19 +195,15 @@ async function getFinancialOverview() {
 
     return {
         totalOrders: orders.length,
+
         totalRevenue: orders.reduce(
             (sum, order) =>
                 sum + money(order.total),
             0
         ),
-        pendingPayments: orders.filter(order => {
-            const status =
-                order.payment?.status ||
-                order.paymentStatus ||
-                "pending";
 
-            return String(status).toLowerCase() === "pending";
-        }).length
+        pendingPayments:
+            orders.filter(isPaymentPending).length
     };
 }
 

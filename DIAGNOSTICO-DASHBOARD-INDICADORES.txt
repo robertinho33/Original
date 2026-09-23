@@ -1,0 +1,792 @@
+﻿============================================================
+AUREA — DIAGNOSTICO DOS INDICADORES DO DASHBOARD
+DATA: 2026-09-23 06:47:39
+SOMENTE LEITURA — NENHUMA ALTERACAO EXECUTADA
+============================================================
+
+------------------------------------------------------------
+TERMO: stockLow
+------------------------------------------------------------
+NENHUMA OCORRENCIA ENCONTRADA
+
+------------------------------------------------------------
+TERMO: stock_low
+------------------------------------------------------------
+NENHUMA OCORRENCIA ENCONTRADA
+
+------------------------------------------------------------
+TERMO: lowStock
+------------------------------------------------------------
+ARQUIVO: js\admin\admin.js
+LINHA:   1038
+CODIGO:  const lowStock =
+
+ARQUIVO: js\admin\admin.js
+LINHA:   1080
+CODIGO:  formatNumber(lowStock)
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   214
+CODIGO:  const lowStock = products.filter(product => {
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   225
+CODIGO:  if (lowStock.length > 0) {
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   229
+CODIGO:  count: lowStock.length,
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   231
+CODIGO:  `${lowStock.length} produto(s) com estoque baixo.`
+
+ARQUIVO: server\modules\admin\repositories\admin-product-filter-repository.js
+LINHA:   25
+CODIGO:  if (filters.lowStock === "true") {
+
+
+------------------------------------------------------------
+TERMO: low_stock
+------------------------------------------------------------
+ARQUIVO: js\admin\modules\operational-environment.js
+LINHA:   74
+CODIGO:  low_stock: data.estoqueBaixo,
+
+ARQUIVO: js\admin\modules\operational-environment.js
+LINHA:   107
+CODIGO:  number(overviewData.inventory?.low_stock)
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\005-admin-default-settings.sql
+LINHA:   5
+CODIGO:  ('low_stock_limit', '5'),
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\007-admin-database-consolidation.sql
+LINHA:   337
+CODIGO:  'low_stock_limit',
+
+ARQUIVO: server\infrastructure\database\migrations\005-admin-default-settings.sql
+LINHA:   5
+CODIGO:  ('low_stock_limit', '5'),
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   379
+CODIGO:  ('low_stock_limit', '5'),
+
+ARQUIVO: server\modules\admin\repositories\operations-overview-repository.js
+LINHA:   9
+CODIGO:  COUNT(*) FILTER (WHERE stock BETWEEN 1 AND 5) AS low_stock
+
+ARQUIVO: server\modules\admin\repositories\product-filter-repository.js
+LINHA:   23
+CODIGO:  if (filters.low_stock === "true") {
+
+
+------------------------------------------------------------
+TERMO: outOfStock
+------------------------------------------------------------
+ARQUIVO: js\catalog\sources\brae-source.js
+LINHA:   132
+CODIGO:  if (/OutOfStock/i.test(availability)) {
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   235
+CODIGO:  const outOfStock = products.filter(product => {
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   241
+CODIGO:  if (outOfStock.length > 0) {
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   245
+CODIGO:  count: outOfStock.length,
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   247
+CODIGO:  `${outOfStock.length} produto(s) sem estoque.`
+
+
+------------------------------------------------------------
+TERMO: out_of_stock
+------------------------------------------------------------
+ARQUIVO: js\admin\modules\operational-environment.js
+LINHA:   75
+CODIGO:  out_of_stock: data.semEstoque
+
+ARQUIVO: js\admin\modules\operational-environment.js
+LINHA:   112
+CODIGO:  number(overviewData.inventory?.out_of_stock)
+
+ARQUIVO: server\modules\admin\repositories\admin-operational-dashboard-repository.js
+LINHA:   34
+CODIGO:  COUNT(*) FILTER (WHERE stock <= 0) AS out_of_stock,
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   243
+CODIGO:  type: "out_of_stock",
+
+ARQUIVO: server\modules\admin\repositories\operations-overview-repository.js
+LINHA:   8
+CODIGO:  COUNT(*) FILTER (WHERE stock <= 0) AS out_of_stock,
+
+
+------------------------------------------------------------
+TERMO: pendingShipments
+------------------------------------------------------------
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   87
+CODIGO:  const pendingShipments = tracking.filter(item => {
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   137
+CODIGO:  pendingShipments.length,
+
+
+------------------------------------------------------------
+TERMO: pending_shipments
+------------------------------------------------------------
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   356
+CODIGO:  AS pending_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   356
+CODIGO:  AS pending_shipments,
+
+
+------------------------------------------------------------
+TERMO: openShipments
+------------------------------------------------------------
+NENHUMA OCORRENCIA ENCONTRADA
+
+------------------------------------------------------------
+TERMO: open_shipments
+------------------------------------------------------------
+NENHUMA OCORRENCIA ENCONTRADA
+
+------------------------------------------------------------
+TERMO: shipments
+------------------------------------------------------------
+ARQUIVO: js\admin\admin-logistics.js
+LINHA:   19
+CODIGO:  const shipments = Array.isArray(data)
+
+ARQUIVO: js\admin\admin-logistics.js
+LINHA:   21
+CODIGO:  : Array.isArray(data.shipments)
+
+ARQUIVO: js\admin\admin-logistics.js
+LINHA:   22
+CODIGO:  ? data.shipments
+
+ARQUIVO: js\admin\admin-logistics.js
+LINHA:   29
+CODIGO:  return shipments;
+
+ARQUIVO: js\admin\admin-logistics.js
+LINHA:   32
+CODIGO:  container.innerHTML = shipments.length
+
+ARQUIVO: js\admin\admin-logistics.js
+LINHA:   33
+CODIGO:  ? shipments.map(item => `
+
+ARQUIVO: js\admin\admin-logistics.js
+LINHA:   56
+CODIGO:  return shipments;
+
+ARQUIVO: js\admin\admin.js
+LINHA:   1522
+CODIGO:  function renderLogistics(content, shipments) {
+
+ARQUIVO: js\admin\admin.js
+LINHA:   1525
+CODIGO:  Array.isArray(shipments)
+
+ARQUIVO: js\admin\admin.js
+LINHA:   1526
+CODIGO:  ? shipments
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   165
+CODIGO:  CREATE TABLE IF NOT EXISTS shipments (
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   257
+CODIGO:  CREATE INDEX IF NOT EXISTS idx_shipments_status
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   258
+CODIGO:  ON shipments(status);
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   352
+CODIGO:  COUNT(*) AS total_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   356
+CODIGO:  AS pending_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   360
+CODIGO:  AS preparing_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   364
+CODIGO:  AS shipped_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   368
+CODIGO:  AS delivered_shipments
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   370
+CODIGO:  FROM shipments;
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   505
+CODIGO:  DROP TRIGGER IF EXISTS trg_shipments_updated
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   506
+CODIGO:  ON shipments;
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   508
+CODIGO:  CREATE TRIGGER trg_shipments_updated
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql
+LINHA:   509
+CODIGO:  BEFORE UPDATE ON shipments
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\007-admin-database-consolidation.sql
+LINHA:   70
+CODIGO:  CREATE TABLE IF NOT EXISTS shipments (
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\007-admin-database-consolidation.sql
+LINHA:   218
+CODIGO:  ALTER TABLE shipments
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   165
+CODIGO:  CREATE TABLE IF NOT EXISTS shipments (
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   257
+CODIGO:  CREATE INDEX IF NOT EXISTS idx_shipments_status
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   258
+CODIGO:  ON shipments(status);
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   352
+CODIGO:  COUNT(*) AS total_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   356
+CODIGO:  AS pending_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   360
+CODIGO:  AS preparing_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   364
+CODIGO:  AS shipped_shipments,
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   368
+CODIGO:  AS delivered_shipments
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   370
+CODIGO:  FROM shipments;
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   505
+CODIGO:  DROP TRIGGER IF EXISTS trg_shipments_updated
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   506
+CODIGO:  ON shipments;
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   508
+CODIGO:  CREATE TRIGGER trg_shipments_updated
+
+ARQUIVO: server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql
+LINHA:   509
+CODIGO:  BEFORE UPDATE ON shipments
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   196
+CODIGO:  CREATE TABLE IF NOT EXISTS shipments (
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   209
+CODIGO:  ALTER TABLE shipments
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   212
+CODIGO:  ALTER TABLE shipments
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   215
+CODIGO:  ALTER TABLE shipments
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   218
+CODIGO:  ALTER TABLE shipments
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   221
+CODIGO:  ALTER TABLE shipments
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   409
+CODIGO:  CREATE INDEX IF NOT EXISTS idx_shipments_order
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-database-consolidation.sql
+LINHA:   410
+CODIGO:  ON shipments(order_id);
+
+ARQUIVO: server\modules\admin\repositories\admin-dashboard-repository.js
+LINHA:   15
+CODIGO:  (SELECT COUNT(*) FROM shipments
+
+ARQUIVO: server\modules\admin\repositories\admin-dashboard-repository.js
+LINHA:   16
+CODIGO:  WHERE status IN ('pending','processing','ready')) AS shipments_pending,
+
+ARQUIVO: server\modules\admin\repositories\admin-operational-dashboard-repository.js
+LINHA:   52
+CODIGO:  FROM shipments
+
+ARQUIVO: server\modules\admin\repositories\admin-order-repository.js
+LINHA:   65
+CODIGO:  FROM shipments
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   87
+CODIGO:  const pendingShipments = tracking.filter(item => {
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   137
+CODIGO:  pendingShipments.length,
+
+ARQUIVO: server\modules\admin\repositories\admin-schema.js
+LINHA:   152
+CODIGO:  shipments: {
+
+ARQUIVO: server\modules\admin\repositories\admin-schema.js
+LINHA:   153
+CODIGO:  table: hasTable(schema, "shipments"),
+
+ARQUIVO: server\modules\admin\repositories\admin-schema.js
+LINHA:   154
+CODIGO:  id: firstExisting(schema, "shipments", [
+
+ARQUIVO: server\modules\admin\repositories\admin-schema.js
+LINHA:   158
+CODIGO:  status: firstExisting(schema, "shipments", [
+
+ARQUIVO: server\modules\admin\repositories\admin-shipment-repository.js
+LINHA:   10
+CODIGO:  FROM shipments s
+
+ARQUIVO: server\modules\admin\repositories\admin-shipment-repository.js
+LINHA:   20
+CODIGO:  async function listShipments() {
+
+ARQUIVO: server\modules\admin\repositories\admin-shipment-repository.js
+LINHA:   26
+CODIGO:  FROM shipments s
+
+ARQUIVO: server\modules\admin\repositories\admin-shipment-repository.js
+LINHA:   37
+CODIGO:  listShipments
+
+ARQUIVO: server\modules\admin\repositories\admin-write-repository.js
+LINHA:   130
+CODIGO:  UPDATE shipments
+
+ARQUIVO: server\modules\admin\repositories\db-summary-repository.js
+LINHA:   12
+CODIGO:  (SELECT COUNT(*) FROM shipments) AS shipments,
+
+ARQUIVO: server\modules\admin\repositories\logistics-details-repository.js
+LINHA:   4
+CODIGO:  const shipments = await query(
+
+ARQUIVO: server\modules\admin\repositories\logistics-details-repository.js
+LINHA:   10
+CODIGO:  FROM shipments s
+
+ARQUIVO: server\modules\admin\repositories\logistics-details-repository.js
+LINHA:   20
+CODIGO:  FROM shipments
+
+ARQUIVO: server\modules\admin\repositories\logistics-details-repository.js
+LINHA:   26
+CODIGO:  shipments: shipments.rows,
+
+ARQUIVO: server\modules\admin\repositories\operations-overview-repository.js
+LINHA:   37
+CODIGO:  FROM shipments s
+
+ARQUIVO: server\modules\admin\repositories\order-details-repository.js
+LINHA:   44
+CODIGO:  FROM shipments
+
+ARQUIVO: server\modules\admin\repositories\shipping-queue-repository.js
+LINHA:   12
+CODIGO:  FROM shipments s
+
+ARQUIVO: server\modules\admin\repositories\tracking-repository.js
+LINHA:   9
+CODIGO:  FROM shipments s
+
+
+------------------------------------------------------------
+TERMO: dashboard
+------------------------------------------------------------
+ARQUIVO: js\admin\admin-api.js
+LINHA:   102
+CODIGO:  dashboard:
+
+ARQUIVO: js\admin\admin-api.js
+LINHA:   103
+CODIGO:  () => request("/dashboard"),
+
+ARQUIVO: js\admin\admin-login-antigo.js
+LINHA:   41
+CODIGO:  "https://aurea-pix-api.onrender.com/api/admin/dashboard",
+
+ARQUIVO: js\admin\admin.js
+LINHA:   18
+CODIGO:  "dashboard",
+
+ARQUIVO: js\admin\admin.js
+LINHA:   34
+CODIGO:  section: "dashboard",
+
+ARQUIVO: js\admin\admin.js
+LINHA:   422
+CODIGO:  section = "dashboard";
+
+ARQUIVO: js\admin\admin.js
+LINHA:   431
+CODIGO:  if (section === "dashboard") {
+
+ARQUIVO: js\admin\admin.js
+LINHA:   436
+CODIGO:  "Dashboard",
+
+ARQUIVO: js\admin\admin.js
+LINHA:   2724
+CODIGO:  load("dashboard");
+
+ARQUIVO: js\admin\gemini-code-1789986645525.js
+LINHA:   53
+CODIGO:  dashboard: () =>
+
+ARQUIVO: js\admin\gemini-code-1789986645525.js
+LINHA:   54
+CODIGO:  request("/dashboard"),
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\003-admin-roles.sql
+LINHA:   22
+CODIGO:  "dashboard": true,
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\003-admin-roles.sql
+LINHA:   40
+CODIGO:  "dashboard": true,
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\007-admin-security-and-context.sql
+LINHA:   87
+CODIGO:  ('dashboard','view','Visualizar dashboard'),
+
+ARQUIVO: server\infrastructure\database\migrations\_backup-before-consolidation\007-admin-security-and-context.sql
+LINHA:   158
+CODIGO:  'dashboard',
+
+ARQUIVO: server\infrastructure\database\migrations\003-admin-roles.sql
+LINHA:   22
+CODIGO:  "dashboard": true,
+
+ARQUIVO: server\infrastructure\database\migrations\003-admin-roles.sql
+LINHA:   40
+CODIGO:  "dashboard": true,
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-security-and-context.sql
+LINHA:   87
+CODIGO:  ('dashboard','view','Visualizar dashboard'),
+
+ARQUIVO: server\infrastructure\database\migrations\007-admin-security-and-context.sql
+LINHA:   158
+CODIGO:  'dashboard',
+
+ARQUIVO: server\modules\admin\controllers\admin-controller.js
+LINHA:   3
+CODIGO:  async function dashboard(req, res, next) {
+
+ARQUIVO: server\modules\admin\controllers\admin-controller.js
+LINHA:   7
+CODIGO:  data: await adminService.getDashboard()
+
+ARQUIVO: server\modules\admin\controllers\admin-controller.js
+LINHA:   136
+CODIGO:  dashboard,
+
+ARQUIVO: server\modules\admin\controllers\admin-operational-dashboard-controller.js
+LINHA:   1
+CODIGO:  const service = require("../services/admin-operational-dashboard-service");
+
+ARQUIVO: server\modules\admin\controllers\admin-operational-dashboard-controller.js
+LINHA:   3
+CODIGO:  async function dashboard(req, res) {
+
+ARQUIVO: server\modules\admin\controllers\admin-operational-dashboard-controller.js
+LINHA:   5
+CODIGO:  const data = await service.getOperationalDashboard();
+
+ARQUIVO: server\modules\admin\controllers\admin-operational-dashboard-controller.js
+LINHA:   20
+CODIGO:  dashboard
+
+ARQUIVO: server\modules\admin\controllers\operational-dashboard-controller.js
+LINHA:   1
+CODIGO:  const service = require("../services/operational-dashboard-service");
+
+ARQUIVO: server\modules\admin\controllers\operational-dashboard-controller.js
+LINHA:   3
+CODIGO:  async function getOperationalDashboard(req, res) {
+
+ARQUIVO: server\modules\admin\controllers\operational-dashboard-controller.js
+LINHA:   5
+CODIGO:  const data = await service.getOperationalDashboard();
+
+ARQUIVO: server\modules\admin\controllers\operational-dashboard-controller.js
+LINHA:   22
+CODIGO:  getOperationalDashboard
+
+ARQUIVO: server\modules\admin\repositories\admin-consolidated-report-repository.js
+LINHA:   3
+CODIGO:  async function getDashboardReport() {
+
+ARQUIVO: server\modules\admin\repositories\admin-consolidated-report-repository.js
+LINHA:   60
+CODIGO:  getDashboardReport
+
+ARQUIVO: server\modules\admin\repositories\admin-operational-dashboard-repository.js
+LINHA:   3
+CODIGO:  async function getOperationalDashboard() {
+
+ARQUIVO: server\modules\admin\repositories\admin-operational-dashboard-repository.js
+LINHA:   76
+CODIGO:  getOperationalDashboard
+
+ARQUIVO: server\modules\admin\services\admin-operation-permissions.js
+LINHA:   3
+CODIGO:  dashboard: ["read"],
+
+ARQUIVO: server\modules\admin\services\admin-operation-permissions.js
+LINHA:   18
+CODIGO:  dashboard: ["read"],
+
+ARQUIVO: server\modules\admin\services\admin-operational-dashboard-service.js
+LINHA:   1
+CODIGO:  const repository = require("../repositories/admin-operational-dashboard-repository");
+
+ARQUIVO: server\modules\admin\services\admin-operational-dashboard-service.js
+LINHA:   3
+CODIGO:  async function getOperationalDashboard() {
+
+ARQUIVO: server\modules\admin\services\admin-operational-dashboard-service.js
+LINHA:   4
+CODIGO:  return repository.getOperationalDashboard();
+
+ARQUIVO: server\modules\admin\services\admin-operational-dashboard-service.js
+LINHA:   8
+CODIGO:  getOperationalDashboard
+
+ARQUIVO: server\modules\admin\services\admin-permission-service.js
+LINHA:   2
+CODIGO:  "dashboard",
+
+ARQUIVO: server\modules\admin\services\admin-service.js
+LINHA:   140
+CODIGO:  async function getDashboard() {
+
+ARQUIVO: server\modules\admin\services\admin-service.js
+LINHA:   209
+CODIGO:  getDashboard,
+
+ARQUIVO: server\modules\admin\services\operational-dashboard-service.js
+LINHA:   1
+CODIGO:  const repository = require("../repositories/admin-dashboard-repository");
+
+ARQUIVO: server\modules\admin\services\operational-dashboard-service.js
+LINHA:   3
+CODIGO:  async function getOperationalDashboard() {
+
+ARQUIVO: server\modules\admin\services\operational-dashboard-service.js
+LINHA:   15
+CODIGO:  module.exports = { getOperationalDashboard };
+
+ARQUIVO: server\modules\admin\admin-routes.js
+LINHA:   28
+CODIGO:  router.get("/dashboard", adminController.dashboard);
+
+ARQUIVO: server\modules\admin\admin-routes.js
+LINHA:   42
+CODIGO:  DASHBOARD OPERACIONAL
+
+
+------------------------------------------------------------
+TERMO: admin/dashboard
+------------------------------------------------------------
+ARQUIVO: js\admin\admin-login-antigo.js
+LINHA:   41
+CODIGO:  "https://aurea-pix-api.onrender.com/api/admin/dashboard",
+
+
+------------------------------------------------------------
+TERMO: estoque baixo
+------------------------------------------------------------
+ARQUIVO: js\admin\modules\operational-environment.js
+LINHA:   106
+CODIGO:  "Estoque baixo",
+
+ARQUIVO: js\admin\admin-inventory.js
+LINHA:   22
+CODIGO:  BAIXO: 'Estoque baixo',
+
+ARQUIVO: js\admin\admin.js
+LINHA:   217
+CODIGO:  Estoque baixo
+
+ARQUIVO: js\admin\admin.js
+LINHA:   1079
+CODIGO:  "Estoque baixo",
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   231
+CODIGO:  `${lowStock.length} produto(s) com estoque baixo.`
+
+
+------------------------------------------------------------
+TERMO: sem estoque
+------------------------------------------------------------
+ARQUIVO: js\admin\modules\operational-environment.js
+LINHA:   111
+CODIGO:  "Sem estoque",
+
+ARQUIVO: js\admin\admin-inventory.js
+LINHA:   23
+CODIGO:  ZERADO: 'Sem estoque'
+
+ARQUIVO: js\admin\admin.js
+LINHA:   209
+CODIGO:  Sem estoque
+
+ARQUIVO: js\admin\admin.js
+LINHA:   831
+CODIGO:  "Sem estoque",
+
+ARQUIVO: js\admin\admin.js
+LINHA:   1084
+CODIGO:  "Sem estoque",
+
+ARQUIVO: server\modules\admin\repositories\admin-overview-repository.js
+LINHA:   247
+CODIGO:  `${outOfStock.length} produto(s) sem estoque.`
+
+
+------------------------------------------------------------
+TERMO: envios pendentes
+------------------------------------------------------------
+ARQUIVO: js\admin\modules\operational-environment.js
+LINHA:   121
+CODIGO:  "Envios pendentes",
+
+
+------------------------------------------------------------
+TERMO: envios em aberto
+------------------------------------------------------------
+NENHUMA OCORRENCIA ENCONTRADA
+
+============================================================
+ARQUIVOS BACKEND RELACIONADOS
+============================================================
+server\infrastructure\database\inventory-reservations.sql
+server\infrastructure\database\migrate-orders.js
+server\infrastructure\database\migrations\_backup-before-consolidation\004-order-status-history.sql
+server\infrastructure\database\migrations\004-order-status-history.sql
+server\modules\admin\controllers\admin-inventory-controller.js
+server\modules\admin\controllers\admin-inventory-history-controller.js
+server\modules\admin\controllers\admin-operational-dashboard-controller.js
+server\modules\admin\controllers\admin-order-controller.js
+server\modules\admin\controllers\admin-order-details-controller.js
+server\modules\admin\controllers\admin-order-filter-controller.js
+server\modules\admin\controllers\inventory-history-controller.js
+server\modules\admin\controllers\operational-dashboard-controller.js
+server\modules\admin\controllers\order-details-controller.js
+server\modules\admin\repositories\admin-dashboard-repository.js
+server\modules\admin\repositories\admin-inventory-history-repository.js
+server\modules\admin\repositories\admin-inventory-repository.js
+server\modules\admin\repositories\admin-operational-dashboard-repository.js
+server\modules\admin\repositories\admin-order-filter-repository.js
+server\modules\admin\repositories\admin-order-repository.js
+server\modules\admin\repositories\admin-shipment-repository.js
+server\modules\admin\repositories\inventory-adjustment-repository.js
+server\modules\admin\repositories\inventory-history-repository.js
+server\modules\admin\repositories\order-details-repository.js
+server\modules\admin\repositories\order-filter-repository.js
+server\modules\admin\repositories\shipping-queue-repository.js
+server\modules\admin\repositories\stock-alert-repository.js
+server\modules\admin\repositories\stock-repository.js
+server\modules\admin\services\admin-inventory-history-service.js
+server\modules\admin\services\admin-inventory-service.js
+server\modules\admin\services\admin-operational-dashboard-service.js
+server\modules\admin\services\admin-order-filter-service.js
+server\modules\admin\services\admin-order-service.js
+server\modules\admin\services\inventory-history-service.js
+server\modules\admin\services\operational-dashboard-service.js
+server\modules\admin\services\order-details-service.js
+server\modules\admin\services\order-transition-service.js
+server\modules\inventory\inventory-controller.js
+server\modules\inventory\inventory-domain.js
+server\modules\inventory\inventory-repository.js
+server\modules\inventory\inventory-repository-postgres.js
+server\modules\inventory\inventory-routes.js
+server\modules\inventory\inventory-service.js
+server\modules\orders\complete-order-builder.js
+server\modules\orders\complete-order-controller.js
+server\modules\orders\complete-order-service.js
+server\modules\orders\order-authority.js
+server\modules\orders\order-builder.js
+server\modules\orders\order-controller.js
+server\modules\orders\order-factory.js
+server\modules\orders\order-integrity.js
+server\modules\orders\order-lifecycle.js
+server\modules\orders\order-lifecycle-controller.js
+server\modules\orders\order-lifecycle-service.js
+server\modules\orders\order-orchestrator.js
+server\modules\orders\order-orchestrator-controller.js
+server\modules\orders\order-persistence.js
+server\modules\orders\order-repository.js
+server\modules\orders\order-routes.js
+server\modules\orders\order-service.js
+server\modules\orders\order-state.js
+server\modules\orders\order-timeline.js
+server\modules\orders\order-validator.js
+server\modules\orders\postgres-order-repository.js
+server\modules\shipping\customer-shipping.js
+server\modules\shipping\shipping-domain.js
+server\modules\shipping\shipping-service.js
+
+============================================================
+RELATORIO GERADO
+============================================================

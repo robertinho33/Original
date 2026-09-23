@@ -1,0 +1,251 @@
+﻿============================================================
+AUREA — ETAPA 05
+AUDITORIA DO OPERATIONAL ENVIRONMENT
+============================================================
+
+ARQUIVO ANALISADO:
+js\admin\modules\operational-environment.js
+
+============================================================
+
+[1] ARQUIVO COMPLETO
+============================================================
+const adminApi = window.AdminAPI;
+
+import {
+    money,
+    number,
+    date,
+    escapeHtml,
+    metric
+} from "./admin-formatters.js";
+
+export async function renderOperationalEnvironment(root) {
+    root.innerHTML = `
+        <section class="module-panel">
+            <div class="module-panel-header">
+                <div>
+                    <span class="module-eyebrow">AURÃ‰A COSMETICS</span>
+                    <h2>Ambiente operacional</h2>
+                    <p>VisÃ£o consolidada da operaÃ§Ã£o.</p>
+                </div>
+                <button class="admin-primary-button"
+                        data-refresh-admin>
+                    Atualizar
+                </button>
+            </div>
+
+            <div id="admin-operational-content"
+                 class="admin-operational-content">
+                <div class="admin-loading">
+                    Carregando operaÃ§Ã£o...
+                </div>
+            </div>
+        </section>
+    `;
+
+    const content = root.querySelector(
+        "#admin-operational-content"
+    );
+
+    try {
+        const [overview, timeline, alerts] =
+            await Promise.all([
+                adminApi.overview(),
+                adminApi.timeline(30),
+                adminApi.alerts()
+            ]);
+
+        const data = overview.data || {};
+        const rows = timeline.data || [];
+        const notifications = alerts.data || [];
+
+        content.innerHTML = `
+            <div class="admin-metrics-grid">
+                ${metric(
+                    "Faturamento hoje",
+                    money(data.revenue)
+                )}
+
+                ${metric(
+                    "Pedidos hoje",
+                    number(data.ordersToday)
+                )}
+
+                ${metric(
+                    "Clientes",
+                    number(data.customers)
+                )}
+
+                ${metric(
+                    "Produtos",
+                    number(data.products)
+                )}
+
+                ${metric(
+                    "Estoque baixo",
+                    number(data.inventory?.low_stock)
+                )}
+
+                ${metric(
+                    "Sem estoque",
+                    number(data.inventory?.out_of_stock)
+                )}
+
+                ${metric(
+                    "Pagamentos pendentes",
+                    number(data.payments?.pending)
+                )}
+
+                ${metric(
+                    "Envios pendentes",
+                    number(data.shipping)
+                )}
+            </div>
+
+            <div class="admin-operation-grid">
+
+                <div class="module-panel">
+                    <div class="module-panel-header">
+                        <h3>Vendas recentes</h3>
+                    </div>
+
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Pedidos</th>
+                                    <th>Faturamento</th>
+                                    <th>Ticket</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                ${
+                                    rows.length
+                                    ? rows.map(row => `
+                                        <tr>
+                                            <td>${date(row.day)}</td>
+                                            <td>${number(row.orders)}</td>
+                                            <td>${money(row.revenue)}</td>
+                                            <td>${money(row.revenue / Math.max(Number(row.orders), 1))}</td>
+                                        </tr>
+                                    `).join("")
+                                    : `
+                                        <tr>
+                                            <td colspan="4"
+                                                class="admin-empty-cell">
+                                                Nenhum dado disponÃ­vel.
+                                            </td>
+                                        </tr>
+                                    `
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="module-panel">
+                    <div class="module-panel-header">
+                        <h3>Alertas operacionais</h3>
+                    </div>
+
+                    <div class="admin-notifications">
+                        ${
+                            notifications.length
+                            ? notifications.map(item => `
+                                <article class="admin-notification">
+                                    <strong>
+                                        ${escapeHtml(item.title)}
+                                    </strong>
+                                    <span>
+                                        ${escapeHtml(item.message)}
+                                    </span>
+                                </article>
+                            `).join("")
+                            : `
+                                <div class="admin-empty-state">
+                                    OperaÃ§Ã£o sem alertas.
+                                </div>
+                            `
+                        }
+                    </div>
+                </div>
+
+            </div>
+        `;
+
+    } catch (error) {
+        content.innerHTML = `
+            <div class="admin-error">
+                ${escapeHtml(error.message)}
+            </div>
+        `;
+    }
+}
+
+============================================================
+[2] REFERENCIAS A API / OVERVIEW / DASHBOARD
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:1: const adminApi = window.AdminAPI;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:21:                         data-refresh-admin>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:40:         const [overview, timeline, alerts] =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:42:                 adminApi.overview(),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:43:                 adminApi.timeline(30),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:44:                 adminApi.alerts()
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:47:         const data = overview.data || {};
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:48:         const rows = timeline.data || [];
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:49:         const notifications = alerts.data || [];
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:55:                     money(data.revenue)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:60:                     number(data.ordersToday)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:65:                     number(data.customers)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:70:                     number(data.products)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:75:                     number(data.inventory?.low_stock)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:80:                     number(data.inventory?.out_of_stock)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:85:                     number(data.payments?.pending)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:90:                     number(data.shipping)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:105:                                     <th>Data</th>
+
+============================================================
+[3] REFERENCIAS A TODAS AS METRICAS
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:54:                     "Faturamento hoje",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:59:                     "Pedidos hoje",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:64:                     "Clientes",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:69:                     "Produtos",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:74:                     "Estoque baixo",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:79:                     "Sem estoque",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:84:                     "Pagamentos pendentes",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:89:                     "Envios pendentes",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:98:                         <h3>Vendas recentes</h3>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:106:                                     <th>Pedidos</th>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:107:                                     <th>Faturamento</th>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:139:                         <h3>Alertas operacionais</h3>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:157:                                     Operação sem alertas.
+
+============================================================
+[4] OPERACOES QUE PODEM FORCAR VALOR 0
+============================================================
+
+============================================================
+FIM — SOMENTE LEITURA
+NENHUM ARQUIVO DO PROJETO FOI ALTERADO.
+============================================================
+============================================================
+[4] OPERACOES QUE PODEM FORCAR VALOR 0
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:60:                     number(data.ordersToday)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:65:                     number(data.customers)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:70:                     number(data.products)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:75:                     number(data.inventory?.low_stock)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:80:                     number(data.inventory?.out_of_stock)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:85:                     number(data.payments?.pending)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:90:                     number(data.shipping)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:118:                                             <td>${number(row.orders)}</td>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js:120:                                             <td>${money(row.revenue / Math.max(Number(row.orders), 1))}</td>
+
+============================================================
+FIM — SOMENTE LEITURA
+NENHUM ARQUIVO DO PROJETO FOI ALTERADO.
+============================================================

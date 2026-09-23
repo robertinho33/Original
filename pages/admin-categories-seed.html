@@ -1,0 +1,285 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AURÉA • Carga de categorias</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-layout.css">
+    <link rel="stylesheet" href="../css/admin-polish.css">
+</head>
+
+<body>
+
+<main class="admin-page">
+
+    <header class="admin-page-header">
+        <div>
+            <div class="admin-eyebrow">AURÉA • ADMIN</div>
+            <h1>Carga de categorias</h1>
+            <p>Inicialização da estrutura comercial</p>
+        </div>
+
+        <a href="./admin-categories.html" class="admin-button">
+            ← Voltar às categorias
+        </a>
+    </header>
+
+    <section class="admin-card">
+
+        <h2>Categorias oficiais</h2>
+
+        <p>
+            Serão criadas somente as categorias que ainda não existem.
+        </p>
+
+        <ul>
+            <li>Ecobelle</li>
+            <li>Bela Pro</li>
+            <li>Shine Express</li>
+            <li>Industria pra favela</li>
+            <li>EcoBelle Skin</li>
+            <li>Sem categoria</li>
+        </ul>
+
+        <button
+            id="createCategories"
+            type="button"
+            class="admin-button">
+            Criar categorias
+        </button>
+
+        <div id="seedResult" style="margin-top:20px;">
+            Carregando Firebase...
+        </div>
+
+    </section>
+
+</main>
+
+<script type="module">
+
+const result = document.getElementById("seedResult");
+const button = document.getElementById("createCategories");
+
+function status(message) {
+    result.textContent = message;
+    console.log("[AUREA CATEGORIES]", message);
+}
+
+async function loadFirebase() {
+
+    status("Carregando Firebase...");
+
+    const firestore = await import(
+        "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+    );
+
+    const authModule = await import(
+        "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+    );
+
+    const config = await import("../js/firebase-config.js");
+
+    return {
+        firestore,
+        authModule,
+        db: config.db,
+        auth: config.auth
+    };
+}
+
+async function waitForAdmin(authModule, auth) {
+
+    status("Verificando administrador...");
+
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+
+        if (currentUser.email === "robertinho33@gmail.com") {
+            return currentUser;
+        }
+
+        throw new Error(
+            "Usuário autenticado não possui autorização administrativa."
+        );
+    }
+
+    return new Promise((resolve, reject) => {
+
+        const unsubscribe = authModule.onAuthStateChanged(
+            auth,
+            user => {
+
+                unsubscribe();
+
+                if (!user) {
+                    reject(
+                        new Error(
+                            "Nenhum administrador autenticado."
+                        )
+                    );
+                    return;
+                }
+
+                if (user.email !== "robertinho33@gmail.com") {
+                    reject(
+                        new Error(
+                            "Usuário autenticado não possui autorização administrativa."
+                        )
+                    );
+                    return;
+                }
+
+                resolve(user);
+            },
+            error => {
+                unsubscribe();
+                reject(error);
+            }
+        );
+
+    });
+}
+
+async function createCategories() {
+
+    button.disabled = true;
+
+    try {
+
+        const {
+            firestore,
+            authModule,
+            db,
+            auth
+        } = await loadFirebase();
+
+        await waitForAdmin(authModule, auth);
+
+        status("Administrador autorizado. Consultando categorias...");
+
+        const categoriesRef = firestore.collection(
+            db,
+            "categories"
+        );
+
+        const snapshot = await firestore.getDocs(
+            categoriesRef
+        );
+
+        const existingSlugs = new Set(
+            snapshot.docs.map(item => item.data().slug)
+        );
+
+        const official = [
+            {
+                name: "Ecobelle",
+                slug: "ecobelle",
+                description: "Produtos Ecobelle",
+                sortOrder: 1
+            },
+            {
+                name: "Bela Pro",
+                slug: "bela-pro",
+                description: "Produtos Bela Pro",
+                sortOrder: 2
+            },
+            {
+                name: "Shine Express",
+                slug: "shine-express",
+                description: "Produtos Shine Express",
+                sortOrder: 3
+            },
+            {
+                name: "Industria pra favela",
+                slug: "industria-pra-favela",
+                description: "Produtos Industria pra favela",
+                sortOrder: 4
+            },
+            {
+                name: "EcoBelle Skin",
+                slug: "ecobelle-skin",
+                description: "Produtos EcoBelle Skin",
+                sortOrder: 5
+            },
+            {
+                name: "Sem categoria",
+                slug: "sem-categoria",
+                description: "Produtos sem categoria definida",
+                sortOrder: 6
+            }
+        ];
+
+        const missing = official.filter(
+            category => !existingSlugs.has(category.slug)
+        );
+
+        if (missing.length === 0) {
+
+            status(
+                `Nenhuma categoria nova necessária. Total atual: ${snapshot.size}.`
+            );
+
+            return;
+        }
+
+        status(
+            `Criando ${missing.length} categoria(s)...`
+        );
+
+        const batch = firestore.writeBatch(db);
+
+        for (const category of missing) {
+
+            const reference = firestore.doc(
+                categoriesRef
+            );
+
+            batch.set(reference, {
+                ...category,
+                active: true,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+        }
+
+        await batch.commit();
+
+        const finalSnapshot = await firestore.getDocs(
+            categoriesRef
+        );
+
+        status(
+            `SUCESSO — ${missing.length} categoria(s) criada(s). Total: ${finalSnapshot.size}.`
+        );
+
+    } catch (error) {
+
+        console.error("[AUREA CATEGORIES]", error);
+
+        status(
+            `ERRO: ${error.message}`
+        );
+
+    } finally {
+
+        button.disabled = false;
+
+    }
+}
+
+button.addEventListener(
+    "click",
+    createCategories
+);
+
+status("Pronto para criar as categorias.");
+
+</script>
+
+</body>
+</html>

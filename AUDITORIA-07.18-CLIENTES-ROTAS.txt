@@ -1,0 +1,209 @@
+﻿============================================================
+[07.18/11] CADEIA REAL DOS ENDPOINTS DE CLIENTES
+SOMENTE LEITURA — NENHUMA QUERY EXECUTADA
+============================================================
+
+[01] ADMIN-ROUTES.JS — ROTAS E HANDLERS
+------------------------------------------------------------
+8: const adminController =
+9:     require("./controllers/admin-controller");
+11: const overviewController =
+12:     require("./controllers/admin-overview-controller");
+14: const globalSearchController =
+15:     require("./controllers/admin-global-search-controller");
+17: const firestoreRepository =
+18:     require("./repositories/admin-firestore-report-repository");
+28: router.get("/dashboard", adminController.dashboard);
+29: router.get("/orders", adminController.orders);
+30: router.get("/products", adminController.products);
+31: router.get("/categories", adminController.categories);
+32: router.get("/inventory", adminController.inventory);
+33: router.get("/customers", adminController.customers);
+34: router.get("/finance", adminController.finance);
+35: router.get("/coupons", adminController.coupons);
+36: router.get("/logistics", adminController.logistics);
+37: router.get("/reports", adminController.reports);
+38: router.get("/audit", adminController.audit);
+39: router.get("/settings", adminController.settings);
+47:     overviewController.overview
+52:     overviewController.timeline
+57:     overviewController.alerts
+61:    RELATÓRIOS — FIRESTORE
+65:     "/reports/sales",
+70:                 data: await firestoreRepository.salesReport()
+87:     "/reports/products",
+92:                 data: await firestoreRepository.productReport()
+109:     "/reports/customers",
+114:                 data: await firestoreRepository.customerReport()
+118:                 "[ADMIN REPORT CUSTOMERS]",
+140:                 data: await firestoreRepository.getOrderHistory(
+159:     "/customers/:id/history",
+165:                     await firestoreRepository
+195:                     await firestoreRepository
+223:                     await firestoreRepository
+251:                     await firestoreRepository
+274:     globalSearchController.search
+
+[02] ADMIN-CUSTOMER-CONTROLLER.JS
+------------------------------------------------------------
+1: const service = require("../services/admin-customer-service");
+2: 
+3: async function details(req, res) {
+4:     try {
+5:         const data = await service.getCustomerDetails(req.params.id);
+6: 
+7:         if (!data) {
+8:             return res.status(404).json({
+9:                 success: false,
+10:                 error: "Cliente não encontrado."
+11:             });
+12:         }
+13: 
+14:         return res.json({
+15:             success: true,
+16:             data
+17:         });
+18:     } catch (error) {
+19:         return res.status(400).json({
+20:             success: false,
+21:             error: error.message
+22:         });
+23:     }
+24: }
+25: 
+26: module.exports = {
+27:     details
+28: };
+
+[03] ADMIN-CUSTOMER-SERVICE.JS
+------------------------------------------------------------
+1: const repository = require("../repositories/admin-customer-repository");
+2: 
+3: async function getCustomerDetails(id) {
+4:     return repository.getCustomerDetails(id);
+5: }
+6: 
+7: module.exports = {
+8:     getCustomerDetails
+9: };
+
+[04] ADMIN-CUSTOMER-REPOSITORY.JS — SOMENTE SQL
+------------------------------------------------------------
+5: SELECT *
+6: FROM customers
+7: WHERE id = $1
+15: const orders = await query(`
+16: SELECT
+21: FROM orders
+22: WHERE customer_id = $1
+27: SELECT *
+28: FROM customer_addresses
+29: WHERE customer_id = $1
+35: orders: orders.rows,
+
+[05] REPORT CONTROLLER + SERVICE
+------------------------------------------------------------
+FILE: server\modules\admin\controllers\admin-report-controller.js
+1: const reportService = require("../services/admin-report-service");
+2: 
+3: async function sales(req, res) {
+4:     try {
+5:         const data = await reportService.getSalesReport();
+6: 
+7:         res.json({
+8:             success: true,
+9:             data
+10:         });
+11:     } catch (error) {
+12:         res.status(500).json({
+13:             success: false,
+14:             error: error.message
+15:         });
+16:     }
+17: }
+18: 
+19: async function products(req, res) {
+20:     try {
+21:         const data = await reportService.getProductReport();
+22: 
+23:         res.json({
+24:             success: true,
+25:             data
+26:         });
+27:     } catch (error) {
+28:         res.status(500).json({
+29:             success: false,
+30:             error: error.message
+31:         });
+32:     }
+33: }
+34: 
+35: async function customers(req, res) {
+36:     try {
+37:         const data = await reportService.getCustomerReport();
+38: 
+39:         res.json({
+40:             success: true,
+41:             data
+42:         });
+43:     } catch (error) {
+44:         res.status(500).json({
+45:             success: false,
+46:             error: error.message
+47:         });
+48:     }
+49: }
+50: 
+51: module.exports = {
+52:     sales,
+53:     products,
+54:     customers
+55: };
+
+FILE: server\modules\admin\services\admin-report-service.js
+1: const reportRepository = require("../repositories/admin-report-repository");
+2: 
+3: async function getSalesReport() {
+4:     return reportRepository.getSalesReport();
+5: }
+6: 
+7: async function getProductReport() {
+8:     return reportRepository.getProductReport();
+9: }
+10: 
+11: async function getCustomerReport() {
+12:     return reportRepository.getCustomerReport();
+13: }
+14: 
+15: module.exports = {
+16:     getSalesReport,
+17:     getProductReport,
+18:     getCustomerReport
+19: };
+
+
+[06] TODAS AS REFERENCIAS A firestoreRepository.customerReport
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\admin-report-controller.js:37: const data = await reportService.getCustomerReport();
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:126: async function customerReport() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-report-repository.js:50: async function getCustomerReport() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\final-admin-repository.js:37: async function customerReport() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-report-service.js:11: async function getCustomerReport() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-report-service.js:12: return reportRepository.getCustomerReport();
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\admin-routes.js:114: data: await firestoreRepository.customerReport()
+
+[07] INDEX ADMIN — MONTAGEM
+------------------------------------------------------------
+1: 'use strict';
+2: 
+3: const adminRoutes =
+4:   require('./admin-routes');
+5: 
+6: module.exports = {
+7:   adminRoutes
+8: };
+
+============================================================
+[07.18/11] CONCLUIDO — SOMENTE LEITURA
+NENHUM DADO ALTERADO
+============================================================

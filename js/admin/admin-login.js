@@ -1,70 +1,118 @@
-import { auth } from "../firebase-config.js";
-import { 
-    signInWithEmailAndPassword, 
-    onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+﻿import {
+    loginAdmin,
+    observeAdminAuth
+} from '../auth/admin-auth.js';
 
-const form = document.getElementById("adminLoginForm");
-const emailInput = document.getElementById("adminEmail");
-const passwordInput = document.getElementById("adminPassword");
-const errorDiv = document.getElementById("adminLoginError");
+const form =
+    document.getElementById('adminLoginForm');
 
-const MASTER_EMAIL = "robertinho33@gmail.com";
+const emailInput =
+    document.getElementById('adminEmail');
 
-if (form) {
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        if (errorDiv) {
-            errorDiv.hidden = true;
-            errorDiv.textContent = "";
-        }
+const passwordInput =
+    document.getElementById('adminPassword');
 
-        const email = emailInput ? emailInput.value.trim() : "";
-        const password = passwordInput ? passwordInput.value : "";
+const errorDiv =
+    document.getElementById('adminLoginError');
 
-        // Validação preventiva antes de enviar ao Firebase
-        if (!password) {
-            if (errorDiv) {
-                errorDiv.textContent = "Por favor, digite a senha.";
-                errorDiv.hidden = false;
-            }
-            return;
-        }
+const button =
+    document.getElementById('adminLoginButton');
 
-        if (email !== MASTER_EMAIL) {
-            if (errorDiv) {
-                errorDiv.textContent = "Acesso permitido apenas para o usuário master.";
-                errorDiv.hidden = false;
-            }
-            return;
-        }
+function showError(message) {
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            console.log("[LOGIN] Autenticado com sucesso como Master!");
-            window.location.href = "admin.html";
-        } catch (error) {
-            console.error("[LOGIN] Erro ao autenticar:", error);
-            if (errorDiv) {
-                if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
-                    errorDiv.textContent = "Senha incorreta.";
-                } else if (error.code === "auth/user-not-found") {
-                    errorDiv.textContent = "Usuário não encontrado no Firebase Auth.";
-                } else {
-                    errorDiv.textContent = "Erro ao fazer login: " + error.message;
-                }
-                errorDiv.hidden = false;
-            }
-        }
-    });
+    if (!errorDiv) {
+        return;
+    }
+
+    errorDiv.textContent = message;
+    errorDiv.hidden = false;
 }
 
-// Observador de estado de autenticação
-onAuthStateChanged(auth, (user) => {
-    if (user && user.email === MASTER_EMAIL) {
-        console.log("[AUTH] Sessão Master ativa para:", user.email);
-    } else {
-        console.warn("[AUTH] Nenhum usuário autorizado ativo. Realize o login no painel.");
+function clearError() {
+
+    if (!errorDiv) {
+        return;
     }
+
+    errorDiv.textContent = '';
+    errorDiv.hidden = true;
+}
+
+if (form) {
+
+    form.addEventListener(
+        'submit',
+        async event => {
+
+            event.preventDefault();
+
+            clearError();
+
+            const email =
+                emailInput?.value.trim() || '';
+
+            const password =
+                passwordInput?.value || '';
+
+            if (!email || !password) {
+
+                showError(
+                    'Informe e-mail e senha.'
+                );
+
+                return;
+            }
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Entrando...';
+            }
+
+            try {
+
+                await loginAdmin(
+                    email,
+                    password
+                );
+
+                window.location.replace(
+                    './admin.html'
+                );
+
+            } catch (error) {
+
+                console.error(
+                    '[AUREA AUTH]',
+                    error
+                );
+
+                showError(
+                    error?.message ||
+                    'Não foi possível realizar o login.'
+                );
+
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = 'Entrar';
+                }
+            }
+        }
+    );
+}
+
+observeAdminAuth(user => {
+
+    if (user) {
+
+        console.log(
+            '[AUREA AUTH] Administrador autenticado:',
+            user.email
+        );
+
+        return;
+    }
+
+    console.log(
+        '[AUREA AUTH] Nenhuma sessão administrativa ativa.'
+    );
 });

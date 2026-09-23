@@ -2651,6 +2651,13 @@ document.addEventListener(
             const section =
                 sectionButton.dataset.adminSection;
 
+            if (section === "inventory") {
+                window.location.href =
+                    "./admin-inventory.html";
+
+                return;
+            }
+
             load(section);
 
             return;
@@ -2702,14 +2709,7 @@ document.addEventListener(
                 "#adminLogout"
             )
         ) {
-
-            try {
-                localStorage.removeItem(
-                    "aurea-admin-token"
-                );
-            } catch {}
-
-            window.location.href =
+window.location.href =
                 "./admin-login.html";
         }
 
@@ -2722,4 +2722,6 @@ document.addEventListener(
    ============================================================ */
 
 load("dashboard");
+
+
 

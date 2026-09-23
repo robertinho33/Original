@@ -1,0 +1,1851 @@
+
+============================================================
+[01] TRECHOS RELEVANTES � js/checkout/checkout.js
+============================================================
+
+--- CHECKOUT linhas 12-24 ---
+   12: const CART_STORAGE_KEY = 'aurea-cart';
+   13: const CATALOG_PATH = '../data/produtos.csv';
+   14: const DELIVERY_COST = 19.90;
+   15: 
+   16: const PIX_API_URL =
+   17:     'https://aurea-pix-api.onrender.com/api/create-pix-payment';
+   18: 
+   19: let products = [];
+   20: let cart = [];
+   21: let submitting = false;
+   22: let appliedCoupon = null;
+   23: 
+   24: 
+
+--- CHECKOUT linhas 13-25 ---
+   13: const CATALOG_PATH = '../data/produtos.csv';
+   14: const DELIVERY_COST = 19.90;
+   15: 
+   16: const PIX_API_URL =
+   17:     'https://aurea-pix-api.onrender.com/api/create-pix-payment';
+   18: 
+   19: let products = [];
+   20: let cart = [];
+   21: let submitting = false;
+   22: let appliedCoupon = null;
+   23: 
+   24: 
+   25: const COUPONS = Object.freeze({
+
+--- CHECKOUT linhas 80-92 ---
+   80: 
+   81:     state:
+   82:         document.getElementById('state'),
+   83: 
+   84:     paymentMethod:
+   85:         document.querySelectorAll(
+   86:             'input[name="paymentMethod"]'
+   87:         ),
+   88: 
+   89:     orderNotes:
+   90:         document.getElementById('orderNotes'),
+   91: 
+   92:     checkoutItems:
+
+--- CHECKOUT linhas 82-94 ---
+   82:         document.getElementById('state'),
+   83: 
+   84:     paymentMethod:
+   85:         document.querySelectorAll(
+   86:             'input[name="paymentMethod"]'
+   87:         ),
+   88: 
+   89:     orderNotes:
+   90:         document.getElementById('orderNotes'),
+   91: 
+   92:     checkoutItems:
+   93:         document.getElementById('checkoutItems'),
+   94: 
+
+--- CHECKOUT linhas 112-124 ---
+  112: 
+  113:     couponMessage:
+  114:         document.getElementById('couponMessage'),
+  115: 
+  116:     submitOrder:
+  117:         document.getElementById('submitOrder'),
+  118: 
+  119:     submitOrderText:
+  120:         document.getElementById('submitOrderText'),
+  121: 
+  122:     checkoutMessage:
+  123:         document.getElementById('checkoutMessage'),
+  124: 
+
+--- CHECKOUT linhas 113-125 ---
+  113:     couponMessage:
+  114:         document.getElementById('couponMessage'),
+  115: 
+  116:     submitOrder:
+  117:         document.getElementById('submitOrder'),
+  118: 
+  119:     submitOrderText:
+  120:         document.getElementById('submitOrderText'),
+  121: 
+  122:     checkoutMessage:
+  123:         document.getElementById('checkoutMessage'),
+  124: 
+  125:     checkoutSuccess:
+
+--- CHECKOUT linhas 115-127 ---
+  115: 
+  116:     submitOrder:
+  117:         document.getElementById('submitOrder'),
+  118: 
+  119:     submitOrderText:
+  120:         document.getElementById('submitOrderText'),
+  121: 
+  122:     checkoutMessage:
+  123:         document.getElementById('checkoutMessage'),
+  124: 
+  125:     checkoutSuccess:
+  126:         document.getElementById('checkoutSuccess'),
+  127: 
+
+--- CHECKOUT linhas 116-128 ---
+  116:     submitOrder:
+  117:         document.getElementById('submitOrder'),
+  118: 
+  119:     submitOrderText:
+  120:         document.getElementById('submitOrderText'),
+  121: 
+  122:     checkoutMessage:
+  123:         document.getElementById('checkoutMessage'),
+  124: 
+  125:     checkoutSuccess:
+  126:         document.getElementById('checkoutSuccess'),
+  127: 
+  128:     successMessage:
+
+--- CHECKOUT linhas 130-142 ---
+  130: 
+  131:     successOrderNumber:
+  132:         document.getElementById('successOrderNumber'),
+  133: 
+  134:     pixPaymentContainer:
+  135:         document.getElementById('pixPaymentContainer'),
+  136: 
+  137:     pixQrCodeImage:
+  138:         document.getElementById('pixQrCodeImage'),
+  139: 
+  140:     pixCopiaCola:
+  141:         document.getElementById('pixCopiaCola'),
+  142: 
+
+--- CHECKOUT linhas 131-143 ---
+  131:     successOrderNumber:
+  132:         document.getElementById('successOrderNumber'),
+  133: 
+  134:     pixPaymentContainer:
+  135:         document.getElementById('pixPaymentContainer'),
+  136: 
+  137:     pixQrCodeImage:
+  138:         document.getElementById('pixQrCodeImage'),
+  139: 
+  140:     pixCopiaCola:
+  141:         document.getElementById('pixCopiaCola'),
+  142: 
+  143:     btnCopyPix:
+
+--- CHECKOUT linhas 133-145 ---
+  133: 
+  134:     pixPaymentContainer:
+  135:         document.getElementById('pixPaymentContainer'),
+  136: 
+  137:     pixQrCodeImage:
+  138:         document.getElementById('pixQrCodeImage'),
+  139: 
+  140:     pixCopiaCola:
+  141:         document.getElementById('pixCopiaCola'),
+  142: 
+  143:     btnCopyPix:
+  144:         document.getElementById('btnCopyPix'),
+  145: 
+
+--- CHECKOUT linhas 134-146 ---
+  134:     pixPaymentContainer:
+  135:         document.getElementById('pixPaymentContainer'),
+  136: 
+  137:     pixQrCodeImage:
+  138:         document.getElementById('pixQrCodeImage'),
+  139: 
+  140:     pixCopiaCola:
+  141:         document.getElementById('pixCopiaCola'),
+  142: 
+  143:     btnCopyPix:
+  144:         document.getElementById('btnCopyPix'),
+  145: 
+  146:     pixCopyStatus:
+
+--- CHECKOUT linhas 136-148 ---
+  136: 
+  137:     pixQrCodeImage:
+  138:         document.getElementById('pixQrCodeImage'),
+  139: 
+  140:     pixCopiaCola:
+  141:         document.getElementById('pixCopiaCola'),
+  142: 
+  143:     btnCopyPix:
+  144:         document.getElementById('btnCopyPix'),
+  145: 
+  146:     pixCopyStatus:
+  147:         document.getElementById('pixCopyStatus')
+  148: };
+
+--- CHECKOUT linhas 137-149 ---
+  137:     pixQrCodeImage:
+  138:         document.getElementById('pixQrCodeImage'),
+  139: 
+  140:     pixCopiaCola:
+  141:         document.getElementById('pixCopiaCola'),
+  142: 
+  143:     btnCopyPix:
+  144:         document.getElementById('btnCopyPix'),
+  145: 
+  146:     pixCopyStatus:
+  147:         document.getElementById('pixCopyStatus')
+  148: };
+  149: 
+
+--- CHECKOUT linhas 139-151 ---
+  139: 
+  140:     pixCopiaCola:
+  141:         document.getElementById('pixCopiaCola'),
+  142: 
+  143:     btnCopyPix:
+  144:         document.getElementById('btnCopyPix'),
+  145: 
+  146:     pixCopyStatus:
+  147:         document.getElementById('pixCopyStatus')
+  148: };
+  149: 
+  150: 
+  151: /* =========================================================
+
+--- CHECKOUT linhas 140-152 ---
+  140:     pixCopiaCola:
+  141:         document.getElementById('pixCopiaCola'),
+  142: 
+  143:     btnCopyPix:
+  144:         document.getElementById('btnCopyPix'),
+  145: 
+  146:     pixCopyStatus:
+  147:         document.getElementById('pixCopyStatus')
+  148: };
+  149: 
+  150: 
+  151: /* =========================================================
+  152:    UTILITÁRIOS
+
+--- CHECKOUT linhas 142-154 ---
+  142: 
+  143:     btnCopyPix:
+  144:         document.getElementById('btnCopyPix'),
+  145: 
+  146:     pixCopyStatus:
+  147:         document.getElementById('pixCopyStatus')
+  148: };
+  149: 
+  150: 
+  151: /* =========================================================
+  152:    UTILITÁRIOS
+  153:    ========================================================= */
+  154: 
+
+--- CHECKOUT linhas 143-155 ---
+  143:     btnCopyPix:
+  144:         document.getElementById('btnCopyPix'),
+  145: 
+  146:     pixCopyStatus:
+  147:         document.getElementById('pixCopyStatus')
+  148: };
+  149: 
+  150: 
+  151: /* =========================================================
+  152:    UTILITÁRIOS
+  153:    ========================================================= */
+  154: 
+  155: function formatCurrency(value) {
+
+--- CHECKOUT linhas 401-413 ---
+  401: 
+  402: async function loadProducts() {
+  403: 
+  404:     const response =
+  405:         await fetch(CATALOG_PATH, {
+  406:             cache: 'no-store'
+  407:         });
+  408: 
+  409:     if (!response.ok) {
+  410: 
+  411:         throw new Error(
+  412:             `Não foi possível carregar o catálogo. HTTP ${response.status}`
+  413:         );
+
+--- CHECKOUT linhas 1087-1099 ---
+ 1087:             valid = false;
+ 1088:         }
+ 1089:     }
+ 1090: 
+ 1091:     const paymentMethod =
+ 1092:         document.querySelector(
+ 1093:             'input[name="paymentMethod"]:checked'
+ 1094:         );
+ 1095: 
+ 1096:     if (!paymentMethod) {
+ 1097: 
+ 1098:         const paymentError =
+ 1099:             document.querySelector(
+
+--- CHECKOUT linhas 1089-1101 ---
+ 1089:     }
+ 1090: 
+ 1091:     const paymentMethod =
+ 1092:         document.querySelector(
+ 1093:             'input[name="paymentMethod"]:checked'
+ 1094:         );
+ 1095: 
+ 1096:     if (!paymentMethod) {
+ 1097: 
+ 1098:         const paymentError =
+ 1099:             document.querySelector(
+ 1100:                 '[data-payment-error]'
+ 1101:             );
+
+--- CHECKOUT linhas 1092-1104 ---
+ 1092:         document.querySelector(
+ 1093:             'input[name="paymentMethod"]:checked'
+ 1094:         );
+ 1095: 
+ 1096:     if (!paymentMethod) {
+ 1097: 
+ 1098:         const paymentError =
+ 1099:             document.querySelector(
+ 1100:                 '[data-payment-error]'
+ 1101:             );
+ 1102: 
+ 1103:         if (paymentError) {
+ 1104: 
+
+--- CHECKOUT linhas 1094-1106 ---
+ 1094:         );
+ 1095: 
+ 1096:     if (!paymentMethod) {
+ 1097: 
+ 1098:         const paymentError =
+ 1099:             document.querySelector(
+ 1100:                 '[data-payment-error]'
+ 1101:             );
+ 1102: 
+ 1103:         if (paymentError) {
+ 1104: 
+ 1105:             paymentError.textContent =
+ 1106:                 'Selecione uma forma de pagamento.';
+
+--- CHECKOUT linhas 1096-1108 ---
+ 1096:     if (!paymentMethod) {
+ 1097: 
+ 1098:         const paymentError =
+ 1099:             document.querySelector(
+ 1100:                 '[data-payment-error]'
+ 1101:             );
+ 1102: 
+ 1103:         if (paymentError) {
+ 1104: 
+ 1105:             paymentError.textContent =
+ 1106:                 'Selecione uma forma de pagamento.';
+ 1107:         }
+ 1108: 
+
+--- CHECKOUT linhas 1099-1111 ---
+ 1099:             document.querySelector(
+ 1100:                 '[data-payment-error]'
+ 1101:             );
+ 1102: 
+ 1103:         if (paymentError) {
+ 1104: 
+ 1105:             paymentError.textContent =
+ 1106:                 'Selecione uma forma de pagamento.';
+ 1107:         }
+ 1108: 
+ 1109:         valid = false;
+ 1110:     }
+ 1111: 
+
+--- CHECKOUT linhas 1101-1113 ---
+ 1101:             );
+ 1102: 
+ 1103:         if (paymentError) {
+ 1104: 
+ 1105:             paymentError.textContent =
+ 1106:                 'Selecione uma forma de pagamento.';
+ 1107:         }
+ 1108: 
+ 1109:         valid = false;
+ 1110:     }
+ 1111: 
+ 1112:     const items =
+ 1113:         getCartItems();
+
+--- CHECKOUT linhas 1217-1229 ---
+ 1217:     };
+ 1218: }
+ 1219: 
+ 1220: 
+ 1221: function getPaymentMethod() {
+ 1222: 
+ 1223:     return document.querySelector(
+ 1224:         'input[name="paymentMethod"]:checked'
+ 1225:     )?.value ?? null;
+ 1226: }
+ 1227: 
+ 1228: 
+ 1229: /* =========================================================
+
+--- CHECKOUT linhas 1220-1232 ---
+ 1220: 
+ 1221: function getPaymentMethod() {
+ 1222: 
+ 1223:     return document.querySelector(
+ 1224:         'input[name="paymentMethod"]:checked'
+ 1225:     )?.value ?? null;
+ 1226: }
+ 1227: 
+ 1228: 
+ 1229: /* =========================================================
+ 1230:    PEDIDO
+ 1231:    ========================================================= */
+ 1232: 
+
+--- CHECKOUT linhas 1229-1241 ---
+ 1229: /* =========================================================
+ 1230:    PEDIDO
+ 1231:    ========================================================= */
+ 1232: 
+ 1233: function createOrder() {
+ 1234: 
+ 1235:     const items =
+ 1236:         getCartItems();
+ 1237: 
+ 1238:     const subtotal =
+ 1239:         getSubtotal();
+ 1240: 
+ 1241:     const shipping =
+
+--- CHECKOUT linhas 1249-1261 ---
+ 1249: 
+ 1250:     const deliveryMethod =
+ 1251:         getDeliveryMethod();
+ 1252: 
+ 1253:     const paymentMethod =
+ 1254:         getPaymentMethod();
+ 1255: 
+ 1256:     if (!paymentMethod) {
+ 1257:         throw new Error(
+ 1258:             'Selecione uma forma de pagamento.'
+ 1259:         );
+ 1260:     }
+ 1261: 
+
+--- CHECKOUT linhas 1250-1262 ---
+ 1250:     const deliveryMethod =
+ 1251:         getDeliveryMethod();
+ 1252: 
+ 1253:     const paymentMethod =
+ 1254:         getPaymentMethod();
+ 1255: 
+ 1256:     if (!paymentMethod) {
+ 1257:         throw new Error(
+ 1258:             'Selecione uma forma de pagamento.'
+ 1259:         );
+ 1260:     }
+ 1261: 
+ 1262:     const now =
+
+--- CHECKOUT linhas 1252-1264 ---
+ 1252: 
+ 1253:     const paymentMethod =
+ 1254:         getPaymentMethod();
+ 1255: 
+ 1256:     if (!paymentMethod) {
+ 1257:         throw new Error(
+ 1258:             'Selecione uma forma de pagamento.'
+ 1259:         );
+ 1260:     }
+ 1261: 
+ 1262:     const now =
+ 1263:         new Date();
+ 1264: 
+
+--- CHECKOUT linhas 1289-1301 ---
+ 1289:             address:
+ 1290:                 getAddressData()
+ 1291:         },
+ 1292: 
+ 1293:         payment: {
+ 1294: 
+ 1295:             method:
+ 1296:                 paymentMethod,
+ 1297: 
+ 1298:             status:
+ 1299:                 'pending'
+ 1300:         },
+ 1301: 
+
+--- CHECKOUT linhas 1292-1304 ---
+ 1292: 
+ 1293:         payment: {
+ 1294: 
+ 1295:             method:
+ 1296:                 paymentMethod,
+ 1297: 
+ 1298:             status:
+ 1299:                 'pending'
+ 1300:         },
+ 1301: 
+ 1302:         logistics: {
+ 1303: 
+ 1304:             status:
+
+--- CHECKOUT linhas 1370-1382 ---
+ 1370: }
+ 1371: 
+ 1372: 
+ 1373: /* =========================================================
+ 1374:    PIX
+ 1375:    =========================================================
+ 1376:    IMPORTANTE:
+ 1377:    A lógica de geração PIX abaixo permanece preservada.
+ 1378:    A validação/UX do PIX pertence à ETAPA 05/12.
+ 1379:    ========================================================= */
+ 1380: 
+ 1381: async function createPixPayment(order) {
+ 1382: 
+
+--- CHECKOUT linhas 1373-1385 ---
+ 1373: /* =========================================================
+ 1374:    PIX
+ 1375:    =========================================================
+ 1376:    IMPORTANTE:
+ 1377:    A lógica de geração PIX abaixo permanece preservada.
+ 1378:    A validação/UX do PIX pertence à ETAPA 05/12.
+ 1379:    ========================================================= */
+ 1380: 
+ 1381: async function createPixPayment(order) {
+ 1382: 
+ 1383:     console.log(
+ 1384:         '[PIX] Criando pagamento:',
+ 1385:         order.total
+
+--- CHECKOUT linhas 1374-1386 ---
+ 1374:    PIX
+ 1375:    =========================================================
+ 1376:    IMPORTANTE:
+ 1377:    A lógica de geração PIX abaixo permanece preservada.
+ 1378:    A validação/UX do PIX pertence à ETAPA 05/12.
+ 1379:    ========================================================= */
+ 1380: 
+ 1381: async function createPixPayment(order) {
+ 1382: 
+ 1383:     console.log(
+ 1384:         '[PIX] Criando pagamento:',
+ 1385:         order.total
+ 1386:     );
+
+--- CHECKOUT linhas 1377-1389 ---
+ 1377:    A lógica de geração PIX abaixo permanece preservada.
+ 1378:    A validação/UX do PIX pertence à ETAPA 05/12.
+ 1379:    ========================================================= */
+ 1380: 
+ 1381: async function createPixPayment(order) {
+ 1382: 
+ 1383:     console.log(
+ 1384:         '[PIX] Criando pagamento:',
+ 1385:         order.total
+ 1386:     );
+ 1387: 
+ 1388:     const response =
+ 1389:         await fetch(
+
+--- CHECKOUT linhas 1380-1392 ---
+ 1380: 
+ 1381: async function createPixPayment(order) {
+ 1382: 
+ 1383:     console.log(
+ 1384:         '[PIX] Criando pagamento:',
+ 1385:         order.total
+ 1386:     );
+ 1387: 
+ 1388:     const response =
+ 1389:         await fetch(
+ 1390:             PIX_API_URL,
+ 1391:             {
+ 1392:                 method: 'POST',
+
+--- CHECKOUT linhas 1385-1397 ---
+ 1385:         order.total
+ 1386:     );
+ 1387: 
+ 1388:     const response =
+ 1389:         await fetch(
+ 1390:             PIX_API_URL,
+ 1391:             {
+ 1392:                 method: 'POST',
+ 1393: 
+ 1394:                 headers: {
+ 1395:                     'Content-Type':
+ 1396:                         'application/json'
+ 1397:                 },
+
+--- CHECKOUT linhas 1386-1398 ---
+ 1386:     );
+ 1387: 
+ 1388:     const response =
+ 1389:         await fetch(
+ 1390:             PIX_API_URL,
+ 1391:             {
+ 1392:                 method: 'POST',
+ 1393: 
+ 1394:                 headers: {
+ 1395:                     'Content-Type':
+ 1396:                         'application/json'
+ 1397:                 },
+ 1398: 
+
+--- CHECKOUT linhas 1403-1415 ---
+ 1403: 
+ 1404:     if (!response.ok) {
+ 1405: 
+ 1406:         throw new Error(
+ 1407:             `O servidor PIX respondeu com HTTP ${response.status}.`
+ 1408:         );
+ 1409:     }
+ 1410: 
+ 1411:     const result =
+ 1412:         await response.json();
+ 1413: 
+ 1414:     if (
+ 1415:         !result ||
+
+--- CHECKOUT linhas 1417-1429 ---
+ 1417:     ) {
+ 1418: 
+ 1419:         throw new Error(
+ 1420:             result?.message ||
+ 1421:             'O servidor não conseguiu criar o pagamento PIX.'
+ 1422:         );
+ 1423:     }
+ 1424: 
+ 1425:     return result;
+ 1426: }
+ 1427: 
+ 1428: 
+ 1429: function getPixQrSource(result) {
+
+--- CHECKOUT linhas 1425-1437 ---
+ 1425:     return result;
+ 1426: }
+ 1427: 
+ 1428: 
+ 1429: function getPixQrSource(result) {
+ 1430: 
+ 1431:     if (result.qr_code_base64) {
+ 1432: 
+ 1433:         return result.qr_code_base64
+ 1434:             .startsWith('data:')
+ 1435:                 ? result.qr_code_base64
+ 1436:                 : `data:image/png;base64,${result.qr_code_base64}`;
+ 1437:     }
+
+--- CHECKOUT linhas 1451-1463 ---
+ 1451:     return '';
+ 1452: }
+ 1453: 
+ 1454: 
+ 1455: function getPixCopyCode(result) {
+ 1456: 
+ 1457:     return (
+ 1458:         result.pix_code ??
+ 1459:         result.qr_code ??
+ 1460:         result.copy_paste ??
+ 1461:         result.copia_e_cola ??
+ 1462:         result.pixCode ??
+ 1463:         ''
+
+--- CHECKOUT linhas 1454-1466 ---
+ 1454: 
+ 1455: function getPixCopyCode(result) {
+ 1456: 
+ 1457:     return (
+ 1458:         result.pix_code ??
+ 1459:         result.qr_code ??
+ 1460:         result.copy_paste ??
+ 1461:         result.copia_e_cola ??
+ 1462:         result.pixCode ??
+ 1463:         ''
+ 1464:     );
+ 1465: }
+ 1466: 
+
+--- CHECKOUT linhas 1458-1470 ---
+ 1458:         result.pix_code ??
+ 1459:         result.qr_code ??
+ 1460:         result.copy_paste ??
+ 1461:         result.copia_e_cola ??
+ 1462:         result.pixCode ??
+ 1463:         ''
+ 1464:     );
+ 1465: }
+ 1466: 
+ 1467: 
+ 1468: function renderPixPayment(result) {
+ 1469: 
+ 1470:     const qrSource =
+
+--- CHECKOUT linhas 1464-1476 ---
+ 1464:     );
+ 1465: }
+ 1466: 
+ 1467: 
+ 1468: function renderPixPayment(result) {
+ 1469: 
+ 1470:     const qrSource =
+ 1471:         getPixQrSource(result);
+ 1472: 
+ 1473:     const copyCode =
+ 1474:         getPixCopyCode(result);
+ 1475: 
+ 1476:     if (!qrSource && !copyCode) {
+
+--- CHECKOUT linhas 1467-1479 ---
+ 1467: 
+ 1468: function renderPixPayment(result) {
+ 1469: 
+ 1470:     const qrSource =
+ 1471:         getPixQrSource(result);
+ 1472: 
+ 1473:     const copyCode =
+ 1474:         getPixCopyCode(result);
+ 1475: 
+ 1476:     if (!qrSource && !copyCode) {
+ 1477: 
+ 1478:         throw new Error(
+ 1479:             'O servidor criou o PIX, mas não retornou os dados do pagamento.'
+
+--- CHECKOUT linhas 1470-1482 ---
+ 1470:     const qrSource =
+ 1471:         getPixQrSource(result);
+ 1472: 
+ 1473:     const copyCode =
+ 1474:         getPixCopyCode(result);
+ 1475: 
+ 1476:     if (!qrSource && !copyCode) {
+ 1477: 
+ 1478:         throw new Error(
+ 1479:             'O servidor criou o PIX, mas não retornou os dados do pagamento.'
+ 1480:         );
+ 1481:     }
+ 1482: 
+
+--- CHECKOUT linhas 1475-1487 ---
+ 1475: 
+ 1476:     if (!qrSource && !copyCode) {
+ 1477: 
+ 1478:         throw new Error(
+ 1479:             'O servidor criou o PIX, mas não retornou os dados do pagamento.'
+ 1480:         );
+ 1481:     }
+ 1482: 
+ 1483:     if (qrSource) {
+ 1484: 
+ 1485:         elements.pixQrCodeImage.src =
+ 1486:             qrSource;
+ 1487: 
+
+--- CHECKOUT linhas 1481-1493 ---
+ 1481:     }
+ 1482: 
+ 1483:     if (qrSource) {
+ 1484: 
+ 1485:         elements.pixQrCodeImage.src =
+ 1486:             qrSource;
+ 1487: 
+ 1488:         elements.pixQrCodeImage.hidden =
+ 1489:             false;
+ 1490: 
+ 1491:     } else {
+ 1492: 
+ 1493:         elements.pixQrCodeImage.hidden =
+
+--- CHECKOUT linhas 1484-1496 ---
+ 1484: 
+ 1485:         elements.pixQrCodeImage.src =
+ 1486:             qrSource;
+ 1487: 
+ 1488:         elements.pixQrCodeImage.hidden =
+ 1489:             false;
+ 1490: 
+ 1491:     } else {
+ 1492: 
+ 1493:         elements.pixQrCodeImage.hidden =
+ 1494:             true;
+ 1495:     }
+ 1496: 
+
+--- CHECKOUT linhas 1489-1501 ---
+ 1489:             false;
+ 1490: 
+ 1491:     } else {
+ 1492: 
+ 1493:         elements.pixQrCodeImage.hidden =
+ 1494:             true;
+ 1495:     }
+ 1496: 
+ 1497:     elements.pixCopiaCola.value =
+ 1498:         copyCode;
+ 1499: 
+ 1500:     elements.pixPaymentContainer.hidden =
+ 1501:         false;
+
+--- CHECKOUT linhas 1493-1505 ---
+ 1493:         elements.pixQrCodeImage.hidden =
+ 1494:             true;
+ 1495:     }
+ 1496: 
+ 1497:     elements.pixCopiaCola.value =
+ 1498:         copyCode;
+ 1499: 
+ 1500:     elements.pixPaymentContainer.hidden =
+ 1501:         false;
+ 1502: }
+ 1503: 
+ 1504: 
+ 1505: /* =========================================================
+
+--- CHECKOUT linhas 1496-1508 ---
+ 1496: 
+ 1497:     elements.pixCopiaCola.value =
+ 1498:         copyCode;
+ 1499: 
+ 1500:     elements.pixPaymentContainer.hidden =
+ 1501:         false;
+ 1502: }
+ 1503: 
+ 1504: 
+ 1505: /* =========================================================
+ 1506:    SUCESSO
+ 1507:    ========================================================= */
+ 1508: 
+
+--- CHECKOUT linhas 1537-1549 ---
+ 1537:         elements.successOrderNumber.textContent =
+ 1538:             order.orderId;
+ 1539:     }
+ 1540: 
+ 1541:     const paymentMethod =
+ 1542:         order.payment.method;
+ 1543: 
+ 1544:     if (paymentMethod === 'pix') {
+ 1545: 
+ 1546:         if (elements.successMessage) {
+ 1547: 
+ 1548:             elements.successMessage.textContent =
+ 1549:                 'Seu pedido foi registrado. Gere o pagamento PIX abaixo para concluir a compra.';
+
+--- CHECKOUT linhas 1538-1550 ---
+ 1538:             order.orderId;
+ 1539:     }
+ 1540: 
+ 1541:     const paymentMethod =
+ 1542:         order.payment.method;
+ 1543: 
+ 1544:     if (paymentMethod === 'pix') {
+ 1545: 
+ 1546:         if (elements.successMessage) {
+ 1547: 
+ 1548:             elements.successMessage.textContent =
+ 1549:                 'Seu pedido foi registrado. Gere o pagamento PIX abaixo para concluir a compra.';
+ 1550:         }
+
+--- CHECKOUT linhas 1540-1552 ---
+ 1540: 
+ 1541:     const paymentMethod =
+ 1542:         order.payment.method;
+ 1543: 
+ 1544:     if (paymentMethod === 'pix') {
+ 1545: 
+ 1546:         if (elements.successMessage) {
+ 1547: 
+ 1548:             elements.successMessage.textContent =
+ 1549:                 'Seu pedido foi registrado. Gere o pagamento PIX abaixo para concluir a compra.';
+ 1550:         }
+ 1551: 
+ 1552:     } else {
+
+--- CHECKOUT linhas 1545-1557 ---
+ 1545: 
+ 1546:         if (elements.successMessage) {
+ 1547: 
+ 1548:             elements.successMessage.textContent =
+ 1549:                 'Seu pedido foi registrado. Gere o pagamento PIX abaixo para concluir a compra.';
+ 1550:         }
+ 1551: 
+ 1552:     } else {
+ 1553: 
+ 1554:         if (elements.successMessage) {
+ 1555: 
+ 1556:             elements.successMessage.textContent =
+ 1557:                 'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os próximos passos.';
+
+--- CHECKOUT linhas 1565-1577 ---
+ 1565: }
+ 1566: 
+ 1567: 
+ 1568: /* =========================================================
+ 1569:    COPIAR PIX
+ 1570:    ========================================================= */
+ 1571: 
+ 1572: async function copyPixCode() {
+ 1573: 
+ 1574:     const code =
+ 1575:         elements.pixCopiaCola?.value.trim();
+ 1576: 
+ 1577:     if (!code) {
+
+--- CHECKOUT linhas 1568-1580 ---
+ 1568: /* =========================================================
+ 1569:    COPIAR PIX
+ 1570:    ========================================================= */
+ 1571: 
+ 1572: async function copyPixCode() {
+ 1573: 
+ 1574:     const code =
+ 1575:         elements.pixCopiaCola?.value.trim();
+ 1576: 
+ 1577:     if (!code) {
+ 1578:         return;
+ 1579:     }
+ 1580: 
+
+--- CHECKOUT linhas 1571-1583 ---
+ 1571: 
+ 1572: async function copyPixCode() {
+ 1573: 
+ 1574:     const code =
+ 1575:         elements.pixCopiaCola?.value.trim();
+ 1576: 
+ 1577:     if (!code) {
+ 1578:         return;
+ 1579:     }
+ 1580: 
+ 1581:     try {
+ 1582: 
+ 1583:         await navigator.clipboard.writeText(
+
+--- CHECKOUT linhas 1583-1595 ---
+ 1583:         await navigator.clipboard.writeText(
+ 1584:             code
+ 1585:         );
+ 1586: 
+ 1587:         if (elements.pixCopyStatus) {
+ 1588: 
+ 1589:             elements.pixCopyStatus.textContent =
+ 1590:                 'Código PIX copiado.';
+ 1591:         }
+ 1592: 
+ 1593:     } catch (error) {
+ 1594: 
+ 1595:         console.warn(
+
+--- CHECKOUT linhas 1585-1597 ---
+ 1585:         );
+ 1586: 
+ 1587:         if (elements.pixCopyStatus) {
+ 1588: 
+ 1589:             elements.pixCopyStatus.textContent =
+ 1590:                 'Código PIX copiado.';
+ 1591:         }
+ 1592: 
+ 1593:     } catch (error) {
+ 1594: 
+ 1595:         console.warn(
+ 1596:             '[PIX] Clipboard indisponível:',
+ 1597:             error
+
+--- CHECKOUT linhas 1586-1598 ---
+ 1586: 
+ 1587:         if (elements.pixCopyStatus) {
+ 1588: 
+ 1589:             elements.pixCopyStatus.textContent =
+ 1590:                 'Código PIX copiado.';
+ 1591:         }
+ 1592: 
+ 1593:     } catch (error) {
+ 1594: 
+ 1595:         console.warn(
+ 1596:             '[PIX] Clipboard indisponível:',
+ 1597:             error
+ 1598:         );
+
+--- CHECKOUT linhas 1592-1604 ---
+ 1592: 
+ 1593:     } catch (error) {
+ 1594: 
+ 1595:         console.warn(
+ 1596:             '[PIX] Clipboard indisponível:',
+ 1597:             error
+ 1598:         );
+ 1599: 
+ 1600:         elements.pixCopiaCola.select();
+ 1601: 
+ 1602:         document.execCommand(
+ 1603:             'copy'
+ 1604:         );
+
+--- CHECKOUT linhas 1596-1608 ---
+ 1596:             '[PIX] Clipboard indisponível:',
+ 1597:             error
+ 1598:         );
+ 1599: 
+ 1600:         elements.pixCopiaCola.select();
+ 1601: 
+ 1602:         document.execCommand(
+ 1603:             'copy'
+ 1604:         );
+ 1605: 
+ 1606:         if (elements.pixCopyStatus) {
+ 1607: 
+ 1608:             elements.pixCopyStatus.textContent =
+
+--- CHECKOUT linhas 1602-1614 ---
+ 1602:         document.execCommand(
+ 1603:             'copy'
+ 1604:         );
+ 1605: 
+ 1606:         if (elements.pixCopyStatus) {
+ 1607: 
+ 1608:             elements.pixCopyStatus.textContent =
+ 1609:                 'Código PIX copiado.';
+ 1610:         }
+ 1611:     }
+ 1612: }
+ 1613: 
+ 1614: 
+
+--- CHECKOUT linhas 1604-1616 ---
+ 1604:         );
+ 1605: 
+ 1606:         if (elements.pixCopyStatus) {
+ 1607: 
+ 1608:             elements.pixCopyStatus.textContent =
+ 1609:                 'Código PIX copiado.';
+ 1610:         }
+ 1611:     }
+ 1612: }
+ 1613: 
+ 1614: 
+ 1615: /* =========================================================
+ 1616:    SUBMIT
+
+--- CHECKOUT linhas 1605-1617 ---
+ 1605: 
+ 1606:         if (elements.pixCopyStatus) {
+ 1607: 
+ 1608:             elements.pixCopyStatus.textContent =
+ 1609:                 'Código PIX copiado.';
+ 1610:         }
+ 1611:     }
+ 1612: }
+ 1613: 
+ 1614: 
+ 1615: /* =========================================================
+ 1616:    SUBMIT
+ 1617:    ========================================================= */
+
+--- CHECKOUT linhas 1643-1655 ---
+ 1643:     }
+ 1644: 
+ 1645:     submitting = true;
+ 1646: 
+ 1647:     elements.submitOrder.disabled =
+ 1648:         true;
+ 1649: 
+ 1650:     elements.submitOrderText.textContent =
+ 1651:         'Processando pedido...';
+ 1652: 
+ 1653:     try {
+ 1654: 
+ 1655:         const order =
+
+--- CHECKOUT linhas 1646-1658 ---
+ 1646: 
+ 1647:     elements.submitOrder.disabled =
+ 1648:         true;
+ 1649: 
+ 1650:     elements.submitOrderText.textContent =
+ 1651:         'Processando pedido...';
+ 1652: 
+ 1653:     try {
+ 1654: 
+ 1655:         const order =
+ 1656:             createOrder();
+ 1657: 
+ 1658:         console.log(
+
+--- CHECKOUT linhas 1652-1664 ---
+ 1652: 
+ 1653:     try {
+ 1654: 
+ 1655:         const order =
+ 1656:             createOrder();
+ 1657: 
+ 1658:         console.log(
+ 1659:             '[CHECKOUT] Pedido criado:',
+ 1660:             order
+ 1661:         );
+ 1662: 
+ 1663: 
+ 1664:         /*
+
+--- CHECKOUT linhas 1661-1673 ---
+ 1661:         );
+ 1662: 
+ 1663: 
+ 1664:         /*
+ 1665:          * O PIX precisa ser gerado antes da primeira
+ 1666:          * gravação do pedido.
+ 1667:          *
+ 1668:          * Assim o pedido é salvo somente uma vez.
+ 1669:          */
+ 1670: 
+ 1671:         if (
+ 1672:             order.payment.method ===
+ 1673:             'pix'
+
+--- CHECKOUT linhas 1668-1680 ---
+ 1668:          * Assim o pedido é salvo somente uma vez.
+ 1669:          */
+ 1670: 
+ 1671:         if (
+ 1672:             order.payment.method ===
+ 1673:             'pix'
+ 1674:         ) {
+ 1675: 
+ 1676:             elements.pixPaymentContainer.hidden =
+ 1677:                 false;
+ 1678: 
+ 1679:             elements.pixPaymentContainer.innerHTML = `
+ 1680:                 <div class="pix-heading">
+
+--- CHECKOUT linhas 1669-1681 ---
+ 1669:          */
+ 1670: 
+ 1671:         if (
+ 1672:             order.payment.method ===
+ 1673:             'pix'
+ 1674:         ) {
+ 1675: 
+ 1676:             elements.pixPaymentContainer.hidden =
+ 1677:                 false;
+ 1678: 
+ 1679:             elements.pixPaymentContainer.innerHTML = `
+ 1680:                 <div class="pix-heading">
+ 1681: 
+
+--- CHECKOUT linhas 1672-1684 ---
+ 1672:             order.payment.method ===
+ 1673:             'pix'
+ 1674:         ) {
+ 1675: 
+ 1676:             elements.pixPaymentContainer.hidden =
+ 1677:                 false;
+ 1678: 
+ 1679:             elements.pixPaymentContainer.innerHTML = `
+ 1680:                 <div class="pix-heading">
+ 1681: 
+ 1682:                     <p class="eyebrow">
+ 1683:                         PAGAMENTO PIX
+ 1684:                     </p>
+
+--- CHECKOUT linhas 1675-1687 ---
+ 1675: 
+ 1676:             elements.pixPaymentContainer.hidden =
+ 1677:                 false;
+ 1678: 
+ 1679:             elements.pixPaymentContainer.innerHTML = `
+ 1680:                 <div class="pix-heading">
+ 1681: 
+ 1682:                     <p class="eyebrow">
+ 1683:                         PAGAMENTO PIX
+ 1684:                     </p>
+ 1685: 
+ 1686:                     <h3>
+ 1687:                         Gerando seu pagamento...
+
+--- CHECKOUT linhas 1676-1688 ---
+ 1676:             elements.pixPaymentContainer.hidden =
+ 1677:                 false;
+ 1678: 
+ 1679:             elements.pixPaymentContainer.innerHTML = `
+ 1680:                 <div class="pix-heading">
+ 1681: 
+ 1682:                     <p class="eyebrow">
+ 1683:                         PAGAMENTO PIX
+ 1684:                     </p>
+ 1685: 
+ 1686:                     <h3>
+ 1687:                         Gerando seu pagamento...
+ 1688:                     </h3>
+
+--- CHECKOUT linhas 1679-1691 ---
+ 1679:             elements.pixPaymentContainer.innerHTML = `
+ 1680:                 <div class="pix-heading">
+ 1681: 
+ 1682:                     <p class="eyebrow">
+ 1683:                         PAGAMENTO PIX
+ 1684:                     </p>
+ 1685: 
+ 1686:                     <h3>
+ 1687:                         Gerando seu pagamento...
+ 1688:                     </h3>
+ 1689: 
+ 1690:                     <p>
+ 1691:                         Aguarde enquanto preparamos o PIX.
+
+--- CHECKOUT linhas 1687-1699 ---
+ 1687:                         Gerando seu pagamento...
+ 1688:                     </h3>
+ 1689: 
+ 1690:                     <p>
+ 1691:                         Aguarde enquanto preparamos o PIX.
+ 1692:                     </p>
+ 1693: 
+ 1694:                 </div>
+ 1695:             `;
+ 1696: 
+ 1697:             try {
+ 1698: 
+ 1699:                 const pixResult =
+
+--- CHECKOUT linhas 1695-1707 ---
+ 1695:             `;
+ 1696: 
+ 1697:             try {
+ 1698: 
+ 1699:                 const pixResult =
+ 1700:                     await createPixPayment(
+ 1701:                         order
+ 1702:                     );
+ 1703: 
+ 1704:                 order.payment.pixCode =
+ 1705:                     pixResult.pix_code;
+ 1706: 
+ 1707:                 order.payment.pixGeneratedAt =
+
+--- CHECKOUT linhas 1696-1708 ---
+ 1696: 
+ 1697:             try {
+ 1698: 
+ 1699:                 const pixResult =
+ 1700:                     await createPixPayment(
+ 1701:                         order
+ 1702:                     );
+ 1703: 
+ 1704:                 order.payment.pixCode =
+ 1705:                     pixResult.pix_code;
+ 1706: 
+ 1707:                 order.payment.pixGeneratedAt =
+ 1708:                     new Date().toISOString();
+
+--- CHECKOUT linhas 1700-1712 ---
+ 1700:                     await createPixPayment(
+ 1701:                         order
+ 1702:                     );
+ 1703: 
+ 1704:                 order.payment.pixCode =
+ 1705:                     pixResult.pix_code;
+ 1706: 
+ 1707:                 order.payment.pixGeneratedAt =
+ 1708:                     new Date().toISOString();
+ 1709: 
+ 1710:                 appendOrderEvent(
+ 1711:                     order,
+ 1712:                     ORDER_EVENT.PIX_GENERATED,
+
+--- CHECKOUT linhas 1701-1713 ---
+ 1701:                         order
+ 1702:                     );
+ 1703: 
+ 1704:                 order.payment.pixCode =
+ 1705:                     pixResult.pix_code;
+ 1706: 
+ 1707:                 order.payment.pixGeneratedAt =
+ 1708:                     new Date().toISOString();
+ 1709: 
+ 1710:                 appendOrderEvent(
+ 1711:                     order,
+ 1712:                     ORDER_EVENT.PIX_GENERATED,
+ 1713:                     {
+
+--- CHECKOUT linhas 1703-1715 ---
+ 1703: 
+ 1704:                 order.payment.pixCode =
+ 1705:                     pixResult.pix_code;
+ 1706: 
+ 1707:                 order.payment.pixGeneratedAt =
+ 1708:                     new Date().toISOString();
+ 1709: 
+ 1710:                 appendOrderEvent(
+ 1711:                     order,
+ 1712:                     ORDER_EVENT.PIX_GENERATED,
+ 1713:                     {
+ 1714:                         amount:
+ 1715:                             pixResult.amount,
+
+--- CHECKOUT linhas 1708-1720 ---
+ 1708:                     new Date().toISOString();
+ 1709: 
+ 1710:                 appendOrderEvent(
+ 1711:                     order,
+ 1712:                     ORDER_EVENT.PIX_GENERATED,
+ 1713:                     {
+ 1714:                         amount:
+ 1715:                             pixResult.amount,
+ 1716: 
+ 1717:                         pixKey:
+ 1718:                             pixResult.pix_key
+ 1719:                     }
+ 1720:                 );
+
+--- CHECKOUT linhas 1711-1723 ---
+ 1711:                     order,
+ 1712:                     ORDER_EVENT.PIX_GENERATED,
+ 1713:                     {
+ 1714:                         amount:
+ 1715:                             pixResult.amount,
+ 1716: 
+ 1717:                         pixKey:
+ 1718:                             pixResult.pix_key
+ 1719:                     }
+ 1720:                 );
+ 1721: 
+ 1722:                 elements.pixPaymentContainer.innerHTML = `
+ 1723:                     <div class="pix-heading">
+
+--- CHECKOUT linhas 1713-1725 ---
+ 1713:                     {
+ 1714:                         amount:
+ 1715:                             pixResult.amount,
+ 1716: 
+ 1717:                         pixKey:
+ 1718:                             pixResult.pix_key
+ 1719:                     }
+ 1720:                 );
+ 1721: 
+ 1722:                 elements.pixPaymentContainer.innerHTML = `
+ 1723:                     <div class="pix-heading">
+ 1724: 
+ 1725:                         <p class="eyebrow">
+
+--- CHECKOUT linhas 1714-1726 ---
+ 1714:                         amount:
+ 1715:                             pixResult.amount,
+ 1716: 
+ 1717:                         pixKey:
+ 1718:                             pixResult.pix_key
+ 1719:                     }
+ 1720:                 );
+ 1721: 
+ 1722:                 elements.pixPaymentContainer.innerHTML = `
+ 1723:                     <div class="pix-heading">
+ 1724: 
+ 1725:                         <p class="eyebrow">
+ 1726:                             PAGAMENTO PIX
+
+--- CHECKOUT linhas 1718-1730 ---
+ 1718:                             pixResult.pix_key
+ 1719:                     }
+ 1720:                 );
+ 1721: 
+ 1722:                 elements.pixPaymentContainer.innerHTML = `
+ 1723:                     <div class="pix-heading">
+ 1724: 
+ 1725:                         <p class="eyebrow">
+ 1726:                             PAGAMENTO PIX
+ 1727:                         </p>
+ 1728: 
+ 1729:                         <h3>
+ 1730:                             Finalize seu pagamento
+
+--- CHECKOUT linhas 1719-1731 ---
+ 1719:                     }
+ 1720:                 );
+ 1721: 
+ 1722:                 elements.pixPaymentContainer.innerHTML = `
+ 1723:                     <div class="pix-heading">
+ 1724: 
+ 1725:                         <p class="eyebrow">
+ 1726:                             PAGAMENTO PIX
+ 1727:                         </p>
+ 1728: 
+ 1729:                         <h3>
+ 1730:                             Finalize seu pagamento
+ 1731:                         </h3>
+
+--- CHECKOUT linhas 1722-1734 ---
+ 1722:                 elements.pixPaymentContainer.innerHTML = `
+ 1723:                     <div class="pix-heading">
+ 1724: 
+ 1725:                         <p class="eyebrow">
+ 1726:                             PAGAMENTO PIX
+ 1727:                         </p>
+ 1728: 
+ 1729:                         <h3>
+ 1730:                             Finalize seu pagamento
+ 1731:                         </h3>
+ 1732: 
+ 1733:                         <p>
+ 1734:                             Escaneie o QR Code ou copie o código PIX.
+
+--- CHECKOUT linhas 1730-1742 ---
+ 1730:                             Finalize seu pagamento
+ 1731:                         </h3>
+ 1732: 
+ 1733:                         <p>
+ 1734:                             Escaneie o QR Code ou copie o código PIX.
+ 1735:                         </p>
+ 1736: 
+ 1737:                     </div>
+ 1738: 
+ 1739:                     <div class="pix-qr">
+ 1740: 
+ 1741:                         <img
+ 1742:                             id="pixQrCodeImage"
+
+--- CHECKOUT linhas 1735-1747 ---
+ 1735:                         </p>
+ 1736: 
+ 1737:                     </div>
+ 1738: 
+ 1739:                     <div class="pix-qr">
+ 1740: 
+ 1741:                         <img
+ 1742:                             id="pixQrCodeImage"
+ 1743:                             src=""
+ 1744:                             alt="QR Code para pagamento PIX"
+ 1745:                         >
+ 1746: 
+ 1747:                     </div>
+
+--- CHECKOUT linhas 1738-1750 ---
+ 1738: 
+ 1739:                     <div class="pix-qr">
+ 1740: 
+ 1741:                         <img
+ 1742:                             id="pixQrCodeImage"
+ 1743:                             src=""
+ 1744:                             alt="QR Code para pagamento PIX"
+ 1745:                         >
+ 1746: 
+ 1747:                     </div>
+ 1748: 
+ 1749:                     <div class="pix-copy">
+ 1750: 
+
+--- CHECKOUT linhas 1740-1752 ---
+ 1740: 
+ 1741:                         <img
+ 1742:                             id="pixQrCodeImage"
+ 1743:                             src=""
+ 1744:                             alt="QR Code para pagamento PIX"
+ 1745:                         >
+ 1746: 
+ 1747:                     </div>
+ 1748: 
+ 1749:                     <div class="pix-copy">
+ 1750: 
+ 1751:                         <label for="pixCopiaCola">
+ 1752:                             PIX Copia e Cola
+
+--- CHECKOUT linhas 1745-1757 ---
+ 1745:                         >
+ 1746: 
+ 1747:                     </div>
+ 1748: 
+ 1749:                     <div class="pix-copy">
+ 1750: 
+ 1751:                         <label for="pixCopiaCola">
+ 1752:                             PIX Copia e Cola
+ 1753:                         </label>
+ 1754: 
+ 1755:                         <div class="pix-copy-row">
+ 1756: 
+ 1757:                             <input
+
+--- CHECKOUT linhas 1747-1759 ---
+ 1747:                     </div>
+ 1748: 
+ 1749:                     <div class="pix-copy">
+ 1750: 
+ 1751:                         <label for="pixCopiaCola">
+ 1752:                             PIX Copia e Cola
+ 1753:                         </label>
+ 1754: 
+ 1755:                         <div class="pix-copy-row">
+ 1756: 
+ 1757:                             <input
+ 1758:                                 type="text"
+ 1759:                                 id="pixCopiaCola"
+
+============================================================
+[02] TRECHOS RELEVANTES � server.js
+============================================================
+
+--- SERVER linhas 7-31 ---
+    7: const { logger } = require('./server/infrastructure/logger');
+    8: const express = require('express');
+    9: const { adminRoutes } = require('./server/modules/admin');
+   10: const { inventoryRoutes } = require('./server/modules/inventory');
+   11: const monitoringRoutes = require('./server/infrastructure/monitoring/monitoring-routes');
+   12: const cors = require('cors');
+   13: const QRCode = require('qrcode');
+   14: 
+   15: const app = express();
+   16: 
+   17: applyHttpFoundation(app);
+   18: const PORT = process.env.PORT || 3000;
+   19: 
+   20: /*
+   21: =========================================================
+   22:  CONFIGURAÃ‡ÃƒO PIX
+   23: =========================================================
+   24: */
+   25: 
+   26: const PIX_KEY = '+5511986215473';
+   27: const PIX_CITY = 'SAO PAULO';
+   28: const PIX_MERCHANT_NAME = 'AUREA COSMETICS';
+   29: 
+   30: /*
+   31: =========================================================
+
+--- SERVER linhas 279-303 ---
+  279: =========================================================
+  280:  API â€” CRIAR PIX
+  281: =========================================================
+  282: */
+  283: 
+  284: app.post(
+  285:     '/api/create-pix-payment',
+  286:     async (req, res) => {
+  287: 
+  288:         try {
+  289: 
+  290:             const order = req.body || {};
+  291: 
+  292:             const amount = Number(
+  293:                 order.total
+  294:             );
+  295: 
+  296:             const orderId =
+  297:                 String(
+  298:                     order.id || ''
+  299:                 ).trim();
+  300: 
+  301:             if (
+  302:                 !Number.isFinite(amount) ||
+  303:                 amount <= 0
+
+--- SERVER linhas 306-330 ---
+  306:                     success: false,
+  307:                     message:
+  308:                         'Valor do pedido invÃ¡lido.'
+  309:                 });
+  310:             }
+  311: 
+  312:             const pixCode =
+  313:                 createPixPayload({
+  314:                     amount,
+  315:                     orderId
+  316:                 });
+  317: 
+  318:             /*
+  319:             -------------------------------------------------
+  320:              QR CODE
+  321:             -------------------------------------------------
+  322:             */
+  323: 
+  324:             const qrCodeDataUrl =
+  325:                 await QRCode.toDataURL(
+  326:                     pixCode,
+  327:                     {
+  328:                         errorCorrectionLevel: 'M',
+  329:                         margin: 2,
+  330:                         width: 320
+
+--- SERVER linhas 318-342 ---
+  318:             /*
+  319:             -------------------------------------------------
+  320:              QR CODE
+  321:             -------------------------------------------------
+  322:             */
+  323: 
+  324:             const qrCodeDataUrl =
+  325:                 await QRCode.toDataURL(
+  326:                     pixCode,
+  327:                     {
+  328:                         errorCorrectionLevel: 'M',
+  329:                         margin: 2,
+  330:                         width: 320
+  331:                     }
+  332:                 );
+  333: 
+  334:             console.log('');
+  335:             console.log(
+  336:                 '========================================'
+  337:             );
+  338:             console.log(
+  339:                 ' PIX GERADO'
+  340:             );
+  341:             console.log(
+  342:                 '========================================'
+
+--- SERVER linhas 319-343 ---
+  319:             -------------------------------------------------
+  320:              QR CODE
+  321:             -------------------------------------------------
+  322:             */
+  323: 
+  324:             const qrCodeDataUrl =
+  325:                 await QRCode.toDataURL(
+  326:                     pixCode,
+  327:                     {
+  328:                         errorCorrectionLevel: 'M',
+  329:                         margin: 2,
+  330:                         width: 320
+  331:                     }
+  332:                 );
+  333: 
+  334:             console.log('');
+  335:             console.log(
+  336:                 '========================================'
+  337:             );
+  338:             console.log(
+  339:                 ' PIX GERADO'
+  340:             );
+  341:             console.log(
+  342:                 '========================================'
+  343:             );
+
+--- SERVER linhas 320-344 ---
+  320:              QR CODE
+  321:             -------------------------------------------------
+  322:             */
+  323: 
+  324:             const qrCodeDataUrl =
+  325:                 await QRCode.toDataURL(
+  326:                     pixCode,
+  327:                     {
+  328:                         errorCorrectionLevel: 'M',
+  329:                         margin: 2,
+  330:                         width: 320
+  331:                     }
+  332:                 );
+  333: 
+  334:             console.log('');
+  335:             console.log(
+  336:                 '========================================'
+  337:             );
+  338:             console.log(
+  339:                 ' PIX GERADO'
+  340:             );
+  341:             console.log(
+  342:                 '========================================'
+  343:             );
+  344:             console.log(
+
+--- SERVER linhas 352-376 ---
+  352:             );
+  353:             console.log(
+  354:                 `TXID: ${normalizeTxid(orderId)}`
+  355:             );
+  356:             console.log('');
+  357:             console.log(
+  358:                 'PIX COPIA E COLA:'
+  359:             );
+  360:             console.log(
+  361:                 pixCode
+  362:             );
+  363:             console.log('');
+  364:             console.log(
+  365:                 'CRC16:',
+  366:                 pixCode.slice(-4)
+  367:             );
+  368:             console.log(
+  369:                 '========================================'
+  370:             );
+  371:             console.log('');
+  372: 
+  373:             return res.json({
+  374:                 success: true,
+  375: 
+  376:                 amount: Number(
+
+--- SERVER linhas 355-379 ---
+  355:             );
+  356:             console.log('');
+  357:             console.log(
+  358:                 'PIX COPIA E COLA:'
+  359:             );
+  360:             console.log(
+  361:                 pixCode
+  362:             );
+  363:             console.log('');
+  364:             console.log(
+  365:                 'CRC16:',
+  366:                 pixCode.slice(-4)
+  367:             );
+  368:             console.log(
+  369:                 '========================================'
+  370:             );
+  371:             console.log('');
+  372: 
+  373:             return res.json({
+  374:                 success: true,
+  375: 
+  376:                 amount: Number(
+  377:                     amount.toFixed(2)
+  378:                 ),
+  379: 
+
+--- SERVER linhas 360-384 ---
+  360:             console.log(
+  361:                 pixCode
+  362:             );
+  363:             console.log('');
+  364:             console.log(
+  365:                 'CRC16:',
+  366:                 pixCode.slice(-4)
+  367:             );
+  368:             console.log(
+  369:                 '========================================'
+  370:             );
+  371:             console.log('');
+  372: 
+  373:             return res.json({
+  374:                 success: true,
+  375: 
+  376:                 amount: Number(
+  377:                     amount.toFixed(2)
+  378:                 ),
+  379: 
+  380:                 pix_key: PIX_KEY,
+  381: 
+  382:                 pix_city: PIX_CITY,
+  383: 
+  384:                 pix_merchant_name:
+
+--- SERVER linhas 381-405 ---
+  381: 
+  382:                 pix_city: PIX_CITY,
+  383: 
+  384:                 pix_merchant_name:
+  385:                     PIX_MERCHANT_NAME,
+  386: 
+  387:                 pix_code: pixCode,
+  388: 
+  389:                 qr_code: qrCodeDataUrl
+  390:             });
+  391: 
+  392:         } catch (error) {
+  393: 
+  394:             console.error(
+  395:                 '[PIX] Erro ao gerar PIX:',
+  396:                 error
+  397:             );
+  398: 
+  399:             return res.status(500).json({
+  400:                 success: false,
+  401:                 message:
+  402:                     error?.message ||
+  403:                     'Erro ao gerar PIX.'
+  404:             });
+  405:         }
+
+--- SERVER linhas 383-407 ---
+  383: 
+  384:                 pix_merchant_name:
+  385:                     PIX_MERCHANT_NAME,
+  386: 
+  387:                 pix_code: pixCode,
+  388: 
+  389:                 qr_code: qrCodeDataUrl
+  390:             });
+  391: 
+  392:         } catch (error) {
+  393: 
+  394:             console.error(
+  395:                 '[PIX] Erro ao gerar PIX:',
+  396:                 error
+  397:             );
+  398: 
+  399:             return res.status(500).json({
+  400:                 success: false,
+  401:                 message:
+  402:                     error?.message ||
+  403:                     'Erro ao gerar PIX.'
+  404:             });
+  405:         }
+  406:     }
+  407: );
+
+--- SERVER linhas 444-468 ---
+  444:             ` Site: http://localhost:${PORT}/`
+  445:         );
+  446:         console.log(
+  447:             ` Checkout: http://localhost:${PORT}/pages/checkout.html`
+  448:         );
+  449:         console.log(
+  450:             ` API PIX: http://localhost:${PORT}/api/create-pix-payment`
+  451:         );
+  452:         console.log(
+  453:             ` Chave PIX: ${PIX_KEY}`
+  454:         );
+  455:         console.log(
+  456:             ` Cidade: ${PIX_CITY}`
+  457:         );
+  458:         console.log(
+  459:             '========================================'
+  460:         );
+  461:         console.log('');
+  462:     }
+  463: );
+  464: 
+  465: 
+  466: 
+  467: 
+  468: 
+
+============================================================
+[03] FIREBASE CONFIG � apenas nomes das exportacoes
+============================================================
+    1: import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    2: import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+   11:   appId: "1:1052334488431:web:c8d2071a18bdb6f82e469a",
+   15: const app = initializeApp(firebaseConfig);
+   17: export const db = getFirestore(app);
+   18: export const auth = getAuth(app);
+
+============================================================
+[04] DEPENDENCIAS package.json
+============================================================
+firebase: True
+firebase-admin: True
+pg: False
+postgres: False
+express: True

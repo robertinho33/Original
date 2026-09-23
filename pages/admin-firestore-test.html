@@ -1,0 +1,113 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AURÉA — Diagnóstico Firestore</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.5;
+            background: #f7f7f7;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #111;
+            color: #eee;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .ok {
+            color: #087f23;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #b00020;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<main>
+
+    <h1>AURÉA — Firestore</h1>
+
+    <p id="status">
+        Testando conexão...
+    </p>
+
+    <pre id="output"></pre>
+
+</main>
+
+<script type="module">
+
+import {
+    waitForAuthorizedAdmin
+} from '../js/auth/admin-guard.js';
+
+import {
+    getAdminFirestoreHealth
+} from '../js/admin/admin-firestore.js';
+
+const status =
+    document.getElementById('status');
+
+const output =
+    document.getElementById('output');
+
+try {
+
+    await waitForAuthorizedAdmin();
+
+    const health =
+        await getAdminFirestoreHealth();
+
+    status.textContent =
+        'FIRESTORE CONECTADO';
+
+    status.className = 'ok';
+
+    output.textContent =
+        JSON.stringify(
+            health,
+            null,
+            2
+        );
+
+} catch (error) {
+
+    console.error(error);
+
+    status.textContent =
+        'ERRO NO FIRESTORE';
+
+    status.className = 'error';
+
+    output.textContent =
+        error?.message ||
+        String(error);
+}
+
+</script>
+
+</body>
+</html>

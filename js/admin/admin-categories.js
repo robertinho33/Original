@@ -1,71 +1,64 @@
-﻿/**
- * AUREA ADMIN — CATEGORIAS
- * Camada de integração do módulo de categorias.
- */
-(() => {
-    "use strict";
+﻿import { waitForAuthorizedAdmin } from "../auth/admin-guard.js";
+import { listCategories } from "./category-repository.js";
 
-    const API = window.AdminAPI;
+const result = document.getElementById("categoryList");
 
-    if (!API) {
-        console.error("[ADMIN] AdminAPI não carregada.");
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function renderCategories(categories) {
+    if (!categories.length) {
+        result.innerHTML = `
+            <div class="empty-state">
+                Nenhuma categoria cadastrada.
+            </div>
+        `;
         return;
     }
 
-    async function loadCategories() {
-        const container =
-            document.querySelector("#categoriesList") ||
-            document.querySelector("[data-module='categories']");
+    result.innerHTML = categories.map(category => `
+        <article class="category-card">
+            <div>
+                <strong>${escapeHtml(category.name)}</strong>
+                <p>${escapeHtml(category.description || "")}</p>
+            </div>
 
-        try {
-            const data = await API.get("/categories");
+            <span>
+                Ordem: ${escapeHtml(category.sortOrder ?? 0)}
+            </span>
+        </article>
+    `).join("");
+}
 
-            const categories = Array.isArray(data)
-                ? data
-                : Array.isArray(data.categories)
-                    ? data.categories
-                    : [];
+async function init() {
+    result.textContent = "Autenticando administrador...";
 
-            if (!container) {
-                console.warn("[ADMIN] Container de categorias não encontrado.");
-                return categories;
-            }
+    try {
+        await waitForAuthorizedAdmin();
 
-            container.innerHTML = categories.length
-                ? categories.map(category => `
-                    <div class="admin-category-item" data-id="${category.id ?? ""}">
-                        <span>${escapeHtml(category.name ?? category.nome ?? "Sem nome")}</span>
-                    </div>
-                `).join("")
-                : "<p>Nenhuma categoria encontrada.</p>";
+        result.textContent = "Carregando categorias...";
 
-            return categories;
-        } catch (error) {
-            console.error("[ADMIN] Erro ao carregar categorias:", error);
+        const categories = await listCategories();
 
-            if (container) {
-                container.innerHTML =
-                    "<p>Não foi possível carregar as categorias.</p>";
-            }
+        console.log("[AUREA] Categorias carregadas:", categories);
 
-            return [];
-        }
+        renderCategories(categories);
+    } catch (error) {
+        console.error("[AUREA] Erro ao carregar categorias:", error);
+
+        result.innerHTML = `
+            <div class="error-state">
+                <strong>Erro ao carregar categorias</strong>
+                <p>${escapeHtml(error.message)}</p>
+            </div>
+        `;
     }
+}
 
-    function escapeHtml(value) {
-        return String(value)
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-
-    window.AdminCategories = {
-        load: loadCategories
-    };
-
-    document.addEventListener("DOMContentLoaded", () => {
-        loadCategories();
-    });
-})();
+init();

@@ -1,0 +1,135 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURÉA — Estrutura dos Pedidos</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        #status {
+            font-weight: bold;
+        }
+
+        pre {
+            background: #111;
+            color: #eee;
+            padding: 20px;
+            border-radius: 8px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .ok {
+            color: #087f23;
+        }
+
+        .error {
+            color: #b00020;
+        }
+    </style>
+</head>
+
+<body>
+
+<main>
+
+    <h1>AURÉA — Estrutura dos pedidos</h1>
+
+    <p id="status">
+        Lendo Firestore...
+    </p>
+
+    <pre id="output"></pre>
+
+</main>
+
+<script type="module">
+
+import {
+    waitForAuthorizedAdmin
+} from '../js/auth/admin-guard.js';
+
+import {
+    getCollection
+} from '../js/admin/admin-firestore.js';
+
+const status =
+    document.getElementById('status');
+
+const output =
+    document.getElementById('output');
+
+try {
+
+    await waitForAuthorizedAdmin();
+
+    const orders =
+        await getCollection('orders');
+
+    const summary = {
+
+        totalDocuments:
+            orders.length,
+
+        fields: [
+            ...new Set(
+                orders.flatMap(order =>
+                    Object.keys(order)
+                )
+            )
+        ].sort(),
+
+        documents: orders
+
+    };
+
+    status.textContent =
+        `LEITURA CONCLUÍDA — ${orders.length} pedidos`;
+
+    status.className = 'ok';
+
+    output.textContent =
+        JSON.stringify(
+            summary,
+            null,
+            2
+        );
+
+} catch (error) {
+
+    console.error(error);
+
+    status.textContent =
+        'ERRO AO LER ORDERS';
+
+    status.className = 'error';
+
+    output.textContent =
+        error?.message ||
+        String(error);
+}
+
+</script>
+
+</body>
+</html>

@@ -33,3 +33,4 @@ coverage/
 Thumbs.db
 .env copy
 serviceAccountKey.json
+*.firebase-adminsdk*.json

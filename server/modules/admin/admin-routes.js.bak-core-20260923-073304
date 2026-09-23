@@ -1,11 +1,9 @@
-"use strict";
+﻿"use strict";
 
 const express = require("express");
 
 const adminAuth =
     require("./admin-auth");
-
-const adminCoreController = require("./controllers/admin-core-controller");
 
 const adminController =
     require("./controllers/admin-controller");
@@ -28,11 +26,6 @@ router.use(adminAuth);
    ============================================================ */
 
 router.get("/dashboard", adminController.dashboard);
-router.get("/core/dashboard", adminCoreController.dashboard);
-router.get("/core/orders", adminCoreController.orders);
-router.get("/core/products", adminCoreController.products);
-router.get("/core/customers", adminCoreController.customers);
-router.get("/core/tracking", adminCoreController.tracking);
 router.get("/orders", adminController.orders);
 router.get("/products", adminController.products);
 router.get("/categories", adminController.categories);

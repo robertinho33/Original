@@ -1,0 +1,94 @@
+﻿============================================================
+[07.17-R2] MAPA DE ROTAS — CLIENTES
+SOMENTE LEITURA
+============================================================
+
+[01] ROTAS BACKEND
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\admin-report-controller.js:37: const data = await reportService.getCustomerReport();
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:126: async function customerReport() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:218: customerReport,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-report-repository.js:50: async function getCustomerReport() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-report-repository.js:79: getCustomerReport
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\final-admin-repository.js:37: async function customerReport() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\final-admin-repository.js:104: customerReport,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-report-service.js:11: async function getCustomerReport() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-report-service.js:12: return reportRepository.getCustomerReport();
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-report-service.js:18: getCustomerReport
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\admin-routes.js:33: router.get("/customers", adminController.customers);
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\admin-routes.js:109: "/reports/customers",
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\admin-routes.js:114: data: await firestoreRepository.customerReport()
+
+[02] CONTROLLERS / SERVICES / REPOSITORIES
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\admin-customer-controller.js:1: const service = require("../services/admin-customer-service");
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\admin-order-details-controller.js:5: require("../repositories/commercial-history-repository");
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\customer-details-controller.js:2: require("../services/customer-details-service");
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-customer-service.js:1: const repository = require("../repositories/admin-customer-repository");
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-report-service.js:1: const reportRepository = require("../repositories/admin-report-repository");
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\customer-details-service.js:2: require("../repositories/customer-details-repository");
+
+[03] FRONTEND — CLIENTES
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:88: request("/customers"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:117: customerReport: () =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:118: request("/reports/customers"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:132: customerHistory: (id) =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:133: request(`/customers/${encodeURIComponent(id)}/history`),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:11: async function loadCustomers() {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:17: const data = await API.get("/customers");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:596: await adminApi.customers();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:687: renderCustomers(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1164: function renderCustomers(content, customers) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:237: export async function listCustomers(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:260: export async function countCustomers() {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\gemini-code-1789986645525.js:69: request("/customers"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\gemini-code-1789986645525.js:95: customerReport: () =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\gemini-code-1789986645525.js:96: request("/reports/customers"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\gemini-code-1789986645525.js:104: customerHistory: (id) =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\gemini-code-1789986645525.js:105: request(`/customers/${id}/history`),
+
+[04] ADMIN-API
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:13: async function request(path, options = {}) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:59: request("/overview"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:62: request(`/overview/timeline?days=${days}`),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:65: request("/overview/alerts"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:68: request("/dashboard"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:79: request("/products"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:82: request("/categories"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:85: request("/inventory"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:87: customers: () =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:88: request("/customers"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:91: request("/finance"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:94: request("/coupons"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:97: request("/logistics"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:100: request("/reports"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:103: request("/audit"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:106: request("/settings"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:112: request("/reports/sales"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:115: request("/reports/products"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:117: customerReport: () =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:118: request("/reports/customers"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:124: request(`/search?q=${encodeURIComponent(term)}`),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:130: request(`/orders/${encodeURIComponent(id)}/history`),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:132: customerHistory: (id) =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:133: request(`/customers/${encodeURIComponent(id)}/history`),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:139: request("/inventory/movements"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:142: request("/logistics/queue"),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:145: request("/finance/overview")
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:157: request(path, {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:163: request(path, {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:170: request(path, {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js:177: request(path, {
+
+[05] MONTAGEM DA API ADMIN
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\admin-routes.js:22: router.use(adminAuth);
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\index.js:3: const adminRoutes =
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\index.js:7: adminRoutes
+
+============================================================
+[07.17-R2] CONCLUIDO — SOMENTE LEITURA
+NENHUM DADO ALTERADO
+============================================================

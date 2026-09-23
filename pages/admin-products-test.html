@@ -1,0 +1,126 @@
+﻿<!doctype html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AURÉA — Teste de Produtos</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        pre {
+            background: #111;
+            color: #eee;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+
+        .ok {
+            color: #087f23;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #b00020;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<main>
+
+    <h1>AURÉA — Produtos</h1>
+
+    <p id="status">
+        Testando repository...
+    </p>
+
+    <pre id="output"></pre>
+
+</main>
+
+<script type="module">
+
+import {
+    waitForAuthorizedAdmin
+} from '../js/auth/admin-guard.js';
+
+import {
+    listProducts
+} from '../js/admin/product-repository.js';
+
+const status =
+    document.getElementById('status');
+
+const output =
+    document.getElementById('output');
+
+try {
+
+    await waitForAuthorizedAdmin();
+
+    const products =
+        await listProducts();
+
+    status.textContent =
+        `REPOSITORY OK — ${products.length} produtos`;
+
+    status.className = 'ok';
+
+    output.textContent =
+        JSON.stringify(
+            {
+                collection: 'products',
+                count: products.length,
+                products
+            },
+            null,
+            2
+        );
+
+} catch (error) {
+
+    console.error(error);
+
+    status.textContent =
+        'ERRO NO PRODUCT REPOSITORY';
+
+    status.className = 'error';
+
+    output.textContent =
+        error?.message ||
+        String(error);
+}
+
+</script>
+
+</body>
+
+</html>

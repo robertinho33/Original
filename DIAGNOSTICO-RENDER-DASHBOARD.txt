@@ -1,0 +1,812 @@
+﻿============================================================
+AUREA — ETAPA 04
+LOCALIZACAO DO RENDER REAL DO DASHBOARD
+============================================================
+
+[1] TODOS OS MODULOS IMPORTADOS POR ADMIN.JS
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1: const adminApi = window.AdminAPI;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:3: import {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:4:     renderOperationalEnvironment
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:18:     "dashboard",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:34:     section: "dashboard",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:145: function renderStatus(status) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:377:                                             typeof column.render === "function"
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:378:                                                 ? column.render(row)
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:422:         section = "dashboard";
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:431:     if (section === "dashboard") {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:433:         await renderOperationalEnvironment(root);
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:436:             "Dashboard",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:576:                     await adminApi.orders();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:581:                     await adminApi.products();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:586:                     await adminApi.categories();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:591:                     await adminApi.inventory();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:596:                     await adminApi.customers();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:601:                     await adminApi.finance();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:606:                     await adminApi.coupons();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:611:                     await adminApi.logistics();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:616:                     await adminApi.reports();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:621:                     await adminApi.audit();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:626:                     await adminApi.settings();
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:643:             renderOrders(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:654:             renderProducts(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:665:             renderCategories(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:676:             renderInventory(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:687:             renderCustomers(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:698:             renderFinance(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:709:             renderCoupons(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:720:             renderLogistics(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:731:             renderReports(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:742:             renderAudit(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:753:             renderSettings(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:789: function renderProducts(content, products) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:849:                         render: row => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:869:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:881:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:893:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:905:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:932: function renderCategories(content, categories) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:970:                         render: row => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:990:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:991:                             renderStatus(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1013: function renderInventory(content, inventory) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1097:                         render: row => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1117:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1129:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1141:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1164: function renderCustomers(content, customers) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1197:                         render: row => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1222:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1234:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1235:                             renderStatus(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1257: function renderFinance(content, finance) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1404: function renderCoupons(content, coupons) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1437:                         render: row => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1452:                         render: row => {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1487:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1488:                             renderStatus(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1499:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1522: function renderLogistics(content, shipments) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1598:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1599:                             renderStatus(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1610:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1633: function renderReports(content, reports) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1712:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1724:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1736:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1757:                         render: row => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1772:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1784:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1796:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1797:                             renderStatus(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1819: function renderAudit(content, logs) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1852:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1868:                         render: row => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1908:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1909:                             renderStatus(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1931: function renderSettings(content, settings) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1964:                         render: row => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1979:                         render: row => {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2007:                         render: row =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2030: function renderOrders(content, orders) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2087:                         ${renderStatus(orderStatus)}
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2091:                         ${renderStatus(paymentStatus)}
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2245:             await adminApi.orderDetails(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2263:         renderOrderDetails(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2362: function renderOrderDetails(content, order) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2537:                             ${renderStatus(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2552:                             ${renderStatus(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2724: load("dashboard");
+
+[2] ARQUIVOS JS DO ADMIN
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-api.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-audit.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-coupons.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-finance.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-firestore.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-inventory.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login-antigo.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-logistics.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders-firebase-bridge.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-reports.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-settings.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\category-model.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\category-repository.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-detail-service.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-service.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\gemini-code-1789986645525.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\inventory-repository.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\admin-formatters.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\modules\operational-environment.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\order-model.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\order-repository.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\product-model.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\product-repository.js
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js
+
+[3] BUSCA POR IDS E TEXTOS DAS METRICAS
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:17:         description: "Produtos Ecobelle",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:23:         description: "Produtos Bela Pro",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:29:         description: "Produtos Shine Express",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:35:         description: "Produtos Industria pra favela",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:41:         description: "Produtos EcoBelle Skin",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:47:         description: "Produtos sem categoria definida",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:26:                 console.warn("[ADMIN] Container de clientes não encontrado.");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:41:             console.error("[ADMIN] Erro ao carregar clientes:", error);
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:45:                     "<p>Não foi possível carregar os clientes.</p>";
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-inventory.js:22:         BAIXO: 'Estoque baixo',
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-inventory.js:23:         ZERADO: 'Sem estoque'
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:209:                 Sem estoque
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:217:                 Estoque baixo
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:452:             "Produtos",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:467:             "Clientes",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:786:    PRODUTOS
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:821:                     "Produtos cadastrados",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:831:                     "Sem estoque",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:844:                 "Catálogo de produtos",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1079:                     "Estoque baixo",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1084:                     "Sem estoque",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1161:    CLIENTES
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1179:                     "Clientes cadastrados",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:1192:                 "Base de clientes",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:675:                  * Eles não representam produtos comerciais.
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:791:         `Importar ${validationResult.products.length} produtos para o Firestore?`
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:833:             `Importação concluída com sucesso.\n\nProdutos importados: ${imported}`
+
+[4] BUSCA POR innerHTML / textContent / querySelector NO DASHBOARD
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-audit.js:13:             document.querySelector("#auditList") ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-audit.js:14:             document.querySelector("[data-module='audit']");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-audit.js:32:             container.innerHTML = entries.length
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-audit.js:66:                 container.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:52: const result = document.getElementById("seedResult");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:53: const button = document.getElementById("createCategories");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories-seed.js:57:         result.textContent = message;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories.js:4: const result = document.getElementById("categoryList");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories.js:17:         result.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories.js:25:     result.innerHTML = categories.map(category => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories.js:40:     result.textContent = "Autenticando administrador...";
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories.js:45:         result.textContent = "Carregando categorias...";
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-categories.js:55:         result.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-coupons.js:13:             document.querySelector("#couponsList") ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-coupons.js:14:             document.querySelector("[data-module='coupons']");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-coupons.js:30:             container.innerHTML = coupons.length
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-coupons.js:56:                 container.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:13:             document.querySelector("#customersList") ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:14:             document.querySelector("[data-module='customers']");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:30:             container.innerHTML = customers.length
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:44:                 container.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-finance.js:13:             document.querySelector("#financeList") ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-finance.js:14:             document.querySelector("[data-module='finance']");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-finance.js:32:             container.innerHTML = entries.length
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-finance.js:46:                 container.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-inventory.js:31:         document.querySelector('#inventoryList') ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-inventory.js:32:         document.querySelector(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-inventory.js:48:         container.innerHTML = items.length
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-inventory.js:94:         container.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login-antigo.js:3: const form = document.querySelector("#adminLoginForm");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login-antigo.js:4: const input = document.querySelector("#adminToken");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login-antigo.js:5: const button = document.querySelector("#adminLoginButton");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login-antigo.js:6: const message = document.querySelector("#adminLoginError");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login-antigo.js:13:     message.textContent = text;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login-antigo.js:23:     message.textContent = "";
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login-antigo.js:33:     button.textContent = loading
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:7:     document.getElementById('adminLoginForm');
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:10:     document.getElementById('adminEmail');
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:13:     document.getElementById('adminPassword');
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:16:     document.getElementById('adminLoginError');
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:19:     document.getElementById('adminLoginButton');
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:27:     errorDiv.textContent = message;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:37:     errorDiv.textContent = '';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:68:                 button.textContent = 'Entrando...';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-login.js:96:                     button.textContent = 'Entrar';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-logistics.js:13:             document.querySelector("#logisticsList") ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-logistics.js:14:             document.querySelector("[data-module='logistics']");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-logistics.js:32:             container.innerHTML = shipments.length
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-logistics.js:62:                 container.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:9:     total: document.querySelector('#ordersTotal'),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:10:     pending: document.querySelector('#ordersPending'),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:11:     paid: document.querySelector('#ordersPaid'),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:12:     cancelled: document.querySelector('#ordersCancelled'),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:13:     tableBody: document.querySelector('#ordersTableBody'),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:14:     empty: document.querySelector('#ordersEmpty'),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:15:     details: document.querySelector('#orderDetails'),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:16:     refresh: document.querySelector('#refreshOrders')
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:75:     elements.total.textContent = orders.length;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:77:     elements.pending.textContent = orders.filter(order =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:81:     elements.paid.textContent = orders.filter(order =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:85:     elements.cancelled.textContent = orders.filter(order =>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:92:         elements.tableBody.innerHTML = '';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:99:     elements.tableBody.innerHTML = orders.map(order => `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:141:     document.querySelectorAll('.order-view-button').forEach(button => {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:165:     elements.details.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:355:         .querySelector('#closeOrderDetails')
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:361:         .querySelector('#saveOrderStatus')
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:364:             const select = document.querySelector('#orderStatusSelect');
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:425:         elements.tableBody.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:443:         elements.tableBody.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-reports.js:13:             document.querySelector("#reportsList") ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-reports.js:14:             document.querySelector("[data-module='reports']");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-reports.js:30:             container.innerHTML = reports.length
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-reports.js:57:                 container.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-settings.js:13:             document.querySelector("#settingsList") ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-settings.js:14:             document.querySelector("[data-module='settings']");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-settings.js:35:             container.innerHTML = settings.length
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-settings.js:66:                 container.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:9:     document.querySelector("#admin-root");
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:12:     document.querySelectorAll(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:517:     root.innerHTML =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:531:         document.querySelector(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:536:         titleElement.textContent = title;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:540:         document.querySelector(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:545:         descriptionElement.textContent =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:558:         root.querySelector(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2212:         document.querySelector(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2217:         modal?.querySelector(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2235:     content.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2270:         content.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2288:         document.querySelector(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2296:     document.body.insertAdjacentHTML(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2454:     content.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2689:                 document.querySelector(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:33: const $ = selector => document.querySelector(selector);
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:536:     $('#validCount').textContent = result.products.length;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:537:     $('#errorCount').textContent = result.errors.length;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:538:     $('#duplicateCount').textContent = result.duplicates.length;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:539:     $('#existingCount').textContent = result.existing.length;
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:545:     tbody.innerHTML = '';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:552:         tr.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:568:         container.innerHTML = `
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:577:     container.innerHTML = errors
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:591:         container.innerHTML = '';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:595:     container.innerHTML = duplicates
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:608:         container.innerHTML = '';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:612:     container.innerHTML = existing
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:641:     button.textContent = 'Validando...';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:643:     $('#resultMessage').textContent = 'Lendo fontes oficiais...';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:752:             $('#resultMessage').textContent =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:755:             $('#resultMessage').textContent =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:762:         $('#resultMessage').textContent =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:769:         button.textContent = 'Validar catálogo';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:801:     button.textContent = 'Importando...';
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:829:         $('#resultMessage').textContent =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:839:         $('#resultMessage').textContent =
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\products-importer.js:848:         button.textContent = 'Importar para Firestore';
+
+[5] REGIAO FINAL DE ADMIN.JS
+============================================================
+}
+
+
+/* ============================================================
+   LOAD PRINCIPAL
+   ============================================================ */
+
+async function load(section) {
+
+    if (!root) {
+
+        console.error(
+            "[AUREA ADMIN] #admin-root nÃ£o encontrado."
+        );
+
+        return;
+    }
+
+
+    if (!sections.includes(section)) {
+
+        section = "dashboard";
+    }
+
+
+    state.section = section;
+
+    setActiveNavigation(section);
+
+
+    if (section === "dashboard") {
+
+        await renderOperationalEnvironment(root);
+
+        updateHeader(
+            "Dashboard",
+            "VisÃ£o geral da operaÃ§Ã£o da AURÃ‰A"
+        );
+
+        return;
+    }
+
+
+    const labels = {
+
+        orders: [
+            "Pedidos",
+            "GestÃ£o completa dos pedidos."
+        ],
+
+        products: [
+            "Produtos",
+            "CatÃ¡logo, SKU, preÃ§os e disponibilidade."
+        ],
+
+        categories: [
+            "Categorias",
+            "OrganizaÃ§Ã£o do catÃ¡logo."
+        ],
+
+        inventory: [
+            "Estoque",
+            "Saldo, movimentaÃ§Ãµes e disponibilidade."
+        ],
+
+        customers: [
+            "Clientes",
+            "Base comercial e histÃ³rico."
+        ],
+
+        finance: [
+            "Financeiro",
+            "Receitas, pagamentos e indicadores."
+        ],
+
+        coupons: [
+            "Cupons",
+            "Campanhas e desempenho comercial."
+        ],
+
+        logistics: [
+            "LogÃ­stica",
+            "ExpediÃ§Ã£o, envio e rastreamento."
+        ],
+
+        reports: [
+            "RelatÃ³rios",
+            "InteligÃªncia operacional e comercial."
+        ],
+
+        audit: [
+            "Auditoria",
+            "HistÃ³rico das operaÃ§Ãµes administrativas."
+        ],
+
+        settings: [
+            "ConfiguraÃ§Ãµes",
+            "ParÃ¢metros centrais da AURÃ‰A."
+        ]
+
+    };
+
+
+    const info =
+        labels[section] || [
+            "AURÃ‰A ADMIN",
+            ""
+        ];
+
+
+    updateHeader(
+        info[0],
+        info[1]
+    );
+
+
+    root.innerHTML =
+        shell(
+            info[0],
+            info[1]
+        );
+
+
+    await loadModuleData(section);
+}
+
+
+function updateHeader(title, description) {
+
+    const titleElement =
+        document.querySelector(
+            "#adminSectionTitle"
+        );
+
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+
+    const descriptionElement =
+        document.querySelector(
+            "#adminPageDescription"
+        );
+
+    if (descriptionElement) {
+        descriptionElement.textContent =
+            description;
+    }
+}
+
+
+/* ============================================================
+   CARREGAMENTO DOS MODULOS
+   ============================================================ */
+
+async function loadModuleData(section) {
+
+    const content =
+        root.querySelector(
+            ".admin-loading"
+        );
+
+    if (!content) {
+        return;
+    }
+
+
+    try {
+
+        let response;
+
+
+        switch (section) {
+
+            case "orders":
+                response =
+                    await adminApi.orders();
+                break;
+
+            case "products":
+                response =
+                    await adminApi.products();
+                break;
+
+            case "categories":
+                response =
+                    await adminApi.categories();
+                break;
+
+            case "inventory":
+                response =
+                    await adminApi.inventory();
+                break;
+
+            case "customers":
+                response =
+                    await adminApi.customers();
+                break;
+
+            case "finance":
+                response =
+                    await adminApi.finance();
+                break;
+
+            case "coupons":
+                response =
+                    await adminApi.coupons();
+                break;
+
+            case "logistics":
+                response =
+                    await adminApi.logistics();
+                break;
+
+            case "reports":
+                response =
+                    await adminApi.reports();
+                break;
+
+            case "audit":
+                response =
+                    await adminApi.audit();
+                break;
+
+            case "settings":
+                response =
+                    await adminApi.settings();
+                break;
+
+            default:
+                response = {
+                    success: true,
+                    data: []
+                };
+        }
+
+
+        const data =
+            response?.data ?? [];
+
+
+        if (section === "orders") {
+
+            renderOrders(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "products") {
+
+            renderProducts(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "categories") {
+
+            renderCategories(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "inventory") {
+
+            renderInventory(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "customers") {
+
+            renderCustomers(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "finance") {
+
+            renderFinance(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "coupons") {
+
+            renderCoupons(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "logistics") {
+
+            renderLogistics(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "reports") {
+
+            renderReports(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "audit") {
+
+            renderAudit(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+        if (section === "settings") {
+
+            renderSettings(
+                content,
+                data
+            );
+
+            return;
+        }
+
+
+    } catch (error) {
+
+        content.outerHTML = `
+
+            <div class="admin-error">
+
+                <strong>
+                    NÃ£o foi possÃ­vel carregar este mÃ³dulo.
+                </strong>
+
+                <div style="margin-top:7px;">
+                    ${escapeHtml(
+                        error?.message ||
+                        "Erro desconhecido."
+                    )}
+                </div>
+
+            </div>
+        `;
+    }
+}
+
+
+/* ============================================================
+   PRODUTOS
+   ============================================================ */
+
+function renderProducts(content, products) {
+
+    const list =
+        Array.isArray(products)
+            ? products
+            : [];
+
+    const total =
+        list.length;
+
+    const available =
+        list.filter(product =>
+            Number(
+                pick(product, ["stock", "inventory", "quantity"], 0)
+            ) > 0
+        ).length;
+
+    const withoutStock =
+        list.filter(product =>
+            Number(
+                pick(product, ["stock", "inventory", "quantity"], 0)
+            ) <= 0
+        ).length;
+
+
+    const html = `
+
+        <div class="admin-module-data">
+
+            <div class="admin-metrics-grid">
+
+                ${metricCard(
+                    "Produtos cadastrados",
+                    formatNumber(total)
+                )}
+
+                ${metricCard(
+                    "DisponÃ­veis",
+                    formatNumber(available)
+                )}
+
+                ${metricCard(
+                    "Sem estoque",
+                    formatNumber(withoutStock)
+                )}
+
+                ${metricCard(
+                    "Fonte",
+                    "Firebase / Firestore"
+                )}
+
+            </div>
+
+
+            ${table(
+                "CatÃ¡logo de produtos",
+
+                [
+                    {
+                        label: "Produto",
+                        render: row => `
+                            <strong>
+                                ${escapeHtml(
+                                    pick(
+                                        row,
+                                        ["name", "product_name", "title"],
+                                        "Produto"
+                                    )
+                                )}
+                            </strong>
+                        `
+                    },
+
+                    {
+                        label: "SKU",
+                        keys: ["sku", "code", "product_code"]
+                    },
+
+                    {
+                        label: "Categoria",
+                        render: row =>
+                            escapeHtml(
+                                pick(
+                                    row,
+                                    ["category_name", "category"],
+                                    "â€”"
+                                )
+                            )
+                    },
+
+                    {
+                        label: "PreÃ§o",
+                        render: row =>
+                            formatCurrency(
+                                pick(
+                                    row,
+                                    ["price", "sale_price", "amount"],
+                                    0
+                                )
+                            )
+                    },
+
+                    {
+                        label: "Estoque",
+                        render: row =>
+                            formatNumber(
+                                pick(
+                                    row,
+                                    ["stock", "inventory", "quantity"],
+                                    0
+                                )
+                            )
+                    },
+
+                    {
+                        label: "SituaÃ§Ã£o",
+                        render: row =>
+                            stockStatus(
+                                pick(
+                                    row,
+                                    ["stock", "inventory", "quantity"],
+                                    0
+                                )
+                            )
+                    }
+                ],
+
+                list
+            )}
+
+        </div>
+    `;
+
+============================================================
+FIM — SOMENTE LEITURA
+NENHUM ARQUIVO DO PROJETO FOI ALTERADO.
+============================================================

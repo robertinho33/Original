@@ -1,0 +1,279 @@
+﻿============================================================
+AUREA — ETAPA 03
+CONTRATO DASHBOARD ↔ API
+============================================================
+
+[1] ADMIN-API.JS — OBJETO DE OVERVIEW
+============================================================
+              };
+
+    if (
+        !response.ok ||
+        data.success === false
+    ) {
+
+        throw new Error(
+            data.error ||
+            data.message ||
+            `Erro administrativo ${response.status}`
+        );
+    }
+
+    return data;
+}
+
+const adminApi = {
+
+    overview:
+        () => request("/overview"),
+
+    timeline:
+        (days = 30) =>
+            request(
+                `/overview/timeline?days=${days}`
+            ),
+
+    alerts:
+        () => request("/overview/alerts"),
+
+    dashboard:
+        () => request("/dashboard"),
+
+    orders:
+        () =>
+            window.AdminFirebaseOrders.list(),
+
+    orderDetails:
+        orderId =>
+            window.AdminFirebaseOrders.details(
+                orderId
+            ),
+
+    products:
+        () => request("/products"),
+
+    categories:
+        () => request("/categories"),
+
+    inventory:
+        () => request("/inventory"),
+
+    customers:
+        () => request("/customers"),
+
+    finance:
+        () => request("/finance"),
+
+    coupons:
+        () => request("/coupons"),
+
+    logistics:
+        () => request("/logistics"),
+
+    reports:
+        () => request("/reports"),
+
+    audit:
+        () => request("/audit"),
+
+[2] ADMIN.JS — REGIAO DE CARREGAMENTO DO DASHBOARD
+============================================================
+
+import {
+    renderOperationalEnvironment
+} from "./modules/operational-environment.js";
+
+
+const root =
+    document.querySelector("#admin-root");
+
+const navigation =
+    document.querySelectorAll(
+        "[data-admin-section]"
+    );
+
+
+const sections = [
+    "dashboard",
+    "orders",
+    "products",
+    "categories",
+    "inventory",
+    "customers",
+    "finance",
+    "coupons",
+    "logistics",
+    "reports",
+    "audit",
+    "settings"
+];
+
+
+const state = {
+    section: "dashboard",
+    ready: false
+};
+
+
+/* ============================================================
+   UTILITARIOS
+   ============================================================ */
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+function formatCurrency(value) {
+
+    const number =
+        Number(value) || 0;
+
+    return number.toLocaleString(
+        "pt-BR",
+        {
+            style: "currency",
+            currency: "BRL"
+        }
+    );
+}
+
+
+function formatNumber(value) {
+
+    const number =
+        Number(value);
+
+    if (!Number.isFinite(number)) {
+        return "0";
+    }
+
+    return number.toLocaleString("pt-BR");
+}
+
+
+function formatDate(value) {
+
+    if (!value) {
+        return "â€”";
+    }
+
+    const date =
+        new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return escapeHtml(value);
+    }
+
+    return date.toLocaleString(
+        "pt-BR",
+        {
+            dateStyle: "short",
+            timeStyle: "short"
+        }
+    );
+}
+
+
+function pick(object, keys, fallback = null) {
+
+    if (!object || typeof object !== "object") {
+        return fallback;
+    }
+
+    for (const key of keys) {
+
+        if (
+            object[key] !== undefined &&
+            object[key] !== null &&
+            object[key] !== ""
+        ) {
+            return object[key];
+        }
+    }
+
+    return fallback;
+}
+
+
+function labelize(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "â€”";
+    }
+
+    return String(value)
+        .replaceAll("_", " ")
+        .replaceAll("-", " ")
+        .replace(/\b\w/g, char =>
+            char.toUpperCase()
+        );
+}
+
+
+function renderStatus(status) {
+
+    const value =
+        String(status ?? "â€”");
+
+    const normalized =
+        value
+            .toLowerCase()
+            .trim();
+
+    let label =
+        labelize(value);
+
+    if (normalized === "paid") {
+        label = "Pago";
+    }
+
+    else if (normalized === "pending") {
+        label = "Pendente";
+    }
+
+    else if (
+        normalized === "cancelled" ||
+        normalized === "canceled"
+    ) {
+        label = "Cancelado";
+    }
+
+    else if (normalized === "processing") {
+        label = "Processando";
+    }
+
+    else if (normalized === "shipped") {
+        label = "Enviado";
+    }
+
+    else if (normalized === "delivered") {
+
+[3] ADMIN.JS — TODAS AS ATRIBUICOES DAS METRICAS
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:452:             "Produtos",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:786:    PRODUTOS
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:821:                     "Produtos cadastrados",
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:844:                 "Catálogo de produtos",
+
+[4] HTML — IDS DAS METRICAS
+============================================================
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin.html:34:                     <span>Pedidos</span>
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin.html:38:                     <span>Produtos</span>
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin.html:46:                     <span>Estoque</span>
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin.html:50:                     <span>Clientes</span>
+
+============================================================
+FIM — SOMENTE LEITURA
+NENHUM ARQUIVO DO PROJETO FOI ALTERADO.
+============================================================

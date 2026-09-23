@@ -1,0 +1,1175 @@
+AUREA — DIAGNOSTICO OPERACIONAL COMPLETO
+Data: 2026-09-23 07:22:20
+Projeto: C:\Users\sou_r\Desktop\Loja\Original
+Fonte de dados operacional: FIRESTORE
+PostgreSQL: FORA DA OPERACAO
+
+
+======================================================================
+ 01 — ESTADO DO GIT
+======================================================================
+Branch: main
+Ultimo commit: 5ed5754 h
+
+Arquivos modificados:
+   M .gitignore
+   M js/admin/admin-categories.js
+   M js/admin/admin-inventory.js
+   M js/admin/admin-login.js
+   M js/admin/admin.js
+   M js/admin/modules/operational-environment.js
+   M js/orders/order-status.js
+   M pages/admin-login.html
+   M pages/admin.html
+   M server/modules/admin/repositories/admin-firestore-report-repository.js
+   M server/modules/admin/repositories/admin-overview-repository.js
+   M server/modules/admin/services/admin-service.js
+  ?? AUDITORIA-07.17-ROTAS-CLIENTES.txt
+  ?? AUDITORIA-07.18-CLIENTES-ROTAS.txt
+  ?? AUDITORIA-07.22-MAPEAMENTO-IDENTIDADE-CLIENTE.txt
+  ?? AUDITORIA-07.23-PEDIDO-IDENTIDADE.txt
+  ?? AUDITORIA-07.24-FLUXO-REAL-PEDIDO.txt
+  ?? AUDITORIA-FASE02-PRECOS-DEFINITIVA.txt
+  ?? AUDITORIA-FASE02-SAIDA.txt
+  ?? DIAGNOSTICO-05.7-CHECKOUT-PIX.txt
+  ?? DIAGNOSTICO-CONTRATO-DASHBOARD.txt
+  ?? DIAGNOSTICO-CSV-PRODUTOS.txt
+  ?? DIAGNOSTICO-DASHBOARD-INDICADORES.txt
+  ?? DIAGNOSTICO-FASE02-PRODUTOS-FINAL.txt
+  ?? DIAGNOSTICO-FASE05-PEDIDOS.txt
+  ?? DIAGNOSTICO-OPERATING-ENVIRONMENT.txt
+  ?? DIAGNOSTICO-RENDER-DASHBOARD.txt
+  ?? auditoria-fase02.ps1
+  ?? auditoria-precos-final.ps1
+  ?? fase02-final.ps1
+  ?? js/admin/admin-categories-seed.js
+  ?? js/admin/admin-firestore.js
+  ?? js/admin/admin-orders-firebase-bridge.js
+  ?? js/admin/admin-orders.js
+  ?? js/admin/category-model.js
+  ?? js/admin/category-repository.js
+  ?? js/admin/customer-model.js
+  ?? js/admin/customer-repository.js
+  ?? js/admin/inventory-repository.js
+  ?? js/admin/order-model.js
+  ?? js/admin/order-repository.js
+  ?? js/admin/product-model.js
+  ?? js/admin/product-repository.js
+  ?? js/admin/products-importer.js
+  ?? js/auth/admin-guard.js
+  ?? pages/admin-categories-seed.html
+  ?? pages/admin-firestore-test.html
+  ?? pages/admin-inventory.html
+  ?? pages/admin-orders-drop.html
+  ?? pages/admin-orders-structure-test.html
+  ?? pages/admin-orders.html
+  ?? pages/admin-products-import.html
+  ?? pages/admin-products-test.html
+  ?? server/modules/admin/services/firestore-admin-indicators.js
+
+======================================================================
+ 02 — ESTRUTURA ADMIN
+======================================================================
+server\modules\admin\admin-auth.js	1838 bytes
+server\modules\admin\admin-permission.js	485 bytes
+server\modules\admin\admin-read-model.js	821 bytes
+server\modules\admin\admin-routes.js	6835 bytes
+server\modules\admin\admin-routes.js.bak-before-firestore	6685 bytes
+server\modules\admin\admin-routes.js.bak-core12-20260917-035345	666 bytes
+server\modules\admin\admin-routes.js.bak-timeflash-02-20260919-151719	7355 bytes
+server\modules\admin\admin-routes.js.bak-timeflash-02-final-20260919-151951	7355 bytes
+server\modules\admin\AUTH.md	854 bytes
+server\modules\admin\controllers\admin-controller.js	2803 bytes
+server\modules\admin\controllers\admin-controller.js.bak-core11-20260917-035309	1141 bytes
+server\modules\admin\controllers\admin-customer-controller.js	614 bytes
+server\modules\admin\controllers\admin-customer-filter-controller.js	442 bytes
+server\modules\admin\controllers\admin-finance-controller.js	429 bytes
+server\modules\admin\controllers\admin-global-search-controller.js	467 bytes
+server\modules\admin\controllers\admin-health-controller.js	681 bytes
+server\modules\admin\controllers\admin-inventory-controller.js	1317 bytes
+server\modules\admin\controllers\admin-inventory-history-controller.js	489 bytes
+server\modules\admin\controllers\admin-operational-dashboard-controller.js	451 bytes
+server\modules\admin\controllers\admin-order-controller.js	1020 bytes
+server\modules\admin\controllers\admin-order-details-controller.js	1812 bytes
+server\modules\admin\controllers\admin-order-filter-controller.js	579 bytes
+server\modules\admin\controllers\admin-overview-controller.js	1356 bytes
+server\modules\admin\controllers\admin-permission-controller.js	459 bytes
+server\modules\admin\controllers\admin-product-controller.js	1355 bytes
+server\modules\admin\controllers\admin-product-filter-controller.js	438 bytes
+server\modules\admin\controllers\admin-profile-controller.js	479 bytes
+server\modules\admin\controllers\admin-report-controller.js	1084 bytes
+server\modules\admin\controllers\admin-session-controller.js	231 bytes
+server\modules\admin\controllers\admin-write-controller.js	1785 bytes
+server\modules\admin\controllers\catalog-write-controller.js	1672 bytes
+server\modules\admin\controllers\category-controller.js	886 bytes
+server\modules\admin\controllers\coupon-controller.js	870 bytes
+server\modules\admin\controllers\customer-details-controller.js	640 bytes
+server\modules\admin\controllers\finance-details-controller.js	439 bytes
+server\modules\admin\controllers\inventory-history-controller.js	435 bytes
+server\modules\admin\controllers\logistics-details-controller.js	459 bytes
+server\modules\admin\controllers\operational-dashboard-controller.js	513 bytes
+server\modules\admin\controllers\operational-reports-controller.js	467 bytes
+server\modules\admin\controllers\order-details-controller.js	627 bytes
+server\modules\admin\controllers\reservation-controller.js	429 bytes
+server\modules\admin\index.js	105 bytes
+server\modules\admin\README.md	803 bytes
+server\modules\admin\repositories\admin-consolidated-report-repository.js	1864 bytes
+server\modules\admin\repositories\admin-coupon-repository.js	477 bytes
+server\modules\admin\repositories\admin-customer-filter-repository.js	730 bytes
+server\modules\admin\repositories\admin-customer-repository.js	814 bytes
+server\modules\admin\repositories\admin-dashboard-repository.js	1634 bytes
+server\modules\admin\repositories\admin-db.js	805 bytes
+server\modules\admin\repositories\admin-db.js.bak-20260917-231522	1170 bytes
+server\modules\admin\repositories\admin-db.js.bak-pg-20260919	1769 bytes
+server\modules\admin\repositories\admin-db.js.bak-ssl-20260920	805 bytes
+server\modules\admin\repositories\admin-finance-repository.js	638 bytes
+server\modules\admin\repositories\admin-firestore-report-repository.js	4159 bytes
+server\modules\admin\repositories\admin-global-search-repository.js	1219 bytes
+server\modules\admin\repositories\admin-global-search-repository.js.bak-before-firestore	1185 bytes
+server\modules\admin\repositories\admin-inventory-history-repository.js	730 bytes
+server\modules\admin\repositories\admin-inventory-repository.js	3478 bytes
+server\modules\admin\repositories\admin-operational-dashboard-repository.js	2196 bytes
+server\modules\admin\repositories\admin-order-filter-repository.js	1119 bytes
+server\modules\admin\repositories\admin-order-repository.js	3009 bytes
+server\modules\admin\repositories\admin-overview-repository.js	3770 bytes
+server\modules\admin\repositories\admin-overview-repository.js.bak-before-firestore	3841 bytes
+server\modules\admin\repositories\admin-permission-repository.js	894 bytes
+server\modules\admin\repositories\admin-product-filter-repository.js	1167 bytes
+server\modules\admin\repositories\admin-product-repository.js	3612 bytes
+server\modules\admin\repositories\admin-profile-repository.js	466 bytes
+server\modules\admin\repositories\admin-report-repository.js	1617 bytes
+server\modules\admin\repositories\admin-schema.js	5016 bytes
+server\modules\admin\repositories\admin-settings-repository.js	1365 bytes
+server\modules\admin\repositories\admin-shipment-repository.js	872 bytes
+server\modules\admin\repositories\admin-write-repository.js	5626 bytes
+server\modules\admin\repositories\audit-entity-repository.js	394 bytes
+server\modules\admin\repositories\audit-repository.js	345 bytes
+server\modules\admin\repositories\category-status-repository.js	929 bytes
+server\modules\admin\repositories\category-write-repository.js	2462 bytes
+server\modules\admin\repositories\commercial-history-repository.js	799 bytes
+server\modules\admin\repositories\coupon-metrics-repository.js	501 bytes
+server\modules\admin\repositories\coupon-status-repository.js	916 bytes
+server\modules\admin\repositories\coupon-write-repository.js	3710 bytes
+server\modules\admin\repositories\customer-details-repository.js	907 bytes
+server\modules\admin\repositories\customer-metrics-repository.js	745 bytes
+server\modules\admin\repositories\customer-report-repository.js	730 bytes
+server\modules\admin\repositories\customer-search-repository.js	631 bytes
+server\modules\admin\repositories\customer-status-repository.js	926 bytes
+server\modules\admin\repositories\daily-sales-repository.js	617 bytes
+server\modules\admin\repositories\db-summary-repository.js	756 bytes
+server\modules\admin\repositories\final-admin-repository.js	2500 bytes
+server\modules\admin\repositories\finance-details-repository.js	895 bytes
+server\modules\admin\repositories\finance-metrics-repository.js	978 bytes
+server\modules\admin\repositories\inventory-adjustment-repository.js	1741 bytes
+server\modules\admin\repositories\inventory-history-repository.js	501 bytes
+server\modules\admin\repositories\logistics-details-repository.js	691 bytes
+server\modules\admin\repositories\notification-repository.js	934 bytes
+server\modules\admin\repositories\operational-reports-repository.js	933 bytes
+server\modules\admin\repositories\operations-overview-repository.js	1592 bytes
+server\modules\admin\repositories\order-details-repository.js	1131 bytes
+server\modules\admin\repositories\order-filter-repository.js	1261 bytes
+server\modules\admin\repositories\pending-payments-repository.js	484 bytes
+server\modules\admin\repositories\product-admin-repository.js	1356 bytes
+server\modules\admin\repositories\product-filter-repository.js	1069 bytes
+server\modules\admin\repositories\product-report-repository.js	663 bytes
+server\modules\admin\repositories\product-status-repository.js	922 bytes
+server\modules\admin\repositories\product-write-repository.js	3156 bytes
+server\modules\admin\repositories\reservation-repository.js	421 bytes
+server\modules\admin\repositories\shipping-queue-repository.js	576 bytes
+server\modules\admin\repositories\stock-alert-repository.js	455 bytes
+server\modules\admin\repositories\stock-repository.js	1044 bytes
+server\modules\admin\repositories\tracking-repository.js	432 bytes
+server\modules\admin\services\admin-context-service.js	247 bytes
+server\modules\admin\services\admin-customer-filter-service.js	214 bytes
+server\modules\admin\services\admin-customer-service.js	212 bytes
+server\modules\admin\services\admin-finance-service.js	210 bytes
+server\modules\admin\services\admin-global-search-service.js	259 bytes
+server\modules\admin\services\admin-inventory-history-service.js	238 bytes
+server\modules\admin\services\admin-inventory-service.js	409 bytes
+server\modules\admin\services\admin-operational-dashboard-service.js	236 bytes
+server\modules\admin\services\admin-operation-permissions.js	1018 bytes
+server\modules\admin\services\admin-order-filter-service.js	208 bytes
+server\modules\admin\services\admin-order-service.js	573 bytes
+server\modules\admin\services\admin-overview-service.js	391 bytes
+server\modules\admin\services\admin-pagination.js	525 bytes
+server\modules\admin\services\admin-permission-service.js	803 bytes
+server\modules\admin\services\admin-product-filter-service.js	216 bytes
+server\modules\admin\services\admin-product-service.js	948 bytes
+server\modules\admin\services\admin-profile-service.js	351 bytes
+server\modules\admin\services\admin-report-service.js	427 bytes
+server\modules\admin\services\admin-service.js	4584 bytes
+server\modules\admin\services\admin-service.js.bak-20260917-232330	8045 bytes
+server\modules\admin\services\admin-service.js.bak-async-20260917-134603	2001 bytes
+server\modules\admin\services\admin-service.js.bak-before-firestore	15408 bytes
+server\modules\admin\services\admin-service.js.bak-dashboard-schema-20260919-201138	15092 bytes
+server\modules\admin\services\admin-service.js.bak-payment-status-20260919-104124	14364 bytes
+server\modules\admin\services\admin-session-service.js	231 bytes
+server\modules\admin\services\admin-write-service.js	505 bytes
+server\modules\admin\services\catalog-write-service.js	629 bytes
+server\modules\admin\services\customer-details-service.js	218 bytes
+server\modules\admin\services\export-service.js	573 bytes
+server\modules\admin\services\finance-details-service.js	210 bytes
+server\modules\admin\services\firestore-admin-indicators.js	5886 bytes
+server\modules\admin\services\inventory-history-service.js	210 bytes
+server\modules\admin\services\logistics-details-service.js	218 bytes
+server\modules\admin\services\operational-dashboard-service.js	377 bytes
+server\modules\admin\services\operational-reports-service.js	226 bytes
+server\modules\admin\services\order-details-service.js	206 bytes
+server\modules\admin\services\order-transition-service.js	611 bytes
+server\modules\admin\services\pagination-service.js	414 bytes
+server\modules\admin\services\product-write-service.js	424 bytes
+server\modules\admin\services\reservation-service.js	200 bytes
+
+======================================================================
+ 03 — ROTAS ADMIN
+======================================================================
+28: router.get("/dashboard", adminController.dashboard);
+29: router.get("/orders", adminController.orders);
+30: router.get("/products", adminController.products);
+31: router.get("/categories", adminController.categories);
+32: router.get("/inventory", adminController.inventory);
+33: router.get("/customers", adminController.customers);
+34: router.get("/finance", adminController.finance);
+35: router.get("/coupons", adminController.coupons);
+36: router.get("/logistics", adminController.logistics);
+37: router.get("/reports", adminController.reports);
+38: router.get("/audit", adminController.audit);
+39: router.get("/settings", adminController.settings);
+45: router.get(
+50: router.get(
+55: router.get(
+64: router.get(
+86: router.get(
+108: router.get(
+134: router.get(
+158: router.get(
+188: router.get(
+216: router.get(
+244: router.get(
+272: router.get(
+
+======================================================================
+ 04 — CONTROLLERS
+======================================================================
+
+[admin-controller.js]
+  3: async function dashboard(req, res, next) {
+  14: async function orders(req, res, next) {
+  25: async function products(req, res, next) {
+  36: async function categories(req, res, next) {
+  47: async function inventory(req, res, next) {
+  58: async function customers(req, res, next) {
+  69: async function finance(req, res, next) {
+  80: async function coupons(req, res, next) {
+  91: async function logistics(req, res, next) {
+  102: async function reports(req, res, next) {
+  113: async function audit(req, res, next) {
+  124: async function settings(req, res, next) {
+  135: module.exports = {
+
+[admin-controller.js.bak-core11-20260917-035309]
+  71: module.exports = {
+
+[admin-customer-controller.js]
+  3: async function details(req, res) {
+  26: module.exports = {
+
+[admin-customer-filter-controller.js]
+  3: async function search(req, res) {
+  19: module.exports = {
+
+[admin-finance-controller.js]
+  3: async function details(req, res) {
+  19: module.exports = {
+
+[admin-global-search-controller.js]
+  4: async function search(req, res) {
+  27: module.exports = {
+
+[admin-health-controller.js]
+  3: async function health(req, res) {
+  29: module.exports = {
+
+[admin-inventory-controller.js]
+  3: async function details(req, res) {
+  26: async function movement(req, res) {
+  42: async function reservations(req, res) {
+  58: module.exports = {
+
+[admin-inventory-history-controller.js]
+  3: async function history(req, res) {
+  21: module.exports = {
+
+[admin-operational-dashboard-controller.js]
+  3: async function dashboard(req, res) {
+  19: module.exports = {
+
+[admin-order-controller.js]
+  3: async function details(req, res) {
+  26: async function updateStatus(req, res) {
+  45: module.exports = {
+
+[admin-order-details-controller.js]
+  7: async function details(req, res) {
+  74: module.exports = {
+
+[admin-order-filter-controller.js]
+  3: async function search(req, res) {
+  24: module.exports = {
+
+[admin-overview-controller.js]
+  3: async function overview(req, res) {
+  18: async function timeline(req, res) {
+  38: async function alerts(req, res) {
+  53: module.exports = {
+
+[admin-permission-controller.js]
+  3: async function getPermissions(req, res) {
+  19: module.exports = {
+
+[admin-product-controller.js]
+  3: async function details(req, res) {
+  26: async function create(req, res) {
+  42: async function update(req, res) {
+  61: module.exports = {
+
+[admin-product-filter-controller.js]
+  3: async function search(req, res) {
+  19: module.exports = {
+
+[admin-profile-controller.js]
+  3: async function getProfile(req, res) {
+  16: module.exports = { getProfile };
+
+[admin-report-controller.js]
+  3: async function sales(req, res) {
+  19: async function products(req, res) {
+  35: async function customers(req, res) {
+  51: module.exports = {
+
+[admin-session-controller.js]
+  3: async function getSession(req, res) {
+  10: module.exports = { getSession };
+
+[admin-write-controller.js]
+  19: async function updateProduct(req, res) {
+  33: async function updateOrderStatus(req, res) {
+  47: async function createInventoryMovement(req, res) {
+  58: async function updateShipment(req, res) {
+  72: async function updateSettings(req, res) {
+  83: module.exports = {
+
+[catalog-write-controller.js]
+  25: async function createCategory(req, res) {
+  45: async function updateCategory(req, res) {
+  66: async function createCoupon(req, res) {
+  86: async function updateCoupon(req, res) {
+  107: module.exports = {
+
+[category-controller.js]
+  3: async function createCategory(req, res) {
+  16: async function updateCategory(req, res) {
+  33: module.exports = {
+
+[coupon-controller.js]
+  3: async function createCoupon(req, res) {
+  16: async function updateCoupon(req, res) {
+  33: module.exports = {
+
+[customer-details-controller.js]
+  4: async function getCustomerDetails(req, res) {
+  28: module.exports = {
+
+[finance-details-controller.js]
+  4: async function getFinanceDetails(req, res) {
+  20: module.exports = {
+
+[inventory-history-controller.js]
+  4: async function getHistory(req, res) {
+  20: module.exports = {
+
+[logistics-details-controller.js]
+  4: async function getLogisticsDetails(req, res) {
+  21: module.exports = {
+
+[operational-dashboard-controller.js]
+  3: async function getOperationalDashboard(req, res) {
+  21: module.exports = {
+
+[operational-reports-controller.js]
+  4: async function getOperationalReports(req, res) {
+  21: module.exports = {
+
+[order-details-controller.js]
+  4: async function getOrderDetails(req, res) {
+  28: module.exports = {
+
+[reservation-controller.js]
+  4: async function getReservations(req, res) {
+  20: module.exports = {
+
+======================================================================
+ 05 — SERVICES
+======================================================================
+
+[admin-context-service.js]
+  9: module.exports = { getAdminContext };
+
+[admin-customer-filter-service.js]
+  1: const repository = require("../repositories/admin-customer-filter-repository");
+  3: async function searchCustomers(term) {
+  7: module.exports = {
+
+[admin-customer-service.js]
+  1: const repository = require("../repositories/admin-customer-repository");
+  3: async function getCustomerDetails(id) {
+  7: module.exports = {
+
+[admin-finance-service.js]
+  1: const repository = require("../repositories/admin-finance-repository");
+  3: async function getFinancialDetails() {
+  7: module.exports = {
+
+[admin-global-search-service.js]
+  2: require("../repositories/admin-global-search-repository");
+  4: async function search(term) {
+  13: module.exports = {
+
+[admin-inventory-history-service.js]
+  1: const repository = require("../repositories/admin-inventory-history-repository");
+  3: async function getInventoryHistory(productId) {
+  7: module.exports = {
+
+[admin-inventory-service.js]
+  1: const repository = require("../repositories/admin-inventory-repository");
+  3: async function getStockDetails(id) {
+  7: async function createMovement(data) {
+  11: async function getReservations() {
+  15: module.exports = {
+
+[admin-operational-dashboard-service.js]
+  1: const repository = require("../repositories/admin-operational-dashboard-repository");
+  3: async function getOperationalDashboard() {
+  7: module.exports = {
+
+[admin-operation-permissions.js]
+  39: module.exports = {
+
+[admin-order-filter-service.js]
+  1: const repository = require("../repositories/admin-order-filter-repository");
+  3: async function searchOrders(filters) {
+  7: module.exports = {
+
+[admin-order-service.js]
+  1: const repository = require("../repositories/admin-order-repository");
+  3: async function getOrderDetails(id) {
+  7: async function updateOrderStatus(id, status) {
+  24: module.exports = {
+
+[admin-overview-service.js]
+  1: const repository = require("../repositories/admin-overview-repository");
+  3: async function getOverview() {
+  7: async function getTimeline(days = 30) {
+  11: async function getAlerts() {
+  15: module.exports = {
+
+[admin-pagination.js]
+  27: module.exports = {
+
+[admin-permission-service.js]
+  39: module.exports = {
+
+[admin-product-filter-service.js]
+  1: const repository = require("../repositories/admin-product-filter-repository");
+  3: async function searchProducts(filters) {
+  7: module.exports = {
+
+[admin-product-service.js]
+  1: const repository = require("../repositories/admin-product-repository");
+  3: async function getProductDetails(id) {
+  7: async function createProduct(data) {
+  23: async function updateProduct(id, data) {
+  35: module.exports = {
+
+[admin-profile-service.js]
+  1: const permissionService = require("./admin-permission-service");
+  3: async function getAdminProfile(admin) {
+  13: module.exports = {
+
+[admin-report-service.js]
+  1: const reportRepository = require("../repositories/admin-report-repository");
+  3: async function getSalesReport() {
+  7: async function getProductReport() {
+  11: async function getCustomerReport() {
+  15: module.exports = {
+
+[admin-service.js]
+  5: } = require("../../../infrastructure/firebase/firebase-admin");
+  9: } = require("./firestore-admin-indicators");
+  58: async function getCollection(name) {
+  69: async function getOrders() {
+  82: async function getProducts() {
+  86: async function getCategories() {
+  90: async function getInventory() {
+  94: async function getCustomers() {
+  98: async function getFinance() {
+  127: async function getCoupons() {
+  131: async function getLogistics() {
+  135: async function getReports() {
+  147: async function getAudit() {
+  151: async function getSettings() {
+  155: async function getDashboard() {
+  214: module.exports = {
+
+[admin-service.js.bak-20260917-232330]
+  1: const db = require("../repositories/admin-db");
+  3: async function getDashboard() {
+  81: async function getOrders() {
+  90: async function getProducts() {
+  98: async function getCategories() {
+  118: async function getInventory() {
+  128: async function getCustomers() {
+  155: async function getFinance() {
+  195: async function getCoupons() {
+  203: async function getLogistics() {
+  226: async function getReports() {
+  305: async function getAudit() {
+  313: async function getSettings() {
+  332: module.exports = {
+
+[admin-service.js.bak-async-20260917-134603]
+  4: require('../../orders/order-repository');
+  7: require('../../catalog/catalog-service');
+  11: } = require('../../../infrastructure/audit-reader');
+  112: module.exports = {
+
+[admin-service.js.bak-before-firestore]
+  1: const db = require("../repositories/admin-db");
+  4: } = require("../repositories/admin-schema");
+  47: async function getDashboard() {
+  379: async function safeTableQuery(table, sql, params = []) {
+  394: async function getOrders() {
+  419: async function getProducts() {
+  443: async function getCategories() {
+  462: async function getInventory() {
+  487: async function getCustomers() {
+  507: async function getFinance() {
+  519: async function getCoupons() {
+  539: async function getLogistics() {
+  560: async function getReports() {
+  572: async function getAudit() {
+  592: async function getSettings() {
+  611: module.exports = {
+
+[admin-service.js.bak-dashboard-schema-20260919-201138]
+  1: const db = require("../repositories/admin-db");
+  4: } = require("../repositories/admin-schema");
+  47: async function getDashboard() {
+  379: async function safeTableQuery(table, sql, params = []) {
+  394: async function getOrders() {
+  419: async function getProducts() {
+  443: async function getCategories() {
+  462: async function getInventory() {
+  487: async function getCustomers() {
+  507: async function getFinance() {
+  519: async function getCoupons() {
+  539: async function getLogistics() {
+  560: async function getReports() {
+  572: async function getAudit() {
+  592: async function getSettings() {
+  611: module.exports = {
+
+[admin-service.js.bak-payment-status-20260919-104124]
+  1: const db = require("../repositories/admin-db");
+  4: } = require("../repositories/admin-schema");
+  47: async function getDashboard() {
+  354: async function safeTableQuery(table, sql, params = []) {
+  369: async function getOrders() {
+  394: async function getProducts() {
+  418: async function getCategories() {
+  437: async function getInventory() {
+  462: async function getCustomers() {
+  482: async function getFinance() {
+  494: async function getCoupons() {
+  514: async function getLogistics() {
+  535: async function getReports() {
+  547: async function getAudit() {
+  567: async function getSettings() {
+  586: module.exports = {
+
+[admin-session-service.js]
+  9: module.exports = { getSession };
+
+[admin-write-service.js]
+  1: const repository = require("../repositories/admin-write-repository");
+  3: module.exports = {
+
+[catalog-write-service.js]
+  2: require("../repositories/category-write-repository");
+  5: require("../repositories/coupon-write-repository");
+  7: module.exports = {
+
+[customer-details-service.js]
+  2: require("../repositories/customer-details-repository");
+  4: async function getCustomerDetails(id) {
+  8: module.exports = {
+
+[export-service.js]
+  29: module.exports = {
+
+[finance-details-service.js]
+  2: require("../repositories/finance-details-repository");
+  4: async function getFinanceDetails() {
+  8: module.exports = {
+
+[firestore-admin-indicators.js]
+  254: module.exports = {
+
+[inventory-history-service.js]
+  2: require("../repositories/inventory-history-repository");
+  4: async function getHistory(limit) {
+  8: module.exports = {
+
+[logistics-details-service.js]
+  2: require("../repositories/logistics-details-repository");
+  4: async function getLogisticsDetails() {
+  8: module.exports = {
+
+[operational-dashboard-service.js]
+  1: const repository = require("../repositories/admin-dashboard-repository");
+  3: async function getOperationalDashboard() {
+  15: module.exports = { getOperationalDashboard };
+
+[operational-reports-service.js]
+  2: require("../repositories/operational-reports-repository");
+  4: async function getOperationalReports() {
+  8: module.exports = {
+
+[order-details-service.js]
+  2: require("../repositories/order-details-repository");
+  4: async function getOrderDetails(id) {
+  8: module.exports = {
+
+[order-transition-service.js]
+  43: module.exports = {
+
+[pagination-service.js]
+  22: module.exports = {
+
+[product-write-service.js]
+  2: require("../repositories/product-write-repository");
+  4: async function createProduct(data) {
+  8: async function updateProduct(id, data) {
+  12: async function getProductDetails(id) {
+  16: module.exports = {
+
+[reservation-service.js]
+  2: require("../repositories/reservation-repository");
+  4: async function getReservations() {
+  8: module.exports = {
+
+======================================================================
+ 06 — REPOSITORIES
+======================================================================
+
+[admin-consolidated-report-repository.js]
+  59: module.exports = {
+
+[admin-coupon-repository.js]
+  24: module.exports = {
+
+[admin-customer-filter-repository.js]
+  29: module.exports = {
+
+[admin-customer-repository.js]
+  40: module.exports = {
+
+[admin-dashboard-repository.js]
+  56: module.exports = {
+
+[admin-db.js]
+  1: const { Pool } = require("pg");
+  9: const pool = new Pool({
+  21: pool.on("error", error => {
+  22: console.error("[ADMIN DB] Erro no pool:", error.message);
+  26: const client = await pool.connect();
+  36: await pool.end();
+  39: module.exports = {
+  40: pool,
+
+[admin-db.js.bak-20260917-231522]
+  1: const { Pool } = require("pg");
+  3: let pool;
+  5: function getPool() {
+  6: if (pool) {
+  7: return pool;
+  16: pool = new Pool({
+  23: return pool;
+  27: const client = await getPool().connect();
+  42: const client = await getPool().connect();
+  60: module.exports = {
+  61: getPool,
+
+[admin-db.js.bak-pg-20260919]
+  1: const { Pool } = require("pg");
+  3: let pool = null;
+  8: process.env.POSTGRES_URL ||
+  9: process.env.POSTGRESQL_URL ||
+  14: function getPool() {
+  15: if (pool) return pool;
+  23: pool = new Pool({
+  26: // Render PostgreSQL exige TLS.
+  43: pool.on("error", (error) => {
+  44: console.error("[DB] Erro inesperado no pool:", error.message);
+  47: return pool;
+  51: const database = getPool();
+  62: const database = getPool();
+  81: async function closePool() {
+  82: if (pool) {
+  83: await pool.end();
+  84: pool = null;
+  88: module.exports = {
+  89: getPool,
+  92: closePool
+
+[admin-db.js.bak-ssl-20260920]
+  1: const { Pool } = require("pg");
+  9: const pool = new Pool({
+  21: pool.on("error", error => {
+  22: console.error("[ADMIN DB] Erro no pool:", error.message);
+  26: const client = await pool.connect();
+  36: await pool.end();
+  39: module.exports = {
+  40: pool,
+
+[admin-finance-repository.js]
+  30: module.exports = {
+
+[admin-firestore-report-repository.js]
+  4: getFirestore
+  10: } = require("../services/firestore-admin-indicators");
+  19: return getFirestore();
+  22: async function collection(name) {
+  24: .collection(name)
+  58: const orders = await collection(ORDERS);
+  73: .collection(ORDERS)
+  89: .collection(TRACKING)
+  104: return collection(USERS);
+  108: return collection(PRODUCTS);
+  112: return collection(INVENTORY);
+  188: const tracking = await collection(TRACKING);
+  210: module.exports = {
+
+[admin-global-search-repository.js]
+  4: getFirestore
+  15: return getFirestore();
+  18: async function getCollection(name) {
+  20: .collection(name)
+  50: const items = await getCollection(collection);
+  67: module.exports = {
+
+[admin-global-search-repository.js.bak-before-firestore]
+  53: module.exports = {
+
+[admin-inventory-history-repository.js]
+  32: module.exports = {
+
+[admin-inventory-repository.js]
+  137: module.exports = {
+
+[admin-operational-dashboard-repository.js]
+  75: module.exports = {
+
+[admin-order-filter-repository.js]
+  45: module.exports = {
+
+[admin-order-repository.js]
+  136: module.exports = {
+
+[admin-overview-repository.js]
+  4: getFirestore
+  10: } = require("../services/firestore-admin-indicators");
+  18: return getFirestore();
+  21: async function collection(name) {
+  23: .collection(name)
+  63: collection(ORDERS),
+  64: collection(PRODUCTS),
+  65: collection(USERS),
+  66: collection(TRACKING)
+  120: collection(ORDERS),
+  121: collection(PRODUCTS),
+  122: collection(TRACKING)
+  135: const orders = await collection(ORDERS);
+  183: module.exports = {
+
+[admin-overview-repository.js.bak-before-firestore]
+  134: module.exports = {
+
+[admin-permission-repository.js]
+  48: module.exports = {
+
+[admin-product-filter-repository.js]
+  48: module.exports = {
+
+[admin-product-repository.js]
+  141: module.exports = {
+
+[admin-profile-repository.js]
+  22: module.exports = {
+
+[admin-report-repository.js]
+  76: module.exports = {
+
+[admin-schema.js]
+  189: module.exports = {
+
+[admin-settings-repository.js]
+  56: module.exports = {
+
+[admin-shipment-repository.js]
+  35: module.exports = {
+
+[admin-write-repository.js]
+  205: module.exports = {
+
+[audit-entity-repository.js]
+  18: module.exports = {
+
+[audit-repository.js]
+  17: module.exports = {
+
+[category-status-repository.js]
+  38: module.exports = {
+
+[category-write-repository.js]
+  95: module.exports = {
+
+[commercial-history-repository.js]
+  32: module.exports = {
+
+[coupon-metrics-repository.js]
+  21: module.exports = {
+
+[coupon-status-repository.js]
+  38: module.exports = {
+
+[coupon-write-repository.js]
+  136: module.exports = {
+
+[customer-details-repository.js]
+  49: module.exports = {
+
+[customer-metrics-repository.js]
+  31: module.exports = {
+
+[customer-report-repository.js]
+  30: module.exports = {
+
+[customer-search-repository.js]
+  32: module.exports = {
+
+[customer-status-repository.js]
+  38: module.exports = {
+
+[daily-sales-repository.js]
+  26: module.exports = {
+
+[db-summary-repository.js]
+  20: module.exports = {
+
+[final-admin-repository.js]
+  101: module.exports = {
+
+[finance-details-repository.js]
+  38: module.exports = {
+
+[finance-metrics-repository.js]
+  36: module.exports = {
+
+[inventory-adjustment-repository.js]
+  70: module.exports = {
+
+[inventory-history-repository.js]
+  21: module.exports = {
+
+[logistics-details-repository.js]
+  31: module.exports = {
+
+[notification-repository.js]
+  35: module.exports = {
+
+[operational-reports-repository.js]
+  40: module.exports = {
+
+[operations-overview-repository.js]
+  59: module.exports = {
+
+[order-details-repository.js]
+  60: module.exports = {
+
+[order-filter-repository.js]
+  52: module.exports = {
+
+[pending-payments-repository.js]
+  22: module.exports = {
+
+[product-admin-repository.js]
+  52: module.exports = {
+
+[product-filter-repository.js]
+  48: module.exports = {
+
+[product-report-repository.js]
+  26: module.exports = {
+
+[product-status-repository.js]
+  38: module.exports = {
+
+[product-write-repository.js]
+  113: module.exports = {
+
+[reservation-repository.js]
+  19: module.exports = {
+
+[shipping-queue-repository.js]
+  26: module.exports = {
+
+[stock-alert-repository.js]
+  23: module.exports = {
+
+[stock-repository.js]
+  49: module.exports = {
+
+[tracking-repository.js]
+  21: module.exports = {
+
+======================================================================
+ 07 — FONTES DE DADOS ENCONTRADAS NO ADMIN
+======================================================================
+
+REFERENCIAS FIRESTORE:
+
+REFERENCIAS POSTGRESQL:
+
+======================================================================
+ 08 — TELAS HTML ADMIN
+======================================================================
+admin.html	5272 bytes
+admin-auth-guard.html	386 bytes
+admin-categories.html	3133 bytes
+admin-categories-seed.html	6658 bytes
+admin-firestore-test.html	1929 bytes
+admin-inventory.html	15062 bytes
+admin-login.html	1217 bytes
+admin-modal.html	811 bytes
+admin-orders.html	7768 bytes
+admin-orders-drop.html	3086 bytes
+admin-orders-structure-test.html	2307 bytes
+admin-products-import.html	8287 bytes
+admin-products-test.html	2041 bytes
+
+======================================================================
+ 09 — JAVASCRIPT ADMIN
+======================================================================
+js\admin\admin.js	63515 bytes	API refs: 0
+js\admin\admin.js.bak-fix-20260919-125746	28092 bytes	API refs: 0
+js\admin\admin.js.bak-timeflash-20260919-122930	24861 bytes	API refs: 0
+js\admin\admin.js.bak-visual-20260919-141215	28512 bytes	API refs: 0
+js\admin\admin-api.js	4879 bytes	API refs: 1
+js\admin\admin-api.js.bak-admin-api-20260919-094635	2532 bytes	API refs: 1
+js\admin\admin-api.js.bak-timeflash-03-20260919-184341	2568 bytes	API refs: 1
+js\admin\admin-api.js.bak-timeflash-03-api-20260919-184612	2570 bytes	API refs: 1
+js\admin\admin-audit.js	2614 bytes	API refs: 0
+js\admin\admin-categories.js	1721 bytes	API refs: 0
+js\admin\admin-categories-seed.js	3403 bytes	API refs: 0
+js\admin\admin-coupons.js	2499 bytes	API refs: 0
+js\admin\admin-customers.js	1948 bytes	API refs: 0
+js\admin\admin-finance.js	2262 bytes	API refs: 0
+js\admin\admin-firestore.js	2629 bytes	API refs: 0
+js\admin\admin-inventory.js	3370 bytes	API refs: 0
+js\admin\admin-login.js	2242 bytes	API refs: 0
+js\admin\admin-login.js.bak-admin-login-20260919-101532	2820 bytes	API refs: 1
+js\admin\admin-login-antigo.js	2856 bytes	API refs: 1
+js\admin\admin-logistics.js	2579 bytes	API refs: 0
+js\admin\admin-orders.js	12368 bytes	API refs: 0
+js\admin\admin-orders-firebase-bridge.js	1156 bytes	API refs: 0
+js\admin\admin-reports.js	2298 bytes	API refs: 0
+js\admin\admin-settings.js	2708 bytes	API refs: 0
+js\admin\category-model.js	1496 bytes	API refs: 0
+js\admin\category-repository.js	638 bytes	API refs: 0
+js\admin\customer-detail-service.js	3197 bytes	API refs: 0
+js\admin\customer-model.js	2551 bytes	API refs: 0
+js\admin\customer-repository.js	4598 bytes	API refs: 0
+js\admin\customer-service.js	3259 bytes	API refs: 0
+js\admin\gemini-code-1789986645525.js	3321 bytes	API refs: 1
+js\admin\inventory-repository.js	7466 bytes	API refs: 0
+js\admin\modules\admin-formatters.js	1012 bytes	API refs: 0
+js\admin\modules\operational-environment.js	6884 bytes	API refs: 0
+js\admin\order-model.js	7492 bytes	API refs: 0
+js\admin\order-repository.js	5280 bytes	API refs: 0
+js\admin\product-model.js	3614 bytes	API refs: 0
+js\admin\product-repository.js	5198 bytes	API refs: 0
+js\admin\products-importer.js	19554 bytes	API refs: 0
+
+======================================================================
+ 10 — REFERENCIAS /api/admin NO FRONTEND
+======================================================================
+
+======================================================================
+ 11 — VALIDACAO SINTATICA JAVASCRIPT
+======================================================================
+PASS	server\modules\admin\controllers\admin-controller.js
+PASS	server\modules\admin\controllers\admin-customer-controller.js
+PASS	server\modules\admin\controllers\admin-customer-filter-controller.js
+PASS	server\modules\admin\controllers\admin-finance-controller.js
+PASS	server\modules\admin\controllers\admin-global-search-controller.js
+PASS	server\modules\admin\controllers\admin-health-controller.js
+PASS	server\modules\admin\controllers\admin-inventory-controller.js
+PASS	server\modules\admin\controllers\admin-inventory-history-controller.js
+PASS	server\modules\admin\controllers\admin-operational-dashboard-controller.js
+PASS	server\modules\admin\controllers\admin-order-controller.js
+PASS	server\modules\admin\controllers\admin-order-details-controller.js
+PASS	server\modules\admin\controllers\admin-order-filter-controller.js
+PASS	server\modules\admin\controllers\admin-overview-controller.js
+PASS	server\modules\admin\controllers\admin-permission-controller.js
+PASS	server\modules\admin\controllers\admin-product-controller.js
+PASS	server\modules\admin\controllers\admin-product-filter-controller.js
+PASS	server\modules\admin\controllers\admin-profile-controller.js
+PASS	server\modules\admin\controllers\admin-report-controller.js
+PASS	server\modules\admin\controllers\admin-session-controller.js
+PASS	server\modules\admin\controllers\admin-write-controller.js
+PASS	server\modules\admin\controllers\catalog-write-controller.js
+PASS	server\modules\admin\controllers\category-controller.js
+PASS	server\modules\admin\controllers\coupon-controller.js
+PASS	server\modules\admin\controllers\customer-details-controller.js
+PASS	server\modules\admin\controllers\finance-details-controller.js
+PASS	server\modules\admin\controllers\inventory-history-controller.js
+PASS	server\modules\admin\controllers\logistics-details-controller.js
+PASS	server\modules\admin\controllers\operational-dashboard-controller.js
+PASS	server\modules\admin\controllers\operational-reports-controller.js
+PASS	server\modules\admin\controllers\order-details-controller.js
+PASS	server\modules\admin\controllers\reservation-controller.js
+PASS	server\modules\admin\repositories\admin-consolidated-report-repository.js
+PASS	server\modules\admin\repositories\admin-coupon-repository.js
+PASS	server\modules\admin\repositories\admin-customer-filter-repository.js
+PASS	server\modules\admin\repositories\admin-customer-repository.js
+PASS	server\modules\admin\repositories\admin-dashboard-repository.js
+PASS	server\modules\admin\repositories\admin-db.js
+PASS	server\modules\admin\repositories\admin-finance-repository.js
+PASS	server\modules\admin\repositories\admin-firestore-report-repository.js
+PASS	server\modules\admin\repositories\admin-global-search-repository.js
+PASS	server\modules\admin\repositories\admin-inventory-history-repository.js
+PASS	server\modules\admin\repositories\admin-inventory-repository.js
+PASS	server\modules\admin\repositories\admin-operational-dashboard-repository.js
+PASS	server\modules\admin\repositories\admin-order-filter-repository.js
+PASS	server\modules\admin\repositories\admin-order-repository.js
+PASS	server\modules\admin\repositories\admin-overview-repository.js
+PASS	server\modules\admin\repositories\admin-permission-repository.js
+PASS	server\modules\admin\repositories\admin-product-filter-repository.js
+PASS	server\modules\admin\repositories\admin-product-repository.js
+PASS	server\modules\admin\repositories\admin-profile-repository.js
+PASS	server\modules\admin\repositories\admin-report-repository.js
+PASS	server\modules\admin\repositories\admin-schema.js
+PASS	server\modules\admin\repositories\admin-settings-repository.js
+PASS	server\modules\admin\repositories\admin-shipment-repository.js
+PASS	server\modules\admin\repositories\admin-write-repository.js
+PASS	server\modules\admin\repositories\audit-entity-repository.js
+PASS	server\modules\admin\repositories\audit-repository.js
+PASS	server\modules\admin\repositories\category-status-repository.js
+PASS	server\modules\admin\repositories\category-write-repository.js
+PASS	server\modules\admin\repositories\commercial-history-repository.js
+PASS	server\modules\admin\repositories\coupon-metrics-repository.js
+PASS	server\modules\admin\repositories\coupon-status-repository.js
+PASS	server\modules\admin\repositories\coupon-write-repository.js
+PASS	server\modules\admin\repositories\customer-details-repository.js
+PASS	server\modules\admin\repositories\customer-metrics-repository.js
+PASS	server\modules\admin\repositories\customer-report-repository.js
+PASS	server\modules\admin\repositories\customer-search-repository.js
+PASS	server\modules\admin\repositories\customer-status-repository.js
+PASS	server\modules\admin\repositories\daily-sales-repository.js
+PASS	server\modules\admin\repositories\db-summary-repository.js
+PASS	server\modules\admin\repositories\final-admin-repository.js
+PASS	server\modules\admin\repositories\finance-details-repository.js
+PASS	server\modules\admin\repositories\finance-metrics-repository.js
+PASS	server\modules\admin\repositories\inventory-adjustment-repository.js
+PASS	server\modules\admin\repositories\inventory-history-repository.js
+PASS	server\modules\admin\repositories\logistics-details-repository.js
+PASS	server\modules\admin\repositories\notification-repository.js
+PASS	server\modules\admin\repositories\operational-reports-repository.js
+PASS	server\modules\admin\repositories\operations-overview-repository.js
+PASS	server\modules\admin\repositories\order-details-repository.js
+PASS	server\modules\admin\repositories\order-filter-repository.js
+PASS	server\modules\admin\repositories\pending-payments-repository.js
+PASS	server\modules\admin\repositories\product-admin-repository.js
+PASS	server\modules\admin\repositories\product-filter-repository.js
+PASS	server\modules\admin\repositories\product-report-repository.js
+PASS	server\modules\admin\repositories\product-status-repository.js
+PASS	server\modules\admin\repositories\product-write-repository.js
+PASS	server\modules\admin\repositories\reservation-repository.js
+PASS	server\modules\admin\repositories\shipping-queue-repository.js
+PASS	server\modules\admin\repositories\stock-alert-repository.js
+PASS	server\modules\admin\repositories\stock-repository.js
+PASS	server\modules\admin\repositories\tracking-repository.js
+PASS	server\modules\admin\services\admin-context-service.js
+PASS	server\modules\admin\services\admin-customer-filter-service.js
+PASS	server\modules\admin\services\admin-customer-service.js
+PASS	server\modules\admin\services\admin-finance-service.js
+PASS	server\modules\admin\services\admin-global-search-service.js
+PASS	server\modules\admin\services\admin-inventory-history-service.js
+PASS	server\modules\admin\services\admin-inventory-service.js
+PASS	server\modules\admin\services\admin-operation-permissions.js
+PASS	server\modules\admin\services\admin-operational-dashboard-service.js
+PASS	server\modules\admin\services\admin-order-filter-service.js
+PASS	server\modules\admin\services\admin-order-service.js
+PASS	server\modules\admin\services\admin-overview-service.js
+PASS	server\modules\admin\services\admin-pagination.js
+PASS	server\modules\admin\services\admin-permission-service.js
+PASS	server\modules\admin\services\admin-product-filter-service.js
+PASS	server\modules\admin\services\admin-product-service.js
+PASS	server\modules\admin\services\admin-profile-service.js
+PASS	server\modules\admin\services\admin-report-service.js
+PASS	server\modules\admin\services\admin-service.js
+PASS	server\modules\admin\services\admin-session-service.js
+PASS	server\modules\admin\services\admin-write-service.js
+PASS	server\modules\admin\services\catalog-write-service.js
+PASS	server\modules\admin\services\customer-details-service.js
+PASS	server\modules\admin\services\export-service.js
+PASS	server\modules\admin\services\finance-details-service.js
+PASS	server\modules\admin\services\firestore-admin-indicators.js
+PASS	server\modules\admin\services\inventory-history-service.js
+PASS	server\modules\admin\services\logistics-details-service.js
+PASS	server\modules\admin\services\operational-dashboard-service.js
+PASS	server\modules\admin\services\operational-reports-service.js
+PASS	server\modules\admin\services\order-details-service.js
+PASS	server\modules\admin\services\order-transition-service.js
+PASS	server\modules\admin\services\pagination-service.js
+PASS	server\modules\admin\services\product-write-service.js
+PASS	server\modules\admin\services\reservation-service.js
+PASS	server\modules\admin\admin-auth.js
+PASS	server\modules\admin\admin-permission.js
+PASS	server\modules\admin\admin-read-model.js
+PASS	server\modules\admin\admin-routes.js
+PASS	server\modules\admin\index.js
+
+======================================================================
+ 12 — CONFIGURACAO FIREBASE
+======================================================================
+PASS	FIREBASE_PROJECT_ID configurada
+PASS	FIREBASE_SERVICE_ACCOUNT_JSON configurada
+PASS	FIREBASE_API_KEY configurada
+
+======================================================================
+ 13 — POSSIVEIS REGRAS DUPLICADAS
+======================================================================
+
+======================================================================
+ 14 — RESUMO OPERACIONAL
+======================================================================
+Arquivos do modulo admin: 149
+Paginas admin: 13
+Arquivos JS admin: 39
+Rotas admin encontradas: 24
+Referencias /api/admin no frontend: 3
+Referencias PostgreSQL no admin: 51
+
+FIM DO DIAGNOSTICO.

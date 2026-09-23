@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AURÉA — Importação de Produtos</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-layout.css">
+    <link rel="stylesheet" href="../css/admin-polish.css">
+
+    <style>
+        .import-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .import-header {
+            margin-bottom: 28px;
+        }
+
+        .import-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .import-header p {
+            margin: 0;
+            opacity: .75;
+        }
+
+        .source-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .source-card,
+        .metric-card,
+        .panel {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 20px;
+            background: #fff;
+        }
+
+        .source-card strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .source-card code {
+            font-size: 13px;
+            opacity: .7;
+            word-break: break-word;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+
+        .actions button {
+            border: 0;
+            border-radius: 10px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #validateButton {
+            background: #111;
+            color: #fff;
+        }
+
+        #importButton {
+            background: #b48a4a;
+            color: #fff;
+        }
+
+        .actions button:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 16px;
+            border-radius: 10px;
+            background: rgba(0,0,0,.04);
+            margin-bottom: 24px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-value {
+            display: block;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            opacity: .7;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0,0,0,.08);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            font-size: 13px;
+            opacity: .7;
+        }
+
+        .result-section {
+            margin-top: 24px;
+        }
+
+        .error-item,
+        .warning-item,
+        .success-message {
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .error-item {
+            background: #fff0f0;
+            border: 1px solid #f0caca;
+        }
+
+        .warning-item {
+            background: #fff8e8;
+            border: 1px solid #ead7a2;
+        }
+
+        .success-message {
+            background: #edf8ef;
+            border: 1px solid #c8e3cc;
+        }
+
+        .empty {
+            opacity: .6;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 900px) {
+            .source-grid,
+            .metrics {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .import-page {
+                padding: 18px;
+            }
+
+            .source-grid,
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="import-page">
+
+        <header class="import-header">
+            <h1>AURÉA — Importação de Produtos</h1>
+            <p>Catálogo oficial → Firestore</p>
+        </header>
+
+        <section class="panel">
+            <h2>Fontes oficiais</h2>
+
+            <div class="source-grid">
+
+                <div class="source-card">
+                    <strong>BRAÉ</strong>
+                    <code>data/catalog/sources/Brae.csv</code>
+                </div>
+
+                <div class="source-card">
+                    <strong>EcoBelle</strong>
+                    <code>data/catalog/sources/EcoBelle.csv</code>
+                </div>
+
+                <div class="source-card">
+                    <strong>Inovax</strong>
+                    <code>data/catalog/sources/Inovax.csv</code>
+                </div>
+
+            </div>
+
+            <p>
+                Os CSVs originais não serão modificados.
+            </p>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    id="validateButton">
+                    Validar catálogo
+                </button>
+
+                <button
+                    type="button"
+                    id="importButton"
+                    disabled>
+                    Importar para Firestore
+                </button>
+            </div>
+
+            <div
+                id="resultMessage"
+                class="status">
+                Aguardando validação.
+            </div>
+        </section>
+
+        <section class="metrics">
+
+            <div class="metric-card">
+                <span
+                    id="validCount"
+                    class="metric-value">
+                    0
+                </span>
+
+                <span class="metric-label">
+                    produtos válidos
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <span
+                    id="errorCount"
+                    class="metric-value">
+                    0
+                </span>
+
+                <span class="metric-label">
+                    erros
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <span
+                    id="duplicateCount"
+                    class="metric-value">
+                    0
+                </span>
+
+                <span class="metric-label">
+                    SKUs duplicados
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <span
+                    id="existingCount"
+                    class="metric-value">
+                    0
+                </span>
+
+                <span class="metric-label">
+                    já existentes
+                </span>
+            </div>
+
+        </section>
+
+        <section class="panel">
+
+            <h2>Prévia</h2>
+
+            <div class="table-wrap">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th>Estoque</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="previewBody">
+                        <tr>
+                            <td
+                                colspan="5"
+                                class="empty">
+                                Nenhuma validação executada.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <p>
+                A importação fica bloqueada se houver erros
+                ou SKUs duplicados entre as fontes.
+            </p>
+
+        </section>
+
+        <section class="panel result-section">
+
+            <h2>Resultado da validação</h2>
+
+            <div id="errorList"></div>
+
+            <div id="duplicateList"></div>
+
+            <div id="existingList"></div>
+
+        </section>
+
+    </main>
+
+    <script
+        type="module"
+        src="../js/auth/admin-guard.js">
+    </script>
+
+    <script
+        type="module"
+        src="../js/admin/products-importer.js">
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+
+============================================================
+ARQUIVO: .\data\catalog\sources\Brae.csv
+============================================================
+TOTAL DE LINHAS: 340
+
+CABECALHO:
+sku;name;weight;price;category;stock;description;image
+
+PRIMEIRAS 8 LINHAS:
+2: 00000331;INATIVO - Essential - Intense Repair Ampola Reparadora 13ml;13ml;399.00;;;Uma dose concentrada de reparação para seus cabelos. A ampola Essential reconstrói e hidrata profundamente a estrutura do fio, resultando em maciez e brilho;https://braehaircare.vtexassets.com/arquivos/ids/160324/Brae_Essential-Ampola-Reparacao-Intensa_13ml_Frente.jpg.jpg?v=638798887115370000
+3: 00000187;Beach Hair Day - Spray Texturizador Efeito Ondas 260ml;260ml;599.00;;;Crie ondas de praia naturais e com volume. Com proteção térmica, hidratação e ação anti-frizz, para um visual despojado e duradouro. Tenha o seu!;https://braehaircare.vtexassets.com/arquivos/ids/160359/Brae_Beach-Hair-Day_Spray-Texturizador-Efeito-Ondas_260ml_Frente.jpg.jpg?v=638811969918870000
+4: 00000148;Beauty Sleep - Sérum Noturno Nutritivo 100ml;100ml;799.00;;;Sérum noturno que nutre profundamente, controla o frizz e proporciona brilho intenso enquanto você dorme. Fórmula leve que restaura os fios sem pesar.;https://braehaircare.vtexassets.com/arquivos/ids/161823/Brae_Beauty-Sleep_Serum-Noturno-Nutritivo_100ml_Frente.jpg.jpg?v=639233512896930000
+5: 00000500;Blonde Repair - Shampoo de Tratamento para Loiras 1L;1L;2099.00;;;Tratamento profissional que limpa suavemente e reconstrói os fios descoloridos. Devolve a força, o brilho e a vitalidade para um loiro impecável. Confira!;https://braehaircare.vtexassets.com/arquivos/ids/161091/Brae_Blonde-Repair_Shampoo-Tratamento-Loiras_1L_Frente--1-.jpg?v=638864697116030000
+6: 00000476;Blonde Oil by Ana Paula Siebert - Ampola de Nutrição 13ml;13ml;2195.00;;;Tratamento intensivo que restaura e fortalece os fios loiros. Proporciona reparação profunda e nutrição para um cabelo macio e brilhante. Experimente!;https://braehaircare.vtexassets.com/arquivos/ids/160147/Brae_Blonde-Oil-Ampola-Nutricao-Regeneradora_13ml_Frente.jpg.jpg?v=638781747859700000
+7: 00000473;Blonde Oil by Ana Paula Siebert - Condicionador 250ml;250ml;6045.00;;;Fortalece, hidrata e controla o frizz de cabelos loiros. Sela as cutículas, mantém a umidade e garante um brilho radiante. Assinado por Ana Paula Siebert. Veja!;https://braehaircare.vtexassets.com/arquivos/ids/160139/Brae_Blonde-Oil-Condicionador-Nutricao-Regeneradora_250ml_Frente.jpg.jpg?v=638781746776670000
+8: 00000474;Blonde Oil by Ana Paula Siebert - Máscara 200g;200g;699.00;;;Tratamento profundo que regenera e nutre os fios loiros. Devolve a força, a maciez e o brilho perdidos na descoloração. By Ana Paula Siebert. Confira!;https://braehaircare.vtexassets.com/arquivos/ids/160162/8799271363---Ajustar-imagem-mascara-Blonde-Oil-e-Intense-Repair--3-.png.png?v=638838892271530000
+9: 00000475;Blonde Oil by Ana Paula Siebert - Óleo Capilar 60ml;60ml;6595.00;;;Proporciona nutrição intensa, brilho e proteção à cor dos cabelos loiros, sem pesar. Finalizador perfeito para a sua rotina de cuidados. Adicione ao carrinho!;https://braehaircare.vtexassets.com/arquivos/ids/160143/Brae_Blonde-Oil-Oleo-Capilar-Nutricao-Regeneradora_60ml_Frente.jpg.jpg?v=638781747546300000
+
+============================================================
+ARQUIVO: .\data\catalog\sources\EcoBelle.csv
+============================================================
+TOTAL DE LINHAS: 119
+
+CABECALHO:
+sku;name;weight;price;category;stock;description;image
+
+PRIMEIRAS 8 LINHAS:
+2: 8KWYN6U92;Kit Lama Vulcânica La Boue EcoBelle 300g;300g;250.00;Ecobelle;in_stock;;https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/kit-lama-vulcanica-la-boue-ecobelle-300g-647a1f77743a3-large.png
+3: YDMYK3MK4;Máscara Líquida Liquid Mask EcoBelle 200 mL;200 mL;109.00;Ecobelle;in_stock;;https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/mascara-liquida-liquid-mask-ecobelle-200-ml-66fd5cae45ed1-large.png
+4: NJTFJ9RNF;Perfume Capilar EcoBelle 50 mL;50 mL;94.99;Ecobelle;in_stock;;https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/perfume-capilar-ecobelle-50-ml-6927b598619ae-large.png
+5: PM32Q8G3S;Kit Lama Vulcânica La Boue EcoBelle;;500.00;Ecobelle;in_stock;;https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/kit-lama-vulcanica-la-boue-ecobelle-647a1eb05cb0c-large.png
+6: HJT8U9H6U;Bye Quebra Eco Belle 250 mL;250 mL;149.00;Ecobelle;in_stock;;https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/bye-quebra-eco-belle-250ml-646d15a2abba5-large.png
+7: 7XR3P3BXK;Máscara La Boue EcoBelle Dossier Noir 1.2 kg;1.2 kg;320.00;Ecobelle;in_stock;;https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/mascara-la-boue-ecobelle-dossier-noir-12-kg-647a22b2c3926-large.png
+8: LWHSMBHAQ;Selante La Boue Mastic Noir Eco Belle 500ml;500ml;100.00;Ecobelle;in_stock;;https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/selante-la-boue-mastic-noir-eco-belle-500ml-647a2745d0429-large.png
+9: BJP3XM8ES;Máscara La Boue Eco Belle Dossier Noir 300g;300g;150.00;Ecobelle;in_stock;;https://images.yampi.me/assets/stores/grupo-ecobelle/uploads/images/mascara-la-boue-eco-belle-dossier-noir-300g-647a234b54a25-large.png
+
+============================================================
+ARQUIVO: .\data\catalog\sources\Inovax.csv
+============================================================
+TOTAL DE LINHAS: 67
+
+CABECALHO:
+sku;name;weight;price;category;stock;description;image
+
+PRIMEIRAS 8 LINHAS:
+2: ;Inovax;;;"categoria-id-23792243 borda-principal"">";;;https://cdn.awsli.com.br/2873/2873879/logo/logo-footer-hsf2ld1l72.jpg
+3: VWPBCV5N6;Ampola Mágica Dourada Hidratação Instantânea 20ml;20ml;60.00;"categoria-id-23792243 borda-principal"">";in_stock;A Ampola Mágica Dourada;https://cdn.awsli.com.br/300x300/2873/2873879/produto/381586115/whatsapp_image_2026-01-15_at_22-29-28-removebg-preview-6ajoxrcdnv.png
+4: 10864;Ampola Mágica Dourada Hidratação Instantânea 15 ml;15 ml;40.00;"categoria-id-23792243 borda-principal"">";in_stock;A Ampola Mágica Dourada;https://cdn.awsli.com.br/300x300/2873/2873879/produto/398863207/ampola-intensive-hytration-20ml-nt91y0uu0v.png
+5: 10504;Ampola Mágica Prata Reconstrução e Hidratação 15 ml;15 ml;50.00;"categoria-id-23792243 borda-principal"">";in_stock;A Ampola Prata de Reconstrução + Hidratação;https://cdn.awsli.com.br/300x300/2873/2873879/produto/398864348/ampola-intensive-reconstruction-20ml-9wn3671p4z.png
+6: TKPMWSUGV;Ampola Mágica Prata Reconstrução e Hidratação 20ml;20ml;50.00;"categoria-id-23792243 borda-principal"">";in_stock;A Ampola Prata de Reconstrução + Hidratação;https://cdn.awsli.com.br/300x300/2873/2873879/produto/381586457/whatsapp_image_2026-01-15_at_22-29-53-removebg-preview-2ygga2s4or.png
+7: 10503;BBCream Inovax Protetor Térmico 15 em 1 - 200 ml;200 ml;120.90;"categoria-id-23792243 borda-principal"">";in_stock;O Protetor Térmico Inovax BB Cream 15 em 1;https://cdn.awsli.com.br/300x300/2873/2873879/produto/399110300/shampoo-antioxidante-300ml-k3fzpxbgps.png
+8: 4015601;Bottox Orgânico Inovax Progressiva Inteligente 1 kg;1 kg;120.00;"categoria-id-23792243 borda-principal"">";in_stock;Este é um produto de uso profissional, desenvolvido para procedimentos específicos. A aplicação incorreta pode comprometer o resultado ou a integridade dos fios. Recomendamos uso apenas por profissionais.;https://cdn.awsli.com.br/300x300/2873/2873879/produto/399110300/shampoo-antioxidante-300ml-k3fzpxbgps.png
+9: 10217;Condicionador Antiqueda Inovax Fortalecedor Biotonic 300ml;300ml;70.00;"categoria-id-23792243 borda-principal"">";in_stock;O Condicionador Inovax Biotonic Fortalecedor;https://cdn.awsli.com.br/300x300/2873/2873879/produto/381080247/produtos_transparente_padding_medio-3l0afxgwwz.png

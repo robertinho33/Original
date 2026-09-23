@@ -1,0 +1,164 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AURÉA — Limpeza de pedidos de teste</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        pre {
+            background: #111;
+            color: #eee;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+
+        .ok {
+            color: #087f23;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #b00020;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<main>
+
+    <h1>AURÉA — Drop de pedidos de teste</h1>
+
+    <p id="status">
+        Preparando...
+    </p>
+
+    <pre id="output"></pre>
+
+</main>
+
+<script type="module">
+
+import {
+    waitForAuthorizedAdmin
+} from '../js/auth/admin-guard.js';
+
+import {
+    getCollection
+} from '../js/admin/admin-firestore.js';
+
+import {
+    db
+} from '../js/firebase-config.js';
+
+import {
+    collection,
+    getDocs,
+    deleteDoc,
+    doc
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+const status =
+    document.getElementById('status');
+
+const output =
+    document.getElementById('output');
+
+try {
+
+    await waitForAuthorizedAdmin();
+
+    status.textContent =
+        'Administrador autenticado. Lendo orders...';
+
+    const ordersSnapshot =
+        await getDocs(
+            collection(db, 'orders')
+        );
+
+    const total =
+        ordersSnapshot.size;
+
+    if (total === 0) {
+
+        status.textContent =
+            'Nenhum pedido encontrado.';
+
+        output.textContent =
+            'A coleção orders já está vazia.';
+
+    } else {
+
+        output.textContent =
+            `Pedidos encontrados: ${total}\n\n` +
+            'Iniciando exclusão...';
+
+        let deleted = 0;
+
+        for (const order of ordersSnapshot.docs) {
+
+            await deleteDoc(
+                doc(
+                    db,
+                    'orders',
+                    order.id
+                )
+            );
+
+            deleted++;
+
+            output.textContent =
+                `Pedidos encontrados: ${total}\n` +
+                `Excluídos: ${deleted}\n\n` +
+                `Último: ${order.id}`;
+        }
+
+        status.textContent =
+            'DROP CONCLUÍDO';
+
+        status.className = 'ok';
+
+        output.textContent =
+            `Pedidos encontrados: ${total}\n` +
+            `Pedidos excluídos: ${deleted}\n\n` +
+            'Coleção orders limpa com sucesso.';
+    }
+
+} catch (error) {
+
+    console.error(error);
+
+    status.textContent =
+        'ERRO DURANTE O DROP';
+
+    status.className = 'error';
+
+    output.textContent =
+        error?.message ||
+        String(error);
+}
+
+</script>
+
+</body>
+</html>

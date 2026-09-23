@@ -1,68 +1,150 @@
-﻿(() => {
-    "use strict";
+﻿'use strict';
 
-    const API = window.AdminAPI;
+import {
+    listInventory,
+    getInventoryItem,
+    updateInventory,
+    listInventoryMovements
+} from './inventory-repository.js';
 
-    if (!API) {
-        console.error("[ADMIN] AdminAPI não carregada.");
-        return;
-    }
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
 
-    async function loadInventory() {
-        const container =
-            document.querySelector("#inventoryList") ||
-            document.querySelector("[data-module='inventory']");
-
-        try {
-            const data = await API.get("/inventory");
-
-            const items = Array.isArray(data)
-                ? data
-                : Array.isArray(data.inventory)
-                    ? data.inventory
-                    : Array.isArray(data.products)
-                        ? data.products
-                        : [];
-
-            if (!container) {
-                console.warn("[ADMIN] Container de estoque não encontrado.");
-                return items;
-            }
-
-            container.innerHTML = items.length
-                ? items.map(item => `
-                    <div class="admin-inventory-item" data-id="${item.id ?? item.sku ?? ""}">
-                        <strong>${escapeHtml(item.name ?? item.nome ?? item.product_name ?? "Produto")}</strong>
-                        <span>Estoque: ${item.stock ?? item.quantity ?? item.estoque ?? 0}</span>
-                    </div>
-                `).join("")
-                : "<p>Nenhum item de estoque encontrado.</p>";
-
-            return items;
-        } catch (error) {
-            console.error("[ADMIN] Erro ao carregar estoque:", error);
-
-            if (container) {
-                container.innerHTML =
-                    "<p>Não foi possível carregar o estoque.</p>";
-            }
-
-            return [];
-        }
-    }
-
-    function escapeHtml(value) {
-        return String(value)
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-
-    window.AdminInventory = {
-        load: loadInventory
+function statusLabel(status) {
+    const labels = {
+        OK: 'Estoque normal',
+        BAIXO: 'Estoque baixo',
+        ZERADO: 'Sem estoque'
     };
 
-    document.addEventListener("DOMContentLoaded", loadInventory);
-})();
+    return labels[status] || status;
+}
+
+export async function loadInventory() {
+    const container =
+        document.querySelector('#inventoryList') ||
+        document.querySelector(
+            "[data-module='inventory']"
+        );
+
+    if (!container) {
+        console.warn(
+            '[ADMIN] Container de estoque não encontrado.'
+        );
+
+        return [];
+    }
+
+    try {
+        const items =
+            await listInventory();
+
+        container.innerHTML = items.length
+            ? items.map(item => `
+                <article
+                    class="admin-inventory-item"
+                    data-id="${escapeHtml(item.id)}"
+                >
+                    <div>
+                        <strong>
+                            ${escapeHtml(item.name)}
+                        </strong>
+
+                        <small>
+                            SKU: ${escapeHtml(item.sku)}
+                        </small>
+                    </div>
+
+                    <div>
+                        <span>
+                            Estoque: ${item.stock}
+                        </span>
+
+                        <span>
+                            Mínimo: ${item.minimumStock}
+                        </span>
+
+                        <span
+                            data-stock-status="${escapeHtml(
+                                item.status
+                            )}"
+                        >
+                            ${escapeHtml(
+                                statusLabel(item.status)
+                            )}
+                        </span>
+                    </div>
+                </article>
+            `).join('')
+            : '<p>Nenhum produto encontrado.</p>';
+
+        return items;
+    } catch (error) {
+        console.error(
+            '[ADMIN] Erro ao carregar estoque:',
+            error
+        );
+
+        container.innerHTML =
+            `<p>Erro ao carregar estoque: ${
+                escapeHtml(error.message)
+            }</p>`;
+
+        return [];
+    }
+}
+
+export async function getInventory(
+    productId
+) {
+    return getInventoryItem(productId);
+}
+
+export async function changeInventory(
+    productId,
+    quantity,
+    type,
+    reason = ''
+) {
+    const result =
+        await updateInventory(
+            productId,
+            quantity,
+            type,
+            reason
+        );
+
+    await loadInventory();
+
+    return result;
+}
+
+export async function getInventoryMovements(
+    productId = null,
+    maxResults = 100
+) {
+    return listInventoryMovements(
+        productId,
+        maxResults
+    );
+}
+
+window.AdminInventory = {
+    load: loadInventory,
+    get: getInventory,
+    change: changeInventory,
+    movements: getInventoryMovements
+};
+
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+        loadInventory();
+    }
+);

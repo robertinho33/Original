@@ -1,10 +1,17 @@
-﻿"use strict";
+"use strict";
 
-const { getFirestore } = require("../../../infrastructure/firebase/firebase-admin");
+const {
+    getFirestore
+} = require("../../../infrastructure/firebase/firebase-admin");
+
+const {
+    calculateIndicators
+} = require("./firestore-admin-indicators");
 
 const ORDERS = "orders";
 const TRACKING = "orderTracking";
 const USERS = "users";
+const PRODUCTS = "products";
 
 function db() {
     return getFirestore();
@@ -12,22 +19,27 @@ function db() {
 
 function money(value) {
     const number = Number(value || 0);
-    return Number.isFinite(number) ? number : 0;
+
+    return Number.isFinite(number)
+        ? number
+        : 0;
 }
 
 function normalizeDate(value) {
-    if (!value) return null;
-
-    if (value.toDate) {
-        return value.toDate().toISOString();
+    if (!value) {
+        return null;
     }
 
-    if (typeof value === "string") {
-        return value;
+    if (typeof value.toDate === "function") {
+        return value.toDate().toISOString();
     }
 
     if (value instanceof Date) {
         return value.toISOString();
+    }
+
+    if (typeof value === "string") {
+        return value;
     }
 
     return null;
@@ -44,7 +56,9 @@ function normalizeOrder(data, id) {
 }
 
 async function getCollection(name) {
-    const snapshot = await db().collection(name).get();
+    const snapshot = await db()
+        .collection(name)
+        .get();
 
     return snapshot.docs.map(doc => ({
         id: doc.id,
@@ -60,12 +74,13 @@ async function getOrders() {
         .sort((a, b) => {
             const da = new Date(a.createdAt || 0).getTime();
             const db = new Date(b.createdAt || 0).getTime();
+
             return db - da;
         });
 }
 
 async function getProducts() {
-    return getCollection("products");
+    return getCollection(PRODUCTS);
 }
 
 async function getCategories() {
@@ -85,8 +100,8 @@ async function getFinance() {
 
     const confirmed = orders.filter(order => {
         const status =
-            order.payment?.status ||
-            order.paymentStatus ||
+            order.payment?.status ??
+            order.paymentStatus ??
             "";
 
         return [
@@ -94,7 +109,9 @@ async function getFinance() {
             "paid",
             "approved",
             "completed"
-        ].includes(String(status).toLowerCase());
+        ].includes(
+            String(status).trim().toLowerCase()
+        );
     });
 
     return {
@@ -112,9 +129,7 @@ async function getCoupons() {
 }
 
 async function getLogistics() {
-    const tracking = await getCollection(TRACKING);
-
-    return tracking;
+    return getCollection(TRACKING);
 }
 
 async function getReports() {
@@ -138,16 +153,24 @@ async function getSettings() {
 }
 
 async function getDashboard() {
-    const [orders, customers, products] = await Promise.all([
+    const [
+        orders,
+        customers,
+        products,
+        tracking
+    ] = await Promise.all([
         getOrders(),
         getCustomers(),
-        getProducts()
+        getProducts(),
+        getCollection(TRACKING)
     ]);
 
     const today = new Date();
 
     const todayOrders = orders.filter(order => {
-        if (!order.createdAt) return false;
+        if (!order.createdAt) {
+            return false;
+        }
 
         const date = new Date(order.createdAt);
 
@@ -163,7 +186,11 @@ async function getDashboard() {
         0
     );
 
-    const recentOrders = orders.slice(0, 10);
+    const indicators = calculateIndicators({
+        orders,
+        products,
+        tracking
+    });
 
     return {
         faturamentoHoje: revenueToday,
@@ -171,37 +198,16 @@ async function getDashboard() {
         clientes: customers.length,
         produtos: products.length,
 
-        estoqueBaixo: products.filter(product =>
-            Number(product.stock ?? product.estoque ?? 0) > 0 &&
-            Number(product.stock ?? product.estoque ?? 0) <= 5
-        ).length,
+        estoqueBaixo: indicators.estoqueBaixo,
+        semEstoque: indicators.semEstoque,
 
-        semEstoque: products.filter(product =>
-            Number(product.stock ?? product.estoque ?? 0) <= 0
-        ).length,
+        pagamentosPendentes:
+            indicators.pagamentosPendentes,
 
-        pagamentosPendentes: orders.filter(order => {
-            const status =
-                order.payment?.status ||
-                order.paymentStatus ||
-                "pending";
+        enviosPendentes:
+            indicators.enviosPendentes,
 
-            return String(status).toLowerCase() === "pending";
-        }).length,
-
-        enviosPendentes: orders.filter(order => {
-            const status =
-                order.logistics?.status ||
-                order.logisticsStatus ||
-                "new";
-
-            return ![
-                "delivered",
-                "completed"
-            ].includes(String(status).toLowerCase());
-        }).length,
-
-        vendasRecentes: recentOrders
+        vendasRecentes: orders.slice(0, 10)
     };
 }
 

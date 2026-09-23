@@ -1,0 +1,464 @@
+﻿============================================================
+AUREA — FASE 02 — AUDITORIA DEFINITIVA DE PREÇOS
+NENHUMA GRAVAÇÃO EXECUTADA
+============================================================
+
+RESUMO
+------------------------------------------------------------
+Registros brutos     : 523
+Registros comerciais : 522
+Metadados ignorados  : 
+Com preço            : 522
+Sem preço            : 0
+
+ESTATISTICA
+------------------------------------------------------------
+Menor preço : R$ 12,98
+Maior preço : R$ 29.584,00
+Preço médio : R$ 4.304,75
+
+30 MAIORES PREÇOS
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000647
+Produto     : Kit Stages Nutrition Shampoo e Condicionador 1L + Máscara 500g + Essencial Fluido Reparador
+Preço bruto : [29584.00]
+Interpretado: R$ 29.584,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000641
+Produto     : Kit Stages Hydration Shampoo e Condicionador 1L + Máscara 500g + Essencial Fluido Reparador
+Preço bruto : [29584.00]
+Interpretado: R$ 29.584,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000625
+Produto     : Kit Divine Shampoo e Condicionador 1L + Máscara 500g + Essential Fluido Reparador
+Preço bruto : [29386.00]
+Interpretado: R$ 29.386,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000756
+Produto     : Kit Essential Duo Shampoo e Condicionador 1L + Fiber Mask 500g
+Preço bruto : [27988.00]
+Interpretado: R$ 27.988,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000626
+Produto     : Kit Divine Shampoo e Condicionador 1L + Essential Fluido Reparador
+Preço bruto : [23188.00]
+Interpretado: R$ 23.188,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000637
+Produto     : Kit Revival Shampoo e Condicionador 1L + Essential Fluido Reparador
+Preço bruto : [23188.00]
+Interpretado: R$ 23.188,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000483
+Produto     : KIT Completo Blonde Oil Braé by Ana Paula Siebert
+Preço bruto : [20786.00]
+Interpretado: R$ 20.786,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000618
+Produto     : Kit Intense Repair Fluido Reparador + Intense Repair Oil + Hair Protein + Beauty Sleep
+Preço bruto : [20496.00]
+Interpretado: R$ 20.496,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000276
+Produto     : Kit Blonde Repair Completo
+Preço bruto : [20384.00]
+Interpretado: R$ 20.384,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000631
+Produto     : Kit Intense Repair Shampoo + Condicionador + Máscara + Leave in
+Preço bruto : [20006.00]
+Interpretado: R$ 20.006,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000652
+Produto     : Kit Intense Repair 2 Fluidos Reparador & 2 Óleos Capilar
+Preço bruto : [20006.00]
+Interpretado: R$ 20.006,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000103
+Produto     : BOND ANGEL - TRATAMENTO RECONSTRUTOR PARA LOIRAS 500ML
+Preço bruto : [19995.00]
+Interpretado: R$ 19.995,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000076
+Produto     : Kit Revival Duo 1L
+Preço bruto : [19791.00]
+Interpretado: R$ 19.791,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000202
+Produto     : Kit Essential Duo 1L
+Preço bruto : [19791.00]
+Interpretado: R$ 19.791,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000078
+Produto     : Kit Divine Hidratação - Shampoo + Condicionador 1L
+Preço bruto : [19791.00]
+Interpretado: R$ 19.791,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000610
+Produto     : Kit Essential Fluido Reparador + Beauty sleep +Revival Gorgeous Oil + Hair Protein
+Preço bruto : [19596.00]
+Interpretado: R$ 19.596,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000614
+Produto     : Kit Essential Fluido Reparador + Divine Serum + Hair Protein
+Preço bruto : [19485.00]
+Interpretado: R$ 19.485,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000632
+Produto     : Kit Intense Repair Shampoo + Condicionador + Máscara + Óleo
+Preço bruto : [19236.00]
+Interpretado: R$ 19.236,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000281
+Produto     : Kit diario para cabelos quimicamente tratados
+Preço bruto : [19184.00]
+Interpretado: R$ 19.184,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000289
+Produto     : Kit Antiquebra
+Preço bruto : [19064.00]
+Interpretado: R$ 19.064,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000575
+Produto     : Kit 3 Óleos - Blonde Oil + Essential + Revival
+Preço bruto : [18585.00]
+Interpretado: R$ 18.585,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000623
+Produto     : Kit Stages Fluido Reparador + Serum Plume Sensation + Hair Protein + Beauty Sleep
+Preço bruto : [18536.00]
+Interpretado: R$ 18.536,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000636
+Produto     : Kit Blonde Oil Shampoo + Condicionador + Máscara + Ampola
+Preço bruto : [18464.00]
+Interpretado: R$ 18.464,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000627
+Produto     : Kit Revival Shampoo e Condicionador 250ml + Máscara 200g + Essential Fluido Reparador
+Preço bruto : [18186.00]
+Interpretado: R$ 18.186,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000518
+Produto     : KIT BRAÉ STAGES HYDRATION SHAMPOO 1L + MÁSCARA 500G
+Preço bruto : [17991.00]
+Interpretado: R$ 17.991,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000515
+Produto     : KIT BRAÉ STAGES NUTRITION SHAMPOO 1L + MÁSCARA 500G
+Preço bruto : [17991.00]
+Interpretado: R$ 17.991,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000699
+Produto     : Kit Beauty Sleep - Sérum Noturno Nutritivo 100ml + Fiber Mask 200g + Hair Protein 80g
+Preço bruto : [17988.00]
+Interpretado: R$ 17.988,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000663
+Produto     : KIT Shampoo 1L + Condicionador 1L Braé Stages by Bruna Tavares
+Preço bruto : [17541.00]
+Interpretado: R$ 17.541,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000517
+Produto     : KIT DUO BRAÉ STAGES HYDRATION SHAMPOO + CONDICIONADOR 1L
+Preço bruto : [17541.00]
+Interpretado: R$ 17.541,00
+Categoria   : []
+------------------------------------------------------------
+Arquivo     : Brae.csv
+SKU         : 00000653
+Produto     : Kit Intense Repair Fluidos Reparador + Óleos Capilar & Blonde Oil
+Preço bruto : [16708.00]
+Interpretado: R$ 16.708,00
+Categoria   : []
+------------------------------------------------------------
+PRODUTOS ACIMA DE R$ 2.000
+------------------------------------------------------------
+R$ 29.584,00 | 00000641 | Kit Stages Hydration Shampoo e Condicionador 1L + Máscara 500g + Essencial Fluido Reparador | bruto [29584.00]
+R$ 29.584,00 | 00000647 | Kit Stages Nutrition Shampoo e Condicionador 1L + Máscara 500g + Essencial Fluido Reparador | bruto [29584.00]
+R$ 29.386,00 | 00000625 | Kit Divine Shampoo e Condicionador 1L + Máscara 500g + Essential Fluido Reparador | bruto [29386.00]
+R$ 27.988,00 | 00000756 | Kit Essential Duo Shampoo e Condicionador 1L + Fiber Mask 500g | bruto [27988.00]
+R$ 23.188,00 | 00000626 | Kit Divine Shampoo e Condicionador 1L + Essential Fluido Reparador | bruto [23188.00]
+R$ 23.188,00 | 00000637 | Kit Revival Shampoo e Condicionador 1L + Essential Fluido Reparador | bruto [23188.00]
+R$ 20.786,00 | 00000483 | KIT Completo Blonde Oil Braé by Ana Paula Siebert | bruto [20786.00]
+R$ 20.496,00 | 00000618 | Kit Intense Repair Fluido Reparador + Intense Repair Oil + Hair Protein + Beauty Sleep | bruto [20496.00]
+R$ 20.384,00 | 00000276 | Kit Blonde Repair Completo | bruto [20384.00]
+R$ 20.006,00 | 00000631 | Kit Intense Repair Shampoo + Condicionador + Máscara + Leave in | bruto [20006.00]
+R$ 20.006,00 | 00000652 | Kit Intense Repair 2 Fluidos Reparador & 2 Óleos Capilar | bruto [20006.00]
+R$ 19.995,00 | 00000103 | BOND ANGEL - TRATAMENTO RECONSTRUTOR PARA LOIRAS 500ML | bruto [19995.00]
+R$ 19.791,00 | 00000202 | Kit Essential Duo 1L | bruto [19791.00]
+R$ 19.791,00 | 00000078 | Kit Divine Hidratação - Shampoo + Condicionador 1L | bruto [19791.00]
+R$ 19.791,00 | 00000076 | Kit Revival Duo 1L | bruto [19791.00]
+R$ 19.596,00 | 00000610 | Kit Essential Fluido Reparador + Beauty sleep +Revival Gorgeous Oil + Hair Protein | bruto [19596.00]
+R$ 19.485,00 | 00000614 | Kit Essential Fluido Reparador + Divine Serum + Hair Protein | bruto [19485.00]
+R$ 19.236,00 | 00000632 | Kit Intense Repair Shampoo + Condicionador + Máscara + Óleo | bruto [19236.00]
+R$ 19.184,00 | 00000281 | Kit diario para cabelos quimicamente tratados | bruto [19184.00]
+R$ 19.064,00 | 00000289 | Kit Antiquebra | bruto [19064.00]
+R$ 18.585,00 | 00000575 | Kit 3 Óleos - Blonde Oil + Essential + Revival | bruto [18585.00]
+R$ 18.536,00 | 00000623 | Kit Stages Fluido Reparador + Serum Plume Sensation + Hair Protein + Beauty Sleep | bruto [18536.00]
+R$ 18.464,00 | 00000636 | Kit Blonde Oil Shampoo + Condicionador + Máscara + Ampola | bruto [18464.00]
+R$ 18.186,00 | 00000627 | Kit Revival Shampoo e Condicionador 250ml + Máscara 200g + Essential Fluido Reparador | bruto [18186.00]
+R$ 17.991,00 | 00000518 | KIT BRAÉ STAGES HYDRATION SHAMPOO 1L + MÁSCARA 500G | bruto [17991.00]
+R$ 17.991,00 | 00000515 | KIT BRAÉ STAGES NUTRITION SHAMPOO 1L + MÁSCARA 500G | bruto [17991.00]
+R$ 17.988,00 | 00000699 | Kit Beauty Sleep - Sérum Noturno Nutritivo 100ml + Fiber Mask 200g + Hair Protein 80g | bruto [17988.00]
+R$ 17.541,00 | 00000663 | KIT Shampoo 1L + Condicionador 1L Braé Stages by Bruna Tavares | bruto [17541.00]
+R$ 17.541,00 | 00000517 | KIT DUO BRAÉ STAGES HYDRATION SHAMPOO + CONDICIONADOR 1L | bruto [17541.00]
+R$ 16.708,00 | 00000653 | Kit Intense Repair Fluidos Reparador + Óleos Capilar & Blonde Oil | bruto [16708.00]
+R$ 16.708,00 | 00000488 | KIT Shampoo + Condicionador 250ml + Máscara Intense Repair 200g Braé by Ana Paula Siebert | bruto [16708.00]
+R$ 16.708,00 | 00000487 | KIT Shampoo + Condicionador + Máscara Blonde Oil Braé by Ana Paula Siebert | bruto [16708.00]
+R$ 16.576,00 | 00000567 | Kit 4 Óleos - Revival + Blonde Oil + Intense + Hydra | bruto [16576.00]
+R$ 16.191,00 | 00000060 | Kit Divine Duo 500g | bruto [16191.00]
+R$ 15.748,00 | 00000619 | Kit Intense Repair Fluido Reparador + Revival Gorgeous Oil + Hair Protein | bruto [15748.00]
+R$ 15.668,00 | 00000649 | Kit Essential Fluido Reparador + Intense Repair by Ana Paula Óleo + Hair Protein | bruto [15668.00]
+R$ 15.594,00 | 00000708 | Kit Duo Fiber Mask - Máscara Efeito Teia 500g | bruto [15594.00]
+R$ 15.388,00 | 00000629 | Kit Intense Repair Shampoo + Condicionador + Leave in | bruto [15388.00]
+R$ 15.348,00 | 00000574 | Kit 3 Óleos - Blonde Oil + Intense + Revival | bruto [15348.00]
+R$ 15.286,00 | 00000049 | Kit Gorgeous Volume Completo 250ml | bruto [15286.00]
+R$ 15.188,00 | 00000613 | Kit Essential Fluido Reparador + Revival Gorgeous Oil + Hair Protein | bruto [15188.00]
+R$ 15.108,00 | 00000548 | Kit 2 Óleos - Essential + Intense Repair | bruto [15108.00]
+R$ 14.788,00 | 00000798 | Cronograma de Reconstrução Braé Revival Shampoo + Mascara Revival 200g + Óleo Capilar Revival 60ml | bruto [14788.00]
+R$ 14.784,00 | 00000644 | Kit Stages Nutrition Shampoo e Condicionador 250ml + Máscara 200g + Essential Fluido Reparador | bruto [14784.00]
+R$ 14.508,00 | 00000633 | Kit Blonde Oil Shampoo e Condicionador 250ml + Óleo Capila 60ml | bruto [14508.00]
+R$ 14.508,00 | 00000630 | Kit Intense Repair Shampoo + Condicionador + Óleo | bruto [14508.00]
+R$ 14.495,00 | 00000072 | Soul Color - Condicionador Proteção da Cor 1L | bruto [14495.00]
+R$ 14.391,00 | 00000249 | Kit Beauty Sleep e Beach Hair Day Duo | bruto [14391.00]
+R$ 14.388,00 | 00000546 | Kit 2 Óleos - Essential | bruto [14388.00]
+R$ 14.388,00 | 00000549 | Kit 3 Óleos - Revival | bruto [14388.00]
+R$ 14.388,00 | 00000587 | Kit 2 Óleos - Revival + Essential | bruto [14388.00]
+R$ 14.388,00 | 00000045 | Kit Revival Trio completo | bruto [14388.00]
+R$ 14.388,00 | 00000701 | Kit Essential Duo Shampoo e Condicionador 250ml + Fiber Mask 200g | bruto [14388.00]
+R$ 14.388,00 | 00000695 | Kit Braé Stages Hydration - Shampoo + Condicionador 250ml e Máscara 500g | bruto [14388.00]
+R$ 14.388,00 | 00000198 | Kit Essential Shampoo + Condicionador + Máscara | bruto [14388.00]
+R$ 14.332,00 | 00000530 | KIT Completo Braé Stages by Bruna Tavares | bruto [14332.00]
+R$ 14.332,00 | 00000678 | KIT Completo Braé Stages by Bruna Tavares Gloss Hydra e Repair Butter Banana | bruto [14332.00]
+R$ 14.148,00 | 00000551 | Kit 3 Óleos - Intense + Hydra + Blonde Oil | bruto [14148.00]
+R$ 13.988,00 | 00000612 | Kit Essential Fluido Reparador + Hydra Gloss oil by BT + Hair Protein | bruto [13988.00]
+R$ 13.588,00 | 00000572 | Kit 3 Óleos - Divine + Revival + Hydra | bruto [13588.00]
+R$ 13.588,00 | 00000698 | Kit Divine Shampoo + Condicionador 250ml + Óleo Capilar Ultra leve Anti-frizz 60ml | bruto [13588.00]
+R$ 13.588,00 | 00000238 | Kit Defense Trio Tônico | bruto [13588.00]
+R$ 13.495,00 | 00000067 | Braé Puring - Shampoo Antioleosidade 1L | bruto [13495.00]
+R$ 13.188,00 | 00000537 | Braé Revival Shampoo + Condicionador 250ml+Shine Oil 60ml | bruto [13188.00]
+R$ 12.995,00 | 00000209 | Go Curly Crespos - Máscara 500g | bruto [12995.00]
+R$ 12.995,00 | 00000040 | Soul Color - Máscara Proteção da Cor 500g | bruto [12995.00]
+R$ 12.971,00 | 00000686 | Kit Efeito Gloss | bruto [12971.00]
+R$ 12.591,00 | 00000471 | Kit 2 Essentials Leave-In Fluido Reparador 260ml | bruto [12591.00]
+R$ 12.388,00 | 00000622 | Kit Stages Fluido Reparador + Hydra Gloss Oil by BT + Hair Protein | bruto [12388.00]
+R$ 12.141,00 | 00000657 | Kit Essential Fluido Reparador 260ml + Divine Plume Sensation 60ml | bruto [12141.00]
+R$ 12.141,00 | 00000703 | Kir Hair Protein - Proteína Capilar Concentrada 80g + Fiber Mask - Máscara Efeito Teia 200g | bruto [12141.00]
+R$ 11.871,00 | 00000596 | Kit 2 Óleos - Blonde Oil | bruto [11871.00]
+R$ 11.871,00 | 00000600 | Kit 2 Óleos - Intense Repair | bruto [11871.00]
+R$ 11.871,00 | 00000580 | Kit 2 Óleos - Blonde Oil + Intense Repair | bruto [11871.00]
+R$ 11.691,00 | 00000197 | Kit Essential Finalizadores - Leave-in Fluido Reparador + Oil Blend | bruto [11691.00]
+R$ 11.495,00 | 00000201 | Essential - Condicionador Hidratação e Reparação 1L | bruto [11495.00]
+R$ 11.495,00 | 00000066 | Divine - Condicionador Anti-frizz 1L | bruto [11495.00]
+R$ 11.493,00 | 00000069 | Revival - Condicionador Reconstrução profunda 1L | bruto [11493.00]
+R$ 11.331,00 | 00000584 | Kit 2 Óleos - Intense + Revival | bruto [11331.00]
+R$ 11.331,00 | 00000585 | Kit 2 Óleos - Revival + Blonde Oil | bruto [11331.00]
+R$ 11.241,00 | 00000056 | Kit Revival Duo 200g | bruto [11241.00]
+R$ 11.241,00 | 00000658 | Kit Óleo Revival Gorgeous Oil + Divine Serum Plume | bruto [11241.00]
+R$ 11.186,00 | 00000533 | KIT Shampoo + Condicionador + Máscara + Leave-in Braé Stages by Bruna Tavares | bruto [11186.00]
+R$ 10.988,00 | 00000635 | Kit Blonde Oil Shampoo + Condicionador + Ampola | bruto [10988.00]
+R$ 10.836,00 | 00000679 | Kit Shampoo e Condicionador Braé Stages By Bruna Tavares Gloss Hydra 250ml + Óleo 60ml e Máscara Condicionante 200g Repair Butter Banana | bruto [10836.00]
+R$ 10.836,00 | 00000727 | Kit Completo BRAÉ Stages by Bruna Tavares Repair Butter Banana | bruto [10836.00]
+R$ 10.791,00 | 00000579 | Kit 2 Óleos - Revival | bruto [10791.00]
+R$ 10.495,00 | 00000200 | Essential - Shampoo Hidratação e Reparação 1L | bruto [10495.00]
+R$ 10.495,00 | 00000064 | Divine - Shampoo Anti-Frizz 1L | bruto [10495.00]
+R$ 10.495,00 | 00000068 | Revival - Shampoo Reconstrução profunda 1L | bruto [10495.00]
+R$ 10.495,00 | 00000073 | Soul Color - Shampoo Proteção da Cor 1L | bruto [10495.00]
+R$ 10.386,00 | 00000494 | KIT Máscara + Ampola Blonde Oil Braé by Ana Paula Siebert | bruto [10386.00]
+R$ 10.386,00 | 00000485 | KIT Shampoo + Condicionador Intense Repair Braé by Ana Paula Siebert | bruto [10386.00]
+R$ 10.386,00 | 00000486 | KIT Shampoo + Condicionador Blonde Oil Braé by Ana Paula Siebert | bruto [10386.00]
+R$ 9.995,00 | 00000661 | Braé Stages by Bruna Tavares Gloss Hydra Condicionador 1L | bruto [9995.00]
+R$ 9.995,00 | 00000511 | Braé Stages Hydration - Condicionador Hidratação Profunda 1L | bruto [9995.00]
+R$ 9.995,00 | 00000508 | Braé Stages Nutrition - Concidionador Nutrição Intensa 1L | bruto [9995.00]
+R$ 9.891,00 | 00000120 | Kit Pó Descolorante e 40 Vol Ox 900ml | bruto [9891.00]
+R$ 9.588,00 | 00000655 | Kit Trio Bruna Tavares | bruto [9588.00]
+R$ 9.495,00 | 00000660 | Braé Stages by Bruna Tavares Gloss Hydra Shampoo 1L | bruto [9495.00]
+R$ 9.495,00 | 00000510 | Braé Stages Hydration - Shampoo Hidratação Profunda 1L | bruto [9495.00]
+R$ 9.495,00 | 00000507 | Braé Stages Nutrition - Shampoo Nutrição Intensa 1L | bruto [9495.00]
+R$ 9.441,00 | 00000047 | Kit Divine Shampoo + Condicionador 250ml | bruto [9441.00]
+R$ 9.441,00 | 00000196 | Kit Essential Duo 250ml | bruto [9441.00]
+R$ 9.441,00 | 00000048 | Kit Revival Duo 250ml | bruto [9441.00]
+R$ 9.441,00 | 00000586 | Kit 2 Óleos - Revival + Hydra | bruto [9441.00]
+R$ 9.188,00 | 00000324 | KIT BRAÉ STAGES BLONDING - Shampoo e Condicionador 250ml + Máscara 200g | bruto [9188.00]
+R$ 9.188,00 | 00000317 | Kit Nutrição Braé Stages Shampoo + Condicionador + Máscara | bruto [9188.00]
+R$ 9.188,00 | 00000319 | KIT BRAÉ STAGES HYDRATION | bruto [9188.00]
+R$ 9.188,00 | 00000788 | Kit Brae stages Color Protect - Shampoo e Condicionador Proteção da Cor 250ml + Máscara 200g | bruto [9188.00]
+R$ 8.994,00 | 00000722 | Kit Braé Go Curly Cachos e Crespos Ativador + Gelatina 500ml | bruto [8994.00]
+R$ 8.495,00 | 00000006 | Bond Angel - Leave-in Thermal Blonde Matizador para Loiras 200ml | bruto [8495.00]
+R$ 8.495,00 | 00000024 | Revival - Leave-In Spray Reconstrução profunda 200ml | bruto [8495.00]
+R$ 8.392,00 | 00000243 | Kit Glow Shine Duo 250ml | bruto [8392.00]
+R$ 8.091,00 | 00000591 | Kit 2 Óleos - Bruna Tavares Gloss Hydra | bruto [8091.00]
+R$ 8.091,00 | 00000677 | Kit Braé Stages by Bruna Tavares Óleo Gloss Hydra + Óleo Condicionante Repair Butter Banana 60ml | bruto [8091.00]
+R$ 7.914,00 | 00000608 | Kit 6 Óleos - Intense + Blonde Oil | bruto [7914.00]
+R$ 7.797,00 | 00000184 | Fiber Mask - Máscara Efeito Teia 500g | bruto [7797.00]
+R$ 7.641,00 | 00000676 | Kit Braé Stages By Bruna Tavares Óleo Condicionante Repair Butter Banana 60ml + Máscara Condicionante Repair Butter Banana 200g | bruto [7641.00]
+R$ 7.495,00 | 00000010 | Divine - Ten in One Leave in Anti-frizz 200g | bruto [7495.00]
+R$ 7.495,00 | 00000260 | Blonde Repair - Leave In de Tratamento para Loiras 200ml | bruto [7495.00]
+R$ 6.997,00 | 00000434 | KIT Glow Shine Shampoo 1L + Condicionador 1L + Máscara 500g | bruto [6997.00]
+R$ 6.995,00 | 00000081 | Essential - Leave-In Fluido Reparador 260ml | bruto [6995.00]
+R$ 6.741,00 | 00000328 | Kit Hydration Braé Stages Shampoo + Condicionador | bruto [6741.00]
+R$ 6.741,00 | 00000316 | Kit Braé Stages Nutrition Shampoo + Condicionador | bruto [6741.00]
+R$ 6.741,00 | 00000715 | Kit Braé stages Blonding Shampoo e Condicionador 250ml | bruto [6741.00]
+R$ 6.696,00 | 00000212 | Kit Go Curly Crespos Completo | bruto [6696.00]
+R$ 6.595,00 | 00000475 | Blonde Oil by Ana Paula Siebert - Óleo Capilar 60ml | bruto [6595.00]
+R$ 6.595,00 | 00000480 | Intense Repair by Ana Paula Siebert - Óleo Capilar 60ml | bruto [6595.00]
+R$ 6.495,00 | 00000012 | Divine - Óleo Capilar Ultra leve Anti-frizz 60ml | bruto [6495.00]
+R$ 6.291,00 | 00000726 | Kit BRAÉ Stages by Bruna Tavares Shampoo + Condicionador Repair Butter Banana 250ml | bruto [6291.00]
+R$ 6.045,00 | 00000473 | Blonde Oil by Ana Paula Siebert - Condicionador 250ml | bruto [6045.00]
+R$ 6.045,00 | 00000478 | Intense Repair by Ana Paula Siebert - Condicionador 250ml | bruto [6045.00]
+R$ 5.996,00 | 00000277 | Go Curly Cachos e Crespos - Geleia Ativadora de Cachos 500g | bruto [5996.00]
+R$ 5.995,00 | 00000022 | Revival - Óleo Capilar de Reconstrução profunda 60ml | bruto [5995.00]
+R$ 5.995,00 | 00000194 | Essential - Óleo Capilar Hidratação e Reparação 60ml | bruto [5995.00]
+R$ 5.995,00 | 00000275 | Hair Protein - Proteína Capilar Concentrada 80g | bruto [5995.00]
+R$ 5.992,00 | 00000713 | Kit Braé Stages Oil Control Shampoo + Condicionador 250ml | bruto [5992.00]
+R$ 5.596,00 | 00000254 | High Protect - Spray Protetor Térmico 200ml | bruto [5596.00]
+R$ 5.495,00 | 00000191 | Essential - Condicionador Hidratação e Reparação 250ml | bruto [5495.00]
+R$ 5.495,00 | 00000019 | Revival - Condicionador Reconstrução profunda 250ml | bruto [5495.00]
+R$ 5.495,00 | 00000472 | Blonde Oil by Ana Paula Siebert - Shampoo 250ml | bruto [5495.00]
+R$ 5.495,00 | 00000477 | Intense Repair by Ana Paula Siebert - Shampoo 250ml | bruto [5495.00]
+R$ 5.495,00 | 00000008 | Divine - Condicionador Anti-frizz 250ml | bruto [5495.00]
+R$ 5.495,00 | 00000004 | Bond Angel - Passo 3 Tratamento Fortificante Pós-Química 100ml | bruto [5495.00]
+R$ 5.495,00 | 00000207 | Go Curly Crespos - Condicionador 250ml | bruto [5495.00]
+R$ 5.395,00 | 00000687 | Kit Resgate dos Fios | bruto [5395.00]
+R$ 5.394,00 | 00000606 | Kit 6 Óleos - Bruna Tavares Gloss Hydra | bruto [5394.00]
+R$ 5.276,00 | 00000607 | Kit 4 Óleos - Intense + Blonde Oil | bruto [5276.00]
+R$ 4.995,00 | 00000041 | Divine - Kit Travel Size Shampoo + Condicionador + Máscara Anti-Frizz 60ml | bruto [4995.00]
+R$ 4.995,00 | 00000043 | Puring - Shampoo Antioleosidade 250ml | bruto [4995.00]
+R$ 4.995,00 | 00000015 | Gorgeous Volume - Shampoo 250ml | bruto [4995.00]
+R$ 4.995,00 | 00000527 | Braé Stages by Bruna Tavares Gloss Hydra Spray - Leave In 200ml | bruto [4995.00]
+R$ 4.995,00 | 00000018 | Revival - Shampoo Reconstrução profunda 250ml | bruto [4995.00]
+R$ 4.995,00 | 00000042 | Revival - Kit Travel Size Shampoo + Condicionador + Máscara Reconstrução profunda 60ml | bruto [4995.00]
+R$ 4.995,00 | 00000002 | Divine - Shampoo Anti-Frizz 250ml | bruto [4995.00]
+R$ 4.995,00 | 00000190 | Essential - Shampoo Hidratação e Reparação 250ml | bruto [4995.00]
+R$ 4.991,00 | 00000669 | Braé Stages Nutrition Spray Multi Leave-in Condicionante 260ml | bruto [4991.00]
+R$ 4.895,00 | 00000645 | Kit Stages Nutrition Shampoo e Condicionador 250ml + Máscara 200g + Essential Fluido Reparador + Essential Oil | bruto [4895.00]
+R$ 4.794,00 | 00000696 | Braé Stages Oil Control - Condicionador Controle da Oleosidade 250ml | bruto [4794.00]
+R$ 4.788,00 | 00000719 | Cronograma super Hidratação em Ampolas - 3x13ml | bruto [4788.00]
+R$ 4.497,00 | 00000230 | Glow Shine - Máscara Brilho Radiante 200g | bruto [4497.00]
+R$ 4.495,00 | 00000528 | Braé Stages by Bruna Tavares Gloss Hydra - Óleo Capilar 60ml | bruto [4495.00]
+R$ 4.495,00 | 00000595 | Kit 5 Óleos - Bruna Tavares Gloss Hydra | bruto [4495.00]
+R$ 4.495,00 | 00000670 | Braé Stages By Bruna Tavares Óleo Condicionante Repair Butter Banana 60ml | bruto [4495.00]
+R$ 4.097,00 | 00000224 | Kit Go Curly Crespos Trio Leave-in | bruto [4097.00]
+R$ 4.096,00 | 00000646 | Kit Stages Nutrition Shampoo e Condicionador 250ml + Essential Fluido Reparador + Essential Oil | bruto [4096.00]
+R$ 3.995,00 | 00000526 | Braé Stages by Bruna Tavares Gloss Hydra - Máscara Capilar 200g | bruto [3995.00]
+R$ 3.995,00 | 00000307 | Brae stages Blonding - Máscara Matização para Loiras 200g | bruto [3995.00]
+R$ 3.995,00 | 00000306 | Brae stages Blonding - Condicionador Matização para Loiras 250ml | bruto [3995.00]
+R$ 3.995,00 | 00000710 | Brae stages Color Protect - Máscara Proteção da Cor 200g | bruto [3995.00]
+R$ 3.995,00 | 00000311 | Brae stages Color Protect - Condicionador Proteção da Cor 250ml | bruto [3995.00]
+R$ 3.995,00 | 00000671 | Braé Stages By Bruna Tavares Máscara Condicionante Repair Butter Banana 200g | bruto [3995.00]
+R$ 3.995,00 | 00000303 | Brae stages Hydration - Condicionador Hidratação Profunda 250ml | bruto [3995.00]
+R$ 3.995,00 | 00000304 | Brae stages Hydration - Máscara Hidratação Profunda 200g | bruto [3995.00]
+R$ 3.995,00 | 00000300 | Brae stages Nutrition - Condicionador Nutrição Intensa 250ml | bruto [3995.00]
+R$ 3.957,00 | 00000601 | Kit 3 Óleos - Intense Repair | bruto [3957.00]
+R$ 3.596,00 | 00000594 | Kit 4 Óleos - Bruna Tavares Gloss Hydra | bruto [3596.00]
+R$ 3.596,00 | 00000113 | Cronograma Reparação profunda em Ampolas - 3x13ml | bruto [3596.00]
+R$ 3.596,00 | 00000301 | Brae stages Nutrition - Máscara Nutrição Intensa 200g | bruto [3596.00]
+R$ 3.517,00 | 00000258 | Blonde Repair - Condicionador de Tratamento para Loiras 250ml | bruto [3517.00]
+R$ 3.499,00 | 00000656 | Bond Angel - Acidificante PH Matizador para Loiras 1L | bruto [3499.00]
+R$ 3.495,00 | 00000525 | Braé Stages by Bruna Tavares Gloss Hydra - Condicionador 250ml | bruto [3495.00]
+R$ 3.495,00 | 00000299 | Brae stages Nutrition - Shampoo Nutrição Intensa 250ml | bruto [3495.00]
+R$ 3.495,00 | 00000305 | Braé stages Blonding - Shampoo Matização para Loiras 250ml | bruto [3495.00]
+R$ 3.495,00 | 00000308 | Braé Stages Oil Control - Shampoo Controle da Oleosidade 250ml | bruto [3495.00]
+R$ 3.495,00 | 00000302 | Brae stages Hydration - Shampoo Hidratação Profunda 250ml | bruto [3495.00]
+R$ 3.495,00 | 00000310 | Brae stages Color Protect - Shampoo Proteção da Cor 250ml | bruto [3495.00]
+R$ 3.495,00 | 00000524 | Braé Stages by Bruna Tavares Gloss Hydra- Shampoo 250ml | bruto [3495.00]
+R$ 3.495,00 | 00000724 | BRAÉ Stages by Bruna Tavares Shampoo Repair Butter Banana 250ml | bruto [3495.00]
+R$ 3.495,00 | 00000725 | BRAÉ Stages by Bruna Tavares Condicionador Repair Butter Banana 250ml | bruto [3495.00]
+R$ 3.299,00 | 00000643 | Kit Stages Hydration Shampoo e Condicionador 1L + Essential Fluido Reparador + Essential Oil | bruto [3299.00]
+R$ 3.297,00 | 00000016 | Gorgeous Volume - Condicionador 250ml | bruto [3297.00]
+R$ 2.999,00 | 00000648 | Kit Stages Nutrition Shampoo e Condicionador 1L + Essential Fluido Reparador + Essential Oil | bruto [2999.00]
+R$ 2.997,00 | 00000226 | Glow Shine - Shampoo Brilho Radiante 250ml | bruto [2997.00]
+R$ 2.996,00 | 00000266 | Essential - Leave-In Fluido Antiquebra Travel Size 60ml | bruto [2996.00]
+R$ 2.995,00 | 00000315 | Braé stages - Óleo de Tratamento Hidratação Intensa 35ml | bruto [2995.00]
+R$ 2.799,00 | 00000433 | KIT Divine Shampoo 1L + Condicionador 1L + Máscara 500g | bruto [2799.00]
+R$ 2.799,00 | 00000431 | KIT Revival Shampoo 1L + Condicionador 1L + Máscara 500g | bruto [2799.00]
+R$ 2.793,00 | 00000718 | Bond Angel - Ampola de Reconstrução e Força 13ml | bruto [2793.00]
+R$ 2.599,00 | 00000689 | KIT Divine Shampoo 1L + Condicionador 1L + Fiber Mask 500g | bruto [2599.00]
+R$ 2.599,00 | 00000611 | Kit Essential Fluido Reparador + Beach Hair Day + Essential Oil + Hair Protein | bruto [2599.00]
+R$ 2.599,00 | 00000453 | Glow Shine - Máscara Brilho Radiante 500g | bruto [2599.00]
+R$ 2.597,00 | 00000621 | Kit Finalizadores Stages: Fluido Reparador + Leave-in em Creme + Óleo | bruto [2597.00]
+R$ 2.499,00 | 00000432 | KIT Essential Shampoo 1L + Condicionador 1L + Máscara 500g | bruto [2499.00]
+R$ 2.495,00 | 00000108 | Wanna Be Blond - OX 10 Vol 900ml | bruto [2495.00]
+R$ 2.495,00 | 00000109 | Wanna Be Blond - OX 20 Vol 900ml | bruto [2495.00]
+R$ 2.495,00 | 00000110 | Wanna Be Blond - OX 30 Vol 900ml | bruto [2495.00]
+R$ 2.495,00 | 00000111 | Wanna Be Blond - OX 40 Vol 900ml | bruto [2495.00]
+R$ 2.478,00 | 00000628 | Kit Revival Shampoo e Condicionador 250ml + Máscara 200g + Revival Gorgeous Oil + Essential Fluido Reparador | bruto [2478.00]
+R$ 2.414,00 | 00000561 | Kit 5 Óleos - Revival + Divine + Intense + Blonde Oil + Hydra | bruto [2414.00]
+R$ 2.399,00 | 00000482 | KIT Completo Intense Repair Braé by Ana Paula Siebert | bruto [2399.00]
+R$ 2.399,00 | 00000513 | Kit Braé Stages Nutrition Shampoo e Condicionador 1L + Máscara 500G | bruto [2399.00]
+R$ 2.399,00 | 00000516 | Kit Braé Stages Hydration Shampoo e Condicionador 1L + Máscara 500G | bruto [2399.00]
+R$ 2.399,00 | 00000540 | Kit Essencial Finalizadores - 2 Fluidos Reparador 260ml + Óleo Essential 60ml | bruto [2399.00]
+R$ 2.399,00 | 00000624 | Kit Divine Shampoo e Condicionador 250ml + Máscara 200g + Serum Plume Sensation + Essential Fluido Reparador | bruto [2399.00]
+R$ 2.399,00 | 00000664 | KIT Stages by Bruna Tavares Shampoo 1L + Condicionador 1L + Máscara 500g | bruto [2399.00]
+R$ 2.299,00 | 00000229 | Glow Shine - Condicionador Brilho Radiante 1L | bruto [2299.00]
+R$ 2.299,00 | 00000262 | Blonde Repair - Condicionador de Tratamento para Loiras 1L | bruto [2299.00]
+R$ 2.199,00 | 00000244 | Kit Glow Shine Duo 1L | bruto [2199.00]
+R$ 2.199,00 | 00000550 | Kit 3 Óleos - Intense + Essential + Revival | bruto [2199.00]
+R$ 2.195,00 | 00000476 | Blonde Oil by Ana Paula Siebert - Ampola de Nutrição 13ml | bruto [2195.00]
+R$ 2.099,00 | 00000228 | Glow Shine - Shampoo Brilho Radiante 1L | bruto [2099.00]
+R$ 2.099,00 | 00000514 | KIT DUO BRAÉ STAGES NUTRITION SHAMPOO + CONDICIONADOR 1L | bruto [2099.00]
+R$ 2.099,00 | 00000700 | Kit Beauty Sleep - Sérum Noturno Nutritivo 100ml + Beach Hair Day 260ml + Fiber Mask 200g | bruto [2099.00]
+R$ 2.099,00 | 00000500 | Blonde Repair - Shampoo de Tratamento para Loiras 1L | bruto [2099.00]
+R$ 2.098,00 | 00000235 | Kit Defense Duo 250ml | bruto [2098.00]
+R$ 2.098,00 | 00000651 | Kit Blonde Repair Duo 250ml | bruto [2098.00]
+------------------------------------------------------------
+PRODUTOS COMERCIAIS SEM PREÇO
+------------------------------------------------------------

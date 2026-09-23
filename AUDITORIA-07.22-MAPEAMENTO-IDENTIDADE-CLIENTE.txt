@@ -1,0 +1,203 @@
+﻿============================================================
+ AUREA — AUDITORIA 07.22/11
+ MAPEAMENTO DE IDENTIDADE DO CLIENTE
+ SOMENTE LEITURA — CÓDIGO
+ NENHUM BANCO ACESSADO
+ NENHUM ARQUIVO ALTERADO
+============================================================
+
+
+[01] REFERÊNCIAS A userId / customerId / customer.id
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-customer-filter-repository.js:16: LEFT JOIN orders o ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-customer-repository.js:22: WHERE customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-customer-repository.js:29: WHERE customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-dashboard-repository.js:46: LEFT JOIN customers c ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:153: order.customerId === id ||
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:154: order.userId === id ||
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:160: customerId: id,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-order-filter-repository.js:36: LEFT JOIN customers c ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-report-repository.js:64: ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-schema.js:86: customerId: firstExisting(schema, "orders", [
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-schema.js:87: "customer_id",
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-schema.js:135: "customer_id"
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-shipment-repository.js:7: o.customer_id,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-shipment-repository.js:12: LEFT JOIN customers c ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-shipment-repository.js:28: LEFT JOIN customers c ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\commercial-history-repository.js:14: async function getCustomerCommercialHistory(customerId) {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\commercial-history-repository.js:24: WHERE o.customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\commercial-history-repository.js:27: `, [customerId]);
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-details-repository.js:26: WHERE customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-details-repository.js:36: WHERE customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-metrics-repository.js:21: ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-report-repository.js:22: ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\final-admin-repository.js:46: LEFT JOIN orders o ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\logistics-details-repository.js:9: o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\order-filter-repository.js:41: ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:32: <div class="admin-customer-item" data-id="${customer.id ?? ""}">
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-detail-service.js:140: customer.id || '',
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:38: export function createCustomerId() {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:65: customer.id ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:66: createCustomerId(),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:118: if (!customer.id) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:39: export async function getCustomer(customerId) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:41: if (!customerId) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:49: customerId
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:186: customerId,
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:190: if (!customerId) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:197: await getCustomer(customerId);
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:209: id: customerId,
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:220: customerId
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:230: id: customerId,
+
+[02] REFERÊNCIAS A customer.email / customer_email / email
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:156: order.customer?.email === id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-order-filter-repository.js:34: c.email AS customer_email
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\order-filter-repository.js:38: c.email AS customer_email
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\admin-read-model.js:19: order.customer?.email || null
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\customers\customer-validator.js:13: customer.email ??
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\customers\customer-validator.js:37: code: 'CUSTOMER_EMAIL_REQUIRED',
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\customers\customer-validator.js:47: code: 'CUSTOMER_EMAIL_INVALID',
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\orders\order-repository.js:42: order.customer?.email || ''
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-customers.js:34: <span>${escapeHtml(customer.email ?? "")}</span>
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:110: ${escapeHtml(order.customer?.email || '—')}
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin-orders.js:193: ${escapeHtml(order.customer?.email || '—')}
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\admin.js:2502: customer.email ||
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-detail-service.js:73: order?.customer?.email || ''
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-detail-service.js:80: customer.email || ''
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-detail-service.js:147: customer.email || '',
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:23: export function normalizeCustomerEmail(value) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:54: const email = normalizeCustomerEmail(customer.email);
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:75: normalizeCustomerEmail(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:76: customer.normalizedEmail || email
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:126: if (!customer.email) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:134: if (!customer.normalizedEmail) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:20: normalizeCustomerEmail,
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:65: export async function findCustomerByEmail(email) {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:68: normalizeCustomerEmail(email);
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:147: await findCustomerByEmail(
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:148: customer.email
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-service.js:10: const email = normalizeEmail(order?.customer?.email);
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-service.js:48: email: normalizeEmail(customer.email),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\order-model.js:98: email: normalizeText(customer.email),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\order-model.js:334: !data.customer.email
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:46: customerEmail:
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:47: document.getElementById('customerEmail'),
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1030: !elements.customerEmail?.value.trim() ||
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1032: elements.customerEmail.value
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1037: elements.customerEmail
+C:\Users\sou_r\Desktop\Loja\Original\js\checkout\checkout.js:1172: elements.customerEmail.value.trim(),
+C:\Users\sou_r\Desktop\Loja\Original\pages\checkout.html:83: <label for="customerEmail">
+C:\Users\sou_r\Desktop\Loja\Original\pages\checkout.html:89: id="customerEmail"
+C:\Users\sou_r\Desktop\Loja\Original\pages\checkout.html:90: name="customerEmail"
+
+[03] CRIAÇÃO / GRAVAÇÃO DE CLIENTE
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:91: return collection(USERS);
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-status-repository.js:8: UPDATE customers
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-service.js:80: return getCollection(USERS);
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\customers\customer-service.js:13: function createCustomerSnapshot({
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\customers\customer-service.js:30: createCustomerSnapshot
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\shipping\customer-shipping.js:4: createCustomerSnapshot
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\shipping\customer-shipping.js:23: createCustomerSnapshot({
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:38: export function createCustomerId() {
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-model.js:66: createCustomerId(),
+C:\Users\sou_r\Desktop\Loja\Original\js\admin\customer-repository.js:139: export async function createCustomer(customerData) {
+
+[04] FIREBASE AUTH / UID
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\idempotency-store.js:8: return `idem_${crypto.randomUUID()}`;
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-schema.js:63: "uuid"
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\customers\customer-service.js:21: id: `cus_${crypto.randomUUID()}`,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\inventory\inventory-service.js:95: const reservationId = crypto.randomUUID();
+C:\Users\sou_r\Desktop\Loja\Original\js\auth\admin-auth.js:11: } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+C:\Users\sou_r\Desktop\Loja\Original\js\auth\admin-auth.js:66: const user = auth.currentUser;
+C:\Users\sou_r\Desktop\Loja\Original\js\auth\admin-guard.js:3: import { auth } from '../firebase-config.js';
+C:\Users\sou_r\Desktop\Loja\Original\js\auth\admin-guard.js:8: } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+C:\Users\sou_r\Desktop\Loja\Original\js\firebase-config.js:3: import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+C:\Users\sou_r\Desktop\Loja\Original\js\firebase-config.js:7: authDomain: "base-total.firebaseapp.com",
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin-categories-seed.html:81: "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin-categories-seed.html:98: const currentUser = auth.currentUser;
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin-categories-seed.html:100: if (currentUser) {
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin-categories-seed.html:102: if (currentUser.email === "robertinho33@gmail.com") {
+C:\Users\sou_r\Desktop\Loja\Original\pages\admin-categories-seed.html:103: return currentUser;
+
+[05] DEFINIÇÃO DA TABELA customers
+------------------------------------------------------------
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql:53: CREATE TABLE IF NOT EXISTS customers (
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql:65: customer_id BIGINT NOT NULL
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql:66: REFERENCES customers(id) ON DELETE CASCADE,
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql:100: customer_id BIGINT
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql:101: REFERENCES customers(id) ON DELETE SET NULL,
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql:246: ON orders(customer_id);
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\001-aurea-admin-consolidation.sql:316: ON c.id = o.customer_id;
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\007-admin-database-consolidation.sql:7: CREATE TABLE IF NOT EXISTS customers (
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\007-admin-database-consolidation.sql:41: customer_id BIGINT,
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\_backup-before-consolidation\007-admin-database-consolidation.sql:267: o.customer_id,
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql:53: CREATE TABLE IF NOT EXISTS customers (
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql:65: customer_id BIGINT NOT NULL
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql:66: REFERENCES customers(id) ON DELETE CASCADE,
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql:100: customer_id BIGINT
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql:101: REFERENCES customers(id) ON DELETE SET NULL,
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql:246: ON orders(customer_id);
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\001-aurea-admin-consolidation.sql:316: ON c.id = o.customer_id;
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\007-admin-database-consolidation.sql:7: CREATE TABLE IF NOT EXISTS customers (
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\007-admin-database-consolidation.sql:74: customer_id BIGINT,
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\007-admin-database-consolidation.sql:86: ADD COLUMN IF NOT EXISTS customer_id BIGINT;
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\007-admin-database-consolidation.sql:253: customer_id BIGINT,
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\007-admin-database-consolidation.sql:388: CREATE INDEX IF NOT EXISTS idx_orders_customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\007-admin-database-consolidation.sql:389: ON orders(customer_id);
+C:\Users\sou_r\Desktop\Loja\Original\server\infrastructure\database\migrations\007-admin-database-consolidation.sql:440: o.customer_id,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\admin-controller.js:58: async function customers(req, res, next) {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\admin-controller.js:62: data: await adminService.getCustomers()
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\admin-customer-filter-controller.js:5: const data = await service.searchCustomers(req.query.q);
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\controllers\admin-report-controller.js:35: async function customers(req, res) {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-customer-filter-repository.js:3: async function searchCustomers(term) {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-customer-filter-repository.js:16: LEFT JOIN orders o ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-customer-repository.js:22: WHERE customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-customer-repository.js:29: WHERE customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-dashboard-repository.js:46: LEFT JOIN customers c ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:90: async function getCustomers() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:127: const customers = await getCustomers();
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:153: order.customerId === id ||
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-firestore-report-repository.js:160: customerId: id,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-order-filter-repository.js:36: LEFT JOIN customers c ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-report-repository.js:64: ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-schema.js:86: customerId: firstExisting(schema, "orders", [
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-schema.js:87: "customer_id",
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-schema.js:135: "customer_id"
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-shipment-repository.js:7: o.customer_id,
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-shipment-repository.js:12: LEFT JOIN customers c ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\admin-shipment-repository.js:28: LEFT JOIN customers c ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\commercial-history-repository.js:14: async function getCustomerCommercialHistory(customerId) {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\commercial-history-repository.js:24: WHERE o.customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\commercial-history-repository.js:27: `, [customerId]);
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-details-repository.js:26: WHERE customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-details-repository.js:36: WHERE customer_id = $1
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-metrics-repository.js:21: ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-report-repository.js:22: ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\customer-search-repository.js:3: async function searchCustomers(term) {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\final-admin-repository.js:46: LEFT JOIN orders o ON o.customer_id = c.id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\logistics-details-repository.js:9: o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\repositories\order-filter-repository.js:41: ON c.id = o.customer_id
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-customer-filter-service.js:3: async function searchCustomers(term) {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-customer-filter-service.js:4: return repository.searchCustomers(term);
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-service.js:79: async function getCustomers() {
+C:\Users\sou_r\Desktop\Loja\Original\server\modules\admin\services\admin-service.js:143: getCustomers(),
+
+[06] RESUMO DE ARQUIVOS ENVOLVIDOS
+------------------------------------------------------------
+userId = 1 ocorrencias
+customerId = 16 ocorrencias
+customer.id = 23 ocorrencias
+customer.email = 15 ocorrencias
+user.uid = 0 ocorrencias
+currentUser = 1 ocorrencias
+
+============================================================
+ [07.22/11] CONCLUIDO
+ SOMENTE LEITURA — CODIGO
+ NENHUM BANCO ACESSADO
+ NENHUM DADO ALTERADO
+============================================================

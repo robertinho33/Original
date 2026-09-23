@@ -37,57 +37,89 @@ export async function renderOperationalEnvironment(root) {
     );
 
     try {
-        const [overview, timeline, alerts] =
+        const [overview, timeline, alerts, customers] =
             await Promise.all([
                 adminApi.overview(),
                 adminApi.timeline(30),
-                adminApi.alerts()
+                adminApi.alerts(),
+                adminApi.customers()
             ]);
 
         const data = overview.data || {};
         const rows = timeline.data || [];
         const notifications = alerts.data || [];
 
+        /*
+         * CONTRATO DO OVERVIEW
+         *
+         * O backend entrega:
+         *   faturamentoHoje
+         *   pedidosHoje
+         *   pedidosTotal
+         *   produtos
+         *   estoqueBaixo
+         *   semEstoque
+         *   pagamentosPendentes
+         *   enviosPendentes
+         *
+         * O frontend antigo esperava nomes diferentes.
+         * A normalização abaixo mantém o backend intacto.
+         */
+        const overviewData = {
+            revenue: data.faturamentoHoje,
+            ordersToday: data.pedidosHoje,
+            customers: Array.isArray(customers?.data) ? customers.data.length : (data.clientes ?? data.customers ?? 0),
+            products: data.produtos,
+            inventory: {
+                low_stock: data.estoqueBaixo,
+                out_of_stock: data.semEstoque
+            },
+            payments: {
+                pending: data.pagamentosPendentes
+            },
+            shipping: data.enviosPendentes
+        };
+
         content.innerHTML = `
             <div class="admin-metrics-grid">
                 ${metric(
                     "Faturamento hoje",
-                    money(data.revenue)
+                    money(overviewData.revenue)
                 )}
 
                 ${metric(
                     "Pedidos hoje",
-                    number(data.ordersToday)
+                    number(overviewData.ordersToday)
                 )}
 
                 ${metric(
                     "Clientes",
-                    number(data.customers)
+                    number(overviewData.customers)
                 )}
 
                 ${metric(
                     "Produtos",
-                    number(data.products)
+                    number(overviewData.products)
                 )}
 
                 ${metric(
                     "Estoque baixo",
-                    number(data.inventory?.low_stock)
+                    number(overviewData.inventory?.low_stock)
                 )}
 
                 ${metric(
                     "Sem estoque",
-                    number(data.inventory?.out_of_stock)
+                    number(overviewData.inventory?.out_of_stock)
                 )}
 
                 ${metric(
                     "Pagamentos pendentes",
-                    number(data.payments?.pending)
+                    number(overviewData.payments?.pending)
                 )}
 
                 ${metric(
                     "Envios pendentes",
-                    number(data.shipping)
+                    number(overviewData.shipping)
                 )}
             </div>
 
@@ -114,7 +146,7 @@ export async function renderOperationalEnvironment(root) {
                                     rows.length
                                     ? rows.map(row => `
                                         <tr>
-                                            <td>${date(row.day)}</td>
+                                            <td>${date(row.date)}</td>
                                             <td>${number(row.orders)}</td>
                                             <td>${money(row.revenue)}</td>
                                             <td>${money(row.revenue / Math.max(Number(row.orders), 1))}</td>
@@ -172,3 +204,4 @@ export async function renderOperationalEnvironment(root) {
         `;
     }
 }
+
