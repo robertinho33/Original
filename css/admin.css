@@ -2309,3 +2309,69 @@ button {
         text-align: left;
     }
 }
+
+/* ============================================================
+   AUREA — MODAL DE DETALHES DO PEDIDO
+   Layout responsivo e conteúdo com rolagem interna
+   ============================================================ */
+
+#adminOrderModal {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 24px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    z-index: 999999;
+    background: rgba(0, 0, 0, 0.55);
+    filter: none;
+    backdrop-filter: none;
+}
+
+#adminOrderModal .admin-modal-dialog {
+    position: relative;
+    width: min(900px, calc(100vw - 48px));
+    max-width: 900px;
+    max-height: calc(100vh - 48px);
+    margin: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #fff;
+    color: #20201d;
+    opacity: 1;
+    filter: none;
+    backdrop-filter: none;
+    transform: none;
+    border-radius: 16px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+}
+
+#adminOrderModal .admin-modal-content {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    padding: 24px;
+}
+
+@media (max-width: 700px) {
+    #adminOrderModal {
+        padding: 12px;
+    }
+
+    #adminOrderModal .admin-modal-dialog {
+        width: calc(100vw - 24px);
+        max-height: calc(100vh - 24px);
+        border-radius: 12px;
+    }
+
+    #adminOrderModal .admin-modal-content {
+        padding: 16px;
+        max-height: calc(100vh - 100px);
+    }
+}
+

@@ -1,4 +1,6 @@
-import { ORDER_STATUS } from '../orders/order-status.js';
+﻿import { ORDER_STATUS } from '../orders/order-status.js';
+import { db } from '../firebase-config.js';
+import { loadProducts as loadCatalogProducts } from '../catalog/catalog-service.js';
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
 import { fetchAddressByCep } from './address-service.js';
@@ -6,7 +8,7 @@ import { saveOrder as persistOrder } from '../orders/order-service.js';
 
 
 /* =========================================================
-   CONFIGURA�?�fO
+   CONFIGURAï¿½?ï¿½fO
    ========================================================= */
 
 const CART_STORAGE_KEY = 'aurea-cart';
@@ -149,7 +151,7 @@ const elements = {
 
 
 /* =========================================================
-   UTILITÁRIOS
+   UTILITÃRIOS
    ========================================================= */
 
 function formatCurrency(value) {
@@ -368,9 +370,9 @@ function normalizeProduct(product) {
 
         price:
             parsePrice(
-                product['Preço'] ??
+                product['PreÃ§o'] ??
                 product.Preco ??
-                product['preço'] ??
+                product['preÃ§o'] ??
                 product.preco ??
                 product.Price ??
                 product.price ??
@@ -390,9 +392,9 @@ function normalizeProduct(product) {
             '',
 
         description:
-            product['Descrição'] ??
+            product['DescriÃ§Ã£o'] ??
             product.Descricao ??
-            product['descrição'] ??
+            product['descriÃ§Ã£o'] ??
             product.descricao ??
             ''
     };
@@ -400,456 +402,37 @@ function normalizeProduct(product) {
 
 
 async function loadProducts() {
+    const catalogProducts =
+        await loadCatalogProducts();
 
-    const response =
-        await fetch(CATALOG_PATH, {
-            cache: 'no-store'
-        });
+    return catalogProducts
+        .filter(
+            product =>
+                product?.active !== false
+        )
+        .map(product => ({
+            ...product,
 
-    if (!response.ok) {
-
-        throw new Error(
-            `Não foi possível carregar o catálogo. HTTP ${response.status}`
-        );
-    }
-
-    const text =
-        await response.text();
-
-    products =
-        parseCsv(text)
-            .map(normalizeProduct)
-            .filter(product => product.sku);
-
-    return products;
-}
-
-
-/* =========================================================
-   CARRINHO
-   ========================================================= */
-
-function loadCart() {
-
-    try {
-
-        const stored =
-            localStorage.getItem(
-                CART_STORAGE_KEY
-            );
-
-        if (!stored) {
-            return [];
-        }
-
-        const parsed =
-            JSON.parse(stored);
-
-        if (!Array.isArray(parsed)) {
-            return [];
-        }
-
-        return parsed;
-
-    } catch (error) {
-
-        console.error(
-            '[CHECKOUT] Erro ao carregar carrinho:',
-            error
-        );
-
-        return [];
-    }
-}
-
-
-function normalizeCartItem(item) {
-
-    return {
-
-        sku:
-            String(
-                item.sku ??
-                item.SKU ??
-                item.codigo ??
-                item.code ??
-                ''
+            sku: String(
+                product.sku ?? ''
             ).trim(),
 
-        quantity:
-            Math.max(
-                1,
+            name: String(
+                product.name ?? ''
+            ).trim(),
+
+            price: Number(
+                product.price ?? 0
+            ),
+
+            stock: Math.max(
+                0,
                 Number(
-                    item.quantity ??
-                    item.quantidade ??
-                    item.qty ??
-                    1
-                ) || 1
+                    product.stock ?? 0
+                )
             )
-    };
+        }));
 }
-
-
-function findProductBySku(sku) {
-
-    const normalizedSku =
-        normalizeText(sku);
-
-    return products.find(
-        product =>
-            normalizeText(product.sku) ===
-            normalizedSku
-    );
-}
-
-
-function getCartItems() {
-
-    return cart
-        .map(item => {
-
-            const normalized =
-                normalizeCartItem(item);
-
-            const product =
-                findProductBySku(
-                    normalized.sku
-                );
-
-            if (!product) {
-                return null;
-            }
-
-            return {
-
-                ...normalized,
-
-                product,
-
-                total:
-                    product.price *
-                    normalized.quantity
-            };
-        })
-        .filter(Boolean);
-}
-
-
-/* =========================================================
-   TOTAIS
-   ========================================================= */
-
-function getSubtotal() {
-
-    return getCartItems()
-        .reduce(
-            (total, item) =>
-                total + item.total,
-            0
-        );
-}
-
-
-function getDeliveryMethod() {
-
-    return document.querySelector(
-        'input[name="deliveryMethod"]:checked'
-    )?.value ?? 'delivery';
-}
-
-
-function getShipping() {
-
-    return getDeliveryMethod() === 'delivery'
-        ? DELIVERY_COST
-        : 0;
-}
-
-
-function getDiscount(
-    subtotal = getSubtotal()
-) {
-
-    if (!appliedCoupon) {
-        return 0;
-    }
-
-    if (
-        appliedCoupon.type ===
-        'percentage'
-    ) {
-        return Number(
-            (
-                subtotal *
-                (appliedCoupon.value / 100)
-            ).toFixed(2)
-        );
-    }
-
-    return 0;
-}
-
-
-function getTotal() {
-
-    const subtotal =
-        getSubtotal();
-
-    const shipping =
-        getShipping();
-
-    const discount =
-        getDiscount(subtotal);
-
-    return Math.max(
-        0,
-        Number(
-            (
-                subtotal -
-                discount +
-                shipping
-            ).toFixed(2)
-        )
-    );
-}
-
-
-/* =========================================================
-   CUPOM
-   ========================================================= */
-
-function applyCouponCode() {
-
-    const code =
-        String(
-            elements.couponCode?.value || ''
-        )
-        .trim()
-        .toUpperCase();
-
-    if (!code) {
-
-        appliedCoupon = null;
-
-        if (elements.couponMessage) {
-            elements.couponMessage.textContent =
-                'Digite um cupom.';
-        }
-
-        updateTotals();
-        return;
-    }
-
-    const coupon =
-        COUPONS[code];
-
-    if (!coupon) {
-
-        appliedCoupon = null;
-
-        if (elements.couponMessage) {
-            elements.couponMessage.textContent =
-                'Cupom inválido.';
-        }
-
-        updateTotals();
-        return;
-    }
-
-    appliedCoupon =
-        coupon;
-
-    if (elements.couponMessage) {
-        elements.couponMessage.textContent =
-            'Cupom aplicado: 10% de desconto.';
-    }
-
-    updateTotals();
-}
-
-
-/* =========================================================
-   RENDERIZA�?�fO DO CARRINHO
-   ========================================================= */
-
-function renderCart() {
-
-    const items =
-        getCartItems();
-
-    if (!items.length) {
-
-        elements.checkoutItems.innerHTML = `
-            <div class="empty-cart">
-                Seu carrinho está vazio.
-            </div>
-        `;
-
-        updateTotals();
-
-        return;
-    }
-
-    elements.checkoutItems.innerHTML =
-        items
-            .map(item => {
-
-                const image =
-                    item.product.image
-                        ? item.product.image
-                        : '';
-
-                const imageHtml =
-                    image
-                        ? `
-                            <img
-                                class="checkout-item-image"
-                                src="${escapeHtml(image)}"
-                                alt="${escapeHtml(item.product.name)}"
-                            >
-                        `
-                        : `
-                            <div class="checkout-item-image"></div>
-                        `;
-
-                return `
-                    <article class="checkout-item">
-
-                        ${imageHtml}
-
-                        <div class="checkout-item-info">
-
-                            <p class="checkout-item-name">
-                                ${escapeHtml(item.product.name)}
-                            </p>
-
-                            <p class="checkout-item-meta">
-                                ${item.quantity} �-
-                                ${formatCurrency(item.product.price)}
-                            </p>
-
-                        </div>
-
-                        <strong class="checkout-item-price">
-                            ${formatCurrency(item.total)}
-                        </strong>
-
-                    </article>
-                `;
-            })
-            .join('');
-
-    updateTotals();
-}
-
-
-function updateTotals() {
-
-    const subtotal =
-        getSubtotal();
-
-    const shipping =
-        getShipping();
-
-    const discount =
-        getDiscount(subtotal);
-
-    const total =
-        getTotal();
-
-    if (elements.checkoutSubtotal) {
-        elements.checkoutSubtotal.textContent =
-            formatCurrency(subtotal);
-    }
-
-    if (elements.checkoutShipping) {
-        elements.checkoutShipping.textContent =
-            shipping > 0
-                ? formatCurrency(shipping)
-                : 'Grátis';
-    }
-
-    if (elements.checkoutDiscount) {
-        elements.checkoutDiscount.textContent =
-            discount > 0
-                ? `- ${formatCurrency(discount)}`
-                : formatCurrency(0);
-    }
-
-    if (elements.checkoutTotal) {
-        elements.checkoutTotal.textContent =
-            formatCurrency(total);
-    }
-}
-
-
-/* =========================================================
-   ENTREGA
-   ========================================================= */
-
-function updateDeliveryFields() {
-
-    const delivery =
-        getDeliveryMethod();
-
-    const isDelivery =
-        delivery === 'delivery';
-
-    if (!elements.addressFields) {
-        return;
-    }
-
-    elements.addressFields.classList.toggle(
-        'is-disabled',
-        !isDelivery
-    );
-
-    const addressInputs =
-        elements.addressFields.querySelectorAll(
-            'input, select, textarea'
-        );
-
-    const requiredAddressFields = [
-        elements.cep,
-        elements.street,
-        elements.number,
-        elements.neighborhood,
-        elements.city,
-        elements.state
-    ];
-
-    addressInputs.forEach(input => {
-
-        input.disabled =
-            !isDelivery;
-
-        input.required =
-            isDelivery &&
-            requiredAddressFields.includes(input);
-    });
-
-    updateTotals();
-}
-
-
-/* =========================================================
-   CEP
-   ========================================================= */
-
-function formatCep(value) {
-
-    const digits =
-        onlyDigits(value)
-            .slice(0, 8);
-
-    if (digits.length <= 5) {
-        return digits;
-    }
-
-    return `${digits.slice(0, 5)}-${digits.slice(5)}`;
-}
-
-
 async function handleCep() {
 
     if (!elements.cep) {
@@ -876,7 +459,7 @@ async function handleCep() {
 
     if (elements.cepStatus) {
         elements.cepStatus.textContent =
-            'Consultando endereço...';
+            'Consultando endereÃ§o...';
 
         elements.cepStatus.style.color =
             '';
@@ -889,7 +472,7 @@ async function handleCep() {
 
         if (!address) {
             throw new Error(
-                'CEP não encontrado.'
+                'CEP nÃ£o encontrado.'
             );
         }
 
@@ -916,7 +499,7 @@ async function handleCep() {
         if (elements.cepStatus) {
 
             elements.cepStatus.textContent =
-                'Endereço preenchido automaticamente.';
+                'EndereÃ§o preenchido automaticamente.';
 
             elements.cepStatus.style.color =
                 'var(--success)';
@@ -934,7 +517,7 @@ async function handleCep() {
         if (elements.cepStatus) {
 
             elements.cepStatus.textContent =
-                'Não foi possível localizar este CEP.';
+                'NÃ£o foi possÃ­vel localizar este CEP.';
 
             elements.cepStatus.style.color =
                 'var(--danger)';
@@ -944,7 +527,7 @@ async function handleCep() {
 
 
 /* =========================================================
-   VALIDA�?�fO
+   VALIDAï¿½?ï¿½fO
    ========================================================= */
 
 function clearValidation() {
@@ -1115,7 +698,7 @@ function validateForm() {
     if (!items.length) {
 
         showMessage(
-            'Seu carrinho está vazio. Adicione produtos antes de finalizar o pedido.'
+            'Seu carrinho estÃ¡ vazio. Adicione produtos antes de finalizar o pedido.'
         );
 
         valid = false;
@@ -1308,26 +891,30 @@ function createOrder() {
         history: [],
 
         items:
-            items.map(item => ({
+        items.map(item => ({
+            productId:
+                item.product.id ??
+                item.product.productId ??
+                '',
 
-                sku:
-                    item.product.sku,
+            sku:
+                item.product.sku,
 
-                name:
-                    item.product.name,
+            name:
+                item.product.name,
 
-                quantity:
-                    item.quantity,
+            quantity:
+                item.quantity,
 
-                unitPrice:
-                    item.product.price,
+            unitPrice:
+                item.product.price,
 
-                total:
-                    item.total,
+            total:
+                item.total,
 
-                image:
-                    item.product.image
-            })),
+            image:
+                item.product.image
+        })),
 
         subtotal,
 
@@ -1374,8 +961,8 @@ function createOrder() {
    PIX
    =========================================================
    IMPORTANTE:
-   A lógica de geração PIX abaixo permanece preservada.
-   A validação/UX do PIX pertence à ETAPA 05/12.
+   A lÃ³gica de geraÃ§Ã£o PIX abaixo permanece preservada.
+   A validaÃ§Ã£o/UX do PIX pertence Ã  ETAPA 05/12.
    ========================================================= */
 
 async function createPixPayment(order) {
@@ -1418,7 +1005,7 @@ async function createPixPayment(order) {
 
         throw new Error(
             result?.message ||
-            'O servidor não conseguiu criar o pagamento PIX.'
+            'O servidor nÃ£o conseguiu criar o pagamento PIX.'
         );
     }
 
@@ -1476,7 +1063,7 @@ function renderPixPayment(result) {
     if (!qrSource && !copyCode) {
 
         throw new Error(
-            'O servidor criou o PIX, mas não retornou os dados do pagamento.'
+            'O servidor criou o PIX, mas nÃ£o retornou os dados do pagamento.'
         );
     }
 
@@ -1554,7 +1141,7 @@ function showSuccess(order) {
         if (elements.successMessage) {
 
             elements.successMessage.textContent =
-                'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os próximos passos.';
+                'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os prÃ³ximos passos.';
         }
     }
 
@@ -1587,13 +1174,13 @@ async function copyPixCode() {
         if (elements.pixCopyStatus) {
 
             elements.pixCopyStatus.textContent =
-                'Código PIX copiado.';
+                'CÃ³digo PIX copiado.';
         }
 
     } catch (error) {
 
         console.warn(
-            '[PIX] Clipboard indisponível:',
+            '[PIX] Clipboard indisponÃ­vel:',
             error
         );
 
@@ -1606,7 +1193,7 @@ async function copyPixCode() {
         if (elements.pixCopyStatus) {
 
             elements.pixCopyStatus.textContent =
-                'Código PIX copiado.';
+                'CÃ³digo PIX copiado.';
         }
     }
 }
@@ -1663,9 +1250,9 @@ async function handleSubmit(event) {
 
         /*
          * O PIX precisa ser gerado antes da primeira
-         * gravação do pedido.
+         * gravaÃ§Ã£o do pedido.
          *
-         * Assim o pedido é salvo somente uma vez.
+         * Assim o pedido Ã© salvo somente uma vez.
          */
 
         if (
@@ -1701,23 +1288,56 @@ async function handleSubmit(event) {
                         order
                     );
 
-                order.payment.pixCode =
-                    pixResult.pix_code;
+                order.payment.status =
+    pixResult.status || 'pending';
 
-                order.payment.pixGeneratedAt =
-                    new Date().toISOString();
+order.payment.provider =
+    pixResult.provider || 'aurea-pix-core';
 
-                appendOrderEvent(
-                    order,
-                    ORDER_EVENT.PIX_GENERATED,
-                    {
-                        amount:
-                            pixResult.amount,
+order.payment.orderId =
+    pixResult.order_id || order.id;
 
-                        pixKey:
-                            pixResult.pix_key
-                    }
-                );
+order.payment.txid =
+    pixResult.txid || '';
+
+order.payment.pixKey =
+    pixResult.pix_key || '';
+
+order.payment.pixCity =
+    pixResult.pix_city || '';
+
+order.payment.merchantName =
+    pixResult.pix_merchant_name || '';
+
+order.payment.pixCode =
+    pixResult.pix_code || '';
+
+order.payment.pixGeneratedAt =
+    new Date().toISOString();
+
+appendOrderEvent(
+    order,
+    ORDER_EVENT.PIX_GENERATED,
+    {
+        amount:
+            pixResult.amount,
+
+        provider:
+            pixResult.provider,
+
+        status:
+            pixResult.status,
+
+        orderId:
+            pixResult.order_id,
+
+        txid:
+            pixResult.txid,
+
+        pixKey:
+            pixResult.pix_key
+    }
+);
 
                 elements.pixPaymentContainer.innerHTML = `
                     <div class="pix-heading">
@@ -1731,7 +1351,7 @@ async function handleSubmit(event) {
                         </h3>
 
                         <p>
-                            Escaneie o QR Code ou copie o código PIX.
+                            Escaneie o QR Code ou copie o cÃ³digo PIX.
                         </p>
 
                     </div>
@@ -1816,17 +1436,17 @@ async function handleSubmit(event) {
                 );
 
                 throw new Error(
-                    'Não foi possível gerar o PIX. ' +
-                    'O pedido não foi registrado. Tente novamente.'
+                    'NÃ£o foi possÃ­vel gerar o PIX. ' +
+                    'O pedido nÃ£o foi registrado. Tente novamente.'
                 );
             }
         }
 
 
         /*
-         * �sNICA gravação do pedido.
+         * ï¿½sNICA gravaÃ§Ã£o do pedido.
          *
-         * No caso do PIX, o objeto já contém:
+         * No caso do PIX, o objeto jÃ¡ contÃ©m:
          *
          * - pixCode
          * - pixGeneratedAt
@@ -1849,8 +1469,8 @@ async function handleSubmit(event) {
 
 
         /*
-         * O pedido foi concluído.
-         * Não deixamos o botão continuar bloqueado
+         * O pedido foi concluÃ­do.
+         * NÃ£o deixamos o botÃ£o continuar bloqueado
          * como se ainda estivesse processando.
          */
 
@@ -1866,7 +1486,7 @@ async function handleSubmit(event) {
 
         showMessage(
             error?.message ||
-            'Não foi possível finalizar o pedido. Tente novamente.'
+            'NÃ£o foi possÃ­vel finalizar o pedido. Tente novamente.'
         );
 
         elements.submitOrder.disabled =
@@ -2028,7 +1648,7 @@ function setupEvents() {
 
 
 /* =========================================================
-   INICIALIZA�?�fO
+   INICIALIZAï¿½?ï¿½fO
    ========================================================= */
 
 async function init() {
@@ -2045,7 +1665,7 @@ async function init() {
         if (!cart.length) {
 
             showMessage(
-                'Sua sacola está vazia. Volte à loja e adicione produtos.'
+                'Sua sacola estÃ¡ vazia. Volte Ã  loja e adicione produtos.'
             );
 
             if (elements.submitOrder) {
@@ -2057,9 +1677,7 @@ async function init() {
         }
 
 
-        await loadProducts();
-
-
+        products = await loadProducts();
         cart =
             cart
                 .map(normalizeCartItem)
@@ -2078,7 +1696,7 @@ async function init() {
             );
 
             showMessage(
-                'Os produtos da sua sacola não estão mais disponíveis.'
+                'Os produtos da sua sacola nÃ£o estÃ£o mais disponÃ­veis.'
             );
 
             if (elements.submitOrder) {
@@ -2104,12 +1722,12 @@ async function init() {
     } catch (error) {
 
         console.error(
-            '[CHECKOUT] Falha na inicialização:',
+            '[CHECKOUT] Falha na inicializaÃ§Ã£o:',
             error
         );
 
         showMessage(
-            'Não foi possível carregar o checkout. Atualize a página e tente novamente.'
+            'NÃ£o foi possÃ­vel carregar o checkout. Atualize a pÃ¡gina e tente novamente.'
         );
 
         if (elements.submitOrder) {
@@ -2121,3 +1739,7 @@ async function init() {
 
 
 init();
+
+
+
+

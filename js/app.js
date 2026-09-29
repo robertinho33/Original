@@ -1,11 +1,14 @@
 'use strict';
 
+import { subscribeCatalog } from './catalog/catalog-service.js';
+
 import {
     loadProducts,
     loadHomeProducts,
     searchProducts,
     loadSources
 } from './catalog/catalog-service.js';
+
 import { formatCurrency } from './utils/formatters.js';
 
 
@@ -31,7 +34,7 @@ let modalQuantity = 1;
 let lastProductTriggerEl = null;
 
 /* =========================================================
-   ESTADO DOS FILTROS E PAGINA�?�fO
+   ESTADO DOS FILTROS E PAGINAÃ¯Â¿Â½?Ã¯Â¿Â½fO
    ========================================================= */
 const ITEMS_PER_PAGE = 8;
 let currentPage = 1;
@@ -42,7 +45,7 @@ let currentSortOption = 'default';
 const productsEl = document.querySelector('#products');
 const filtersEl = document.querySelector('#filters');
 
-// Elementos de busca, ordenação e paginação (criados via JS se não existirem no HTML)
+// Elementos de busca, ordenaÃƒÂ§ÃƒÂ£o e paginaÃƒÂ§ÃƒÂ£o (criados via JS se nÃƒÂ£o existirem no HTML)
 const searchInputEl = document.querySelector('#searchInput');
 const sortSelectEl = document.querySelector('#sortSelect');
 const paginationEl = document.querySelector('#pagination');
@@ -158,7 +161,7 @@ function removeFromCart(sku) {
 }
 
 /* =========================================================
-   VML-14 �?" CAMADA DE CATÁLOGO
+   VML-14 Ã¯Â¿Â½?" CAMADA DE CATÃƒÂLOGO
    ========================================================= */
 
 function normalizeCatalogText(value) {
@@ -194,6 +197,24 @@ function getCatalogSources() {
         );
 }
 
+function startCatalogRealtime() {
+    subscribeCatalog(updatedProducts => {
+        catalogProducts = Array.isArray(updatedProducts)
+            ? updatedProducts
+            : [];
+
+        products = catalogProducts;
+
+        try {
+            renderCatalog();
+        } catch (error) {
+            console.error(
+                '[CATALOG] Falha ao atualizar vitrine:',
+                error
+            );
+        }
+    });
+}
 async function refreshCatalog() {
     const [
         loadedProducts,
@@ -381,7 +402,7 @@ function renderPagination(
             class="pagination-button"
             data-page="${catalogPage - 1}"
             ${catalogPage === 1 ? 'disabled' : ''}
-            aria-label="Página anterior"
+            aria-label="PÃƒÂ¡gina anterior"
         >
             Anterior
         </button>
@@ -432,9 +453,9 @@ function renderPagination(
                     ? 'disabled'
                     : ''
             }
-            aria-label="Próxima página"
+            aria-label="PrÃƒÂ³xima pÃƒÂ¡gina"
         >
-            Próxima
+            PrÃƒÂ³xima
         </button>
     `);
 
@@ -482,7 +503,7 @@ async function renderCatalog() {
 
     productsEl.innerHTML = `
         <div class="catalog-empty">
-            <p>Carregando catálogo...</p>
+            <p>Carregando catÃƒÂ¡logo...</p>
         </div>
     `;
 
@@ -544,7 +565,7 @@ async function renderCatalog() {
                             <div
                                 class="product-image-placeholder"
                             >
-                                AUR�?A
+                                AURÃ¯Â¿Â½?A
                             </div>
                         `;
 
@@ -570,6 +591,18 @@ async function renderCatalog() {
                                 ${escapeHTML(
                                     product.sourceName
                                 )}
+                            </small>
+                        `
+                        : '';
+
+                const stock =
+                    Number.isFinite(Number(product.stock))
+                        ? `
+                            <small
+                                class="product-stock"
+                                data-stock="${Number(product.stock)}"
+                            >
+                                Estoque: ${Number(product.stock)}
                             </small>
                         `
                         : '';
@@ -613,6 +646,7 @@ async function renderCatalog() {
 
                             ${source}
                             ${weight}
+                            ${stock}
 
                             <div class="product-bottom">
                                 <span class="price">
@@ -629,7 +663,7 @@ async function renderCatalog() {
                                     )}"
                                     aria-label="Adicionar ${escapeAttribute(
                                         product.name
-                                    )} à sacola"
+                                    )} ÃƒÂ  sacola"
                                 >
                                     +
                                 </button>
@@ -643,14 +677,14 @@ async function renderCatalog() {
 
     } catch (error) {
         console.error(
-            'Erro ao renderizar catálogo:',
+            'Erro ao renderizar catÃƒÂ¡logo:',
             error
         );
 
         productsEl.innerHTML = `
             <div class="catalog-empty">
                 <p>
-                    Não foi possível carregar o catálogo.
+                    NÃƒÂ£o foi possÃƒÂ­vel carregar o catÃƒÂ¡logo.
                 </p>
             </div>
         `;
@@ -660,7 +694,7 @@ async function renderCatalog() {
 }
 
 /* =========================================================
-   SACOLA �?" RENDER & MODAIS
+   SACOLA Ã¯Â¿Â½?" RENDER & MODAIS
    ========================================================= */
 
 function renderCart() {
@@ -680,7 +714,7 @@ function renderCart() {
     }
 
     if (!cart.length) {
-        cartItemsEl.innerHTML = `<div class="empty">Sua sacola está esperando por você.</div>`;
+        cartItemsEl.innerHTML = `<div class="empty">Sua sacola estÃƒÂ¡ esperando por vocÃƒÂª.</div>`;
         if (cartTotalEl) cartTotalEl.textContent = formatCurrency(0);
         return;
     }
@@ -770,7 +804,7 @@ function updateModalStock(product) {
 
     if (stock <= 0) {
         productModalStockEl.textContent =
-            'Produto indisponível';
+            'Produto indisponÃƒÂ­vel';
 
         productModalStockEl.dataset.stockState =
             'out';
@@ -780,8 +814,8 @@ function updateModalStock(product) {
 
     productModalStockEl.textContent =
         stock === 1
-            ? '1 unidade disponível'
-            : `${stock} unidades disponíveis`;
+            ? '1 unidade disponÃƒÂ­vel'
+            : `${stock} unidades disponÃƒÂ­veis`;
 
     productModalStockEl.dataset.stockState =
         'available';
@@ -838,11 +872,11 @@ function renderProductModal(product) {
 
     const description =
         String(product.description || '').trim()
-        || 'Descrição não informada.';
+        || 'DescriÃƒÂ§ÃƒÂ£o nÃƒÂ£o informada.';
 
     const weight =
         String(product.weight || '').trim()
-        || 'Peso não informado';
+        || 'Peso nÃƒÂ£o informado';
 
     if (productModalCategoryEl) {
         productModalCategoryEl.textContent =
@@ -891,8 +925,8 @@ function renderProductModal(product) {
 
         modalAddToCartButton.textContent =
             unavailable
-                ? 'Indisponível'
-                : 'Adicionar à sacola';
+                ? 'IndisponÃƒÂ­vel'
+                : 'Adicionar ÃƒÂ  sacola';
     }
 }
 
@@ -917,7 +951,7 @@ function openProductModal(
 
     if (!product) {
         console.error(
-            'Produto não encontrado para o SKU:',
+            'Produto nÃƒÂ£o encontrado para o SKU:',
             normalizedSku
         );
 
@@ -986,7 +1020,7 @@ function closeProductModal() {
             false;
 
         modalAddToCartButton.textContent =
-            'Adicionar à sacola';
+            'Adicionar ÃƒÂ  sacola';
     }
 
     const trigger =
@@ -1100,7 +1134,7 @@ filtersEl?.addEventListener('click', event => {
     renderCatalog();
 });
 
-// Evento de Clique na Paginação estilo Google
+// Evento de Clique na PaginaÃƒÂ§ÃƒÂ£o estilo Google
 paginationEl?.addEventListener('click', event => {
     const button = event.target.closest('button[data-page]');
     if (!button || button.disabled) return;
@@ -1163,7 +1197,7 @@ document.querySelector('#checkout')?.addEventListener('click', () => {
 });
 
 /* =========================================================
-   INICIALIZA�?�fO
+   INICIALIZAÃ¯Â¿Â½?Ã¯Â¿Â½fO
    ========================================================= */
 
 async function init() {
@@ -1179,13 +1213,13 @@ async function init() {
         renderCart();
 
     } catch (error) {
-        console.error('Erro ao inicializar aplicação:', error);
+        console.error('Erro ao inicializar aplicaÃƒÂ§ÃƒÂ£o:', error);
 
         if (productsEl) {
             productsEl.innerHTML = `
                 <div class="catalog-error">
-                    <h3>Não foi possível carregar o catálogo.</h3>
-                    <p>Tente atualizar a página.</p>
+                    <h3>NÃƒÂ£o foi possÃƒÂ­vel carregar o catÃƒÂ¡logo.</h3>
+                    <p>Tente atualizar a pÃƒÂ¡gina.</p>
                 </div>
             `;
         }
@@ -1296,3 +1330,19 @@ init();
         });
     }
 })();
+
+function activateCatalogRealtime() {
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            startCatalogRealtime,
+            { once: true }
+        );
+        return;
+    }
+
+    startCatalogRealtime();
+}
+
+activateCatalogRealtime();
+

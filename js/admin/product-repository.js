@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import { db } from '../firebase-config.js';
 
@@ -144,9 +144,12 @@ export async function listProducts() {
 
     const snapshot =
         await getDocs(
-            collection(
-                db,
-                PRODUCTS_COLLECTION
+            query(
+                collection(
+                    db,
+                    PRODUCTS_COLLECTION
+                ),
+                limit(50)
             )
         );
 

@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 const {
     getFirestore
@@ -92,7 +92,25 @@ async function getInventory() {
 }
 
 async function getCustomers() {
-    return getCollection(USERS);
+    const snapshot = await db()
+        .collection(USERS)
+        .limit(50)
+        .get();
+
+    return snapshot.docs
+        .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }))
+        .sort((a, b) => {
+            const da =
+                new Date(a.createdAt || 0).getTime();
+
+            const db =
+                new Date(b.createdAt || 0).getTime();
+
+            return db - da;
+        });
 }
 
 async function getFinance() {

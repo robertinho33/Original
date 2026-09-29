@@ -1,7 +1,6 @@
 ﻿'use strict';
 
 import {
-    filterVisibleProducts,
     filterFeaturedProducts,
     getCatalogStats
 } from './catalog-visibility.js';
@@ -11,22 +10,82 @@ import {
     sortCatalogProducts
 } from './catalog-curation.js';
 
-const CATALOG_PATH = 'data/catalog/catalog-runtime.json';
+const RUNTIME_CATALOG_PATH =
+    'data/catalog/catalog-runtime.json';
 
 const MANIFEST_PATH =
     'data/catalog/manifests/catalog-sources.json';
 
 let catalogCache = null;
 let sourceCache = null;
+let catalogListeners = new Set();
 
-async function fetchJson(
-    path
-) {
+function normalizeProduct(product, documentId = '') {
+    const source =
+        product && typeof product === 'object'
+            ? product
+            : {};
+
+    const stockValue =
+        Number(source.stock);
+
+    const normalizedStock =
+        Number.isFinite(stockValue)
+            ? Math.max(0, Math.floor(stockValue))
+            : 0;
+
+    const priceValue =
+        Number(source.price);
+
+    const id =
+        String(
+            source.id ||
+            source.productId ||
+            documentId ||
+            source.sku ||
+            ''
+        ).trim();
+
+    return {
+        ...source,
+
+        id,
+
+        productId:
+            String(
+                source.productId ||
+                documentId ||
+                source.id ||
+                source.sku ||
+                ''
+            ).trim(),
+
+        sku:
+            String(
+                source.sku || ''
+            ).trim(),
+
+        name:
+            String(
+                source.name || ''
+            ).trim(),
+
+        price:
+            Number.isFinite(priceValue)
+                ? priceValue
+                : 0,
+
+        stock:
+            normalizedStock
+    };
+}
+
+async function fetchJson(path) {
     const response =
         await fetch(
             path,
             {
-                cache: 'no-store'
+                cache: 'no-cache'
             }
         );
 
@@ -39,6 +98,14 @@ async function fetchJson(
     return response.json();
 }
 
+/*
+ * Catálogo público:
+ *
+ * NÃO consulta Firestore.
+ *
+ * O Firestore continua sendo a fonte administrativa.
+ * O runtime JSON é a fonte de leitura pública.
+ */
 async function loadRawCatalog() {
     if (catalogCache) {
         return catalogCache;
@@ -46,34 +113,24 @@ async function loadRawCatalog() {
 
     const data =
         await fetchJson(
-            CATALOG_PATH
+            RUNTIME_CATALOG_PATH
         );
 
-    if (
-        !data ||
-        !Array.isArray(data.products)
-    ) {
-        throw new Error(
-            'Catálogo inválido: products[] não encontrado.'
-        );
-    }
+    const rawProducts =
+        Array.isArray(data)
+            ? data
+            : Array.isArray(data?.products)
+                ? data.products
+                : [];
 
     catalogCache =
-        data.products.map(
-            product => ({
-                ...product,
-                sku:
-                    String(
-                        product.sku || ''
-                    ).trim(),
-                name:
-                    String(
-                        product.name || ''
-                    ).trim(),
-                price:
-                    Number(product.price) || 0
-            })
-        );
+        rawProducts
+            .map(product =>
+                normalizeProduct(product)
+            )
+            .filter(product =>
+                product.sku
+            );
 
     return catalogCache;
 }
@@ -86,12 +143,9 @@ export async function loadProducts() {
     const products =
         await loadRawCatalog();
 
-    const sources =
-        await loadSources();
-
-    return filterVisibleProducts(
-        products,
-        sources
+    return products.filter(
+        product =>
+            product?.active !== false
     );
 }
 
@@ -109,18 +163,14 @@ export async function loadSources() {
             MANIFEST_PATH
         );
 
-    if (
-        Array.isArray(data)
-    ) {
+    if (Array.isArray(data)) {
         sourceCache = data;
     } else if (
-        Array.isArray(data.sources)
+        Array.isArray(data?.sources)
     ) {
         sourceCache = data.sources;
     } else {
-        throw new Error(
-            'Manifesto de fontes inválido.'
-        );
+        sourceCache = [];
     }
 
     return sourceCache;
@@ -141,12 +191,6 @@ export async function loadHomeProducts({
             sources
         );
 
-    /*
-     * Se ainda não houver produtos
-     * marcados como featured,
-     * a Home recebe uma seleção
-     * inicial ordenada.
-     */
     const base =
         featured.length
             ? featured
@@ -211,6 +255,7 @@ export async function searchProducts(
                 String(
                     product.category || ''
                 )
+                    .trim()
                     .toLowerCase() ===
                 normalizedCategory;
 
@@ -219,6 +264,7 @@ export async function searchProducts(
                 String(
                     product.sourceId || ''
                 )
+                    .trim()
                     .toLowerCase() ===
                 normalizedSource;
 
@@ -246,8 +292,25 @@ export async function searchProducts(
             Number(pageSize) || 24
         );
 
+    const total =
+        sorted.length;
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                total / safePageSize
+            )
+        );
+
+    const currentPage =
+        Math.min(
+            safePage,
+            totalPages
+        );
+
     const start =
-        (safePage - 1) *
+        (currentPage - 1) *
         safePageSize;
 
     const items =
@@ -258,21 +321,15 @@ export async function searchProducts(
 
     return {
         items,
-
-        total:
-            sorted.length,
-
-        page:
-            safePage,
-
-        pageSize:
-            safePageSize,
-
-        totalPages:
-            Math.ceil(
-                sorted.length /
-                safePageSize
-            )
+        products: items,
+        total,
+        page: currentPage,
+        pageSize: safePageSize,
+        totalPages,
+        hasNextPage:
+            currentPage < totalPages,
+        hasPreviousPage:
+            currentPage > 1
     };
 }
 
@@ -294,3 +351,41 @@ export function clearCatalogCache() {
     sourceCache = null;
 }
 
+export function subscribeCatalog(callback) {
+    if (typeof callback !== 'function') {
+        throw new TypeError(
+            'subscribeCatalog exige uma função.'
+        );
+    }
+
+    catalogListeners.add(callback);
+
+    /*
+     * O catálogo público não mantém listener
+     * em /products do Firestore.
+     *
+     * Entregamos imediatamente o catálogo
+     * estático disponível.
+     */
+    loadProducts()
+        .then(products => {
+            try {
+                callback(products);
+            } catch (error) {
+                console.error(
+                    '[CATALOG] Listener error:',
+                    error
+                );
+            }
+        })
+        .catch(error => {
+            console.error(
+                '[CATALOG] Runtime catalog error:',
+                error
+            );
+        });
+
+    return () => {
+        catalogListeners.delete(callback);
+    };
+}

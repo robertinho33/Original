@@ -11,6 +11,7 @@ import {
     where,
     orderBy,
     limit,
+    addDoc,
     runTransaction,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
@@ -18,39 +19,48 @@ import {
 const PRODUCTS_COLLECTION = 'products';
 const MOVEMENTS_COLLECTION = 'inventoryMovements';
 
-function normalizeQuantity(value) {
-    const quantity = Number(value);
-
-    if (!Number.isFinite(quantity)) {
-        throw new Error('Quantidade inválida.');
-    }
-
-    if (!Number.isInteger(quantity)) {
-        throw new Error('A quantidade deve ser um número inteiro.');
-    }
-
-    if (quantity < 0) {
-        throw new Error('A quantidade não pode ser negativa.');
-    }
-
-    return quantity;
+function normalizeStock(value) {
+    const stock = Number(value);
+    return Number.isFinite(stock) ? Math.max(0, Math.floor(stock)) : 0;
 }
 
-function getStockStatus(stock, minimumStock) {
-    if (stock <= 0) {
-        return 'ZERADO';
-    }
+function normalizeMinimumStock(value) {
+    const minimum = Number(value);
+    return Number.isFinite(minimum)
+        ? Math.max(0, Math.floor(minimum))
+        : 0;
+}
 
-    if (stock <= minimumStock) {
-        return 'BAIXO';
-    }
-
+function getStatus(stock, minimumStock) {
+    if (stock <= 0) return 'ZERADO';
+    if (stock <= minimumStock) return 'BAIXO';
     return 'OK';
 }
 
 function serialize(value) {
-    if (value && typeof value.toDate === 'function') {
+    if (
+        value &&
+        typeof value.toDate === 'function'
+    ) {
         return value.toDate().toISOString();
+    }
+
+    if (Array.isArray(value)) {
+        return value.map(serialize);
+    }
+
+    if (
+        value &&
+        typeof value === 'object'
+    ) {
+        return Object.fromEntries(
+            Object.entries(value).map(
+                ([key, item]) => [
+                    key,
+                    serialize(item)
+                ]
+            )
+        );
     }
 
     return value;
@@ -58,96 +68,101 @@ function serialize(value) {
 
 export async function listInventory() {
     const snapshot = await getDocs(
-        collection(db, PRODUCTS_COLLECTION)
+        collection(
+            db,
+            PRODUCTS_COLLECTION
+        )
     );
 
     return snapshot.docs
         .map(item => {
             const data = item.data();
 
-            const stock = Number(data.stock) || 0;
+            const stock =
+                normalizeStock(data.stock);
+
             const minimumStock =
-                Number(data.minimumStock) || 0;
+                normalizeMinimumStock(
+                    data.minimumStock
+                );
 
             return {
                 id: item.id,
-                sku: data.sku || '',
-                name: data.name || '',
-                image: data.image || '',
-                categoryId: data.categoryId || '',
-                categoryName: data.categoryName || '',
-                active: data.active !== false,
+                sku: data.sku ?? '',
+                name: data.name ?? '',
                 stock,
                 minimumStock,
-                status: getStockStatus(
+                status: getStatus(
                     stock,
                     minimumStock
                 )
             };
         })
-        .sort(
-            (a, b) =>
-                a.name.localeCompare(
-                    b.name,
-                    'pt-BR'
-                )
+        .sort((a, b) =>
+            a.name.localeCompare(
+                b.name,
+                'pt-BR'
+            )
         );
 }
 
-export async function getInventoryItem(productId) {
+export async function getInventoryItem(
+    productId
+) {
     const reference = doc(
         db,
         PRODUCTS_COLLECTION,
         productId
     );
 
-    const snapshot = await getDoc(reference);
+    const snapshot =
+        await getDoc(reference);
 
     if (!snapshot.exists()) {
-        throw new Error('Produto não encontrado.');
+        return null;
     }
 
     const data = snapshot.data();
 
-    const stock = Number(data.stock) || 0;
+    const stock =
+        normalizeStock(data.stock);
+
     const minimumStock =
-        Number(data.minimumStock) || 0;
+        normalizeMinimumStock(
+            data.minimumStock
+        );
 
     return {
         id: snapshot.id,
-        sku: data.sku || '',
-        name: data.name || '',
-        image: data.image || '',
-        categoryId: data.categoryId || '',
-        categoryName: data.categoryName || '',
-        active: data.active !== false,
+        sku: data.sku ?? '',
+        name: data.name ?? '',
         stock,
         minimumStock,
-        status: getStockStatus(
+        status: getStatus(
             stock,
             minimumStock
         )
     };
 }
 
+/**
+ * Ajuste manual de estoque pelo Admin.
+ *
+ * quantity:
+ *   positivo = entrada
+ *   negativo = saída
+ */
 export async function updateInventory(
     productId,
     quantity,
-    type = 'adjustment',
+    type = 'AJUSTE',
     reason = ''
 ) {
-    const normalizedQuantity =
-        normalizeQuantity(quantity);
+    const amount = Number(quantity);
 
-    const validTypes = [
-        'entry',
-        'exit',
-        'adjustment'
-    ];
-
-    if (!validTypes.includes(type)) {
+    if (!Number.isFinite(amount) || amount === 0) {
         throw new Error(
-            'Tipo de movimentação inválido.'
+            'Quantidade de estoque inválida.'
         );
     }
 
@@ -157,173 +172,402 @@ export async function updateInventory(
         productId
     );
 
-    const movementReference = doc(
+    const result =
+        await runTransaction(
+            db,
+            async transaction => {
+                const snapshot =
+                    await transaction.get(
+                        productReference
+                    );
+
+                if (!snapshot.exists()) {
+                    throw new Error(
+                        'Produto não encontrado.'
+                    );
+                }
+
+                const data =
+                    snapshot.data();
+
+                const currentStock =
+                    normalizeStock(
+                        data.stock
+                    );
+
+                const newStock =
+                    currentStock + amount;
+
+                if (newStock < 0) {
+                    throw new Error(
+                        `Estoque insuficiente. Atual: ${currentStock}.`
+                    );
+                }
+
+                transaction.update(
+                    productReference,
+                    {
+                        stock: newStock,
+                        updatedAt:
+                            new Date().toISOString()
+                    }
+                );
+
+                return {
+                    currentStock,
+                    newStock,
+                    sku: data.sku ?? '',
+                    name: data.name ?? ''
+                };
+            }
+        );
+
+    await addDoc(
         collection(
             db,
             MOVEMENTS_COLLECTION
-        )
-    );
-
-    return runTransaction(
-        db,
-        async transaction => {
-            const productSnapshot =
-                await transaction.get(
-                    productReference
-                );
-
-            if (!productSnapshot.exists()) {
-                throw new Error(
-                    'Produto não encontrado.'
-                );
-            }
-
-            const product =
-                productSnapshot.data();
-
-            const previousStock =
-                Number(product.stock) || 0;
-
-            let finalStock;
-
-            if (type === 'entry') {
-                finalStock =
-                    previousStock +
-                    normalizedQuantity;
-            }
-
-            if (type === 'exit') {
-                finalStock =
-                    previousStock -
-                    normalizedQuantity;
-
-                if (finalStock < 0) {
-                    throw new Error(
-                        `Estoque insuficiente. Disponível: ${previousStock}.`
-                    );
-                }
-            }
-
-            if (type === 'adjustment') {
-                finalStock =
-                    normalizedQuantity;
-            }
-
-            const minimumStock =
-                Number(product.minimumStock) || 0;
-
-            const now =
-                new Date().toISOString();
-
-            transaction.update(
-                productReference,
-                {
-                    stock: finalStock,
-                    updatedAt: now
-                }
-            );
-
-            transaction.set(
-                movementReference,
-                {
-                    productId,
-                    sku: product.sku || '',
-                    productName:
-                        product.name || '',
-                    type,
-                    quantity:
-                        normalizedQuantity,
-                    previousStock,
-                    finalStock,
-                    minimumStock,
-                    reason:
-                        String(
-                            reason || ''
-                        ).trim(),
-                    createdAt:
-                        serverTimestamp()
-                }
-            );
-
-            return {
-                productId,
-                sku: product.sku || '',
-                name: product.name || '',
-                previousStock,
-                quantity:
-                    normalizedQuantity,
-                finalStock,
-                minimumStock,
-                status:
-                    getStockStatus(
-                        finalStock,
-                        minimumStock
-                    )
-            };
+        ),
+        {
+            productId,
+            sku: result.sku,
+            productName: result.name,
+            quantity: amount,
+            stockBefore:
+                result.currentStock,
+            stockAfter:
+                result.newStock,
+            type,
+            reason,
+            createdAt:
+                serverTimestamp()
         }
     );
+
+    return {
+        productId,
+        quantity: amount,
+        stock: result.newStock
+    };
+}
+
+/**
+ * Baixa de estoque após pagamento confirmado.
+ *
+ * IMPORTANTE:
+ * A operação é idempotente através do documento
+ * do pedido. O mesmo pedido nunca pode baixar
+ * o estoque duas vezes.
+ */
+export async function processSaleStock(
+    order
+) {
+    if (!order?.id) {
+        throw new Error(
+            'Pedido inválido para baixa de estoque.'
+        );
+    }
+
+    if (
+        !Array.isArray(order.items) ||
+        !order.items.length
+    ) {
+        throw new Error(
+            'Pedido sem itens.'
+        );
+    }
+
+    const orderReference = doc(
+        db,
+        'orders',
+        order.id
+    );
+
+    const result =
+        await runTransaction(
+            db,
+            async transaction => {
+                const orderSnapshot =
+                    await transaction.get(
+                        orderReference
+                    );
+
+                if (!orderSnapshot.exists()) {
+                    throw new Error(
+                        'Pedido não encontrado.'
+                    );
+                }
+
+                const currentOrder =
+                    orderSnapshot.data();
+
+                if (
+                    currentOrder.inventoryProcessed === true
+                ) {
+                    return {
+                        alreadyProcessed: true
+                    };
+                }
+
+                const productReferences =
+                    order.items.map(item =>
+                        doc(
+                            db,
+                            PRODUCTS_COLLECTION,
+                            item.productId ||
+                            item.id ||
+                            ''
+                        )
+                    );
+
+                const uniqueReferences =
+                    [
+                        ...new Map(
+                            productReferences.map(
+                                reference => [
+                                    reference.path,
+                                    reference
+                                ]
+                            )
+                        ).values()
+                    ];
+
+                const productSnapshots =
+                    await Promise.all(
+                        uniqueReferences.map(
+                            reference =>
+                                transaction.get(
+                                    reference
+                                )
+                        )
+                    );
+
+                const productsByPath =
+                    new Map();
+
+                productSnapshots.forEach(
+                    snapshot => {
+                        if (snapshot.exists()) {
+                            productsByPath.set(
+                                snapshot.ref.path,
+                                {
+                                    snapshot,
+                                    data:
+                                        snapshot.data()
+                                }
+                            );
+                        }
+                    }
+                );
+
+                const changes = [];
+
+                for (
+                    const item of order.items
+                ) {
+                    const productId =
+                        item.productId ||
+                        item.id;
+
+                    if (!productId) {
+                        throw new Error(
+                            `Item sem productId: ${
+                                item.sku || 'SKU desconhecido'
+                            }`
+                        );
+                    }
+
+                    const reference =
+                        doc(
+                            db,
+                            PRODUCTS_COLLECTION,
+                            productId
+                        );
+
+                    const product =
+                        productsByPath.get(
+                            reference.path
+                        );
+
+                    if (!product) {
+                        throw new Error(
+                            `Produto não encontrado: ${
+                                item.sku || productId
+                            }`
+                        );
+                    }
+
+                    const quantity =
+                        Math.max(
+                            1,
+                            Number(
+                                item.quantity
+                            ) || 1
+                        );
+
+                    const currentStock =
+                        normalizeStock(
+                            product.data.stock
+                        );
+
+                    if (
+                        currentStock < quantity
+                    ) {
+                        throw new Error(
+                            `Estoque insuficiente para ${
+                                product.data.name ||
+                                item.name ||
+                                item.sku
+                            }. Disponível: ${
+                                currentStock
+                            }. Solicitado: ${
+                                quantity
+                            }.`
+                        );
+                    }
+
+                    changes.push({
+                        reference,
+                        sku:
+                            product.data.sku ||
+                            item.sku ||
+                            '',
+                        name:
+                            product.data.name ||
+                            item.name ||
+                            '',
+                        quantity,
+                        stockBefore:
+                            currentStock,
+                        stockAfter:
+                            currentStock -
+                            quantity
+                    });
+                }
+
+                for (const change of changes) {
+                    transaction.update(
+                        change.reference,
+                        {
+                            stock:
+                                change.stockAfter,
+                            updatedAt:
+                                new Date().toISOString()
+                        }
+                    );
+                }
+
+                transaction.update(
+                    orderReference,
+                    {
+                        inventoryProcessed: true,
+                        inventoryProcessedAt:
+                            new Date().toISOString()
+                    }
+                );
+
+                return {
+                    alreadyProcessed: false,
+                    changes
+                };
+            }
+        );
+
+    if (
+        result.alreadyProcessed
+    ) {
+        return {
+            success: true,
+            alreadyProcessed: true,
+            changes: []
+        };
+    }
+
+    for (
+        const change of result.changes
+    ) {
+        await addDoc(
+            collection(
+                db,
+                MOVEMENTS_COLLECTION
+            ),
+            {
+                productId:
+                    change.reference.id,
+                sku: change.sku,
+                productName:
+                    change.name,
+                quantity:
+                    -change.quantity,
+                stockBefore:
+                    change.stockBefore,
+                stockAfter:
+                    change.stockAfter,
+                type: 'VENDA',
+                reason:
+                    `Venda ${order.id}`,
+                orderId:
+                    order.id,
+                createdAt:
+                    serverTimestamp()
+            }
+        );
+    }
+
+    return {
+        success: true,
+        alreadyProcessed: false,
+        changes: result.changes
+    };
 }
 
 export async function listInventoryMovements(
     productId = null,
     maxResults = 100
 ) {
-    const safeLimit =
-        Math.max(
-            1,
-            Math.min(
-                Number(maxResults) || 100,
-                500
-            )
-        );
-
-    const movementsReference =
-        collection(
-            db,
-            MOVEMENTS_COLLECTION
-        );
-
-    const constraints = [];
+    let movementQuery;
 
     if (productId) {
-        constraints.push(
+        movementQuery = query(
+            collection(
+                db,
+                MOVEMENTS_COLLECTION
+            ),
             where(
                 'productId',
                 '==',
                 productId
-            )
+            ),
+            orderBy(
+                'createdAt',
+                'desc'
+            ),
+            limit(maxResults)
+        );
+    } else {
+        movementQuery = query(
+            collection(
+                db,
+                MOVEMENTS_COLLECTION
+            ),
+            orderBy(
+                'createdAt',
+                'desc'
+            ),
+            limit(maxResults)
         );
     }
 
-    constraints.push(
-        orderBy(
-            'createdAt',
-            'desc'
-        )
-    );
-
-    constraints.push(
-        limit(safeLimit)
-    );
-
     const snapshot =
         await getDocs(
-            query(
-                movementsReference,
-                ...constraints
-            )
+            movementQuery
         );
 
-    return snapshot.docs.map(item => ({
-        id: item.id,
-        ...Object.fromEntries(
-            Object.entries(item.data())
-                .map(
-                    ([key, value]) => [
-                        key,
-                        serialize(value)
-                    ]
-                )
-        )
-    }));
+    return snapshot.docs.map(
+        item => ({
+            id: item.id,
+            ...serialize(
+                item.data()
+            )
+        })
+    );
 }

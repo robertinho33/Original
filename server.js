@@ -1,4 +1,4 @@
-require("dotenv").config();
+﻿require("dotenv").config();
 const aureaAdminRoutes = require("./server/modules/admin/admin-routes");
 const orderRoutes = require('./server/modules/orders/order-routes');
 const { applyHttpFoundation } = require('./server/core/http');
@@ -6,6 +6,7 @@ const { errorHandler } = require('./server/infrastructure/error-handler');
 const { registerGracefulShutdown } = require('./server/infrastructure/shutdown');
 const { logger } = require('./server/infrastructure/logger');
 const express = require('express');
+const { createPixCharge } = require('./server/modules/payments/pix/pix-service');
 const { adminRoutes } = require('./server/modules/admin');
 const { inventoryRoutes } = require('./server/modules/inventory');
 const monitoringRoutes = require('./server/infrastructure/monitoring/monitoring-routes');
@@ -14,12 +15,20 @@ const QRCode = require('qrcode');
 
 const app = express();
 
+const path = require('path');
+
+app.use(express.static(__dirname));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 applyHttpFoundation(app);
 const PORT = process.env.PORT || 3000;
 
 /*
 =========================================================
- CONFIGURAÃ‡ÃƒO PIX
+ CONFIGURAÃƒâ€¡ÃƒÆ’O PIX
 =========================================================
 */
 
@@ -72,7 +81,7 @@ app.use('/api/orders', orderRoutes);
 
 /*
 =========================================================
- UTILITÃRIOS PIX
+ UTILITÃƒÂRIOS PIX
 =========================================================
 */
 
@@ -131,7 +140,7 @@ function crc16(payload) {
 
 /*
 =========================================================
- NORMALIZAÃ‡ÃƒO DO TXID
+ NORMALIZAÃƒâ€¡ÃƒÆ’O DO TXID
 =========================================================
 */
 
@@ -160,7 +169,7 @@ function createPixPayload({ amount, orderId }) {
         numericAmount <= 0
     ) {
         throw new Error(
-            'Valor invÃ¡lido para o PIX.'
+            'Valor invÃƒÂ¡lido para o PIX.'
         );
     }
 
@@ -277,122 +286,52 @@ function createPixPayload({ amount, orderId }) {
 
 /*
 =========================================================
- API â€” CRIAR PIX
+ API Ã¢â‚¬â€ CRIAR PIX
 =========================================================
 */
 
 app.post(
     '/api/create-pix-payment',
     async (req, res) => {
-
         try {
-
             const order = req.body || {};
+
+            const orderId = String(
+                order.id || ''
+            ).trim();
 
             const amount = Number(
                 order.total
             );
 
-            const orderId =
-                String(
-                    order.id || ''
-                ).trim();
-
-            if (
-                !Number.isFinite(amount) ||
-                amount <= 0
-            ) {
+            if (!orderId) {
                 return res.status(400).json({
                     success: false,
-                    message:
-                        'Valor do pedido invÃ¡lido.'
+                    message: 'Pedido sem identificação.'
                 });
             }
 
-            const pixCode =
-                createPixPayload({
-                    amount,
-                    orderId
+            if (!Number.isFinite(amount) || amount <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Valor do pedido inválido.'
                 });
+            }
 
-            /*
-            -------------------------------------------------
-             QR CODE
-            -------------------------------------------------
-            */
-
-            const qrCodeDataUrl =
-                await QRCode.toDataURL(
-                    pixCode,
-                    {
-                        errorCorrectionLevel: 'M',
-                        margin: 2,
-                        width: 320
-                    }
-                );
-
-            console.log('');
-            console.log(
-                '========================================'
-            );
-            console.log(
-                ' PIX GERADO'
-            );
-            console.log(
-                '========================================'
-            );
-            console.log(
-                `Valor: R$ ${amount.toFixed(2)}`
-            );
-            console.log(
-                `Pedido: ${orderId || '(sem ID)'}`
-            );
-            console.log(
-                `Chave: ${PIX_KEY}`
-            );
-            console.log(
-                `TXID: ${normalizeTxid(orderId)}`
-            );
-            console.log('');
-            console.log(
-                'PIX COPIA E COLA:'
-            );
-            console.log(
-                pixCode
-            );
-            console.log('');
-            console.log(
-                'CRC16:',
-                pixCode.slice(-4)
-            );
-            console.log(
-                '========================================'
-            );
-            console.log('');
-
-            return res.json({
-                success: true,
-
-                amount: Number(
-                    amount.toFixed(2)
-                ),
-
-                pix_key: PIX_KEY,
-
-                pix_city: PIX_CITY,
-
-                pix_merchant_name:
-                    PIX_MERCHANT_NAME,
-
-                pix_code: pixCode,
-
-                qr_code: qrCodeDataUrl
+            const payment = await createPixCharge({
+                orderId,
+                amount
             });
 
-        } catch (error) {
+            console.log(
+                `[AUREA PIX] cobrança criada: ${orderId} | R$ ${amount.toFixed(2)} | ${payment.txid}`
+            );
 
+            return res.json(payment);
+
+        } catch (error) {
             console.error(
-                '[PIX] Erro ao gerar PIX:',
+                '[AUREA PIX] erro:',
                 error
             );
 
@@ -400,22 +339,12 @@ app.post(
                 success: false,
                 message:
                     error?.message ||
-                    'Erro ao gerar PIX.'
+                    'Erro ao criar cobrança PIX.'
             });
         }
     }
 );
 
-
-/*
-=========================================================
- ARQUIVOS ESTÃTICOS
-=========================================================
-*/
-
-app.use(
-    express.static(__dirname)
-);
 
 
 /*
@@ -435,7 +364,7 @@ app.listen(
             '========================================'
         );
         console.log(
-            ' AUREA COSMETICS â€” SERVIDOR'
+            ' AUREA COSMETICS Ã¢â‚¬â€ SERVIDOR'
         );
         console.log(
             '========================================'
@@ -461,6 +390,11 @@ app.listen(
         console.log('');
     }
 );
+
+
+
+
+
 
 
 

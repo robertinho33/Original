@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import {
     db
@@ -32,19 +32,58 @@ function createTrackingData(order) {
 async function saveTracking(order) {
     const trackingData = createTrackingData(order);
 
+    const trackingRef = doc(
+        db,
+        TRACKING_COLLECTION,
+        order.id
+    );
+
     await setDoc(
-        doc(db, TRACKING_COLLECTION, order.id),
-        trackingData
+        trackingRef,
+        removeUndefined(trackingData)
     );
 
     return trackingData;
 }
 
+
+function removeUndefined(value) {
+    if (Array.isArray(value)) {
+        return value
+            .map(removeUndefined)
+            .filter(item => item !== undefined);
+    }
+
+    if (
+        value &&
+        typeof value === 'object' &&
+        !(value instanceof Date)
+    ) {
+        return Object.fromEntries(
+            Object.entries(value)
+                .filter(([, item]) => item !== undefined)
+                .map(([key, item]) => [
+                    key,
+                    removeUndefined(item)
+                ])
+        );
+    }
+
+    return value;
+}
 export async function saveOrder(order) {
     try {
+        const orderRef = doc(
+            db,
+            ORDERS_COLLECTION,
+            order.id
+        );
+
+        const sanitizedOrder = removeUndefined(order);
+
         await setDoc(
-            doc(db, ORDERS_COLLECTION, order.id),
-            order
+            orderRef,
+            sanitizedOrder
         );
 
         try {
@@ -70,7 +109,7 @@ export async function saveOrder(order) {
         );
 
         throw new Error(
-            'Não foi possível registrar o pedido no banco de dados.'
+            'NÃ£o foi possÃ­vel registrar o pedido no banco de dados.'
         );
     }
 }
@@ -184,7 +223,7 @@ export async function updateOrder(order) {
 
     if (!order || !order.id) {
         throw new Error(
-            'Pedido inválido para atualização.'
+            'Pedido invÃ¡lido para atualizaÃ§Ã£o.'
         );
     }
 
@@ -193,9 +232,10 @@ export async function updateOrder(order) {
 
     if (!existingOrder) {
         throw new Error(
-            'Pedido não encontrado para atualização.'
+            'Pedido nÃ£o encontrado para atualizaÃ§Ã£o.'
         );
     }
 
     return await saveOrder(order);
 }
+

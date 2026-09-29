@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import { auth } from '../firebase-config.js';
 
@@ -112,19 +112,16 @@ export function waitForAdminAuth() {
     return new Promise(
         (resolve, reject) => {
 
-            let finished = false;
+            let unsubscribe = null;
 
-            const unsubscribe =
+            unsubscribe =
                 onAuthStateChanged(
                     auth,
                     user => {
 
-                        if (finished) {
-                            return;
+                        if (unsubscribe) {
+                            unsubscribe();
                         }
-
-                        finished = true;
-                        unsubscribe();
 
                         if (
                             user &&

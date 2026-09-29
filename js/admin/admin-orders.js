@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import {
     listOrders,
@@ -35,12 +35,12 @@ function escapeHtml(value) {
 }
 
 function formatDate(value) {
-    if (!value) return '—';
+    if (!value) return 'Ã¢â‚¬â€';
 
     const date = new Date(value);
 
     if (Number.isNaN(date.getTime())) {
-        return '—';
+        return 'Ã¢â‚¬â€';
     }
 
     return date.toLocaleString('pt-BR');
@@ -51,13 +51,14 @@ function statusLabel(status) {
         new: 'Novo',
         pending: 'Pendente',
         confirmed: 'Confirmado',
-        processing: 'Processando',
+        paid: 'Pago',
+        processing: 'Preparando',
         shipped: 'Enviado',
         delivered: 'Entregue',
         cancelled: 'Cancelado'
     };
 
-    return labels[status] || status || '—';
+    return labels[status] || status || 'Ã¢â‚¬â€';
 }
 
 function paymentStatusLabel(status) {
@@ -68,7 +69,7 @@ function paymentStatusLabel(status) {
         cancelled: 'Cancelado'
     };
 
-    return labels[status] || status || '—';
+    return labels[status] || status || 'Ã¢â‚¬â€';
 }
 
 function renderSummary() {
@@ -103,11 +104,11 @@ function renderOrders() {
             </td>
 
             <td>
-                ${escapeHtml(order.customer?.name || 'Cliente não informado')}
+                ${escapeHtml(order.customer?.name || 'Cliente nÃƒÂ£o informado')}
             </td>
 
             <td>
-                ${escapeHtml(order.customer?.email || '—')}
+                ${escapeHtml(order.customer?.email || 'Ã¢â‚¬â€')}
             </td>
 
             <td>
@@ -185,17 +186,17 @@ function renderDetails(order) {
 
                 <p>
                     <strong>Nome:</strong>
-                    ${escapeHtml(order.customer?.name || '—')}
+                    ${escapeHtml(order.customer?.name || 'Ã¢â‚¬â€')}
                 </p>
 
                 <p>
                     <strong>E-mail:</strong>
-                    ${escapeHtml(order.customer?.email || '—')}
+                    ${escapeHtml(order.customer?.email || 'Ã¢â‚¬â€')}
                 </p>
 
                 <p>
                     <strong>Telefone:</strong>
-                    ${escapeHtml(order.customer?.phone || '—')}
+                    ${escapeHtml(order.customer?.phone || 'Ã¢â‚¬â€')}
                 </p>
             </section>
 
@@ -222,12 +223,12 @@ function renderDetails(order) {
                 <h3>Entrega</h3>
 
                 <p>
-                    <strong>Método:</strong>
-                    ${escapeHtml(order.delivery?.method || '—')}
+                    <strong>MÃƒÂ©todo:</strong>
+                    ${escapeHtml(order.delivery?.method || 'Ã¢â‚¬â€')}
                 </p>
 
                 <p>
-                    <strong>Endereço:</strong>
+                    <strong>EndereÃƒÂ§o:</strong>
                     ${formatAddress(order.delivery?.address)}
                 </p>
             </section>
@@ -270,7 +271,7 @@ function renderDetails(order) {
                                     <th>SKU</th>
                                     <th>Produto</th>
                                     <th>Qtd.</th>
-                                    <th>Unitário</th>
+                                    <th>UnitÃƒÂ¡rio</th>
                                     <th>Total</th>
                                 </tr>
                             </thead>
@@ -301,6 +302,7 @@ function renderDetails(order) {
                         'new',
                         'pending',
                         'confirmed',
+                        'paid',
                         'processing',
                         'shipped',
                         'delivered',
@@ -325,7 +327,7 @@ function renderDetails(order) {
         </section>
 
         <section class="order-history">
-            <h3>Histórico</h3>
+            <h3>HistÃƒÂ³rico</h3>
 
             ${
                 history.length
@@ -339,7 +341,7 @@ function renderDetails(order) {
 
                                     ${
                                         event.createdAt
-                                            ? ` — ${formatDate(event.createdAt)}`
+                                            ? ` Ã¢â‚¬â€ ${formatDate(event.createdAt)}`
                                             : ''
                                     }
                                 </li>
@@ -371,9 +373,22 @@ function renderDetails(order) {
             try {
                 select.disabled = true;
 
-                await updateOrder(order.id, {
+                const changes = {
                     status: newStatus
-                });
+                };
+
+                if (newStatus === 'paid') {
+                    changes.payment = {
+                        ...(order.payment || {}),
+                        status: 'paid',
+                        paidAt: new Date().toISOString()
+                    };
+                }
+
+                await updateOrder(
+                    order.id,
+                    changes
+                );
 
                 await loadOrders();
 
@@ -390,7 +405,7 @@ function renderDetails(order) {
                 console.error(error);
                 window.alert(
                     error?.message ||
-                    'Não foi possível atualizar o pedido.'
+                    'NÃƒÂ£o foi possÃƒÂ­vel atualizar o pedido.'
                 );
             } finally {
                 select.disabled = false;
@@ -400,7 +415,7 @@ function renderDetails(order) {
 
 function formatAddress(address) {
     if (!address) {
-        return '—';
+        return 'Ã¢â‚¬â€';
     }
 
     if (typeof address === 'string') {
@@ -417,7 +432,7 @@ function formatAddress(address) {
         address.zipCode || address.cep
     ].filter(Boolean);
 
-    return escapeHtml(parts.join(', ') || '—');
+    return escapeHtml(parts.join(', ') || 'Ã¢â‚¬â€');
 }
 
 async function loadOrders() {
@@ -443,7 +458,7 @@ async function loadOrders() {
         elements.tableBody.innerHTML = `
             <tr>
                 <td colspan="8" class="orders-error">
-                    Não foi possível carregar os pedidos.
+                    NÃƒÂ£o foi possÃƒÂ­vel carregar os pedidos.
                 </td>
             </tr>
         `;

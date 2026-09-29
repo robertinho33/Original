@@ -34,3 +34,10 @@ Thumbs.db
 .env copy
 serviceAccountKey.json
 *.firebase-adminsdk*.json
+# AUREA — arquivos temporarios locais
+*.bak-*
+*.bak
+*.tmp
+*.log
+backup-*/
+_LIXO_DIAGNOSTICOS/

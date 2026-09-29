@@ -1,32 +1,47 @@
-"use strict";
+﻿"use strict";
 
 const {
     getFirestore
 } = require("../../../infrastructure/firebase/firebase-admin");
 
 const {
-    calculateIndicators,
     buildOperationalAlerts
 } = require("../services/firestore-admin-indicators");
 
 const ORDERS = "orders";
-const PRODUCTS = "products";
 const USERS = "users";
 const TRACKING = "orderTracking";
+
+const RUNTIME_CATALOG =
+    "data/catalog/catalog-runtime.json";
 
 function db() {
     return getFirestore();
 }
 
-async function collection(name) {
-    const snapshot = await db()
-        .collection(name)
-        .get();
+async function loadRuntimeProducts() {
+    const fs = require("fs/promises");
+    const path = require("path");
 
-    return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    }));
+    const filePath = path.resolve(
+        process.cwd(),
+        RUNTIME_CATALOG
+    );
+
+    const content =
+        await fs.readFile(
+            filePath,
+            "utf8"
+        );
+
+    const data =
+        JSON.parse(content);
+
+    return Array.isArray(data)
+        ? data
+        : Array.isArray(data?.products)
+            ? data.products
+            : [];
 }
 
 function money(value) {
@@ -42,7 +57,9 @@ function dateValue(value) {
         return null;
     }
 
-    if (typeof value.toDate === "function") {
+    if (
+        typeof value.toDate === "function"
+    ) {
         return value.toDate();
     }
 
@@ -53,131 +70,285 @@ function dateValue(value) {
         : date;
 }
 
-async function getAdminOverview() {
-    const [
-        orders,
-        products,
-        users,
-        tracking
-    ] = await Promise.all([
-        collection(ORDERS),
-        collection(PRODUCTS),
-        collection(USERS),
-        collection(TRACKING)
-    ]);
+async function productStats() {
+    const products =
+        await loadRuntimeProducts();
 
-    const today = new Date();
+    let semEstoque = 0;
+    let estoqueBaixo = 0;
 
-    const todayOrders = orders.filter(order => {
-        const date = dateValue(order.createdAt);
+    for (const product of products) {
+        const stock =
+            Number(product?.stock ?? 0);
 
-        if (!date) {
-            return false;
+        if (!Number.isFinite(stock)) {
+            continue;
         }
 
-        return (
-            date.getFullYear() === today.getFullYear() &&
-            date.getMonth() === today.getMonth() &&
-            date.getDate() === today.getDate()
-        );
-    });
+        if (stock <= 0) {
+            semEstoque++;
+            continue;
+        }
 
-    const todayRevenue = todayOrders.reduce(
-        (sum, order) => sum + money(order.total),
-        0
-    );
-
-    const indicators = calculateIndicators({
-        orders,
-        products,
-        tracking
-    });
+        if (stock <= 5) {
+            estoqueBaixo++;
+        }
+    }
 
     return {
-        faturamentoHoje: todayRevenue,
-        pedidosHoje: todayOrders.length,
-
-        clientes: users.length,
         produtos: products.length,
+        semEstoque,
+        estoqueBaixo
+    };
+}
 
-        estoqueBaixo: indicators.estoqueBaixo,
-        semEstoque: indicators.semEstoque,
+async function countCustomers() {
+    const snapshot =
+        await db()
+            .collection(USERS)
+            .count()
+            .get();
 
-        pagamentosPendentes:
-            indicators.pagamentosPendentes,
+    return Number(
+        snapshot.data().count || 0
+    );
+}
 
-        enviosPendentes:
-            indicators.enviosPendentes
+async function getTodayOrders() {
+    const now = new Date();
+
+    const start =
+        new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+        );
+
+    const end =
+        new Date(start);
+
+    end.setDate(
+        end.getDate() + 1
+    );
+
+    const snapshot =
+        await db()
+            .collection(ORDERS)
+            .where(
+                "createdAt",
+                ">=",
+                start
+            )
+            .where(
+                "createdAt",
+                "<",
+                end
+            )
+            .get();
+
+    return snapshot.docs.map(
+        doc => ({
+            id: doc.id,
+            ...doc.data()
+        })
+    );
+}
+
+async function countPendingPayments() {
+    const snapshot =
+        await db()
+            .collection(ORDERS)
+            .where(
+                "payment.status",
+                "==",
+                "pending"
+            )
+            .count()
+            .get();
+
+    return Number(
+        snapshot.data().count || 0
+    );
+}
+
+async function countOpenShipments() {
+    const snapshot =
+        await db()
+            .collection(TRACKING)
+            .where(
+                "status",
+                "not-in",
+                [
+                    "delivered",
+                    "completed",
+                    "cancelled",
+                    "canceled"
+                ]
+            )
+            .count()
+            .get();
+
+    return Number(
+        snapshot.data().count || 0
+    );
+}
+
+async function getAdminOverview() {
+    const [
+        todayOrders,
+        customers,
+        products,
+        pagamentosPendentes,
+        enviosPendentes
+    ] = await Promise.all([
+        getTodayOrders(),
+        countCustomers(),
+        productStats(),
+        countPendingPayments(),
+        countOpenShipments()
+    ]);
+
+    const faturamentoHoje =
+        todayOrders.reduce(
+            (sum, order) =>
+                sum + money(order.total),
+            0
+        );
+
+    return {
+        faturamentoHoje,
+
+        pedidosHoje:
+            todayOrders.length,
+
+        clientes:
+            customers,
+
+        produtos:
+            products.produtos,
+
+        estoqueBaixo:
+            products.estoqueBaixo,
+
+        semEstoque:
+            products.semEstoque,
+
+        pagamentosPendentes,
+
+        enviosPendentes
     };
 }
 
 async function getOperationalAlerts() {
     const [
-        orders,
         products,
-        tracking
+        pagamentosPendentes,
+        enviosPendentes
     ] = await Promise.all([
-        collection(ORDERS),
-        collection(PRODUCTS),
-        collection(TRACKING)
+        productStats(),
+        countPendingPayments(),
+        countOpenShipments()
     ]);
 
-    const indicators = calculateIndicators({
-        orders,
-        products,
-        tracking
-    });
+    return buildOperationalAlerts({
+        produtos:
+            products.produtos,
 
-    return buildOperationalAlerts(indicators);
+        estoqueBaixo:
+            products.estoqueBaixo,
+
+        semEstoque:
+            products.semEstoque,
+
+        pagamentosPendentes,
+
+        enviosPendentes
+    });
 }
 
 async function getSalesTimeline(days = 30) {
-    const orders = await collection(ORDERS);
+    const safeDays =
+        Math.min(
+            Math.max(
+                Number(days || 30),
+                1
+            ),
+            365
+        );
 
-    const safeDays = Math.min(
-        Math.max(Number(days || 30), 1),
-        365
+    const now =
+        new Date();
+
+    const start =
+        new Date(now);
+
+    start.setDate(
+        start.getDate() - safeDays
     );
 
-    const now = new Date();
+    const snapshot =
+        await db()
+            .collection(ORDERS)
+            .where(
+                "createdAt",
+                ">=",
+                start
+            )
+            .get();
 
-    const start = new Date(now);
-    start.setDate(start.getDate() - safeDays);
+    const grouped =
+        new Map();
 
-    const grouped = new Map();
+    for (const doc of snapshot.docs) {
+        const order = {
+            id: doc.id,
+            ...doc.data()
+        };
 
-    for (const order of orders) {
-        const date = dateValue(order.createdAt);
+        const date =
+            dateValue(order.createdAt);
 
-        if (!date || date < start) {
+        if (!date) {
             continue;
         }
 
-        const key = new Intl.DateTimeFormat(
-            "en-CA",
-            {
-                timeZone: "America/Sao_Paulo"
-            }
-        ).format(date);
+        const key =
+            new Intl.DateTimeFormat(
+                "en-CA",
+                {
+                    timeZone:
+                        "America/Sao_Paulo"
+                }
+            ).format(date);
 
         if (!grouped.has(key)) {
-            grouped.set(key, {
-                date: key,
-                orders: 0,
-                revenue: 0
-            });
+            grouped.set(
+                key,
+                {
+                    date: key,
+                    orders: 0,
+                    revenue: 0
+                }
+            );
         }
 
-        const item = grouped.get(key);
+        const item =
+            grouped.get(key);
 
         item.orders += 1;
-        item.revenue += money(order.total);
+
+        item.revenue +=
+            money(order.total);
     }
 
-    return Array.from(grouped.values())
-        .sort((a, b) =>
-            a.date.localeCompare(b.date)
-        );
+    return Array.from(
+        grouped.values()
+    ).sort(
+        (a, b) =>
+            a.date.localeCompare(
+                b.date
+            )
+    );
 }
 
 module.exports = {
