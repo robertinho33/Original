@@ -11,8 +11,6 @@ import {
 
 import { formatCurrency } from './utils/formatters.js';
 
-
-
 const CATALOG_PAGE_SIZE = 24;
 
 let catalogProducts = [];
@@ -34,8 +32,9 @@ let modalQuantity = 1;
 let lastProductTriggerEl = null;
 
 /* =========================================================
-   ESTADO DOS FILTROS E PAGINAÃ¯Â¿Â½?Ã¯Â¿Â½fO
+   ESTADO DOS FILTROS E PAGINAÇÃO
    ========================================================= */
+
 const ITEMS_PER_PAGE = 8;
 let currentPage = 1;
 let currentCategory = 'todos';
@@ -45,7 +44,8 @@ let currentSortOption = 'default';
 const productsEl = document.querySelector('#products');
 const filtersEl = document.querySelector('#filters');
 
-// Elementos de busca, ordenaÃƒÂ§ÃƒÂ£o e paginaÃƒÂ§ÃƒÂ£o (criados via JS se nÃƒÂ£o existirem no HTML)
+// Elementos de busca, ordenação e paginação
+// (criados via JS se não existirem no HTML)
 const searchInputEl = document.querySelector('#searchInput');
 const sortSelectEl = document.querySelector('#sortSelect');
 const paginationEl = document.querySelector('#pagination');
@@ -94,11 +94,26 @@ function escapeAttribute(value) {
 
 function loadCart() {
     try {
-        const stored = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
-        if (!Array.isArray(stored)) return [];
+        const stored = JSON.parse(
+            localStorage.getItem(CART_STORAGE_KEY) || '[]'
+        );
+
+        if (!Array.isArray(stored)) {
+            return [];
+        }
+
         return stored
-            .filter(item => item && typeof item.sku === 'string' && Number.isInteger(item.quantity) && item.quantity > 0)
-            .map(item => ({ sku: item.sku, quantity: item.quantity }));
+            .filter(
+                item =>
+                    item &&
+                    typeof item.sku === 'string' &&
+                    Number.isInteger(item.quantity) &&
+                    item.quantity > 0
+            )
+            .map(item => ({
+                sku: item.sku,
+                quantity: item.quantity
+            }));
     } catch (error) {
         console.error('Erro ao carregar a sacola:', error);
         return [];
@@ -106,48 +121,82 @@ function loadCart() {
 }
 
 function saveCart() {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    localStorage.setItem(
+        CART_STORAGE_KEY,
+        JSON.stringify(cart)
+    );
 }
 
 function getProductBySku(sku) {
-    return products.find(product => product.sku === sku);
+    return products.find(
+        product => product.sku === sku
+    );
 }
 
 function getCartTotalQuantity() {
-    return cart.reduce((total, item) => total + item.quantity, 0);
+    return cart.reduce(
+        (total, item) => total + item.quantity,
+        0
+    );
 }
 
 function getCartTotal() {
     return cart.reduce((total, item) => {
         const product = getProductBySku(item.sku);
-        return product ? total + (product.price * item.quantity) : total;
+
+        return product
+            ? total + (product.price * item.quantity)
+            : total;
     }, 0);
 }
 
-function addToCart(sku, quantity = 1, openDrawerAfter = true) {
+function addToCart(
+    sku,
+    quantity = 1,
+    openDrawerAfter = true
+) {
     const product = getProductBySku(sku);
-    if (!product) return;
 
-    const existing = cart.find(item => item.sku === sku);
+    if (!product) {
+        return;
+    }
+
+    const existing = cart.find(
+        item => item.sku === sku
+    );
+
     if (existing) {
         existing.quantity += quantity;
     } else {
-        cart.push({ sku, quantity });
+        cart.push({
+            sku,
+            quantity
+        });
     }
 
     saveCart();
     renderCart();
 
-    if (openDrawerAfter) openCart();
+    if (openDrawerAfter) {
+        openCart();
+    }
 }
 
 function decreaseFromCart(sku) {
-    const item = cart.find(cartItem => cartItem.sku === sku);
-    if (!item) return;
+    const item = cart.find(
+        cartItem => cartItem.sku === sku
+    );
+
+    if (!item) {
+        return;
+    }
 
     item.quantity -= 1;
+
     if (item.quantity <= 0) {
-        cart = cart.filter(cartItem => cartItem.sku !== sku);
+        cart = cart.filter(
+            cartItem => cartItem.sku !== sku
+        );
     }
 
     saveCart();
@@ -155,13 +204,16 @@ function decreaseFromCart(sku) {
 }
 
 function removeFromCart(sku) {
-    cart = cart.filter(item => item.sku !== sku);
+    cart = cart.filter(
+        item => item.sku !== sku
+    );
+
     saveCart();
     renderCart();
 }
 
 /* =========================================================
-   VML-14 Ã¯Â¿Â½?" CAMADA DE CATÃƒÂLOGO
+   VML-14 — CAMADA DE CATÁLOGO
    ========================================================= */
 
 function normalizeCatalogText(value) {
@@ -187,7 +239,9 @@ function getCatalogCategories() {
 
 function getCatalogSources() {
     return catalogSources
-        .filter(source => source?.visible !== false)
+        .filter(
+            source => source?.visible !== false
+        )
         .sort((a, b) =>
             String(a.name || a.id || '')
                 .localeCompare(
@@ -215,6 +269,7 @@ function startCatalogRealtime() {
         }
     });
 }
+
 async function refreshCatalog() {
     const [
         loadedProducts,
@@ -370,9 +425,7 @@ function renderFilters() {
         });
 }
 
-function renderPagination(
-    totalItems
-) {
+function renderPagination(totalItems) {
     if (!paginationEl) {
         return;
     }
@@ -402,7 +455,7 @@ function renderPagination(
             class="pagination-button"
             data-page="${catalogPage - 1}"
             ${catalogPage === 1 ? 'disabled' : ''}
-            aria-label="PÃƒÂ¡gina anterior"
+            aria-label="Página anterior"
         >
             Anterior
         </button>
@@ -453,9 +506,9 @@ function renderPagination(
                     ? 'disabled'
                     : ''
             }
-            aria-label="PrÃƒÂ³xima pÃƒÂ¡gina"
+            aria-label="Próxima página"
         >
-            PrÃƒÂ³xima
+            Próxima
         </button>
     `);
 
@@ -503,7 +556,7 @@ async function renderCatalog() {
 
     productsEl.innerHTML = `
         <div class="catalog-empty">
-            <p>Carregando catÃƒÂ¡logo...</p>
+            <p>Carregando catálogo...</p>
         </div>
     `;
 
@@ -521,9 +574,7 @@ async function renderCatalog() {
                 );
 
         const total =
-            Number.isFinite(
-                result?.total
-            )
+            Number.isFinite(result?.total)
                 ? result.total
                 : items.length;
 
@@ -565,7 +616,7 @@ async function renderCatalog() {
                             <div
                                 class="product-image-placeholder"
                             >
-                                AURÃ¯Â¿Â½?A
+                                NUVERYA
                             </div>
                         `;
 
@@ -596,7 +647,9 @@ async function renderCatalog() {
                         : '';
 
                 const stock =
-                    Number.isFinite(Number(product.stock))
+                    Number.isFinite(
+                        Number(product.stock)
+                    )
                         ? `
                             <small
                                 class="product-stock"
@@ -663,7 +716,7 @@ async function renderCatalog() {
                                     )}"
                                     aria-label="Adicionar ${escapeAttribute(
                                         product.name
-                                    )} ÃƒÂ  sacola"
+                                    )} à sacola"
                                 >
                                     +
                                 </button>
@@ -677,14 +730,14 @@ async function renderCatalog() {
 
     } catch (error) {
         console.error(
-            'Erro ao renderizar catÃƒÂ¡logo:',
+            'Erro ao renderizar catálogo:',
             error
         );
 
         productsEl.innerHTML = `
             <div class="catalog-empty">
                 <p>
-                    NÃƒÂ£o foi possÃƒÂ­vel carregar o catÃƒÂ¡logo.
+                    Não foi possível carregar o catálogo.
                 </p>
             </div>
         `;
@@ -694,69 +747,170 @@ async function renderCatalog() {
 }
 
 /* =========================================================
-   SACOLA Ã¯Â¿Â½?" RENDER & MODAIS
+   SACOLA — RENDER E MODAIS
    ========================================================= */
 
 function renderCart() {
-    if (!cartItemsEl) return;
+    if (!cartItemsEl) {
+        return;
+    }
 
-    const validCart = cart.filter(item => getProductBySku(item.sku));
+    const validCart = cart.filter(
+        item => getProductBySku(item.sku)
+    );
+
     if (validCart.length !== cart.length) {
         cart = validCart;
         saveCart();
     }
 
-    const totalQuantity = getCartTotalQuantity();
+    const totalQuantity =
+        getCartTotalQuantity();
 
-    if (cartCountEl) cartCountEl.textContent = totalQuantity;
+    if (cartCountEl) {
+        cartCountEl.textContent =
+            totalQuantity;
+    }
+
     if (cartSummaryEl) {
-        cartSummaryEl.textContent = totalQuantity === 1 ? '1 item' : `${totalQuantity} itens`;
+        cartSummaryEl.textContent =
+            totalQuantity === 1
+                ? '1 item'
+                : `${totalQuantity} itens`;
     }
 
     if (!cart.length) {
-        cartItemsEl.innerHTML = `<div class="empty">Sua sacola estÃƒÂ¡ esperando por vocÃƒÂª.</div>`;
-        if (cartTotalEl) cartTotalEl.textContent = formatCurrency(0);
+        cartItemsEl.innerHTML = `
+            <div class="empty">
+                Sua sacola está esperando por você.
+            </div>
+        `;
+
+        if (cartTotalEl) {
+            cartTotalEl.textContent =
+                formatCurrency(0);
+        }
+
         return;
     }
 
-    cartItemsEl.innerHTML = cart.map(item => {
-        const product = getProductBySku(item.sku);
-        if (!product) return '';
+    cartItemsEl.innerHTML =
+        cart.map(item => {
+            const product =
+                getProductBySku(item.sku);
 
-        const image = product.image ? `<img src="${escapeAttribute(product.image)}" alt="${escapeAttribute(product.name)}" loading="lazy">` : '';
-        const subtotal = product.price * item.quantity;
+            if (!product) {
+                return '';
+            }
 
-        return `
-            <div class="cart-row">
-                <div class="mini">${image}</div>
-                <div class="cart-product-info">
-                    <h4>${escapeHTML(product.name)}</h4>
-                    <small>${formatCurrency(product.price)} cada</small>
-                    <div class="quantity-control">
-                        <button type="button" data-decrease="${escapeAttribute(product.sku)}">-</button>
-                        <span>${item.quantity}</span>
-                        <button type="button" data-increase="${escapeAttribute(product.sku)}">+</button>
+            const image =
+                product.image
+                    ? `
+                        <img
+                            src="${escapeAttribute(
+                                product.image
+                            )}"
+                            alt="${escapeAttribute(
+                                product.name
+                            )}"
+                            loading="lazy"
+                        >
+                    `
+                    : '';
+
+            const subtotal =
+                product.price *
+                item.quantity;
+
+            return `
+                <div class="cart-row">
+                    <div class="mini">
+                        ${image}
                     </div>
-                    <strong>${formatCurrency(subtotal)}</strong>
-                </div>
-                <button class="remove" type="button" data-remove="${escapeAttribute(product.sku)}">remover</button>
-            </div>
-        `;
-    }).join('');
 
-    if (cartTotalEl) cartTotalEl.textContent = formatCurrency(getCartTotal());
+                    <div class="cart-product-info">
+                        <h4>
+                            ${escapeHTML(
+                                product.name
+                            )}
+                        </h4>
+
+                        <small>
+                            ${formatCurrency(
+                                product.price
+                            )} cada
+                        </small>
+
+                        <div class="quantity-control">
+                            <button
+                                type="button"
+                                data-decrease="${escapeAttribute(
+                                    product.sku
+                                )}"
+                            >
+                                -
+                            </button>
+
+                            <span>
+                                ${item.quantity}
+                            </span>
+
+                            <button
+                                type="button"
+                                data-increase="${escapeAttribute(
+                                    product.sku
+                                )}"
+                            >
+                                +
+                            </button>
+                        </div>
+
+                        <strong>
+                            ${formatCurrency(
+                                subtotal
+                            )}
+                        </strong>
+                    </div>
+
+                    <button
+                        class="remove"
+                        type="button"
+                        data-remove="${escapeAttribute(
+                            product.sku
+                        )}"
+                    >
+                        remover
+                    </button>
+                </div>
+            `;
+        }).join('');
+
+    if (cartTotalEl) {
+        cartTotalEl.textContent =
+            formatCurrency(
+                getCartTotal()
+            );
+    }
 }
 
 function openCart() {
     cartDrawerEl?.classList.add('open');
     backdropEl?.classList.add('show');
-    cartDrawerEl?.setAttribute('aria-hidden', 'false');
+
+    cartDrawerEl?.setAttribute(
+        'aria-hidden',
+        'false'
+    );
 }
 
 function closeCart() {
     cartDrawerEl?.classList.remove('open');
     backdropEl?.classList.remove('show');
-    cartDrawerEl?.setAttribute('aria-hidden', 'true');
+
+    cartDrawerEl?.setAttribute(
+        'aria-hidden',
+        'true'
+    );
 }
 
 function updateModalQuantity() {
@@ -766,7 +920,10 @@ function updateModalQuantity() {
 
     modalQuantity = Math.max(
         1,
-        Number.parseInt(modalQuantity, 10) || 1
+        Number.parseInt(
+            modalQuantity,
+            10
+        ) || 1
     );
 
     modalQuantityEl.textContent =
@@ -774,7 +931,8 @@ function updateModalQuantity() {
 }
 
 function getProductStock(product) {
-    const stock = Number(product?.stock);
+    const stock =
+        Number(product?.stock);
 
     if (!Number.isFinite(stock)) {
         return null;
@@ -804,7 +962,7 @@ function updateModalStock(product) {
 
     if (stock <= 0) {
         productModalStockEl.textContent =
-            'Produto indisponÃƒÂ­vel';
+            'Produto indisponível';
 
         productModalStockEl.dataset.stockState =
             'out';
@@ -814,8 +972,8 @@ function updateModalStock(product) {
 
     productModalStockEl.textContent =
         stock === 1
-            ? '1 unidade disponÃƒÂ­vel'
-            : `${stock} unidades disponÃƒÂ­veis`;
+            ? '1 unidade disponível'
+            : `${stock} unidades disponíveis`;
 
     productModalStockEl.dataset.stockState =
         'available';
@@ -827,17 +985,24 @@ function updateModalImage(product) {
     }
 
     const image =
-        String(product?.image || '').trim();
+        String(
+            product?.image || ''
+        ).trim();
 
     const name =
-        String(product?.name || 'Produto').trim();
+        String(
+            product?.name ||
+            'Produto'
+        ).trim();
 
     productModalImageEl.onerror = () => {
         productModalImageEl.removeAttribute(
             'src'
         );
 
-        productModalImageEl.hidden = true;
+        productModalImageEl.hidden =
+            true;
+
         productModalImageEl.alt = '';
     };
 
@@ -846,15 +1011,22 @@ function updateModalImage(product) {
             'src'
         );
 
-        productModalImageEl.hidden = true;
+        productModalImageEl.hidden =
+            true;
+
         productModalImageEl.alt = '';
 
         return;
     }
 
-    productModalImageEl.hidden = false;
-    productModalImageEl.alt = name;
-    productModalImageEl.src = image;
+    productModalImageEl.hidden =
+        false;
+
+    productModalImageEl.alt =
+        name;
+
+    productModalImageEl.src =
+        image;
 }
 
 function renderProductModal(product) {
@@ -863,20 +1035,26 @@ function renderProductModal(product) {
     }
 
     const category =
-        String(product.category || '').trim()
-        || 'Produto';
+        String(
+            product.category || ''
+        ).trim() || 'Produto';
 
     const name =
-        String(product.name || '').trim()
-        || 'Produto';
+        String(
+            product.name || ''
+        ).trim() || 'Produto';
 
     const description =
-        String(product.description || '').trim()
-        || 'DescriÃƒÂ§ÃƒÂ£o nÃƒÂ£o informada.';
+        String(
+            product.description || ''
+        ).trim() ||
+        'Descrição não informada.';
 
     const weight =
-        String(product.weight || '').trim()
-        || 'Peso nÃƒÂ£o informado';
+        String(
+            product.weight || ''
+        ).trim() ||
+        'Peso não informado';
 
     if (productModalCategoryEl) {
         productModalCategoryEl.textContent =
@@ -925,8 +1103,8 @@ function renderProductModal(product) {
 
         modalAddToCartButton.textContent =
             unavailable
-                ? 'IndisponÃƒÂ­vel'
-                : 'Adicionar ÃƒÂ  sacola';
+                ? 'Indisponível'
+                : 'Adicionar à sacola';
     }
 }
 
@@ -951,7 +1129,7 @@ function openProductModal(
 
     if (!product) {
         console.error(
-            'Produto nÃƒÂ£o encontrado para o SKU:',
+            'Produto não encontrado para o SKU:',
             normalizedSku
         );
 
@@ -1020,7 +1198,7 @@ function closeProductModal() {
             false;
 
         modalAddToCartButton.textContent =
-            'Adicionar ÃƒÂ  sacola';
+            'Adicionar à sacola';
     }
 
     const trigger =
@@ -1121,83 +1299,229 @@ function addModalProductToCart() {
     openCart();
 }
 
-// Evento de Clique nas Categorias
-filtersEl?.addEventListener('click', event => {
-    const button = event.target.closest('button[data-category]');
-    if (!button) return;
+/* =========================================================
+   EVENTOS
+   ========================================================= */
 
-    filtersEl.querySelectorAll('button').forEach(item => item.classList.remove('active'));
-    button.classList.add('active');
+// Evento de clique nas categorias
+filtersEl?.addEventListener(
+    'click',
+    event => {
+        const button =
+            event.target.closest(
+                'button[data-category]'
+            );
 
-    currentCategory = button.dataset.category || 'todos';
-    currentPage = 1;
-    renderCatalog();
-});
+        if (!button) {
+            return;
+        }
 
-// Evento de Clique na PaginaÃƒÂ§ÃƒÂ£o estilo Google
-paginationEl?.addEventListener('click', event => {
-    const button = event.target.closest('button[data-page]');
-    if (!button || button.disabled) return;
+        filtersEl
+            .querySelectorAll('button')
+            .forEach(item =>
+                item.classList.remove(
+                    'active'
+                )
+            );
 
-    currentPage = Number(button.dataset.page);
-    renderCatalog();
+        button.classList.add('active');
 
-    window.scrollTo({
-        top: productsEl.offsetTop - 80,
-        behavior: 'smooth'
-    });
-});
+        currentCategory =
+            button.dataset.category ||
+            'todos';
 
-productsEl?.addEventListener('click', event => {
-    const addButton = event.target.closest('[data-add]');
-    if (addButton) {
-        event.stopPropagation();
-        addToCart(addButton.dataset.add);
-        return;
+        currentPage = 1;
+
+        renderCatalog();
     }
+);
 
-    const productCard = event.target.closest('[data-product-sku]');
-    if (productCard) {
-        openProductModal(productCard.dataset.productSku, productCard);
+// Evento de clique na paginação
+paginationEl?.addEventListener(
+    'click',
+    event => {
+        const button =
+            event.target.closest(
+                'button[data-page]'
+            );
+
+        if (
+            !button ||
+            button.disabled
+        ) {
+            return;
+        }
+
+        currentPage =
+            Number(
+                button.dataset.page
+            );
+
+        renderCatalog();
+
+        window.scrollTo({
+            top:
+                productsEl.offsetTop - 80,
+            behavior: 'smooth'
+        });
     }
-});
+);
 
-cartItemsEl?.addEventListener('click', event => {
-    const increaseButton = event.target.closest('[data-increase]');
-    if (increaseButton) return addToCart(increaseButton.dataset.increase, 1, false);
+productsEl?.addEventListener(
+    'click',
+    event => {
+        const addButton =
+            event.target.closest(
+                '[data-add]'
+            );
 
-    const decreaseButton = event.target.closest('[data-decrease]');
-    if (decreaseButton) return decreaseFromCart(decreaseButton.dataset.decrease);
+        if (addButton) {
+            event.stopPropagation();
 
-    const removeButton = event.target.closest('[data-remove]');
-    if (removeButton) removeFromCart(removeButton.dataset.remove);
-});
+            addToCart(
+                addButton.dataset.add
+            );
 
-document.querySelector('#openCart')?.addEventListener('click', openCart);
-document.querySelector('#closeCart')?.addEventListener('click', closeCart);
-backdropEl?.addEventListener('click', closeCart);
-closeProductModalButton?.addEventListener('click', closeProductModal);
-productModalBackdropEl?.addEventListener('click', closeProductModal);
-modalIncreaseButton?.addEventListener('click', () => { modalQuantity += 1; updateModalQuantity(); });
-modalDecreaseButton?.addEventListener('click', () => { if (modalQuantity > 1) { modalQuantity -= 1; updateModalQuantity(); } });
-modalAddToCartButton?.addEventListener('click', () => {
-    if (selectedProductSku) {
-        addToCart(selectedProductSku, modalQuantity, false);
-        closeProductModal();
-        openCart();
+            return;
+        }
+
+        const productCard =
+            event.target.closest(
+                '[data-product-sku]'
+            );
+
+        if (productCard) {
+            openProductModal(
+                productCard.dataset.productSku,
+                productCard
+            );
+        }
     }
-});
+);
 
-document.querySelector('#checkout')?.addEventListener('click', () => {
-    if (!cart.length) {
-        alert('Adicione algum produto primeiro.');
-        return;
+cartItemsEl?.addEventListener(
+    'click',
+    event => {
+        const increaseButton =
+            event.target.closest(
+                '[data-increase]'
+            );
+
+        if (increaseButton) {
+            return addToCart(
+                increaseButton.dataset.increase,
+                1,
+                false
+            );
+        }
+
+        const decreaseButton =
+            event.target.closest(
+                '[data-decrease]'
+            );
+
+        if (decreaseButton) {
+            return decreaseFromCart(
+                decreaseButton.dataset.decrease
+            );
+        }
+
+        const removeButton =
+            event.target.closest(
+                '[data-remove]'
+            );
+
+        if (removeButton) {
+            removeFromCart(
+                removeButton.dataset.remove
+            );
+        }
     }
-    window.location.href = 'pages/checkout.html';
-});
+);
+
+document
+    .querySelector('#openCart')
+    ?.addEventListener(
+        'click',
+        openCart
+    );
+
+document
+    .querySelector('#closeCart')
+    ?.addEventListener(
+        'click',
+        closeCart
+    );
+
+backdropEl?.addEventListener(
+    'click',
+    closeCart
+);
+
+closeProductModalButton?.addEventListener(
+    'click',
+    closeProductModal
+);
+
+productModalBackdropEl?.addEventListener(
+    'click',
+    closeProductModal
+);
+
+modalIncreaseButton?.addEventListener(
+    'click',
+    () => {
+        modalQuantity += 1;
+        updateModalQuantity();
+    }
+);
+
+modalDecreaseButton?.addEventListener(
+    'click',
+    () => {
+        if (modalQuantity > 1) {
+            modalQuantity -= 1;
+            updateModalQuantity();
+        }
+    }
+);
+
+modalAddToCartButton?.addEventListener(
+    'click',
+    () => {
+        if (selectedProductSku) {
+            addToCart(
+                selectedProductSku,
+                modalQuantity,
+                false
+            );
+
+            closeProductModal();
+            openCart();
+        }
+    }
+);
+
+document
+    .querySelector('#checkout')
+    ?.addEventListener(
+        'click',
+        () => {
+            if (!cart.length) {
+                alert(
+                    'Adicione algum produto primeiro.'
+                );
+
+                return;
+            }
+
+            window.location.href =
+                'pages/checkout.html';
+        }
+    );
 
 /* =========================================================
-   INICIALIZAÃ¯Â¿Â½?Ã¯Â¿Â½fO
+   INICIALIZAÇÃO
    ========================================================= */
 
 async function init() {
@@ -1213,13 +1537,21 @@ async function init() {
         renderCart();
 
     } catch (error) {
-        console.error('Erro ao inicializar aplicaÃƒÂ§ÃƒÂ£o:', error);
+        console.error(
+            'Erro ao inicializar aplicação:',
+            error
+        );
 
         if (productsEl) {
             productsEl.innerHTML = `
                 <div class="catalog-error">
-                    <h3>NÃƒÂ£o foi possÃƒÂ­vel carregar o catÃƒÂ¡logo.</h3>
-                    <p>Tente atualizar a pÃƒÂ¡gina.</p>
+                    <h3>
+                        Não foi possível carregar o catálogo.
+                    </h3>
+
+                    <p>
+                        Tente atualizar a página.
+                    </p>
                 </div>
             `;
         }
@@ -1228,12 +1560,6 @@ async function init() {
 
 init();
 
-
-
-
-
-
-
 /* ============================================================
    AUREA_DISCOVERY_LAYER_V1
    ============================================================ */
@@ -1241,14 +1567,20 @@ init();
 (() => {
     'use strict';
 
-    const normalize = (value) =>
+    const normalize = value =>
         String(value || '')
             .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
+            .replace(
+                /[\u0300-\u036f]/g,
+                ''
+            )
             .toLowerCase()
             .trim();
 
-    const discovery = document.querySelector('#aurea-ritual-discovery');
+    const discovery =
+        document.querySelector(
+            '#aurea-ritual-discovery'
+        );
 
     if (!discovery) {
         return;
@@ -1267,7 +1599,10 @@ init();
         ];
 
         for (const selector of candidates) {
-            const target = document.querySelector(selector);
+            const target =
+                document.querySelector(
+                    selector
+                );
 
             if (target) {
                 target.scrollIntoView({
@@ -1282,62 +1617,94 @@ init();
         return null;
     };
 
-    const findCategoryButton = (ritual) => {
-        const target = normalize(ritual);
+    const findCategoryButton =
+        ritual => {
+            const target =
+                normalize(ritual);
 
-        const buttons = [
-            ...document.querySelectorAll(
-                'button, [role="button"], a'
-            )
-        ];
+            const buttons = [
+                ...document.querySelectorAll(
+                    'button, [role="button"], a'
+                )
+            ];
 
-        return buttons.find((button) => {
-            if (!button || discovery.contains(button)) {
-                return false;
-            }
+            return buttons.find(
+                button => {
+                    if (
+                        !button ||
+                        discovery.contains(
+                            button
+                        )
+                    ) {
+                        return false;
+                    }
 
-            const text = normalize(button.textContent);
+                    const text =
+                        normalize(
+                            button.textContent
+                        );
 
-            return (
-                text === target ||
-                text.includes(target)
-            );
-        }) || null;
-    };
+                    return (
+                        text === target ||
+                        text.includes(target)
+                    );
+                }
+            ) || null;
+        };
 
     discovery
-        .querySelectorAll('[data-aurea-ritual]')
-        .forEach((button) => {
-            button.addEventListener('click', () => {
-                const ritual = button.dataset.aureaRitual || '';
+        .querySelectorAll(
+            '[data-aurea-ritual]'
+        )
+        .forEach(button => {
+            button.addEventListener(
+                'click',
+                () => {
+                    const ritual =
+                        button.dataset
+                            .aureaRitual ||
+                        '';
 
-                const categoryButton = findCategoryButton(ritual);
+                    const categoryButton =
+                        findCategoryButton(
+                            ritual
+                        );
 
-                if (categoryButton) {
-                    categoryButton.click();
+                    if (categoryButton) {
+                        categoryButton.click();
+                    }
+
+                    scrollToCatalog();
                 }
-
-                scrollToCatalog();
-            });
+            );
         });
 
     const catalogButton =
-        discovery.querySelector('[data-aurea-show-catalog]');
+        discovery.querySelector(
+            '[data-aurea-show-catalog]'
+        );
 
     if (catalogButton) {
-        catalogButton.addEventListener('click', () => {
-            scrollToCatalog();
-        });
+        catalogButton.addEventListener(
+            'click',
+            () => {
+                scrollToCatalog();
+            }
+        );
     }
 })();
 
 function activateCatalogRealtime() {
-    if (document.readyState === 'loading') {
+    if (
+        document.readyState ===
+        'loading'
+    ) {
         document.addEventListener(
             'DOMContentLoaded',
             startCatalogRealtime,
             { once: true }
         );
+
         return;
     }
 
@@ -1345,4 +1712,3 @@ function activateCatalogRealtime() {
 }
 
 activateCatalogRealtime();
-
