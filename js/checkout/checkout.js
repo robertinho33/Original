@@ -530,6 +530,456 @@ async function handleCep() {
     }
 }
 
+/* =========================================================
+   SACOLA / CARRINHO
+   ========================================================= */
+
+function loadCart() {
+    try {
+        const stored =
+            JSON.parse(
+                localStorage.getItem(
+                    CART_STORAGE_KEY
+                ) || '[]'
+            );
+
+        if (!Array.isArray(stored)) {
+            return [];
+        }
+
+        return stored
+            .filter(item => {
+                return (
+                    item &&
+                    typeof item.sku === 'string' &&
+                    item.sku.trim() !== '' &&
+                    Number.isInteger(item.quantity) &&
+                    item.quantity > 0
+                );
+            })
+            .map(item => ({
+                sku: item.sku.trim(),
+                quantity: item.quantity
+            }));
+
+    } catch (error) {
+
+        console.error(
+            '[CHECKOUT] Erro ao carregar a sacola:',
+            error
+        );
+
+        return [];
+    }
+}
+
+
+function saveCart() {
+    localStorage.setItem(
+        CART_STORAGE_KEY,
+        JSON.stringify(cart)
+    );
+}
+
+
+function normalizeCartItem(item) {
+
+    return {
+        sku:
+            String(
+                item?.sku ?? ''
+            ).trim(),
+
+        quantity:
+            Math.max(
+                1,
+                Number.parseInt(
+                    item?.quantity,
+                    10
+                ) || 1
+            )
+    };
+}
+
+
+function findProductBySku(sku) {
+
+    const normalizedSku =
+        String(
+            sku ?? ''
+        ).trim();
+
+    return products.find(
+        product =>
+            String(
+                product?.sku ?? ''
+            ).trim() === normalizedSku
+    ) || null;
+}
+
+
+function getCartItems() {
+
+    return cart
+        .map(item => {
+
+            const product =
+                findProductBySku(
+                    item.sku
+                );
+
+            if (!product) {
+                return null;
+            }
+
+            const quantity =
+                Math.max(
+                    1,
+                    Number.parseInt(
+                        item.quantity,
+                        10
+                    ) || 1
+                );
+
+            return {
+                sku:
+                    item.sku,
+
+                quantity,
+
+                product,
+
+                total:
+                    Number(product.price || 0) *
+                    quantity
+            };
+        })
+        .filter(Boolean);
+}
+
+
+function getSubtotal() {
+
+    return getCartItems()
+        .reduce(
+            (total, item) =>
+                total + item.total,
+            0
+        );
+}
+
+
+function getDeliveryMethod() {
+
+    return (
+        document.querySelector(
+            'input[name="deliveryMethod"]:checked'
+        )?.value || 'delivery'
+    );
+}
+
+
+function getShipping() {
+
+    return getDeliveryMethod() === 'pickup'
+        ? 0
+        : DELIVERY_COST;
+}
+
+
+function getDiscount(subtotal) {
+
+    if (!appliedCoupon) {
+        return 0;
+    }
+
+    if (
+        appliedCoupon.type ===
+        'percentage'
+    ) {
+        return (
+            subtotal *
+            (
+                Number(
+                    appliedCoupon.value
+                ) || 0
+            ) /
+            100
+        );
+    }
+
+    return Math.min(
+        subtotal,
+        Number(
+            appliedCoupon.value
+        ) || 0
+    );
+}
+
+
+function getTotal() {
+
+    const subtotal =
+        getSubtotal();
+
+    const shipping =
+        getShipping();
+
+    const discount =
+        getDiscount(subtotal);
+
+    return Math.max(
+        0,
+        subtotal +
+        shipping -
+        discount
+    );
+}
+
+
+function formatCep(value) {
+
+    const digits =
+        onlyDigits(value)
+            .slice(0, 8);
+
+    if (digits.length <= 5) {
+        return digits;
+    }
+
+    return (
+        digits.slice(0, 5) +
+        '-' +
+        digits.slice(5)
+    );
+}
+
+
+/* =========================================================
+   RENDER DO CHECKOUT
+   ========================================================= */
+
+function renderCart() {
+
+    if (!elements.checkoutItems) {
+        return;
+    }
+
+    const items =
+        getCartItems();
+
+    if (!items.length) {
+
+        elements.checkoutItems.innerHTML = `
+            <div class="checkout-empty">
+                Sua sacola está vazia.
+            </div>
+        `;
+
+    } else {
+
+        elements.checkoutItems.innerHTML =
+            items.map(item => {
+
+                const product =
+                    item.product;
+
+                const image =
+                    product.image
+                        ? `
+                            <img
+                                src="${escapeHtml(
+                                    product.image
+                                )}"
+                                alt="${escapeHtml(
+                                    product.name
+                                )}"
+                                loading="lazy"
+                            >
+                        `
+                        : '';
+
+                return `
+                    <div class="checkout-item">
+
+                        <div class="checkout-item-image">
+                            ${image}
+                        </div>
+
+                        <div class="checkout-item-info">
+
+                            <strong>
+                                ${escapeHtml(
+                                    product.name
+                                )}
+                            </strong>
+
+                            <small>
+                                SKU:
+                                ${escapeHtml(
+                                    product.sku
+                                )}
+                            </small>
+
+                            <small>
+                                Quantidade:
+                                ${item.quantity}
+                            </small>
+
+                        </div>
+
+                        <div class="checkout-item-price">
+                            ${formatCurrency(
+                                item.total
+                            )}
+                        </div>
+
+                    </div>
+                `;
+
+            }).join('');
+    }
+
+    const subtotal =
+        getSubtotal();
+
+    const shipping =
+        getShipping();
+
+    const discount =
+        getDiscount(subtotal);
+
+    const total =
+        getTotal();
+
+    if (elements.checkoutSubtotal) {
+        elements.checkoutSubtotal.textContent =
+            formatCurrency(subtotal);
+    }
+
+    if (elements.checkoutShipping) {
+        elements.checkoutShipping.textContent =
+            shipping > 0
+                ? formatCurrency(shipping)
+                : 'Grátis';
+    }
+
+    if (elements.checkoutDiscount) {
+        elements.checkoutDiscount.textContent =
+            discount > 0
+                ? `- ${formatCurrency(discount)}`
+                : formatCurrency(0);
+    }
+
+    if (elements.checkoutTotal) {
+        elements.checkoutTotal.textContent =
+            formatCurrency(total);
+    }
+}
+
+
+/* =========================================================
+   ENTREGA
+   ========================================================= */
+
+function updateDeliveryFields() {
+
+    const deliveryMethod =
+        getDeliveryMethod();
+
+    const isDelivery =
+        deliveryMethod === 'delivery';
+
+    if (elements.addressFields) {
+
+        elements.addressFields.hidden =
+            !isDelivery;
+    }
+
+    if (!isDelivery) {
+
+        [
+            elements.cep,
+            elements.street,
+            elements.number,
+            elements.complement,
+            elements.neighborhood,
+            elements.city,
+            elements.state
+        ].forEach(input => {
+
+            input
+                ?.closest(
+                    '.field, .checkout-field'
+                )
+                ?.classList.remove(
+                    'invalid'
+                );
+        });
+    }
+
+    renderCart();
+}
+
+
+/* =========================================================
+   CUPOM
+   ========================================================= */
+
+function applyCouponCode() {
+
+    const code =
+        String(
+            elements.couponCode?.value ?? ''
+        )
+        .trim()
+        .toUpperCase();
+
+    if (!code) {
+
+        appliedCoupon = null;
+
+        if (elements.couponMessage) {
+            elements.couponMessage.textContent =
+                'Digite um cupom.';
+        }
+
+        renderCart();
+
+        return;
+    }
+
+    const coupon =
+        COUPONS[code];
+
+    if (!coupon) {
+
+        appliedCoupon = null;
+
+        if (elements.couponMessage) {
+            elements.couponMessage.textContent =
+                'Cupom inválido ou expirado.';
+        }
+
+        renderCart();
+
+        return;
+    }
+
+    appliedCoupon = {
+        ...coupon
+    };
+
+    if (elements.couponMessage) {
+
+        elements.couponMessage.textContent =
+            coupon.type === 'percentage'
+                ? `Cupom ${coupon.code} aplicado: ${coupon.value}% de desconto.`
+                : `Cupom ${coupon.code} aplicado.`;
+    }
+
+    renderCart();
+}
 
 /* =========================================================
    VALIDAÇÃO
