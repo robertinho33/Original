@@ -281,7 +281,7 @@ function shell(title, subtitle = "") {
             </div>
 
             <div class="admin-loading">
-                Preparando m�dulo...
+                Preparando módulo...
             </div>
 
         </section>
