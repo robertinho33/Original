@@ -263,7 +263,7 @@ function shell(title, subtitle = "") {
                 <div>
 
                     <span class="module-eyebrow">
-                        AUR�A ADMIN
+                        NEFER ADMIN
                     </span>
 
                     <h2>
@@ -516,7 +516,7 @@ async function load(section) {
 
     const info =
         labels[section] || [
-            "AUR�A ADMIN",
+            "NEFER ADMIN",
             ""
         ];
 
@@ -890,7 +890,7 @@ function renderProducts(content, products) {
                     },
 
                     {
-                        label: "Pre�o",
+                        label: "Preço",
                         render: row =>
                             formatCurrency(
                                 pick(
@@ -984,7 +984,7 @@ function openProductEditor(product) {
         );
 
         showAdminToast?.(
-            "N?o foi poss?vel identificar o produto.",
+            "Não foi poss?vel identificar o produto.",
             "error"
         );
 
@@ -1145,7 +1145,7 @@ function openProductEditor(product) {
                     </label>
 
                     <label class="admin-product-editor-full">
-                        Descri??o
+                        Descrição
 
                         <textarea
                             name="description"
@@ -1186,7 +1186,7 @@ function openProductEditor(product) {
                         type="submit"
                         class="admin-product-editor-save"
                     >
-                        Salvar altera??es
+                        Salvar alterações
                     </button>
 
                 </div>
@@ -1424,7 +1424,7 @@ function openProductEditor(product) {
 
                 showAdminToast?.(
                     error?.message ||
-                    "N?o foi poss?vel salvar o produto.",
+                    "Não foi poss?vel salvar o produto.",
                     "error"
                 );
 
@@ -1435,7 +1435,7 @@ function openProductEditor(product) {
 
                 saveButton.textContent =
                     saveButton.dataset.originalText ||
-                    "Salvar altera??es";
+                    "Salvar alterações";
             }
         }
     );
@@ -1666,7 +1666,7 @@ function renderInventory(content, inventory) {
                     },
 
                     {
-                        label: "Pre�o",
+                        label: "Preço",
                         render: row =>
                             formatCurrency(
                                 pick(
@@ -1844,24 +1844,37 @@ function renderFinance(content, finance) {
     const revenue =
         pick(
             data,
-            ["revenue", "totalRevenue", "sales"],
+            [
+                "grossRevenue",
+                "revenue",
+                "totalRevenue",
+                "sales"
+            ],
             0
         );
-
 
     const orders =
         pick(
             data,
-            ["orders", "totalOrders"],
+            [
+                "confirmedOrders",
+                "orders",
+                "totalOrders"
+            ],
             0
         );
-
 
     const average =
         pick(
             data,
-            ["averageTicket", "average_ticket", "ticket"],
-            0
+            [
+                "averageTicket",
+                "average_ticket",
+                "ticket"
+            ],
+            orders > 0
+                ? Number(revenue) / Number(orders)
+                : 0
         );
 
 
@@ -1882,7 +1895,7 @@ function renderFinance(content, finance) {
                 )}
 
                 ${metricCard(
-                    "Ticket m�dio",
+                    "Ticket médio",
                     formatCurrency(average)
                 )}
 
@@ -1900,7 +1913,7 @@ function renderFinance(content, finance) {
 
                     <div>
                         <span class="module-eyebrow">
-                            VIS�O FINANCEIRA
+                            VISÃO FINANCEIRA
                         </span>
 
                         <h3>
@@ -1943,7 +1956,7 @@ function renderFinance(content, finance) {
                     <article class="admin-operation-card">
 
                         <span>
-                            Ticket m�dio
+                            Ticket médio
                         </span>
 
                         <strong>
@@ -1960,7 +1973,7 @@ function renderFinance(content, finance) {
                         </span>
 
                         <strong>
-                            PostgreSQL
+                            Firebase / Firestore
                         </strong>
 
                     </article>
@@ -2298,7 +2311,7 @@ function renderReports(content, reports) {
                 )}
 
                 ${metricCard(
-                    "Ticket m�dio",
+                    "Ticket médio",
                     formatCurrency(
                         pick(
                             metrics,
@@ -2972,7 +2985,7 @@ function createOrderModal() {
                     <div>
 
                         <span class="module-eyebrow">
-                            AUR�A ADMIN
+                            NEFER ADMIN
                         </span>
 
                         <h2 id="adminOrderModalTitle">
@@ -3226,7 +3239,7 @@ function renderOrderDetails(content, order) {
                                     type="button"
                                     id="advanceOrderLogistics"
                                 >
-                                    Avançar log?stica
+                                    Avançar logística
                                 </button>
                             `
                             : ""
@@ -3247,14 +3260,14 @@ function renderOrderDetails(content, order) {
                         <h3>
                             ${escapeHtml(
                                 customer.name ||
-                                "Cliente n?o identificado"
+                                "Cliente não identificado"
                             )}
                         </h3>
 
                         <p>
                             ${escapeHtml(
                                 customer.email ||
-                                "E-mail n?o informado"
+                                "E-mail não informado"
                             )}
                         </p>
                     </div>
@@ -3430,7 +3443,7 @@ function renderOrderDetails(content, order) {
 
                 window.alert(
                     error?.message ||
-                    "N?o foi poss?vel confirmar o pagamento."
+                    "Não foi poss?vel confirmar o pagamento."
                 );
             }
         });
@@ -3459,7 +3472,7 @@ function renderOrderDetails(content, order) {
             } catch (error) {
 
                 console.error(
-                    "[ADMIN ORDER] Erro ao avan?ar log?stica:",
+                    "[ADMIN ORDER] Erro ao avan?ar logística:",
                     error
                 );
 
@@ -3467,7 +3480,7 @@ function renderOrderDetails(content, order) {
 
                 window.alert(
                     error?.message ||
-                    "N?o foi poss?vel atualizar a log?stica."
+                    "Não foi poss?vel atualizar a logística."
                 );
             }
         });
@@ -3486,7 +3499,7 @@ document.addEventListener("click", async (event) => {
         const productId = editBtn.dataset.productId;
 
         if (!productId) {
-            console.error("ID do produto n?o encontrado no bot?o.");
+            console.error("ID do produto não encontrado no bot?o.");
             return;
         }
 
@@ -3502,10 +3515,10 @@ document.addEventListener("click", async (event) => {
             if (product) {
                 openProductEditor(product);
             } else {
-                alert("Produto n?o encontrado para edi??o.");
+                alert("Produto não encontrado para edição.");
             }
         } catch (error) {
-            console.error("Erro ao carregar produto para edi??o:", error);
+            console.error("Erro ao carregar produto para edição:", error);
         }
         return;
     }

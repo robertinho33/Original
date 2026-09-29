@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const {
     getFirestore
@@ -132,13 +132,22 @@ async function getFinance() {
         );
     });
 
+    const grossRevenue = confirmed.reduce(
+        (sum, order) => sum + money(order.total),
+        0
+    );
+
+    const averageTicket =
+        confirmed.length > 0
+            ? grossRevenue / confirmed.length
+            : 0;
+
     return {
         totalOrders: orders.length,
         confirmedOrders: confirmed.length,
-        grossRevenue: confirmed.reduce(
-            (sum, order) => sum + money(order.total),
-            0
-        )
+        grossRevenue,
+        averageTicket,
+        source: "Firebase / Firestore"
     };
 }
 
