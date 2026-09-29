@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import {
     filterFeaturedProducts,
@@ -11,10 +11,10 @@ import {
 } from './catalog-curation.js';
 
 const RUNTIME_CATALOG_PATH =
-    'data/catalog/catalog-runtime.json';
+    '/data/catalog/catalog-runtime.json';
 
 const MANIFEST_PATH =
-    'data/catalog/manifests/catalog-sources.json';
+    '/data/catalog/manifests/catalog-sources.json';
 
 let catalogCache = null;
 let sourceCache = null;
