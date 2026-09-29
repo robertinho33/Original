@@ -1983,8 +1983,6 @@ function renderFinance(content, finance) {
 
         </div>
     `;
-}
-
 
 /* ============================================================
    CUPONS
@@ -1997,6 +1995,46 @@ function renderCoupons(content, coupons) {
             ? coupons
             : [];
 
+    const active =
+        list.filter(row => {
+            const status =
+                String(
+                    pick(
+                        row,
+                        ["status", "state"],
+                        "active"
+                    )
+                )
+                    .trim()
+                    .toLowerCase();
+
+            return (
+                status === "active" ||
+                status === "ativo"
+            );
+        }).length;
+
+    const inactive =
+        list.length - active;
+
+    const totalUses =
+        list.reduce(
+            (sum, row) =>
+                sum +
+                Number(
+                    pick(
+                        row,
+                        [
+                            "uses",
+                            "used",
+                            "usage_count",
+                            "uses_count"
+                        ],
+                        0
+                    )
+                ) || 0,
+            0
+        );
 
     content.outerHTML = `
 
@@ -2010,117 +2048,360 @@ function renderCoupons(content, coupons) {
                 )}
 
                 ${metricCard(
+                    "Cupons ativos",
+                    formatNumber(active)
+                )}
+
+                ${metricCard(
+                    "Usos realizados",
+                    formatNumber(totalUses)
+                )}
+
+                ${metricCard(
                     "Fonte",
                     "Firebase / Firestore"
                 )}
 
             </div>
 
+            <section class="module-panel">
 
-            ${table(
-                "Campanhas e cupons",
+                <div class="module-panel-header">
 
-                [
-                    {
-                        label: "C�digo",
-                        render: row => `
-                            <strong>
-                                ${escapeHtml(
-                                    pick(
-                                        row,
-                                        ["code", "coupon_code"],
-                                        "�"
-                                    )
-                                )}
-                            </strong>
+                    <div>
+
+                        <span class="module-eyebrow">
+                            NEFER ADMIN
+                        </span>
+
+                        <h3>
+                            Campanhas e cupons
+                        </h3>
+
+                        <p>
+                            Controle de códigos promocionais e descontos.
+                        </p>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="admin-button"
+                        id="adminCreateCoupon"
+                    >
+                        Novo cupom
+                    </button>
+
+                </div>
+
+                ${
+                    list.length
+                        ? `
+                            <div class="admin-table-wrap">
+
+                                <table class="admin-table">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Desconto</th>
+                                            <th>Uso</th>
+                                            <th>Status</th>
+                                            <th>Validade</th>
+                                            <th>Ações</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        ${
+                                            list.map(row => {
+
+                                                const id =
+                                                    String(
+                                                        row.id ??
+                                                        row.couponId ??
+                                                        ""
+                                                    );
+
+                                                const code =
+                                                    pick(
+                                                        row,
+                                                        [
+                                                            "code",
+                                                            "coupon_code",
+                                                            "couponCode"
+                                                        ],
+                                                        "—"
+                                                    );
+
+                                                const discount =
+                                                    pick(
+                                                        row,
+                                                        [
+                                                            "discount",
+                                                            "discount_value",
+                                                            "percentage",
+                                                            "value"
+                                                        ],
+                                                        0
+                                                    );
+
+                                                const type =
+                                                    String(
+                                                        pick(
+                                                            row,
+                                                            [
+                                                                "discount_type",
+                                                                "discountType",
+                                                                "type"
+                                                            ],
+                                                            ""
+                                                        )
+                                                    )
+                                                        .trim()
+                                                        .toLowerCase();
+
+                                                const discountText =
+                                                    type.includes("percent") ||
+                                                    type === "%" ||
+                                                    type === "percentage"
+                                                        ? `${escapeHtml(discount)}%`
+                                                        : formatCurrency(
+                                                            discount
+                                                        );
+
+                                                const uses =
+                                                    Number(
+                                                        pick(
+                                                            row,
+                                                            [
+                                                                "uses",
+                                                                "used",
+                                                                "usage_count",
+                                                                "uses_count"
+                                                            ],
+                                                            0
+                                                        )
+                                                    ) || 0;
+
+                                                const usageLimit =
+                                                    pick(
+                                                        row,
+                                                        [
+                                                            "usage_limit",
+                                                            "usageLimit",
+                                                            "max_uses",
+                                                            "limit"
+                                                        ],
+                                                        null
+                                                    );
+
+                                                const usageText =
+                                                    usageLimit === null ||
+                                                    usageLimit === ""
+                                                        ? formatNumber(uses)
+                                                        : `${formatNumber(uses)} / ${formatNumber(usageLimit)}`;
+
+                                                const status =
+                                                    pick(
+                                                        row,
+                                                        [
+                                                            "status",
+                                                            "state"
+                                                        ],
+                                                        "active"
+                                                    );
+
+                                                const expires =
+                                                    pick(
+                                                        row,
+                                                        [
+                                                            "expires_at",
+                                                            "expiresAt",
+                                                            "expiration_date",
+                                                            "expirationDate",
+                                                            "valid_until",
+                                                            "validUntil"
+                                                        ],
+                                                        null
+                                                    );
+
+                                                return `
+
+                                                    <tr>
+
+                                                        <td>
+                                                            <strong>
+                                                                ${escapeHtml(
+                                                                    String(code)
+                                                                )}
+                                                            </strong>
+                                                        </td>
+
+                                                        <td>
+                                                            ${discountText}
+                                                        </td>
+
+                                                        <td>
+                                                            ${escapeHtml(
+                                                                usageText
+                                                            )}
+                                                        </td>
+
+                                                        <td>
+                                                            ${renderStatus(
+                                                                status
+                                                            )}
+                                                        </td>
+
+                                                        <td>
+                                                            ${formatDate(
+                                                                expires
+                                                            )}
+                                                        </td>
+
+                                                        <td>
+
+                                                            <div
+                                                                class="table-actions"
+                                                            >
+
+                                                                <button
+                                                                    type="button"
+                                                                    class="admin-button admin-coupon-edit"
+                                                                    data-coupon-id="${escapeHtml(id)}"
+                                                                >
+                                                                    Editar
+                                                                </button>
+
+                                                                <button
+                                                                    type="button"
+                                                                    class="admin-button admin-coupon-toggle"
+                                                                    data-coupon-id="${escapeHtml(id)}"
+                                                                >
+                                                                    ${
+                                                                        String(
+                                                                            status
+                                                                        )
+                                                                            .toLowerCase()
+                                                                            === "active"
+                                                                            ? "Desativar"
+                                                                            : "Ativar"
+                                                                    }
+                                                                </button>
+
+                                                            </div>
+
+                                                        </td>
+
+                                                    </tr>
+                                                `;
+                                            }).join("")
+                                        }
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
                         `
-                    },
+                        : emptyState(
+                            "Nenhum cupom cadastrado no Firebase / Firestore."
+                        )
+                }
 
-                    {
-                        label: "Desconto",
-                        render: row => {
-
-                            const value =
-                                pick(
-                                    row,
-                                    [
-                                        "discount",
-                                        "discount_value",
-                                        "percentage"
-                                    ],
-                                    0
-                                );
-
-                            const type =
-                                String(
-                                    pick(
-                                        row,
-                                        ["discount_type", "type"],
-                                        ""
-                                    )
-                                ).toLowerCase();
-
-                            if (
-                                type.includes("percent") ||
-                                type === "%"
-                            ) {
-                                return `${escapeHtml(value)}%`;
-                            }
-
-                            return formatCurrency(value);
-                        }
-                    },
-
-                    {
-                        label: "Status",
-                        render: row =>
-                            renderStatus(
-                                pick(
-                                    row,
-                                    ["status", "state"],
-                                    "active"
-                                )
-                            )
-                    },
-
-                    {
-                        label: "Validade",
-                        render: row =>
-                            formatDate(
-                                pick(
-                                    row,
-                                    ["expires_at", "expiration_date", "valid_until"],
-                                    null
-                                )
-                            )
-                    }
-,
-                    {
-                        label: "Ações",
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        ""
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }                ],
-
-                list
-            )}
+            </section>
 
         </div>
     `;
-}
 
+    document
+        .querySelector("#adminCreateCoupon")
+        ?.addEventListener(
+            "click",
+            () => {
+                console.log(
+                    "[NEFER COUPONS] Novo cupom solicitado."
+                );
+
+                showAdminToast?.(
+                    "Cadastro de cupom será conectado na próxima etapa.",
+                    "info"
+                );
+            }
+        );
+
+    document
+        .querySelectorAll(".admin-coupon-edit")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const couponId =
+                        button.dataset.couponId;
+
+                    const coupon =
+                        list.find(
+                            row =>
+                                String(
+                                    row.id ??
+                                    row.couponId ??
+                                    ""
+                                ) ===
+                                String(couponId)
+                        );
+
+                    if (!coupon) {
+                        showAdminToast?.(
+                            "Cupom não encontrado.",
+                            "error"
+                        );
+
+                        return;
+                    }
+
+                    console.log(
+                        "[NEFER COUPONS] Editar:",
+                        coupon
+                    );
+
+                    showAdminToast?.(
+                        "Editor de cupom será conectado na próxima etapa.",
+                        "info"
+                    );
+                }
+            );
+        });
+
+    document
+        .querySelectorAll(".admin-coupon-toggle")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const couponId =
+                        button.dataset.couponId;
+
+                    console.log(
+                        "[NEFER COUPONS] Alterar status:",
+                        couponId
+                    );
+
+                    showAdminToast?.(
+                        "Ativação e desativação serão conectadas na próxima etapa.",
+                        "info"
+                    );
+                }
+            );
+        });
+}
 
 /* ============================================================
    LOGISTICA
