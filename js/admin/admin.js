@@ -234,7 +234,7 @@ function stockStatus(value) {
 
     return `
         <span class="admin-status-badge success">
-            Dispon�vel
+            Disponível
         </span>
     `;
 }
@@ -423,7 +423,7 @@ async function load(section) {
     if (!root) {
 
         console.error(
-            "[NEFER ADMIN] #admin-root n�o encontrado."
+            "[NEFER ADMIN] #admin-root não encontrado."
         );
 
         return;
@@ -1677,7 +1677,7 @@ function renderInventory(content, inventory) {
                     },
 
                     {
-                        label: "Situa��o",
+                        label: "Situação",
                         render: row =>
                             stockStatus(
                                 pick(
