@@ -1,9 +1,9 @@
-﻿"use strict";
+"use strict";
 
 /*
  * NEFER ADMIN — Módulo de Cupons
  *
- * Arquitetura:
+ * Fluxo:
  *
  * Tela
  *   ↓
@@ -15,34 +15,24 @@
  *   ↓
  * Admin Service
  *   ↓
- * Firebase / Firestore
+ * Firebase Admin / Firestore
  *
- * Estrutura do documento:
- *
- * code
- * description
- * type
- * value
- * minimumOrder
- * usageLimit
- * usageCount
- * active
- * influencerId
- * influencerName
- * createdAt
- * updatedAt
+ * IMPORTANTE:
+ * Este módulo NÃO acessa o Firebase diretamente pelo navegador.
  */
 
 const COLLECTION_NAME = "coupons";
 
 function getAdminAPI() {
-    if (!window.AdminAPI) {
+    const api = window.AdminAPI || window.adminApi;
+
+    if (!api) {
         throw new Error(
             "AdminAPI não está disponível."
         );
     }
 
-    return window.AdminAPI;
+    return api;
 }
 
 function escapeHtml(value) {
@@ -55,7 +45,7 @@ function escapeHtml(value) {
 }
 
 function money(value) {
-    const number = Number(value || 0);
+    const number = Number(value);
 
     return Number.isFinite(number)
         ? number
@@ -77,6 +67,17 @@ function formatDate(value) {
         return "—";
     }
 
+    if (
+        typeof value === "object" &&
+        typeof value.toDate === "function"
+    ) {
+        const date = value.toDate();
+
+        return date.toLocaleDateString(
+            "pt-BR"
+        );
+    }
+
     const date = new Date(value);
 
     if (Number.isNaN(date.getTime())) {
@@ -91,19 +92,23 @@ function formatDate(value) {
 function normalizeCoupon(data = {}) {
     return {
         id:
-            data.id ||
-            "",
+            String(
+                data.id ||
+                ""
+            ),
 
         code:
             String(
-                data.code || ""
+                data.code ||
+                ""
             )
                 .trim()
                 .toUpperCase(),
 
         description:
             String(
-                data.description || ""
+                data.description ||
+                ""
             ).trim(),
 
         type:
@@ -112,7 +117,9 @@ function normalizeCoupon(data = {}) {
                 : "percentage",
 
         value:
-            money(data.value),
+            money(
+                data.value
+            ),
 
         minimumOrder:
             money(
@@ -134,12 +141,14 @@ function normalizeCoupon(data = {}) {
 
         influencerId:
             String(
-                data.influencerId || ""
+                data.influencerId ||
+                ""
             ).trim(),
 
         influencerName:
             String(
-                data.influencerName || ""
+                data.influencerName ||
+                ""
             ).trim(),
 
         createdAt:
@@ -197,6 +206,10 @@ function showMessage(
     message,
     type = "info"
 ) {
+    if (!container) {
+        return;
+    }
+
     const old =
         container.querySelector(
             ".nefer-coupon-message"
@@ -205,7 +218,9 @@ function showMessage(
     old?.remove();
 
     const element =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     element.className =
         `nefer-coupon-message ${type}`;
@@ -213,13 +228,21 @@ function showMessage(
     element.textContent =
         message;
 
-    container.prepend(element);
+    container.prepend(
+        element
+    );
 
     window.setTimeout(
-        () => element.remove(),
+        () => {
+            element.remove();
+        },
         4000
     );
 }
+
+/* =========================================================
+   API
+   ========================================================= */
 
 async function listCoupons() {
     const api =
@@ -251,6 +274,15 @@ async function createCoupon(data) {
     const api =
         getAdminAPI();
 
+    if (
+        typeof api.createCoupon !==
+        "function"
+    ) {
+        throw new Error(
+            "AdminAPI.createCoupon não está disponível."
+        );
+    }
+
     return api.createCoupon(
         data
     );
@@ -263,6 +295,15 @@ async function updateCoupon(
     const api =
         getAdminAPI();
 
+    if (
+        typeof api.updateCoupon !==
+        "function"
+    ) {
+        throw new Error(
+            "AdminAPI.updateCoupon não está disponível."
+        );
+    }
+
     return api.updateCoupon(
         id,
         data
@@ -273,10 +314,23 @@ async function deleteCoupon(id) {
     const api =
         getAdminAPI();
 
+    if (
+        typeof api.deleteCoupon !==
+        "function"
+    ) {
+        throw new Error(
+            "AdminAPI.deleteCoupon não está disponível."
+        );
+    }
+
     return api.deleteCoupon(
         id
     );
 }
+
+/* =========================================================
+   VALIDAÇÃO
+   ========================================================= */
 
 function validateCoupon(data) {
     const code =
@@ -292,14 +346,23 @@ function validateCoupon(data) {
         );
     }
 
-    if (!/^[A-Z0-9_-]+$/.test(code)) {
+    if (
+        !/^[A-Z0-9_-]+$/.test(code)
+    ) {
         throw new Error(
             "O código deve conter apenas letras, números, _ ou -."
         );
     }
 
+    const type =
+        data.type === "fixed"
+            ? "fixed"
+            : "percentage";
+
     const value =
-        Number(data.value);
+        Number(
+            data.value
+        );
 
     if (
         !Number.isFinite(value) ||
@@ -311,7 +374,7 @@ function validateCoupon(data) {
     }
 
     if (
-        data.type === "percentage" &&
+        type === "percentage" &&
         value > 100
     ) {
         throw new Error(
@@ -324,7 +387,12 @@ function validateCoupon(data) {
             data.minimumOrder
         ) || 0;
 
-    if (minimumOrder < 0) {
+    if (
+        !Number.isFinite(
+            minimumOrder
+        ) ||
+        minimumOrder < 0
+    ) {
         throw new Error(
             "O pedido mínimo não pode ser negativo."
         );
@@ -335,20 +403,54 @@ function validateCoupon(data) {
             data.usageLimit
         ) || 0;
 
-    if (usageLimit < 0) {
+    if (
+        !Number.isFinite(
+            usageLimit
+        ) ||
+        usageLimit < 0
+    ) {
         throw new Error(
             "O limite de uso não pode ser negativo."
         );
     }
 
     return {
-        ...data,
         code,
+
+        type,
+
         value,
+
         minimumOrder,
-        usageLimit
+
+        usageLimit,
+
+        active:
+            data.active !== false,
+
+        influencerId:
+            String(
+                data.influencerId ||
+                ""
+            ).trim(),
+
+        influencerName:
+            String(
+                data.influencerName ||
+                ""
+            ).trim(),
+
+        description:
+            String(
+                data.description ||
+                ""
+            ).trim()
     };
 }
+
+/* =========================================================
+   ESTATÍSTICAS
+   ========================================================= */
 
 function renderStats(
     container,
@@ -380,60 +482,56 @@ function renderStats(
             0
         );
 
-    const stats =
-        document.createElement(
-            "div"
-        );
+    container.innerHTML = `
+        <div class="admin-metrics-grid">
 
-    stats.className =
-        "admin-metrics-grid";
+            <div class="admin-metric-card">
+                <span class="admin-metric-label">
+                    Cupons cadastrados
+                </span>
 
-    stats.innerHTML = `
-        <div class="admin-metric-card">
-            <span class="admin-metric-label">
-                Cupons cadastrados
-            </span>
+                <strong class="admin-metric-value">
+                    ${total}
+                </strong>
+            </div>
 
-            <strong class="admin-metric-value">
-                ${total}
-            </strong>
-        </div>
+            <div class="admin-metric-card">
+                <span class="admin-metric-label">
+                    Cupons ativos
+                </span>
 
-        <div class="admin-metric-card">
-            <span class="admin-metric-label">
-                Cupons ativos
-            </span>
+                <strong class="admin-metric-value">
+                    ${active}
+                </strong>
+            </div>
 
-            <strong class="admin-metric-value">
-                ${active}
-            </strong>
-        </div>
+            <div class="admin-metric-card">
+                <span class="admin-metric-label">
+                    Cupons inativos
+                </span>
 
-        <div class="admin-metric-card">
-            <span class="admin-metric-label">
-                Cupons inativos
-            </span>
+                <strong class="admin-metric-value">
+                    ${inactive}
+                </strong>
+            </div>
 
-            <strong class="admin-metric-value">
-                ${inactive}
-            </strong>
-        </div>
+            <div class="admin-metric-card">
+                <span class="admin-metric-label">
+                    Utilizações
+                </span>
 
-        <div class="admin-metric-card">
-            <span class="admin-metric-label">
-                Utilizações
-            </span>
+                <strong class="admin-metric-value">
+                    ${used}
+                </strong>
+            </div>
 
-            <strong class="admin-metric-value">
-                ${used}
-            </strong>
         </div>
     `;
-
-    container.appendChild(
-        stats
-    );
 }
+
+/* =========================================================
+   TABELA
+   ========================================================= */
 
 function renderTable(
     container,
@@ -454,7 +552,9 @@ function renderTable(
         <div class="admin-panel-header">
 
             <div>
-                <h3>Campanhas e cupons</h3>
+                <h3>
+                    Campanhas e cupons
+                </h3>
 
                 <p>
                     Gerencie os cupons promocionais da NEFER.
@@ -472,15 +572,14 @@ function renderTable(
         </div>
     `;
 
-    const header =
-        panel.querySelector(
+    panel
+        .querySelector(
             "[data-action='new-coupon']"
+        )
+        ?.addEventListener(
+            "click",
+            () => onEdit(null)
         );
-
-    header?.addEventListener(
-        "click",
-        () => onEdit(null)
-    );
 
     if (!coupons.length) {
         const empty =
@@ -660,7 +759,7 @@ function renderTable(
 
                         <button
                             type="button"
-                            class="admin-product-edit"
+                            class="admin-secondary-button"
                             data-action="edit"
                         >
                             Editar
@@ -744,6 +843,10 @@ function renderTable(
         panel
     );
 }
+
+/* =========================================================
+   MODAL
+   ========================================================= */
 
 function createModal(
     coupon,
@@ -831,7 +934,6 @@ function createModal(
                             name="type"
                             required
                         >
-
                             <option
                                 value="percentage"
                                 ${
@@ -853,7 +955,6 @@ function createModal(
                             >
                                 Valor fixo
                             </option>
-
                         </select>
                     </label>
 
@@ -919,7 +1020,6 @@ function createModal(
                         <select
                             name="active"
                         >
-
                             <option
                                 value="true"
                                 ${
@@ -941,7 +1041,6 @@ function createModal(
                             >
                                 Inativo
                             </option>
-
                         </select>
                     </label>
 
@@ -1057,18 +1156,17 @@ function createModal(
             close
         );
 
-    modal
-        .addEventListener(
-            "click",
-            event => {
-                if (
-                    event.target ===
-                    modal
-                ) {
-                    close();
-                }
+    modal.addEventListener(
+        "click",
+        event => {
+            if (
+                event.target ===
+                modal
+            ) {
+                close();
             }
-        );
+        }
+    );
 
     const form =
         modal.querySelector(
@@ -1138,11 +1236,24 @@ function createModal(
                     )
             };
 
+            const submitButton =
+                form.querySelector(
+                    "[type='submit']"
+                );
+
             try {
                 const validated =
                     validateCoupon(
                         data
                     );
+
+                if (submitButton) {
+                    submitButton.disabled =
+                        true;
+
+                    submitButton.textContent =
+                        "Salvando...";
+                }
 
                 await onSubmit(
                     validated
@@ -1159,12 +1270,22 @@ function createModal(
                     error?.message ||
                     "Não foi possível salvar o cupom."
                 );
+
+                if (submitButton) {
+                    submitButton.disabled =
+                        false;
+
+                    submitButton.textContent =
+                        editing
+                            ? "Salvar alterações"
+                            : "Criar cupom";
+                }
             }
         }
     );
 
     const codeInput =
-        form.querySelector(
+        form?.querySelector(
             "[name='code']"
         );
 
@@ -1173,7 +1294,11 @@ function createModal(
     return modal;
 }
 
-function renderCouponsModule(
+/* =========================================================
+   MÓDULO
+   ========================================================= */
+
+export async function renderCouponsModule(
     container
 ) {
     if (!container) {
@@ -1188,6 +1313,10 @@ function renderCouponsModule(
             <div class="admin-module-header">
 
                 <div>
+                    <span class="admin-eyebrow">
+                        NEFER ADMIN
+                    </span>
+
                     <h2>
                         Cupons
                     </h2>
@@ -1252,8 +1381,6 @@ function renderCouponsModule(
             const coupons =
                 await listCoupons();
 
-            stats.innerHTML = "";
-
             renderStats(
                 stats,
                 coupons
@@ -1273,6 +1400,8 @@ function renderCouponsModule(
                 "[NEFER COUPONS] Erro ao carregar:",
                 error
             );
+
+            stats.innerHTML = "";
 
             list.innerHTML = `
                 <div class="admin-error">
@@ -1420,7 +1549,7 @@ function renderCouponsModule(
             refresh
         );
 
-    refresh();
+    await refresh();
 }
 
 window.NEFCoupons = {

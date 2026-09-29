@@ -1,3 +1,4 @@
+'use strict';
 
 const adminApi = window.AdminAPI;
 
@@ -15,118 +16,127 @@ import {
 
 import {
     renderOperationalEnvironment
-} from "./modules/operational-environment.js";
+} from './modules/operational-environment.js';
 
 
 const root =
-    document.querySelector("#admin-root");
+    document.querySelector('#admin-root');
 
 const navigation =
     document.querySelectorAll(
-        "[data-admin-section]"
+        '[data-admin-section]'
     );
 
 
 const sections = [
-    "dashboard",
-    "orders",
-    "products",
-    "categories",
-    "inventory",
-    "customers",
-    "finance",
-    "coupons",
-    "logistics",
-    "reports",
-    "audit",
-    "settings"
+    'dashboard',
+    'orders',
+    'products',
+    'categories',
+    'inventory',
+    'customers',
+    'finance',
+    'coupons',
+    'logistics',
+    'reports',
+    'audit',
+    'settings'
 ];
 
 
 const state = {
-    section: "dashboard",
+    section: 'dashboard',
     ready: false
 };
 
 
 /* ============================================================
-   UTILITARIOS
+   UTILITÁRIOS
    ============================================================ */
 
 function escapeHtml(value) {
-
-    return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
 }
 
 
 function formatCurrency(value) {
-
     const number =
         Number(value) || 0;
 
     return number.toLocaleString(
-        "pt-BR",
+        'pt-BR',
         {
-            style: "currency",
-            currency: "BRL"
+            style: 'currency',
+            currency: 'BRL'
         }
     );
 }
 
 
 function formatNumber(value) {
-
     const number =
         Number(value);
 
     if (!Number.isFinite(number)) {
-        return "0";
+        return '0';
     }
 
-    return number.toLocaleString("pt-BR");
+    return number.toLocaleString('pt-BR');
 }
 
 
 function formatDate(value) {
-
     if (!value) {
-        return "—";
+        return '—';
     }
 
-    const date =
-        new Date(value);
+    let date;
+
+    if (
+        typeof value === 'object' &&
+        typeof value.toDate === 'function'
+    ) {
+        date = value.toDate();
+    } else if (
+        typeof value === 'object' &&
+        typeof value.seconds === 'number'
+    ) {
+        date = new Date(
+            value.seconds * 1000
+        );
+    } else {
+        date = new Date(value);
+    }
 
     if (Number.isNaN(date.getTime())) {
         return escapeHtml(value);
     }
 
     return date.toLocaleString(
-        "pt-BR",
+        'pt-BR',
         {
-            dateStyle: "short",
-            timeStyle: "short"
+            dateStyle: 'short',
+            timeStyle: 'short'
         }
     );
 }
 
 
 function pick(object, keys, fallback = null) {
-
-    if (!object || typeof object !== "object") {
+    if (!object || typeof object !== 'object') {
         return fallback;
     }
 
     for (const key of keys) {
-
         if (
             object[key] !== undefined &&
             object[key] !== null &&
-            object[key] !== ""
+            object[key] !== ''
         ) {
             return object[key];
         }
@@ -137,18 +147,17 @@ function pick(object, keys, fallback = null) {
 
 
 function labelize(value) {
-
     if (
         value === null ||
         value === undefined ||
-        value === ""
+        value === ''
     ) {
-        return "—";
+        return '—';
     }
 
     return String(value)
-        .replaceAll("_", " ")
-        .replaceAll("-", " ")
+        .replaceAll('_', ' ')
+        .replaceAll('-', ' ')
         .replace(/\b\w/g, char =>
             char.toUpperCase()
         );
@@ -156,9 +165,8 @@ function labelize(value) {
 
 
 function renderStatus(status) {
-
     const value =
-        String(status ?? "—");
+        String(status ?? '—');
 
     const normalized =
         value
@@ -168,39 +176,44 @@ function renderStatus(status) {
     let label =
         labelize(value);
 
-    if (normalized === "paid") {
-        label = "Pago";
-    }
-
-    else if (normalized === "pending") {
-        label = "Pendente";
-    }
-
-    else if (
-        normalized === "cancelled" ||
-        normalized === "canceled"
+    if (
+        normalized === 'paid' ||
+        normalized === 'confirmed' ||
+        normalized === 'approved' ||
+        normalized === 'completed'
     ) {
-        label = "Cancelado";
-    }
-
-    else if (normalized === "processing") {
-        label = "Processando";
-    }
-
-    else if (normalized === "shipped") {
-        label = "Enviado";
-    }
-
-    else if (normalized === "delivered") {
-        label = "Entregue";
-    }
-
-    else if (normalized === "active") {
-        label = "Ativo";
-    }
-
-    else if (normalized === "inactive") {
-        label = "Inativo";
+        label = 'Pago';
+    } else if (
+        normalized === 'pending'
+    ) {
+        label = 'Pendente';
+    } else if (
+        normalized === 'cancelled' ||
+        normalized === 'canceled'
+    ) {
+        label = 'Cancelado';
+    } else if (
+        normalized === 'processing'
+    ) {
+        label = 'Processando';
+    } else if (
+        normalized === 'shipped'
+    ) {
+        label = 'Enviado';
+    } else if (
+        normalized === 'delivered'
+    ) {
+        label = 'Entregue';
+    } else if (
+        normalized === 'active' ||
+        normalized === 'ativo'
+    ) {
+        label = 'Ativo';
+    } else if (
+        normalized === 'inactive' ||
+        normalized === 'inativo'
+    ) {
+        label = 'Inativo';
     }
 
     return `
@@ -212,7 +225,6 @@ function renderStatus(status) {
 
 
 function stockStatus(value) {
-
     const stock =
         Number(value) || 0;
 
@@ -241,20 +253,16 @@ function stockStatus(value) {
 
 
 function setActiveNavigation(section) {
-
     navigation.forEach(item => {
-
         item.classList.toggle(
-            "active",
+            'active',
             item.dataset.adminSection === section
         );
-
     });
 }
 
 
-function shell(title, subtitle = "") {
-
+function shell(title, subtitle = '') {
     return `
         <section class="module-panel">
 
@@ -273,7 +281,7 @@ function shell(title, subtitle = "") {
                     ${
                         subtitle
                             ? `<p>${escapeHtml(subtitle)}</p>`
-                            : ""
+                            : ''
                     }
 
                 </div>
@@ -290,7 +298,6 @@ function shell(title, subtitle = "") {
 
 
 function emptyState(message) {
-
     return `
         <div class="admin-empty-state">
             ${escapeHtml(message)}
@@ -299,8 +306,7 @@ function emptyState(message) {
 }
 
 
-function metricCard(label, value, detail = "") {
-
+function metricCard(label, value, detail = '') {
     return `
         <article class="admin-metric-card">
 
@@ -319,7 +325,7 @@ function metricCard(label, value, detail = "") {
                             ${escapeHtml(detail)}
                         </div>
                     `
-                    : ""
+                    : ''
             }
 
         </article>
@@ -328,7 +334,6 @@ function metricCard(label, value, detail = "") {
 
 
 function table(title, columns, rows) {
-
     const list =
         Array.isArray(rows)
             ? rows
@@ -344,7 +349,7 @@ function table(title, columns, rows) {
                     </h3>
                 </div>
 
-                ${emptyState("Nenhum registro encontrado.")}
+                ${emptyState('Nenhum registro encontrado.')}
 
             </section>
         `;
@@ -374,7 +379,7 @@ function table(title, columns, rows) {
                                 <th>
                                     ${escapeHtml(column.label)}
                                 </th>
-                            `).join("")}
+                            `).join('')}
 
                         </tr>
                     </thead>
@@ -387,21 +392,21 @@ function table(title, columns, rows) {
                                 ${columns.map(column => `
                                     <td>
                                         ${
-                                            typeof column.render === "function"
+                                            typeof column.render === 'function'
                                                 ? column.render(row)
                                                 : escapeHtml(
                                                     pick(
                                                         row,
                                                         column.keys || [],
-                                                        "�"
+                                                        '—'
                                                     )
                                                 )
                                         }
                                     </td>
-                                `).join("")}
+                                `).join('')}
 
                             </tr>
-                        `).join("")}
+                        `).join('')}
 
                     </tbody>
 
@@ -419,106 +424,100 @@ function table(title, columns, rows) {
    ============================================================ */
 
 async function load(section) {
-
     if (!root) {
-
         console.error(
-            "[NEFER ADMIN] #admin-root não encontrado."
+            '[NEFER ADMIN] #admin-root não encontrado.'
         );
 
         return;
     }
 
-
     if (!sections.includes(section)) {
-
-        section = "dashboard";
+        section = 'dashboard';
     }
-
 
     state.section = section;
 
     setActiveNavigation(section);
 
+    if (section === 'dashboard') {
+        await renderOperationalEnvironment(root);
 
-    if (section === "dashboard") {
+        updateHeader(
+            'Dashboard',
+            'Visão geral da operação da NEFER'
+        );
 
-    await renderOperationalEnvironment(root);
+        state.ready = true;
 
-    updateHeader(
-        "Dashboard",
-        "Visão geral da operação da NEFER"
-    );
+        return;
+    }
 
-    return;
-}
+    const labels = {
 
+        orders: [
+            'Pedidos',
+            'Gestão completa dos pedidos.'
+        ],
 
-const labels = {
+        products: [
+            'Produtos',
+            'Catálogo, SKU, preços e disponibilidade.'
+        ],
 
-    orders: [
-        "Pedidos",
-        "Gestão completa dos pedidos."
-    ],
+        categories: [
+            'Categorias',
+            'Organização do catálogo.'
+        ],
 
-    products: [
-        "Produtos",
-        "Catálogo, SKU, preços e disponibilidade."
-    ],
+        inventory: [
+            'Estoque',
+            'Saldo, movimentações e disponibilidade.'
+        ],
 
-    categories: [
-        "Categorias",
-        "Organização do catálogo."
-    ],
+        customers: [
+            'Clientes',
+            'Base comercial e histórico.'
+        ],
 
-    inventory: [
-        "Estoque",
-        "Saldo, movimentações e disponibilidade."
-    ],
+        finance: [
+            'Financeiro',
+            'Receitas, pagamentos e indicadores.'
+        ],
 
-    customers: [
-        "Clientes",
-        "Base comercial e histórico."
-    ],
+        coupons: [
+            'Cupons',
+            'Campanhas e desempenho comercial.'
+        ],
 
-    finance: [
-        "Financeiro",
-        "Receitas, pagamentos e indicadores."
-    ],
+        logistics: [
+            'Logística',
+            'Expedição, envio e rastreamento.'
+        ],
 
-    coupons: [
-        "Cupons",
-        "Campanhas e desempenho comercial."
-    ],
+        reports: [
+            'Relatórios',
+            'Inteligência operacional e comercial.'
+        ],
 
-    logistics: [
-        "Logística",
-        "Expedição, envio e rastreamento."
-    ],
+        audit: [
+            'Auditoria',
+            'Histórico das operações administrativas.'
+        ],
 
-    reports: [
-        "Relatórios",
-        "Inteligência operacional e comercial."
-    ],
+        settings: [
+            'Configurações',
+            'Parâmetros centrais da NEFER.'
+        ]
 
-    audit: [
-        "Auditoria",
-        "Histórico das operações administrativas."
-    ],
-
-    settings: [
-        "Configurações",
-        "Parâmetros centrais da NEFER."
-    ]
-
-};
+    };
 
 
-const info =
-    labels[section] || [
-        "NEFER ADMIN",
-        ""
-    ];
+    const info =
+        labels[section] || [
+            'NEFER ADMIN',
+            ''
+        ];
 
 
     updateHeader(
@@ -535,14 +534,15 @@ const info =
 
 
     await loadModuleData(section);
+
+    state.ready = true;
 }
 
 
 function updateHeader(title, description) {
-
     const titleElement =
         document.querySelector(
-            "#adminSectionTitle"
+            '#adminSectionTitle'
         );
 
     if (titleElement) {
@@ -551,7 +551,7 @@ function updateHeader(title, description) {
 
     const descriptionElement =
         document.querySelector(
-            "#adminPageDescription"
+            '#adminPageDescription'
         );
 
     if (descriptionElement) {
@@ -562,79 +562,75 @@ function updateHeader(title, description) {
 
 
 /* ============================================================
-   CARREGAMENTO DOS MODULOS
+   CARREGAMENTO DOS MÓDULOS
    ============================================================ */
 
 async function loadModuleData(section) {
-
     const content =
         root.querySelector(
-            ".admin-loading"
+            '.admin-loading'
         );
 
     if (!content) {
         return;
     }
 
-
     try {
-
         let response;
-
 
         switch (section) {
 
-            case "orders":
+            case 'orders':
                 response =
                     await adminApi.orders();
                 break;
 
-            case "products":
+            case 'products':
                 response =
                     await adminApi.products();
                 break;
 
-            case "categories":
+            case 'categories':
                 response =
                     await adminApi.categories();
                 break;
 
-            case "inventory":
+            case 'inventory':
                 response =
                     await adminApi.inventory();
                 break;
 
-            case "customers":
+            case 'customers':
                 response =
                     await adminApi.customers();
                 break;
 
-            case "finance":
+            case 'finance':
                 response =
                     await adminApi.finance();
                 break;
 
-            case "coupons":
+            case 'coupons':
                 response =
                     await adminApi.coupons();
                 break;
 
-            case "logistics":
+            case 'logistics':
                 response =
                     await adminApi.logistics();
                 break;
 
-            case "reports":
+            case 'reports':
                 response =
                     await adminApi.reports();
                 break;
 
-            case "audit":
+            case 'audit':
                 response =
                     await adminApi.audit();
                 break;
 
-            case "settings":
+            case 'settings':
                 response =
                     await adminApi.settings();
                 break;
@@ -648,134 +644,127 @@ async function loadModuleData(section) {
 
 
         const data =
-            response?.data ?? [];
+            response?.data ?? response ?? [];
 
 
-        if (section === "orders") {
-
+        if (section === 'orders') {
             renderOrders(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
             return;
         }
 
 
-        if (section === "products") {
-
+        if (section === 'products') {
             renderProducts(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
             return;
         }
 
 
-        if (section === "categories") {
-
+        if (section === 'categories') {
             renderCategories(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
             return;
         }
 
 
-        if (section === "inventory") {
-
+        if (section === 'inventory') {
             renderInventory(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
             return;
         }
 
 
-        if (section === "customers") {
-
+        if (section === 'customers') {
             renderCustomers(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
             return;
         }
 
 
-        if (section === "finance") {
-
+        if (section === 'finance') {
             renderFinance(
                 content,
                 data
             );
-
             return;
         }
 
 
-        if (section === "coupons") {
-
+        if (section === 'coupons') {
             renderCoupons(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
             return;
         }
 
 
-        if (section === "logistics") {
-
+        if (section === 'logistics') {
             renderLogistics(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
             return;
         }
 
 
-        if (section === "reports") {
-
+        if (section === 'reports') {
             renderReports(
                 content,
                 data
             );
-
             return;
         }
 
 
-        if (section === "audit") {
-
+        if (section === 'audit') {
             renderAudit(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
             return;
         }
 
 
-        if (section === "settings") {
-
+        if (section === 'settings') {
             renderSettings(
                 content,
-                data
+                Array.isArray(data)
+                    ? data
+                    : []
             );
-
-            return;
         }
-
 
     } catch (error) {
 
         content.outerHTML = `
-
             <div class="admin-error">
 
                 <strong>
@@ -785,7 +774,7 @@ async function loadModuleData(section) {
                 <div style="margin-top:7px;">
                     ${escapeHtml(
                         error?.message ||
-                        "Erro desconhecido."
+                        'Erro desconhecido.'
                     )}
                 </div>
 
@@ -806,20 +795,30 @@ function renderProducts(content, products) {
             ? products
             : [];
 
+    window.__aureaAdminProducts = list;
+
     const total =
         list.length;
 
     const available =
         list.filter(product =>
             Number(
-                pick(product, ["stock", "inventory", "quantity"], 0)
+                pick(
+                    product,
+                    ['stock', 'inventory', 'quantity'],
+                    0
+                )
             ) > 0
         ).length;
 
     const withoutStock =
         list.filter(product =>
             Number(
-                pick(product, ["stock", "inventory", "quantity"], 0)
+                pick(
+                    product,
+                    ['stock', 'inventory', 'quantity'],
+                    0
+                )
             ) <= 0
         ).length;
 
@@ -831,41 +830,45 @@ function renderProducts(content, products) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Produtos cadastrados",
+                    'Produtos cadastrados',
                     formatNumber(total)
                 )}
 
                 ${metricCard(
-                    "Disponíveis",
+                    'Disponíveis',
                     formatNumber(available)
                 )}
 
                 ${metricCard(
-                    "Sem estoque",
+                    'Sem estoque',
                     formatNumber(withoutStock)
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Fonte',
+                    'Firebase / Firestore'
                 )}
 
             </div>
 
 
             ${table(
-                "Catálogo de produtos",
+                'Catálogo de produtos',
 
                 [
                     {
-                        label: "Produto",
+                        label: 'Produto',
                         render: row => `
                             <strong>
                                 ${escapeHtml(
                                     pick(
                                         row,
-                                        ["name", "product_name", "title"],
-                                        "Produto"
+                                        [
+                                            'name',
+                                            'product_name',
+                                            'title'
+                                        ],
+                                        'Produto'
                                     )
                                 )}
                             </strong>
@@ -873,59 +876,79 @@ function renderProducts(content, products) {
                     },
 
                     {
-                        label: "SKU",
-                        keys: ["sku", "code", "product_code"]
+                        label: 'SKU',
+                        keys: [
+                            'sku',
+                            'code',
+                            'product_code'
+                        ]
                     },
 
                     {
-                        label: "Categoria",
+                        label: 'Categoria',
                         render: row =>
-                            escapeHtml(pick(
-    row,
-    ["category_name", "category"],
-    "Sem categoria"
-)
+                            escapeHtml(
+                                pick(
+                                    row,
+                                    [
+                                        'category_name',
+                                        'category'
+                                    ],
+                                    'Sem categoria'
+                                )
                             )
                     },
 
                     {
-                        label: "Preço",
+                        label: 'Preço',
                         render: row =>
                             formatCurrency(
                                 pick(
                                     row,
-                                    ["price", "sale_price", "amount"],
+                                    [
+                                        'price',
+                                        'sale_price',
+                                        'amount'
+                                    ],
                                     0
                                 )
                             )
                     },
 
                     {
-                        label: "Estoque",
+                        label: 'Estoque',
                         render: row =>
                             formatNumber(
                                 pick(
                                     row,
-                                    ["stock", "inventory", "quantity"],
+                                    [
+                                        'stock',
+                                        'inventory',
+                                        'quantity'
+                                    ],
                                     0
                                 )
                             )
                     },
 
                     {
-                        label: "Situação",
+                        label: 'Situação',
                         render: row =>
                             stockStatus(
                                 pick(
                                     row,
-                                    ["stock", "inventory", "quantity"],
+                                    [
+                                        'stock',
+                                        'inventory',
+                                        'quantity'
+                                    ],
                                     0
                                 )
                             )
-                    }
-,
+                    },
+
                     {
-                        label: "Ações",
+                        label: 'Ações',
                         render: row => `
                             <button
                                 type="button"
@@ -934,14 +957,16 @@ function renderProducts(content, products) {
                                     String(
                                         row.id ||
                                         row.productId ||
-                                        ""
+                                        row.docId ||
+                                        ''
                                     )
                                 )}"
                             >
                                 Editar
                             </button>
                         `
-                    }                ],
+                    }
+                ],
 
                 list
             )}
@@ -958,48 +983,63 @@ function renderProducts(content, products) {
 function openProductEditor(product) {
 
     const oldModal =
-        document.getElementById("aurea-product-editor");
+        document.getElementById(
+            'aurea-product-editor'
+        );
 
     if (oldModal) {
         oldModal.remove();
     }
 
-    const read = (keys, fallback = "") =>
+
+    const read = (
+        keys,
+        fallback = ''
+    ) =>
         String(
-            pick(product, keys, fallback) ??
+            pick(
+                product,
+                keys,
+                fallback
+            ) ??
             fallback
         );
+
 
     const productId =
         product?.id ??
         product?.productId ??
         product?.docId ??
-        "";
+        '';
+
 
     if (!productId) {
         console.error(
-            "[ADMIN PRODUCTS] Produto sem ID:",
+            '[ADMIN PRODUCTS] Produto sem ID:',
             product
         );
 
         showAdminToast?.(
-            "Não foi possível identificar o produto.",
-            "error"
+            'Não foi possível identificar o produto.',
+            'error'
         );
 
         return;
     }
 
+
     const modal =
-        document.createElement("div");
+        document.createElement('div');
 
     modal.id =
-        "aurea-product-editor";
+        'aurea-product-editor';
 
     modal.className =
-        "admin-product-editor-overlay";
+        'admin-product-editor-overlay';
+
 
     modal.innerHTML = `
+
         <div
             class="admin-product-editor"
             role="dialog"
@@ -1010,13 +1050,15 @@ function openProductEditor(product) {
             <div class="admin-product-editor-header">
 
                 <div>
+
                     <h2 id="aurea-product-editor-title">
                         Editar produto
                     </h2>
 
                     <p>
-                        AlterAções salvas no Firebase / Firestore.
+                        Alterações salvas no Firebase / Firestore.
                     </p>
+
                 </div>
 
                 <button
@@ -1024,10 +1066,11 @@ function openProductEditor(product) {
                     class="admin-product-editor-close"
                     aria-label="Fechar"
                 >
-                    ?
+                    ×
                 </button>
 
             </div>
+
 
             <form
                 id="aurea-product-editor-form"
@@ -1040,6 +1083,7 @@ function openProductEditor(product) {
                     value="${escapeHtml(productId)}"
                 >
 
+
                 <div class="admin-product-editor-grid">
 
                     <label>
@@ -1051,13 +1095,14 @@ function openProductEditor(product) {
                             required
                             value="${escapeHtml(
                                 read([
-                                    "name",
-                                    "product_name",
-                                    "title"
+                                    'name',
+                                    'product_name',
+                                    'title'
                                 ])
                             )}"
                         >
                     </label>
+
 
                     <label>
                         SKU
@@ -1068,13 +1113,14 @@ function openProductEditor(product) {
                             required
                             value="${escapeHtml(
                                 read([
-                                    "sku",
-                                    "code",
-                                    "product_code"
+                                    'sku',
+                                    'code',
+                                    'product_code'
                                 ])
                             )}"
                         >
                     </label>
+
 
                     <label>
                         Preço
@@ -1088,15 +1134,16 @@ function openProductEditor(product) {
                             value="${escapeHtml(
                                 read(
                                     [
-                                        "price",
-                                        "sale_price",
-                                        "amount"
+                                        'price',
+                                        'sale_price',
+                                        'amount'
                                     ],
-                                    "0"
+                                    '0'
                                 )
                             )}"
                         >
                     </label>
+
 
                     <label>
                         Preço promocional
@@ -1108,13 +1155,14 @@ function openProductEditor(product) {
                             step="0.01"
                             value="${escapeHtml(
                                 read([
-                                    "promotionalPrice",
-                                    "promotional_price",
-                                    "promoPrice"
+                                    'promotionalPrice',
+                                    'promotional_price',
+                                    'promoPrice'
                                 ])
                             )}"
                         >
                     </label>
+
 
                     <label>
                         Estoque
@@ -1126,10 +1174,14 @@ function openProductEditor(product) {
                             step="1"
                             required
                             value="${escapeHtml(
-                                read(["stock"], "0")
+                                read(
+                                    ['stock'],
+                                    '0'
+                                )
                             )}"
                         >
                     </label>
+
 
                     <label>
                         Categoria
@@ -1138,10 +1190,11 @@ function openProductEditor(product) {
                             name="category"
                             type="text"
                             value="${escapeHtml(
-                                read(["category"])
+                                read(['category'])
                             )}"
                         >
                     </label>
+
 
                     <label class="admin-product-editor-full">
                         Descrição
@@ -1150,9 +1203,14 @@ function openProductEditor(product) {
                             name="description"
                             rows="5"
                         >${escapeHtml(
-                            read(["description", "details"])
+                            read([
+                                'description',
+                                'details'
+                            ])
                         )}</textarea>
+
                     </label>
+
 
                     <label class="admin-product-editor-full">
                         Imagem
@@ -1162,15 +1220,16 @@ function openProductEditor(product) {
                             type="text"
                             value="${escapeHtml(
                                 read([
-                                    "image",
-                                    "imageUrl",
-                                    "image_url"
+                                    'image',
+                                    'imageUrl',
+                                    'image_url'
                                 ])
                             )}"
                         >
                     </label>
 
                 </div>
+
 
                 <div class="admin-product-editor-actions">
 
@@ -1195,38 +1254,44 @@ function openProductEditor(product) {
         </div>
     `;
 
+
     document.body.appendChild(modal);
+
 
     const form =
         modal.querySelector(
-            "#aurea-product-editor-form"
+            '#aurea-product-editor-form'
         );
+
 
     const close =
         () => {
             modal.remove();
         };
 
-    modal
-        .querySelector(
-            ".admin-product-editor-close"
-        )
-        ?.addEventListener(
-            "click",
-            close
-        );
 
     modal
         .querySelector(
-            ".admin-product-editor-cancel"
+            '.admin-product-editor-close'
         )
         ?.addEventListener(
-            "click",
+            'click',
             close
         );
+
+
+    modal
+        .querySelector(
+            '.admin-product-editor-cancel'
+        )
+        ?.addEventListener(
+            'click',
+            close
+        );
+
 
     modal.addEventListener(
-        "click",
+        'click',
         event => {
             if (event.target === modal) {
                 close();
@@ -1234,26 +1299,32 @@ function openProductEditor(product) {
         }
     );
 
+
     form.addEventListener(
-        "submit",
+        'submit',
         async event => {
 
             event.preventDefault();
 
+
             const saveButton =
                 form.querySelector(
-                    ".admin-product-editor-save"
+                    '.admin-product-editor-save'
                 );
+
 
             if (!saveButton) {
                 return;
             }
 
+
             const formData =
                 new FormData(form);
 
+
             const numeric =
                 value => {
+
                     const parsed =
                         Number(value);
 
@@ -1262,27 +1333,28 @@ function openProductEditor(product) {
                         : 0;
                 };
 
+
             const updatedProduct = {
 
                 name:
                     String(
-                        formData.get("name") ?? ""
+                        formData.get('name') ?? ''
                     ).trim(),
 
                 sku:
                     String(
-                        formData.get("sku") ?? ""
+                        formData.get('sku') ?? ''
                     ).trim(),
 
                 price:
                     numeric(
-                        formData.get("price")
+                        formData.get('price')
                     ),
 
                 promotionalPrice:
                     numeric(
                         formData.get(
-                            "promotionalPrice"
+                            'promotionalPrice'
                         )
                     ),
 
@@ -1291,51 +1363,56 @@ function openProductEditor(product) {
                         0,
                         Math.trunc(
                             numeric(
-                                formData.get("stock")
+                                formData.get('stock')
                             )
                         )
                     ),
 
                 category:
                     String(
-                        formData.get("category") ?? ""
+                        formData.get('category') ?? ''
                     ).trim(),
 
                 description:
                     String(
-                        formData.get("description") ?? ""
+                        formData.get('description') ?? ''
                     ).trim(),
 
                 image:
                     String(
-                        formData.get("image") ?? ""
+                        formData.get('image') ?? ''
                     ).trim()
             };
 
+
             if (!updatedProduct.name) {
                 showAdminToast?.(
-                    "Informe o nome do produto.",
-                    "error"
+                    'Informe o nome do produto.',
+                    'error'
                 );
 
                 return;
             }
+
 
             if (!updatedProduct.sku) {
                 showAdminToast?.(
-                    "Informe o SKU do produto.",
-                    "error"
+                    'Informe o SKU do produto.',
+                    'error'
                 );
 
                 return;
             }
 
+
             saveButton.disabled = true;
+
             saveButton.dataset.originalText =
                 saveButton.textContent;
 
             saveButton.textContent =
-                "Salvando...";
+                'Salvando...';
+
 
             try {
 
@@ -1345,12 +1422,14 @@ function openProductEditor(product) {
                         updatedProduct
                     );
 
+
                 const products =
                     Array.isArray(
                         window.__aureaAdminProducts
                     )
                         ? window.__aureaAdminProducts
                         : [];
+
 
                 const index =
                     products.findIndex(
@@ -1359,14 +1438,15 @@ function openProductEditor(product) {
                                 item?.id ??
                                 item?.productId ??
                                 item?.docId ??
-                                ""
+                                ''
                             ) ===
                             String(productId)
                     );
 
+
                 const normalizedSaved =
                     saved &&
-                    typeof saved === "object"
+                    typeof saved === 'object'
                         ? saved
                         : {
                             ...product,
@@ -1374,7 +1454,9 @@ function openProductEditor(product) {
                             id: productId
                         };
 
+
                 if (index >= 0) {
+
                     products[index] = {
                         ...products[index],
                         ...normalizedSaved,
@@ -1383,48 +1465,46 @@ function openProductEditor(product) {
                             products[index].id ??
                             productId
                     };
+
                 } else {
+
                     products.push({
                         ...product,
                         ...normalizedSaved,
                         ...updatedProduct,
                         id: productId
                     });
+
                 }
+
 
                 window.__aureaAdminProducts =
                     products;
 
+
                 close();
 
+
                 showAdminToast?.(
-                    "Produto atualizado com sucesso.",
-                    "success"
+                    'Produto atualizado com sucesso.',
+                    'success'
                 );
 
-                if (
-                    typeof loadProducts ===
-                    "function"
-                ) {
-                    await loadProducts();
-                } else if (
-                    typeof renderProducts ===
-                    "function"
-                ) {
-                    renderProducts(products);
-                }
+
+                await load('products');
 
             } catch (error) {
 
                 console.error(
-                    "[ADMIN PRODUCTS] Erro ao salvar produto:",
+                    '[ADMIN PRODUCTS] Erro ao salvar produto:',
                     error
                 );
 
+
                 showAdminToast?.(
                     error?.message ||
-                    "Não foi possível salvar o produto.",
-                    "error"
+                    'Não foi possível salvar o produto.',
+                    'error'
                 );
 
             } finally {
@@ -1434,10 +1514,11 @@ function openProductEditor(product) {
 
                 saveButton.textContent =
                     saveButton.dataset.originalText ||
-                    "Salvar alterações";
+                    'Salvar alterações';
             }
         }
     );
+
 
     setTimeout(
         () => {
@@ -1450,6 +1531,11 @@ function openProductEditor(product) {
         0
     );
 }
+
+
+/* ============================================================
+   CATEGORIAS
+   ============================================================ */
 
 function renderCategories(content, categories) {
 
@@ -1466,36 +1552,40 @@ function renderCategories(content, categories) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Categorias cadastradas",
+                    'Categorias cadastradas',
                     formatNumber(list.length)
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Fonte',
+                    'Firebase / Firestore'
                 )}
 
             </div>
 
 
             ${table(
-                "Categorias",
+                'Categorias',
 
                 [
                     {
-                        label: "ID",
-                        keys: ["id"]
+                        label: 'ID',
+                        keys: ['id']
                     },
 
                     {
-                        label: "Nome",
+                        label: 'Nome',
                         render: row => `
                             <strong>
                                 ${escapeHtml(
                                     pick(
                                         row,
-                                        ["name", "title", "category_name"],
-                                        "Categoria"
+                                        [
+                                            'name',
+                                            'title',
+                                            'category_name'
+                                        ],
+                                        'Categoria'
                                     )
                                 )}
                             </strong>
@@ -1503,40 +1593,28 @@ function renderCategories(content, categories) {
                     },
 
                     {
-                        label: "Descrição",
-                        keys: ["description", "details"]
+                        label: 'Descrição',
+                        keys: [
+                            'description',
+                            'details'
+                        ]
                     },
 
                     {
-                        label: "Status",
+                        label: 'Status',
                         render: row =>
                             renderStatus(
                                 pick(
                                     row,
-                                    ["status", "state"],
-                                    "active"
+                                    [
+                                        'status',
+                                        'state'
+                                    ],
+                                    'active'
                                 )
                             )
                     }
-,
-                    {
-                        label: "Ações",
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        ""
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }                ],
+                ],
 
                 list
             )}
@@ -1566,7 +1644,11 @@ function renderInventory(content, inventory) {
                     Number(
                         pick(
                             row,
-                            ["stock", "inventory", "quantity"],
+                            [
+                                'stock',
+                                'inventory',
+                                'quantity'
+                            ],
                             0
                         )
                     ) || 0
@@ -1580,7 +1662,11 @@ function renderInventory(content, inventory) {
             Number(
                 pick(
                     row,
-                    ["stock", "inventory", "quantity"],
+                    [
+                        'stock',
+                        'inventory',
+                        'quantity'
+                    ],
                     0
                 )
             ) <= 5
@@ -1592,7 +1678,11 @@ function renderInventory(content, inventory) {
             Number(
                 pick(
                     row,
-                    ["stock", "inventory", "quantity"],
+                    [
+                        'stock',
+                        'inventory',
+                        'quantity'
+                    ],
                     0
                 )
             ) <= 0
@@ -1606,22 +1696,22 @@ function renderInventory(content, inventory) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Itens monitorados",
+                    'Itens monitorados',
                     formatNumber(list.length)
                 )}
 
                 ${metricCard(
-                    "Unidades em estoque",
+                    'Unidades em estoque',
                     formatNumber(totalUnits)
                 )}
 
                 ${metricCard(
-                    "Estoque baixo",
+                    'Estoque baixo',
                     formatNumber(lowStock)
                 )}
 
                 ${metricCard(
-                    "Sem estoque",
+                    'Sem estoque',
                     formatNumber(emptyStock)
                 )}
 
@@ -1629,18 +1719,22 @@ function renderInventory(content, inventory) {
 
 
             ${table(
-                "Controle de estoque",
+                'Controle de estoque',
 
                 [
                     {
-                        label: "Produto",
+                        label: 'Produto',
                         render: row => `
                             <strong>
                                 ${escapeHtml(
                                     pick(
                                         row,
-                                        ["name", "product_name", "title"],
-                                        "Produto"
+                                        [
+                                            'name',
+                                            'product_name',
+                                            'title'
+                                        ],
+                                        'Produto'
                                     )
                                 )}
                             </strong>
@@ -1648,64 +1742,60 @@ function renderInventory(content, inventory) {
                     },
 
                     {
-                        label: "SKU",
-                        keys: ["sku", "code"]
+                        label: 'SKU',
+                        keys: [
+                            'sku',
+                            'code'
+                        ]
                     },
 
                     {
-                        label: "Quantidade",
+                        label: 'Quantidade',
                         render: row =>
                             formatNumber(
                                 pick(
                                     row,
-                                    ["stock", "inventory", "quantity"],
+                                    [
+                                        'stock',
+                                        'inventory',
+                                        'quantity'
+                                    ],
                                     0
                                 )
                             )
                     },
 
                     {
-                        label: "Preço",
+                        label: 'Preço',
                         render: row =>
                             formatCurrency(
                                 pick(
                                     row,
-                                    ["price", "sale_price"],
+                                    [
+                                        'price',
+                                        'sale_price'
+                                    ],
                                     0
                                 )
                             )
                     },
 
                     {
-                        label: "Situação",
+                        label: 'Situação',
                         render: row =>
                             stockStatus(
                                 pick(
                                     row,
-                                    ["stock", "inventory", "quantity"],
+                                    [
+                                        'stock',
+                                        'inventory',
+                                        'quantity'
+                                    ],
                                     0
                                 )
                             )
                     }
-,
-                    {
-                        label: "Ações",
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        ""
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }                ],
+                ],
 
                 list
             )}
@@ -1734,31 +1824,34 @@ function renderCustomers(content, customers) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Clientes cadastrados",
+                    'Clientes cadastrados',
                     formatNumber(list.length)
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Fonte',
+                    'Firebase / Firestore'
                 )}
 
             </div>
 
 
             ${table(
-                "Base de clientes",
+                'Base de clientes',
 
                 [
                     {
-                        label: "Cliente",
+                        label: 'Cliente',
                         render: row => `
                             <strong>
                                 ${escapeHtml(
                                     pick(
                                         row,
-                                        ["name", "full_name"],
-                                        "Cliente"
+                                        [
+                                            'name',
+                                            'full_name'
+                                        ],
+                                        'Cliente'
                                     )
                                 )}
                             </strong>
@@ -1766,57 +1859,49 @@ function renderCustomers(content, customers) {
                     },
 
                     {
-                        label: "E-mail",
-                        keys: ["email"]
+                        label: 'E-mail',
+                        keys: ['email']
                     },
 
                     {
-                        label: "Telefone",
-                        keys: ["phone", "telephone", "whatsapp"]
+                        label: 'Telefone',
+                        keys: [
+                            'phone',
+                            'telephone',
+                            'whatsapp'
+                        ]
                     },
 
                     {
-                        label: "Cadastro",
+                        label: 'Cadastro',
                         render: row =>
                             formatDate(
                                 pick(
                                     row,
-                                    ["created_at", "createdAt"],
+                                    [
+                                        'created_at',
+                                        'createdAt'
+                                    ],
                                     null
                                 )
                             )
                     },
 
                     {
-                        label: "Status",
+                        label: 'Status',
                         render: row =>
                             renderStatus(
                                 pick(
                                     row,
-                                    ["status", "state"],
-                                    "active"
+                                    [
+                                        'status',
+                                        'state'
+                                    ],
+                                    'active'
                                 )
                             )
                     }
-,
-                    {
-                        label: "Ações",
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        ""
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }                ],
+                ],
 
                 list
             )}
@@ -1834,7 +1919,7 @@ function renderFinance(content, finance) {
 
     const data =
         finance &&
-        typeof finance === "object" &&
+        typeof finance === 'object' &&
         !Array.isArray(finance)
             ? finance
             : {};
@@ -1844,34 +1929,36 @@ function renderFinance(content, finance) {
         pick(
             data,
             [
-                "grossRevenue",
-                "revenue",
-                "totalRevenue",
-                "sales"
+                'grossRevenue',
+                'revenue',
+                'totalRevenue',
+                'sales'
             ],
             0
         );
+
 
     const orders =
         pick(
             data,
             [
-                "confirmedOrders",
-                "orders",
-                "totalOrders"
+                'confirmedOrders',
+                'orders',
+                'totalOrders'
             ],
             0
         );
+
 
     const average =
         pick(
             data,
             [
-                "averageTicket",
-                "average_ticket",
-                "ticket"
+                'averageTicket',
+                'average_ticket',
+                'ticket'
             ],
-            orders > 0
+            Number(orders) > 0
                 ? Number(revenue) / Number(orders)
                 : 0
         );
@@ -1884,23 +1971,23 @@ function renderFinance(content, finance) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Faturamento",
+                    'Faturamento',
                     formatCurrency(revenue)
                 )}
 
                 ${metricCard(
-                    "Pedidos",
+                    'Pedidos',
                     formatNumber(orders)
                 )}
 
                 ${metricCard(
-                    "Ticket médio",
+                    'Ticket médio',
                     formatCurrency(average)
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Fonte',
+                    'Firebase / Firestore'
                 )}
 
             </div>
@@ -1911,6 +1998,7 @@ function renderFinance(content, finance) {
                 <div class="module-panel-header">
 
                     <div>
+
                         <span class="module-eyebrow">
                             VISÃO FINANCEIRA
                         </span>
@@ -1983,64 +2071,203 @@ function renderFinance(content, finance) {
 
         </div>
     `;
+}
+
 
 /* ============================================================
    CUPONS
    ============================================================ */
 
-function renderCoupons(content, coupons) {
-    const list = Array.isArray(coupons)
-        ? coupons
-        : [];
+function couponId(coupon) {
+    return String(
+        coupon?.id ??
+        coupon?.couponId ??
+        coupon?.docId ??
+        ''
+    );
+}
 
-    const activeCount = list.filter(row => {
-        const status = String(
+
+function couponIsActive(coupon) {
+    if (
+        typeof coupon?.active === 'boolean'
+    ) {
+        return coupon.active;
+    }
+
+    const status =
+        String(
             pick(
-                row,
-                ["status", "state"],
-                "active"
+                coupon,
+                [
+                    'status',
+                    'state'
+                ],
+                'active'
             )
-        ).toLowerCase();
+        )
+            .trim()
+            .toLowerCase();
 
-        return (
-            status === "active" ||
-            status === "ativo"
+    return (
+        status === 'active' ||
+        status === 'ativo'
+    );
+}
+
+
+function couponType(coupon) {
+    const type =
+        String(
+            pick(
+                coupon,
+                [
+                    'type',
+                    'discountType',
+                    'discount_type'
+                ],
+                'percentage'
+            )
+        )
+            .trim()
+            .toLowerCase();
+
+    return (
+        type === 'fixed' ||
+        type === 'valor_fixo' ||
+        type === 'fixed_amount'
+    )
+        ? 'fixed'
+        : 'percentage';
+}
+
+
+function couponValue(coupon) {
+    return Number(
+        pick(
+            coupon,
+            [
+                'value',
+                'discount',
+                'discount_value',
+                'percentage'
+            ],
+            0
+        )
+    ) || 0;
+}
+
+
+function couponUsageCount(coupon) {
+    return Number(
+        pick(
+            coupon,
+            [
+                'usageCount',
+                'usage_count',
+                'uses',
+                'used',
+                'uses_count'
+            ],
+            0
+        )
+    ) || 0;
+}
+
+
+function couponUsageLimit(coupon) {
+    const value =
+        pick(
+            coupon,
+            [
+                'usageLimit',
+                'usage_limit',
+                'max_uses',
+                'limit'
+            ],
+            0
         );
-    }).length;
+
+    return Number(value) || 0;
+}
+
+
+function renderCoupons(content, coupons) {
+
+    const list =
+        Array.isArray(coupons)
+            ? coupons
+            : [];
+
+
+    const active =
+        list.filter(
+            couponIsActive
+        ).length;
+
+
+    const inactive =
+        list.length - active;
+
+
+    const totalUses =
+        list.reduce(
+            (sum, coupon) =>
+                sum +
+                couponUsageCount(coupon),
+            0
+        );
+
 
     content.outerHTML = `
+
         <div class="admin-module-data">
 
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Cupons cadastrados",
+                    'Cupons cadastrados',
                     formatNumber(list.length)
                 )}
 
                 ${metricCard(
-                    "Cupons ativos",
-                    formatNumber(activeCount)
+                    'Cupons ativos',
+                    formatNumber(active)
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Cupons inativos',
+                    formatNumber(inactive)
+                )}
+
+                ${metricCard(
+                    'Usos realizados',
+                    formatNumber(totalUses)
                 )}
 
             </div>
 
-            <div class="admin-panel">
 
-                <div class="admin-panel-header">
+            <section class="module-panel">
+
+                <div class="module-panel-header">
 
                     <div>
-                        <h3>Campanhas e cupons</h3>
+
+                        <span class="module-eyebrow">
+                            NEFER ADMIN
+                        </span>
+
+                        <h3>
+                            Campanhas e cupons
+                        </h3>
 
                         <p>
-                            Crie e edite seus cupons diretamente no painel.
+                            Crie, edite, ative, desative e exclua cupons.
                         </p>
+
                     </div>
+
 
                     <button
                         type="button"
@@ -2052,211 +2279,337 @@ function renderCoupons(content, coupons) {
 
                 </div>
 
+
                 ${
-                    list.length === 0
+                    list.length
                         ? `
-                            <div class="admin-empty">
-                                Nenhum cupom cadastrado.
+                            <div class="admin-table-wrap">
+
+                                <table class="admin-table">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Tipo</th>
+                                            <th>Valor</th>
+                                            <th>Mínimo</th>
+                                            <th>Uso</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                        ${list.map(coupon => {
+
+                                            const id =
+                                                couponId(coupon);
+
+                                            const code =
+                                                pick(
+                                                    coupon,
+                                                    [
+                                                        'code',
+                                                        'coupon_code',
+                                                        'couponCode'
+                                                    ],
+                                                    '—'
+                                                );
+
+                                            const type =
+                                                couponType(coupon);
+
+                                            const value =
+                                                couponValue(coupon);
+
+                                            const minimumOrder =
+                                                Number(
+                                                    pick(
+                                                        coupon,
+                                                        [
+                                                            'minimumOrder',
+                                                            'minimum_order',
+                                                            'minOrder',
+                                                            'min_order'
+                                                        ],
+                                                        0
+                                                    )
+                                                ) || 0;
+
+                                            const uses =
+                                                couponUsageCount(
+                                                    coupon
+                                                );
+
+                                            const usageLimit =
+                                                couponUsageLimit(
+                                                    coupon
+                                                );
+
+                                            const activeStatus =
+                                                couponIsActive(
+                                                    coupon
+                                                );
+
+                                            return `
+
+                                                <tr>
+
+                                                    <td>
+                                                        <strong>
+                                                            ${escapeHtml(
+                                                                String(code)
+                                                            )}
+                                                        </strong>
+                                                    </td>
+
+
+                                                    <td>
+                                                        ${
+                                                            type === 'percentage'
+                                                                ? 'Percentual'
+                                                                : 'Valor fixo'
+                                                        }
+                                                    </td>
+
+
+                                                    <td>
+                                                        ${
+                                                            type === 'percentage'
+                                                                ? `${escapeHtml(String(value))}%`
+                                                                : formatCurrency(value)
+                                                        }
+                                                    </td>
+
+
+                                                    <td>
+                                                        ${formatCurrency(
+                                                            minimumOrder
+                                                        )}
+                                                    </td>
+
+
+                                                    <td>
+                                                        ${
+                                                            usageLimit > 0
+                                                                ? `${formatNumber(uses)} / ${formatNumber(usageLimit)}`
+                                                                : `${formatNumber(uses)} / ilimitado`
+                                                        }
+                                                    </td>
+
+
+                                                    <td>
+                                                        ${
+                                                            activeStatus
+                                                                ? renderStatus('active')
+                                                                : renderStatus('inactive')
+                                                        }
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        <div class="table-actions">
+
+                                                            <button
+                                                                type="button"
+                                                                class="admin-button admin-coupon-edit"
+                                                                data-coupon-id="${escapeHtml(id)}"
+                                                            >
+                                                                Editar
+                                                            </button>
+
+
+                                                            <button
+                                                                type="button"
+                                                                class="admin-button admin-coupon-toggle"
+                                                                data-coupon-id="${escapeHtml(id)}"
+                                                                data-active="${activeStatus ? 'true' : 'false'}"
+                                                            >
+                                                                ${
+                                                                    activeStatus
+                                                                        ? 'Desativar'
+                                                                        : 'Ativar'
+                                                                }
+                                                            </button>
+
+
+                                                            <button
+                                                                type="button"
+                                                                class="admin-button admin-coupon-delete"
+                                                                data-coupon-id="${escapeHtml(id)}"
+                                                            >
+                                                                Excluir
+                                                            </button>
+
+                                                        </div>
+
+                                                    </td>
+
+                                                </tr>
+                                            `;
+                                        }).join('')}
+
+                                    </tbody>
+
+                                </table>
+
                             </div>
                         `
-                        : table(
-                            "Campanhas e cupons",
-                            [
-                                {
-                                    label: "Código",
-
-                                    render: row => `
-                                        <strong>
-                                            ${escapeHtml(
-                                                String(
-                                                    pick(
-                                                        row,
-                                                        [
-                                                            "code",
-                                                            "coupon_code",
-                                                            "couponCode"
-                                                        ],
-                                                        "—"
-                                                    )
-                                                )
-                                            )}
-                                        </strong>
-                                    `
-                                },
-
-                                {
-                                    label: "Desconto",
-
-                                    render: row => {
-                                        const value =
-                                            pick(
-                                                row,
-                                                [
-                                                    "discount",
-                                                    "discount_value",
-                                                    "percentage",
-                                                    "value"
-                                                ],
-                                                0
-                                            );
-
-                                        const type =
-                                            String(
-                                                pick(
-                                                    row,
-                                                    [
-                                                        "discountType",
-                                                        "discount_type",
-                                                        "type"
-                                                    ],
-                                                    "percentage"
-                                                )
-                                            ).toLowerCase();
-
-                                        if (
-                                            type.includes(
-                                                "percent"
-                                            ) ||
-                                            type === "%"
-                                        ) {
-                                            return `${escapeHtml(
-                                                String(value)
-                                            )}%`;
-                                        }
-
-                                        return formatCurrency(
-                                            value
-                                        );
-                                    }
-                                },
-
-                                {
-                                    label: "Status",
-
-                                    render: row =>
-                                        renderStatus(
-                                            pick(
-                                                row,
-                                                [
-                                                    "status",
-                                                    "state"
-                                                ],
-                                                "active"
-                                            )
-                                        )
-                                },
-
-                                {
-                                    label: "Validade",
-
-                                    render: row =>
-                                        formatDate(
-                                            pick(
-                                                row,
-                                                [
-                                                    "expiresAt",
-                                                    "expires_at",
-                                                    "expirationDate",
-                                                    "expiration_date",
-                                                    "validUntil",
-                                                    "valid_until"
-                                                ],
-                                                null
-                                            )
-                                        )
-                                },
-
-                                {
-                                    label: "Ações",
-
-                                    render: row => `
-                                        <div class="admin-actions">
-
-                                            <button
-                                                type="button"
-                                                class="admin-product-edit admin-coupon-edit"
-                                                data-coupon-id="${escapeHtml(
-                                                    String(
-                                                        row.id ||
-                                                        row.couponId ||
-                                                        ""
-                                                    )
-                                                )}"
-                                            >
-                                                Editar
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                class="admin-coupon-delete"
-                                                data-coupon-id="${escapeHtml(
-                                                    String(
-                                                        row.id ||
-                                                        row.couponId ||
-                                                        ""
-                                                    )
-                                                )}"
-                                            >
-                                                Excluir
-                                            </button>
-
-                                        </div>
-                                    `
-                                }
-                            ],
-                            list
+                        : emptyState(
+                            'Nenhum cupom cadastrado no Firebase / Firestore.'
                         )
                 }
 
-            </div>
+            </section>
+
         </div>
     `;
 
-    const newButton =
-        document.getElementById(
-            "admin-new-coupon"
+
+    document
+        .getElementById(
+            'admin-new-coupon'
+        )
+        ?.addEventListener(
+            'click',
+            () => openCouponEditor()
         );
 
-    if (newButton) {
-        newButton.addEventListener(
-            "click",
-            () => openCouponEditor(null)
-        );
-    }
 
     document
         .querySelectorAll(
-            ".admin-coupon-edit"
+            '.admin-coupon-edit'
         )
         .forEach(button => {
+
             button.addEventListener(
-                "click",
+                'click',
                 () => {
+
                     const id =
                         button.dataset.couponId;
 
                     const coupon =
                         list.find(
-                            row =>
-                                String(row.id) ===
+                            item =>
+                                couponId(item) ===
                                 String(id)
                         );
 
-                    if (coupon) {
-                        openCouponEditor(coupon);
+                    if (!coupon) {
+
+                        showAdminToast?.(
+                            'Cupom não encontrado.',
+                            'error'
+                        );
+
+                        return;
+                    }
+
+                    openCouponEditor(
+                        coupon
+                    );
+                }
+            );
+        });
+
+
+    document
+        .querySelectorAll(
+            '.admin-coupon-toggle'
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                'click',
+                async () => {
+
+                    const id =
+                        button.dataset.couponId;
+
+                    const currentActive =
+                        button.dataset.active === 'true';
+
+
+                    if (!id) {
+                        return;
+                    }
+
+
+                    button.disabled = true;
+
+
+                    try {
+
+                        if (
+                            !adminApi ||
+                            typeof adminApi.updateCoupon !== 'function'
+                        ) {
+                            throw new Error(
+                                'A API de cupons não possui a operação de atualização.'
+                            );
+                        }
+
+
+                        await adminApi.updateCoupon(
+                            id,
+                            {
+                                active:
+                                    !currentActive
+                            }
+                        );
+
+
+                        showAdminToast?.(
+                            currentActive
+                                ? 'Cupom desativado.'
+                                : 'Cupom ativado.',
+                            'success'
+                        );
+
+
+                        await load(
+                            'coupons'
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            '[NEFER COUPONS] Erro ao alterar status:',
+                            error
+                        );
+
+
+                        showAdminToast?.(
+                            error?.message ||
+                            'Não foi possível alterar o status do cupom.',
+                            'error'
+                        );
+
+
+                        button.disabled =
+                            false;
                     }
                 }
             );
         });
 
+
     document
         .querySelectorAll(
-            ".admin-coupon-delete"
+            '.admin-coupon-delete'
         )
         .forEach(button => {
+
             button.addEventListener(
-                "click",
+                'click',
                 async () => {
+
                     const id =
                         button.dataset.couponId;
 
@@ -2264,100 +2617,159 @@ function renderCoupons(content, coupons) {
                         return;
                     }
 
+
                     const confirmed =
                         window.confirm(
-                            "Excluir este cupom?"
+                            'Excluir este cupom? Esta ação não poderá ser desfeita.'
                         );
+
 
                     if (!confirmed) {
                         return;
                     }
 
+
+                    button.disabled = true;
+
+
                     try {
+
+                        if (
+                            !adminApi ||
+                            typeof adminApi.deleteCoupon !== 'function'
+                        ) {
+                            throw new Error(
+                                'A API de cupons não possui a operação de exclusão.'
+                            );
+                        }
+
+
                         await adminApi.deleteCoupon(
                             id
                         );
 
-                        showAdminToast(
-                            "Cupom excluído.",
-                            "success"
+
+                        showAdminToast?.(
+                            'Cupom excluído com sucesso.',
+                            'success'
                         );
 
-                        await loadModule(
-                            "coupons"
+
+                        await load(
+                            'coupons'
                         );
+
                     } catch (error) {
+
                         console.error(
-                            "[COUPON DELETE]",
+                            '[NEFER COUPONS] Erro ao excluir:',
                             error
                         );
 
-                        showAdminToast(
-                            error.message ||
-                            "Erro ao excluir cupom.",
-                            "error"
+
+                        showAdminToast?.(
+                            error?.message ||
+                            'Não foi possível excluir o cupom.',
+                            'error'
                         );
+
+
+                        button.disabled =
+                            false;
                     }
                 }
             );
         });
 }
 
+
 function openCouponEditor(coupon = null) {
-    const editing = Boolean(coupon);
+
+    const editing =
+        Boolean(coupon);
+
 
     const oldModal =
         document.getElementById(
-            "nefer-coupon-editor"
+            'nefer-coupon-editor'
         );
+
 
     if (oldModal) {
         oldModal.remove();
     }
 
+
+    const type =
+        couponType(
+            coupon || {}
+        );
+
+
+    const active =
+        couponIsActive(
+            coupon || {}
+        );
+
+
     const modal =
-        document.createElement("div");
+        document.createElement('div');
+
 
     modal.id =
-        "nefer-coupon-editor";
+        'nefer-coupon-editor';
+
 
     modal.className =
-        "admin-modal-overlay";
+        'admin-modal-overlay';
+
 
     modal.innerHTML = `
-        <div class="admin-modal">
+
+        <div
+            class="admin-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="coupon-editor-title"
+        >
 
             <div class="admin-modal-header">
 
                 <div>
-                    <h2>
+
+                    <h2 id="coupon-editor-title">
                         ${
                             editing
-                                ? "Editar cupom"
-                                : "Novo cupom"
+                                ? 'Editar cupom'
+                                : 'Novo cupom'
                         }
                     </h2>
 
                     <p>
                         Dados comerciais do cupom.
                     </p>
+
                 </div>
+
 
                 <button
                     type="button"
                     class="admin-modal-close"
                     id="coupon-editor-close"
+                    aria-label="Fechar"
                 >
                     ×
                 </button>
 
             </div>
 
+
             <form id="coupon-editor-form">
 
                 <div class="admin-form-grid">
 
                     <label>
+
                         <span>Código</span>
 
                         <input
@@ -2365,32 +2777,34 @@ function openCouponEditor(coupon = null) {
                             type="text"
                             required
                             maxlength="50"
+                            autocomplete="off"
                             value="${escapeHtml(
                                 String(
                                     coupon?.code ||
                                     coupon?.coupon_code ||
-                                    ""
+                                    ''
                                 )
                             )}"
                         >
+
                     </label>
 
+
                     <label>
+
                         <span>Tipo de desconto</span>
 
                         <select
-                            id="coupon-discount-type"
+                            id="coupon-type"
+                            required
                         >
+
                             <option
                                 value="percentage"
                                 ${
-                                    String(
-                                        coupon?.discountType ||
-                                        coupon?.discount_type ||
-                                        "percentage"
-                                    ) === "percentage"
-                                        ? "selected"
-                                        : ""
+                                    type === 'percentage'
+                                        ? 'selected'
+                                        : ''
                                 }
                             >
                                 Percentual
@@ -2399,41 +2813,73 @@ function openCouponEditor(coupon = null) {
                             <option
                                 value="fixed"
                                 ${
-                                    String(
-                                        coupon?.discountType ||
-                                        coupon?.discount_type ||
-                                        ""
-                                    ) === "fixed"
-                                        ? "selected"
-                                        : ""
+                                    type === 'fixed'
+                                        ? 'selected'
+                                        : ''
                                 }
                             >
                                 Valor fixo
                             </option>
+
                         </select>
+
                     </label>
 
+
                     <label>
-                        <span>Desconto</span>
+
+                        <span>Valor do desconto</span>
 
                         <input
-                            id="coupon-discount"
+                            id="coupon-value"
                             type="number"
                             min="0"
                             step="0.01"
                             required
                             value="${escapeHtml(
                                 String(
-                                    coupon?.discount ??
-                                    coupon?.discount_value ??
-                                    coupon?.value ??
-                                    0
+                                    couponValue(
+                                        coupon || {}
+                                    )
                                 )
                             )}"
                         >
+
                     </label>
 
+
                     <label>
+
+                        <span>Pedido mínimo</span>
+
+                        <input
+                            id="coupon-minimum-order"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value="${escapeHtml(
+                                String(
+                                    Number(
+                                        pick(
+                                            coupon || {},
+                                            [
+                                                'minimumOrder',
+                                                'minimum_order',
+                                                'minOrder',
+                                                'min_order'
+                                            ],
+                                            0
+                                        )
+                                    ) || 0
+                                )
+                            )}"
+                        >
+
+                    </label>
+
+
+                    <label>
+
                         <span>Limite de uso</span>
 
                         <input
@@ -2443,102 +2889,158 @@ function openCouponEditor(coupon = null) {
                             step="1"
                             value="${escapeHtml(
                                 String(
-                                    coupon?.usageLimit ??
-                                    coupon?.usage_limit ??
-                                    ""
+                                    couponUsageLimit(
+                                        coupon || {}
+                                    )
                                 )
                             )}"
                         >
+
+                        <small>
+                            0 = uso ilimitado
+                        </small>
+
                     </label>
 
-                    <label>
-                        <span>Validade</span>
-
-                        <input
-                            id="coupon-expires-at"
-                            type="date"
-                            value="${escapeHtml(
-                                String(
-                                    coupon?.expiresAt ||
-                                    coupon?.expires_at ||
-                                    ""
-                                ).slice(0, 10)
-                            )}"
-                        >
-                    </label>
 
                     <label>
+
                         <span>Status</span>
 
                         <select
-                            id="coupon-status"
+                            id="coupon-active"
                         >
+
                             <option
-                                value="active"
+                                value="true"
                                 ${
-                                    String(
-                                        coupon?.status ||
-                                        "active"
-                                    ) === "active"
-                                        ? "selected"
-                                        : ""
+                                    active
+                                        ? 'selected'
+                                        : ''
                                 }
                             >
                                 Ativo
                             </option>
 
                             <option
-                                value="inactive"
+                                value="false"
                                 ${
-                                    String(
-                                        coupon?.status ||
-                                        ""
-                                    ) === "inactive"
-                                        ? "selected"
-                                        : ""
+                                    !active
+                                        ? 'selected'
+                                        : ''
                                 }
                             >
                                 Inativo
                             </option>
+
                         </select>
+
                     </label>
 
+
                     <label>
-                        <span>Afiliado / Influenciador</span>
+
+                        <span>Influenciador</span>
 
                         <input
-                            id="coupon-affiliate"
+                            id="coupon-influencer-name"
                             type="text"
                             maxlength="120"
                             value="${escapeHtml(
                                 String(
-                                    coupon?.affiliateName ||
-                                    coupon?.affiliate_name ||
-                                    ""
+                                    pick(
+                                        coupon || {},
+                                        [
+                                            'influencerName',
+                                            'influencer_name'
+                                        ],
+                                        ''
+                                    )
                                 )
                             )}"
                         >
+
                     </label>
 
+
                     <label>
-                        <span>Comissão (%)</span>
+
+                        <span>ID do influenciador</span>
 
                         <input
-                            id="coupon-commission"
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="0.01"
+                            id="coupon-influencer-id"
+                            type="text"
+                            maxlength="120"
                             value="${escapeHtml(
                                 String(
-                                    coupon?.commission ||
-                                    0
+                                    pick(
+                                        coupon || {},
+                                        [
+                                            'influencerId',
+                                            'influencer_id'
+                                        ],
+                                        ''
+                                    )
                                 )
                             )}"
                         >
+
+                    </label>
+
+
+                    <label
+                        class="admin-form-full"
+                    >
+
+                        <span>Descrição</span>
+
+                        <textarea
+                            id="coupon-description"
+                            rows="4"
+                            maxlength="500"
+                        >${escapeHtml(
+                            String(
+                                pick(
+                                    coupon || {},
+                                    [
+                                        'description'
+                                    ],
+                                    ''
+                                )
+                            )
+                        )}</textarea>
+
                     </label>
 
                 </div>
+
+
+                ${
+                    editing
+                        ? `
+                            <div class="admin-operation-grid">
+
+                                <article class="admin-operation-card">
+
+                                    <span>
+                                        Usos realizados
+                                    </span>
+
+                                    <strong>
+                                        ${formatNumber(
+                                            couponUsageCount(
+                                                coupon
+                                            )
+                                        )}
+                                    </strong>
+
+                                </article>
+
+                            </div>
+                        `
+                        : ''
+                }
+
 
                 <div class="admin-modal-footer">
 
@@ -2550,14 +3052,16 @@ function openCouponEditor(coupon = null) {
                         Cancelar
                     </button>
 
+
                     <button
                         type="submit"
                         class="admin-primary-button"
+                        id="coupon-editor-save"
                     >
                         ${
                             editing
-                                ? "Salvar alterações"
-                                : "Criar cupom"
+                                ? 'Salvar alterações'
+                                : 'Criar cupom'
                         }
                     </button>
 
@@ -2568,146 +3072,392 @@ function openCouponEditor(coupon = null) {
         </div>
     `;
 
-    document.body.appendChild(modal);
 
-    const close = () => {
-        modal.remove();
-    };
+    document.body.appendChild(
+        modal
+    );
 
-    document
-        .getElementById(
-            "coupon-editor-close"
+
+    const close =
+        () => {
+            modal.remove();
+        };
+
+
+    modal
+        .querySelector(
+            '#coupon-editor-close'
         )
         ?.addEventListener(
-            "click",
+            'click',
             close
         );
 
-    document
-        .getElementById(
-            "coupon-editor-cancel"
+
+    modal
+        .querySelector(
+            '#coupon-editor-cancel'
         )
         ?.addEventListener(
-            "click",
+            'click',
             close
         );
 
-    document
-        .getElementById(
-            "coupon-editor-form"
-        )
-        ?.addEventListener(
-            "submit",
-            async event => {
-                event.preventDefault();
 
-                const data = {
-                    code:
-                        document
-                            .getElementById(
-                                "coupon-code"
-                            )
-                            .value
-                            .trim()
-                            .toUpperCase(),
+    modal.addEventListener(
+        'click',
+        event => {
 
-                    discountType:
-                        document
-                            .getElementById(
-                                "coupon-discount-type"
-                            )
-                            .value,
+            if (
+                event.target ===
+                modal
+            ) {
+                close();
+            }
+        }
+    );
 
-                    discount:
-                        Number(
-                            document
-                                .getElementById(
-                                    "coupon-discount"
-                                )
-                                .value
-                        ),
 
-                    usageLimit:
-                        document
-                            .getElementById(
-                                "coupon-usage-limit"
-                            )
-                            .value,
+    const form =
+        modal.querySelector(
+            '#coupon-editor-form'
+        );
 
-                    expiresAt:
-                        document
-                            .getElementById(
-                                "coupon-expires-at"
-                            )
-                            .value,
 
-                    status:
-                        document
-                            .getElementById(
-                                "coupon-status"
-                            )
-                            .value,
+    form?.addEventListener(
+        'submit',
+        async event => {
 
-                    affiliateName:
-                        document
-                            .getElementById(
-                                "coupon-affiliate"
-                            )
-                            .value
-                            .trim(),
+            event.preventDefault();
 
-                    commission:
-                        Number(
-                            document
-                                .getElementById(
-                                    "coupon-commission"
-                                )
-                                .value
+
+            const saveButton =
+                modal.querySelector(
+                    '#coupon-editor-save'
+                );
+
+
+            if (!saveButton) {
+                return;
+            }
+
+
+            const code =
+                String(
+                    modal
+                        .querySelector(
+                            '#coupon-code'
                         )
-                };
+                        ?.value ||
+                    ''
+                )
+                    .trim()
+                    .toUpperCase();
 
-                try {
-                    if (editing) {
-                        await adminApi.updateCoupon(
-                            coupon.id,
-                            data
-                        );
-                    } else {
-                        await adminApi.createCoupon(
-                            data
+
+            const couponTypeValue =
+                String(
+                    modal
+                        .querySelector(
+                            '#coupon-type'
+                        )
+                        ?.value ||
+                    'percentage'
+                );
+
+
+            const value =
+                Number(
+                    modal
+                        .querySelector(
+                            '#coupon-value'
+                        )
+                        ?.value ||
+                    0
+                );
+
+
+            const minimumOrder =
+                Number(
+                    modal
+                        .querySelector(
+                            '#coupon-minimum-order'
+                        )
+                        ?.value ||
+                    0
+                );
+
+
+            const usageLimit =
+                Math.max(
+                    0,
+                    Math.trunc(
+                        Number(
+                            modal
+                                .querySelector(
+                                    '#coupon-usage-limit'
+                                )
+                                ?.value ||
+                            0
+                        )
+                    )
+                );
+
+
+            const active =
+                modal
+                    .querySelector(
+                        '#coupon-active'
+                    )
+                    ?.value === 'true';
+
+
+            const influencerName =
+                String(
+                    modal
+                        .querySelector(
+                            '#coupon-influencer-name'
+                        )
+                        ?.value ||
+                    ''
+                ).trim();
+
+
+            const influencerId =
+                String(
+                    modal
+                        .querySelector(
+                            '#coupon-influencer-id'
+                        )
+                        ?.value ||
+                    ''
+                ).trim();
+
+
+            const description =
+                String(
+                    modal
+                        .querySelector(
+                            '#coupon-description'
+                        )
+                        ?.value ||
+                    ''
+                ).trim();
+
+
+            if (!code) {
+
+                showAdminToast?.(
+                    'Informe o código do cupom.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            if (
+                ![
+                    'percentage',
+                    'fixed'
+                ].includes(
+                    couponTypeValue
+                )
+            ) {
+
+                showAdminToast?.(
+                    'Tipo de desconto inválido.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            if (
+                !Number.isFinite(value) ||
+                value <= 0
+            ) {
+
+                showAdminToast?.(
+                    'Informe um valor de desconto maior que zero.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            if (
+                couponTypeValue ===
+                'percentage' &&
+                value > 100
+            ) {
+
+                showAdminToast?.(
+                    'O desconto percentual não pode ser maior que 100%.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            if (
+                !Number.isFinite(
+                    minimumOrder
+                ) ||
+                minimumOrder < 0
+            ) {
+
+                showAdminToast?.(
+                    'O pedido mínimo não pode ser negativo.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            saveButton.disabled =
+                true;
+
+            saveButton.textContent =
+                'Salvando...';
+
+
+            const payload = {
+
+                code,
+
+                type:
+                    couponTypeValue,
+
+                value,
+
+                minimumOrder,
+
+                usageLimit,
+
+                active,
+
+                description,
+
+                influencerId,
+
+                influencerName
+            };
+
+
+            try {
+
+                if (
+                    !adminApi
+                ) {
+                    throw new Error(
+                        'AdminAPI não está disponível.'
+                    );
+                }
+
+
+                if (
+                    editing
+                ) {
+
+                    if (
+                        typeof adminApi.updateCoupon !==
+                        'function'
+                    ) {
+                        throw new Error(
+                            'A API de cupons não possui atualização.'
                         );
                     }
 
-                    close();
 
-                    showAdminToast(
-                        editing
-                            ? "Cupom atualizado."
-                            : "Cupom criado.",
-                        "success"
+                    await adminApi.updateCoupon(
+                        couponId(coupon),
+                        payload
                     );
 
-                    await loadModule(
-                        "coupons"
-                    );
-                } catch (error) {
-                    console.error(
-                        "[COUPON SAVE]",
-                        error
+
+                    showAdminToast?.(
+                        'Cupom atualizado com sucesso.',
+                        'success'
                     );
 
-                    showAdminToast(
-                        error.message ||
-                        "Erro ao salvar cupom.",
-                        "error"
+                } else {
+
+                    if (
+                        typeof adminApi.createCoupon !==
+                        'function'
+                    ) {
+                        throw new Error(
+                            'A API de cupons não possui criação.'
+                        );
+                    }
+
+
+                    await adminApi.createCoupon(
+                        payload
+                    );
+
+
+                    showAdminToast?.(
+                        'Cupom criado com sucesso.',
+                        'success'
                     );
                 }
+
+
+                close();
+
+
+                await load(
+                    'coupons'
+                );
+
+            } catch (error) {
+
+                console.error(
+                    '[NEFER COUPONS] Erro ao salvar:',
+                    error
+                );
+
+
+                showAdminToast?.(
+                    error?.message ||
+                    'Não foi possível salvar o cupom.',
+                    'error'
+                );
+
+
+                saveButton.disabled =
+                    false;
+
+                saveButton.textContent =
+                    editing
+                        ? 'Salvar alterações'
+                        : 'Criar cupom';
             }
-        );
+        }
+    );
+
+
+    setTimeout(
+        () => {
+            modal
+                .querySelector(
+                    '#coupon-code'
+                )
+                ?.focus();
+        },
+        0
+    );
 }
 
+
 /* ============================================================
-   LOGISTICA
+   LOGÍSTICA
    ============================================================ */
 
 function renderLogistics(content, shipments) {
@@ -2725,26 +3475,29 @@ function renderLogistics(content, shipments) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Envios registrados",
+                    'Envios registrados',
                     formatNumber(list.length)
                 )}
 
                 ${metricCard(
-                    "Pendentes",
+                    'Pendentes',
                     formatNumber(
                         list.filter(row =>
                             [
-                                "pending",
-                                "processing",
-                                "ready",
-                                "awaiting_shipment",
-                                "to_ship"
+                                'pending',
+                                'processing',
+                                'ready',
+                                'awaiting_shipment',
+                                'to_ship'
                             ].includes(
                                 String(
                                     pick(
                                         row,
-                                        ["status", "state"],
-                                        ""
+                                        [
+                                            'status',
+                                            'state'
+                                        ],
+                                        ''
                                     )
                                 ).toLowerCase()
                             )
@@ -2753,79 +3506,78 @@ function renderLogistics(content, shipments) {
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Fonte',
+                    'Firebase / Firestore'
                 )}
 
             </div>
 
 
             ${table(
-                "Expedi��o e rastreamento",
+                'Expedição e rastreamento',
 
                 [
                     {
-                        label: "ID",
-                        keys: ["id"]
+                        label: 'ID',
+                        keys: ['id']
                     },
 
                     {
-                        label: "Pedido",
-                        keys: ["order_id", "order_number"]
+                        label: 'Pedido',
+                        keys: [
+                            'order_id',
+                            'order_number'
+                        ]
                     },
 
                     {
-                        label: "Transportadora",
-                        keys: ["carrier", "shipping_carrier"]
+                        label: 'Transportadora',
+                        keys: [
+                            'carrier',
+                            'shipping_carrier'
+                        ]
                     },
 
                     {
-                        label: "Rastreamento",
-                        keys: ["tracking_code", "tracking_number"]
+                        label: 'Rastreamento',
+                        keys: [
+                            'tracking_code',
+                            'tracking_number'
+                        ]
                     },
 
                     {
-                        label: "Status",
+                        label: 'Status',
                         render: row =>
                             renderStatus(
                                 pick(
                                     row,
-                                    ["status", "state"],
-                                    "pending"
+                                    [
+                                        'status',
+                                        'state'
+                                    ],
+                                    'pending'
                                 )
                             )
                     },
 
                     {
-                        label: "Atualização",
+                        label: 'Atualização',
                         render: row =>
                             formatDate(
                                 pick(
                                     row,
-                                    ["updated_at", "created_at"],
+                                    [
+                                        'updated_at',
+                                        'updatedAt',
+                                        'created_at',
+                                        'createdAt'
+                                    ],
                                     null
                                 )
                             )
                     }
-,
-                    {
-                        label: "Ações",
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        ""
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }                ],
+                ],
 
                 list
             )}
@@ -2836,14 +3588,14 @@ function renderLogistics(content, shipments) {
 
 
 /* ============================================================
-   RELATORIOS
+   RELATÓRIOS
    ============================================================ */
 
 function renderReports(content, reports) {
 
     const data =
         reports &&
-        typeof reports === "object" &&
+        typeof reports === 'object' &&
         !Array.isArray(reports)
             ? reports
             : {};
@@ -2872,40 +3624,40 @@ function renderReports(content, reports) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Faturamento",
+                    'Faturamento',
                     formatCurrency(
                         pick(
                             metrics,
-                            ["revenue"],
+                            ['revenue'],
                             0
                         )
                     )
                 )}
 
                 ${metricCard(
-                    "Pedidos",
+                    'Pedidos',
                     formatNumber(
                         pick(
                             metrics,
-                            ["orders"],
+                            ['orders'],
                             0
                         )
                     )
                 )}
 
                 ${metricCard(
-                    "Ticket médio",
+                    'Ticket médio',
                     formatCurrency(
                         pick(
                             metrics,
-                            ["averageTicket"],
+                            ['averageTicket'],
                             0
                         )
                     )
                 )}
 
                 ${metricCard(
-                    "Dias registrados",
+                    'Dias registrados',
                     formatNumber(sales.length)
                 )}
 
@@ -2913,40 +3665,49 @@ function renderReports(content, reports) {
 
 
             ${table(
-                "Evolução das vendas",
+                'Evolução das vendas',
 
                 [
                     {
-                        label: "Data",
+                        label: 'Data',
                         render: row =>
                             formatDate(
                                 pick(
                                     row,
-                                    ["day", "date"],
+                                    [
+                                        'day',
+                                        'date'
+                                    ],
                                     null
                                 )
                             )
                     },
 
                     {
-                        label: "Pedidos",
+                        label: 'Pedidos',
                         render: row =>
                             formatNumber(
                                 pick(
                                     row,
-                                    ["orders", "count"],
+                                    [
+                                        'orders',
+                                        'count'
+                                    ],
                                     0
                                 )
                             )
                     },
 
                     {
-                        label: "Faturamento",
+                        label: 'Faturamento',
                         render: row =>
                             formatCurrency(
                                 pick(
                                     row,
-                                    ["revenue", "total"],
+                                    [
+                                        'revenue',
+                                        'total'
+                                    ],
                                     0
                                 )
                             )
@@ -2958,56 +3719,66 @@ function renderReports(content, reports) {
 
 
             ${table(
-               "Pedidos recentes",
+                'Pedidos recentes',
 
-[
-    {
-        label: "Pedido",
-        render: row => `
-            <strong>
-                ${escapeHtml(
-                    pick(
-                        row,
-                        ["order_number", "number", "id"],
-                        "—"
-                    )
-                )}
-            </strong>
-        `
-    },
+                [
+                    {
+                        label: 'Pedido',
+                        render: row => `
+                            <strong>
+                                ${escapeHtml(
+                                    pick(
+                                        row,
+                                        [
+                                            'order_number',
+                                            'number',
+                                            'id'
+                                        ],
+                                        '—'
+                                    )
+                                )}
+                            </strong>
+                        `
+                    },
 
                     {
-                        label: "Data",
+                        label: 'Data',
                         render: row =>
                             formatDate(
                                 pick(
                                     row,
-                                    ["created_at", "createdAt"],
+                                    [
+                                        'created_at',
+                                        'createdAt'
+                                    ],
                                     null
                                 )
                             )
                     },
 
                     {
-                        label: "Total",
+                        label: 'Total',
                         render: row =>
                             formatCurrency(
                                 pick(
                                     row,
-                                    ["total", "total_amount"],
+                                    [
+                                        'total',
+                                        'total_amount'
+                                    ],
                                     0
                                 )
                             )
                     },
 
                     {
-                        label: "Status",
+                        label: 'Status',
                         render: row =>
                             renderStatus(
                                 pick(
                                     row,
-                                    ["status"],
-                                    "pending"
+                                    ['status'],
+                                    'pending'
                                 )
                             )
                     }
@@ -3040,32 +3811,32 @@ function renderAudit(content, logs) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Registros de auditoria",
+                    'Registros de auditoria',
                     formatNumber(list.length)
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Fonte',
+                    'Firebase / Firestore'
                 )}
 
             </div>
 
 
             ${table(
-                "Histórico administrativo",
+                'Histórico administrativo',
 
                 [
                     {
-                        label: "Data",
+                        label: 'Data',
                         render: row =>
                             formatDate(
                                 pick(
                                     row,
                                     [
-                                        "created_at",
-                                        "createdAt",
-                                        "timestamp"
+                                        'created_at',
+                                        'createdAt',
+                                        'timestamp'
                                     ],
                                     null
                                 )
@@ -3073,7 +3844,7 @@ function renderAudit(content, logs) {
                     },
 
                     {
-                        label: "Ação",
+                        label: 'Ação',
                         render: row => `
                             <strong>
                                 ${escapeHtml(
@@ -3081,11 +3852,11 @@ function renderAudit(content, logs) {
                                         pick(
                                             row,
                                             [
-                                                "action",
-                                                "event",
-                                                "operation"
+                                                'action',
+                                                'event',
+                                                'operation'
                                             ],
-                                            "-"
+                                            '—'
                                         )
                                     )
                                 )}
@@ -3094,54 +3865,39 @@ function renderAudit(content, logs) {
                     },
 
                     {
-                        label: "Usuário",
+                        label: 'Usuário',
                         keys: [
-                            "user_name",
-                            "admin_name",
-                            "email",
-                            "user_id"
+                            'user_name',
+                            'admin_name',
+                            'email',
+                            'user_id'
                         ]
                     },
 
                     {
-                        label: "Entidade",
+                        label: 'Entidade',
                         keys: [
-                            "entity",
-                            "resource",
-                            "table_name"
+                            'entity',
+                            'resource',
+                            'table_name'
                         ]
                     },
 
                     {
-                        label: "Status",
+                        label: 'Status',
                         render: row =>
                             renderStatus(
                                 pick(
                                     row,
-                                    ["status", "result"],
-                                    "completed"
+                                    [
+                                        'status',
+                                        'result'
+                                    ],
+                                    'completed'
                                 )
                             )
                     }
-,
-                    {
-                        label: "Ações",
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        ""
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }                ],
+                ],
 
                 list
             )}
@@ -3152,7 +3908,7 @@ function renderAudit(content, logs) {
 
 
 /* ============================================================
-   CONFIGURACOES
+   CONFIGURAÇÕES
    ============================================================ */
 
 function renderSettings(content, settings) {
@@ -3170,31 +3926,35 @@ function renderSettings(content, settings) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Parâmetros cadastrados",
+                    'Parâmetros cadastrados',
                     formatNumber(list.length)
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Fonte',
+                    'Firebase / Firestore'
                 )}
 
             </div>
 
 
             ${table(
-                "Parâmetros da NEFER",
+                'Parâmetros da NEFER',
 
                 [
                     {
-                        label: "Chave",
+                        label: 'Chave',
                         render: row => `
                             <strong>
                                 ${escapeHtml(
                                     pick(
                                         row,
-                                        ["key", "name", "setting_key"],
-                                        "-"
+                                        [
+                                            'key',
+                                            'name',
+                                            'setting_key'
+                                        ],
+                                        '—'
                                     )
                                 )}
                             </strong>
@@ -3202,14 +3962,18 @@ function renderSettings(content, settings) {
                     },
 
                     {
-                        label: "Valor",
+                        label: 'Valor',
                         render: row => {
 
                             const value =
                                 pick(
                                     row,
-                                    ["value", "setting_value", "content"],
-                                    "-"
+                                    [
+                                        'value',
+                                        'setting_value',
+                                        'content'
+                                    ],
+                                    '—'
                                 );
 
                             return `
@@ -3221,44 +3985,31 @@ function renderSettings(content, settings) {
                     },
 
                     {
-                        label: "Descrição",
+                        label: 'Descrição',
                         keys: [
-                            "description",
-                            "label",
-                            "details"
+                            'description',
+                            'label',
+                            'details'
                         ]
                     },
 
                     {
-                        label: "Atualização",
+                        label: 'Atualização',
                         render: row =>
                             formatDate(
                                 pick(
                                     row,
-                                    ["updated_at", "created_at"],
+                                    [
+                                        'updated_at',
+                                        'updatedAt',
+                                        'created_at',
+                                        'createdAt'
+                                    ],
                                     null
                                 )
                             )
                     }
-,
-                    {
-                        label: "Ações",
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        ""
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }                ],
+                ],
 
                 list
             )}
@@ -3280,82 +4031,94 @@ function renderOrders(content, orders) {
             : [];
 
 
-   const rows =
-    list.map(order => {
+    const rows =
+        list
+            .map(order => {
 
-        const orderNumber =
-            order.order_number ||
-            `#${order.id ?? "—"}`;
+                const orderNumber =
+                    order.order_number ||
+                    `#${order.id ?? '—'}`;
 
-        const customerName =
-            order.customer?.name ||
-            order.customer_name ||
-            "Cliente não identificado";
 
-        const total =
-            Number(
-                order.total ??
-                order.total_amount ??
-                order.totals?.total ??
-                0
-            );
+                const customerName =
+                    order.customer?.name ||
+                    order.customer_name ||
+                    'Cliente não identificado';
 
-        const orderStatus =
-            order.status ||
-            "—";
 
-        const paymentStatus =
-            order.payment_status ||
-            order.payment?.status ||
-            "—";
+                const total =
+                    Number(
+                        order.total ??
+                        order.total_amount ??
+                        order.totals?.total ??
+                        0
+                    );
 
-        return `
 
-            <tr>
+                const orderStatus =
+                    order.status ||
+                    '—';
 
-                <td>
-                    <strong>
-                        ${escapeHtml(orderNumber)}
-                    </strong>
-                </td>
 
-                <td>
-                    ${escapeHtml(customerName)}
-                </td>
+                const paymentStatus =
+                    order.payment_status ||
+                    order.payment?.status ||
+                    '—';
 
-                <td>
-                    ${formatCurrency(total)}
-                </td>
 
-                <td>
-                    ${renderStatus(orderStatus)}
-                </td>
+                return `
 
-                <td>
-                    ${renderStatus(paymentStatus)}
-                </td>
+                    <tr>
 
-                <td>
+                        <td>
+                            <strong>
+                                ${escapeHtml(orderNumber)}
+                            </strong>
+                        </td>
 
-                    <div class="table-actions">
 
-                        <button
-                            type="button"
-                            class="admin-button"
-                            data-order-details="${escapeHtml(
-                                order.id ?? orderNumber
-                            )}"
-                        >
-                            Ver detalhes
-                        </button>
+                        <td>
+                            ${escapeHtml(customerName)}
+                        </td>
 
-                    </div>
 
-                </td>
+                        <td>
+                            ${formatCurrency(total)}
+                        </td>
 
-            </tr>
-        `;
-    }).join("");
+
+                        <td>
+                            ${renderStatus(orderStatus)}
+                        </td>
+
+
+                        <td>
+                            ${renderStatus(paymentStatus)}
+                        </td>
+
+
+                        <td>
+
+                            <div class="table-actions">
+
+                                <button
+                                    type="button"
+                                    class="admin-button"
+                                    data-order-details="${escapeHtml(
+                                        order.id ?? orderNumber
+                                    )}"
+                                >
+                                    Ver detalhes
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                `;
+            })
+            .join('');
 
 
     content.outerHTML = `
@@ -3365,13 +4128,13 @@ function renderOrders(content, orders) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Pedidos carregados",
+                    'Pedidos carregados',
                     formatNumber(list.length)
                 )}
 
                 ${metricCard(
-                    "Fonte",
-                    "Firebase / Firestore"
+                    'Fonte',
+                    'Firebase / Firestore'
                 )}
 
             </div>
@@ -3407,13 +4170,14 @@ function renderOrders(content, orders) {
                                 <th>Pedido</th>
                                 <th>Cliente</th>
                                 <th>Total</th>
-                                <th>Pedido</th>
+                                <th>Status</th>
                                 <th>Pagamento</th>
                                 <th>Ações</th>
 
                             </tr>
 
                         </thead>
+
 
                         <tbody>
 
@@ -3452,14 +4216,16 @@ async function openOrderDetails(orderId) {
 
     createOrderModal();
 
+
     const modal =
         document.querySelector(
-            "#adminOrderModal"
+            '#adminOrderModal'
         );
+
 
     const content =
         modal?.querySelector(
-            ".admin-modal-content"
+            '.admin-modal-content'
         );
 
 
@@ -3468,13 +4234,13 @@ async function openOrderDetails(orderId) {
     }
 
 
-    modal.removeAttribute("inert");
+    modal.removeAttribute('inert');
 
-    modal.classList.add("is-open");
+    modal.classList.add('is-open');
 
     modal.setAttribute(
-        "aria-hidden",
-        "false"
+        'aria-hidden',
+        'false'
     );
 
 
@@ -3501,7 +4267,7 @@ async function openOrderDetails(orderId) {
 
         if (!data) {
             throw new Error(
-                "Pedido não encontrado."
+                'Pedido não encontrado.'
             );
         }
 
@@ -3519,7 +4285,7 @@ async function openOrderDetails(orderId) {
 
                 ${escapeHtml(
                     error?.message ||
-                    "Não foi possível carregar os detalhes."
+                    'Não foi possível carregar os detalhes.'
                 )}
 
             </div>
@@ -3532,7 +4298,7 @@ function createOrderModal() {
 
     if (
         document.querySelector(
-            "#adminOrderModal"
+            '#adminOrderModal'
         )
     ) {
         return;
@@ -3540,13 +4306,14 @@ function createOrderModal() {
 
 
     document.body.insertAdjacentHTML(
-        "beforeend",
+        'beforeend',
         `
 
         <div
             id="adminOrderModal"
             class="admin-modal"
             aria-hidden="true"
+            inert
         >
 
             <div
@@ -3577,16 +4344,17 @@ function createOrderModal() {
                     </div>
 
 
-<button
-    type="button"
-    class="admin-modal-close"
-    data-close-order-modal
-    aria-label="Fechar"
->
-    ×
-</button>
+                    <button
+                        type="button"
+                        class="admin-modal-close"
+                        data-close-order-modal
+                        aria-label="Fechar"
+                    >
+                        ×
+                    </button>
 
-</div>
+                </div>
+
 
                 <div class="admin-modal-content">
 
@@ -3608,28 +4376,36 @@ function renderOrderDetails(content, order) {
 
     const orderNumber =
         order.order_number ||
-        `#${order.id || "?"}`;
+        `#${order.id || '—'}`;
+
 
     const customer =
         order.customer || {};
 
+
     const paymentStatus =
         order.payment_status ||
         order.payment?.status ||
-        "pending";
+        'pending';
+
 
     const logisticsStatus =
         order.logistics?.status ||
-        "new";
+        'new';
+
 
     const logisticsLabel =
-        LOGISTICS_STATUS_LABELS[logisticsStatus] ||
+        LOGISTICS_STATUS_LABELS[
+            logisticsStatus
+        ] ||
         logisticsStatus;
+
 
     const items =
         Array.isArray(order.items)
             ? order.items
             : [];
+
 
     const history =
         Array.isArray(order.history)
@@ -3638,6 +4414,7 @@ function renderOrderDetails(content, order) {
                 ? order.events
                 : [];
 
+
     const subtotal =
         Number(
             order.subtotal ??
@@ -3645,15 +4422,16 @@ function renderOrderDetails(content, order) {
             0
         );
 
+
     const shipping =
         Number(
-            order.shipping ??
+            order.shipping?.cost ??
             order.shipping_cost ??
             order.shippingCost ??
-            order.shipping?.cost ??
             order.totals?.shipping ??
             0
         );
+
 
     const discount =
         Number(
@@ -3661,6 +4439,7 @@ function renderOrderDetails(content, order) {
             order.totals?.discount ??
             0
         );
+
 
     const total =
         Number(
@@ -3670,50 +4449,88 @@ function renderOrderDetails(content, order) {
             0
         );
 
-    const itemRows = items.map(item => {
 
-        const quantity =
-            Number(item.quantity) || 0;
+    const itemRows =
+        items
+            .map(item => {
 
-        const price =
-            Number(
-                item.unitPrice ??
-                item.price ??
-                item.unit_price ??
-                0
-            );
+                const quantity =
+                    Number(item.quantity) || 0;
 
-        return `
-            <tr>
-                <td>
-                    ${escapeHtml(
-                        item.name ||
-                        item.product_name ||
-                        "Produto"
-                    )}
-                </td>
 
-                <td>${quantity}</td>
+                const price =
+                    Number(
+                        item.unitPrice ??
+                        item.price ??
+                        item.unit_price ??
+                        0
+                    );
 
-                <td>${formatCurrency(price)}</td>
 
-                <td>
-                    ${formatCurrency(
-                        price * quantity
-                    )}
-                </td>
-            </tr>
-        `;
+                return `
 
-    }).join("");
+                    <tr>
+
+                        <td>
+                            ${escapeHtml(
+                                item.name ||
+                                item.product_name ||
+                                'Produto'
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${quantity}
+                        </td>
+
+
+                        <td>
+                            ${formatCurrency(price)}
+                        </td>
+
+
+                        <td>
+                            ${formatCurrency(
+                                price * quantity
+                            )}
+                        </td>
+
+                    </tr>
+                `;
+            })
+            .join('');
+
+
+    const normalizedPayment =
+        String(
+            paymentStatus
+        )
+            .trim()
+            .toLowerCase();
+
 
     const showPaymentButton =
-        paymentStatus !== "paid" &&
-        paymentStatus !== "confirmed";
+        ![
+            'paid',
+            'confirmed',
+            'approved',
+            'completed'
+        ].includes(
+            normalizedPayment
+        );
+
 
     const showLogisticsButton =
-        paymentStatus === "paid" ||
-        paymentStatus === "confirmed";
+        [
+            'paid',
+            'confirmed',
+            'approved',
+            'completed'
+        ].includes(
+            normalizedPayment
+        );
+
 
     content.innerHTML = `
 
@@ -3722,74 +4539,110 @@ function renderOrderDetails(content, order) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Pedido",
+                    'Pedido',
                     orderNumber
                 )}
 
                 ${metricCard(
-                    "Subtotal",
+                    'Subtotal',
                     formatCurrency(subtotal)
                 )}
 
                 ${metricCard(
-                    "Frete",
+                    'Frete',
                     formatCurrency(shipping)
                 )}
 
                 ${metricCard(
-                    "Total",
+                    'Total',
                     formatCurrency(total)
                 )}
 
             </div>
+
 
             <section class="module-panel">
 
                 <div class="module-panel-header">
 
                     <div>
+
                         <span class="module-eyebrow">
-                            OPERA??O
+                            OPERAÇÃO
                         </span>
 
                         <h3>
                             Detalhes do pedido
                         </h3>
+
                     </div>
 
                 </div>
 
+
                 <div class="admin-operation-grid">
 
                     <article class="admin-operation-card">
-                        <span>Status do pedido</span>
+
+                        <span>
+                            Status do pedido
+                        </span>
+
                         <strong>
-                            ${renderStatus(order.status)}
+                            ${renderStatus(
+                                order.status
+                            )}
                         </strong>
+
                     </article>
 
-                    <article class="admin-operation-card">
-                        <span>Pagamento</span>
-                        <strong>
-                            ${renderStatus(paymentStatus)}
-                        </strong>
-                    </article>
 
                     <article class="admin-operation-card">
-                        <span>Logística</span>
+
+                        <span>
+                            Pagamento
+                        </span>
+
                         <strong>
-                            ${escapeHtml(logisticsLabel)}
+                            ${renderStatus(
+                                paymentStatus
+                            )}
                         </strong>
+
                     </article>
 
+
                     <article class="admin-operation-card">
-                        <span>Desconto</span>
+
+                        <span>
+                            Logística
+                        </span>
+
                         <strong>
-                            ${formatCurrency(discount)}
+                            ${escapeHtml(
+                                logisticsLabel
+                            )}
                         </strong>
+
+                    </article>
+
+
+                    <article class="admin-operation-card">
+
+                        <span>
+                            Desconto
+                        </span>
+
+                        <strong>
+                            ${formatCurrency(
+                                discount
+                            )}
+                        </strong>
+
                     </article>
 
                 </div>
+
 
                 <div
                     style="
@@ -3810,8 +4663,9 @@ function renderOrderDetails(content, order) {
                                     Confirmar pagamento
                                 </button>
                             `
-                            : ""
+                            : ''
                     }
+
 
                     ${
                         showLogisticsButton
@@ -3823,17 +4677,20 @@ function renderOrderDetails(content, order) {
                                     Avançar logística
                                 </button>
                             `
-                            : ""
+                            : ''
                     }
 
                 </div>
 
             </section>
 
+
             <section class="module-panel">
 
                 <div class="module-panel-header">
+
                     <div>
+
                         <span class="module-eyebrow">
                             CLIENTE
                         </span>
@@ -3841,28 +4698,34 @@ function renderOrderDetails(content, order) {
                         <h3>
                             ${escapeHtml(
                                 customer.name ||
-                                "Cliente não identificado"
+                                'Cliente não identificado'
                             )}
                         </h3>
 
                         <p>
                             ${escapeHtml(
                                 customer.email ||
-                                "E-mail não informado"
+                                'E-mail não informado'
                             )}
                         </p>
+
                     </div>
+
                 </div>
+
 
                 <div class="admin-operation-grid">
 
                     <article class="admin-operation-card">
 
-                        <span>Telefone</span>
+                        <span>
+                            Telefone
+                        </span>
 
                         <strong>
                             ${escapeHtml(
-                                customer.phone || "?"
+                                customer.phone ||
+                                '—'
                             )}
                         </strong>
 
@@ -3872,11 +4735,13 @@ function renderOrderDetails(content, order) {
 
             </section>
 
+
             <section class="module-panel">
 
                 <div class="module-panel-header">
 
                     <div>
+
                         <span class="module-eyebrow">
                             PRODUTOS
                         </span>
@@ -3884,22 +4749,27 @@ function renderOrderDetails(content, order) {
                         <h3>
                             Itens do pedido
                         </h3>
+
                     </div>
 
                 </div>
+
 
                 <div class="admin-table-wrap">
 
                     <table class="admin-table">
 
                         <thead>
+
                             <tr>
                                 <th>Produto</th>
                                 <th>Qtd.</th>
                                 <th>Preço</th>
                                 <th>Total</th>
                             </tr>
+
                         </thead>
+
 
                         <tbody>
 
@@ -3922,11 +4792,13 @@ function renderOrderDetails(content, order) {
 
             </section>
 
+
             <section class="module-panel">
 
                 <div class="module-panel-header">
 
                     <div>
+
                         <span class="module-eyebrow">
                             HISTÓRICO
                         </span>
@@ -3934,9 +4806,11 @@ function renderOrderDetails(content, order) {
                         <h3>
                             Eventos do pedido
                         </h3>
+
                     </div>
 
                 </div>
+
 
                 ${
                     history.length
@@ -3948,34 +4822,41 @@ function renderOrderDetails(content, order) {
                                         .slice()
                                         .reverse()
                                         .map(event => `
+
                                             <div
                                                 class="order-history-item"
                                             >
+
                                                 <strong>
                                                     ${escapeHtml(
                                                         event.label ||
                                                         event.type ||
                                                         event.event ||
-                                                        "Evento"
+                                                        'Evento'
                                                     )}
                                                 </strong>
 
+
                                                 ${
-                                                    event.createdAt
+                                                    event.createdAt ||
+                                                    event.created_at
                                                         ? `
                                                             <span>
                                                                 ${escapeHtml(
                                                                     formatDate(
-                                                                        event.createdAt
+                                                                        event.createdAt ||
+                                                                        event.created_at
                                                                     )
                                                                 )}
                                                             </span>
                                                         `
-                                                        : ""
+                                                        : ''
                                                 }
+
                                             </div>
+
                                         `)
-                                        .join("")
+                                        .join('')
                                 }
 
                             </div>
@@ -3992,79 +4873,125 @@ function renderOrderDetails(content, order) {
         </div>
     `;
 
-    document
-        .querySelector("#confirmOrderPayment")
-        ?.addEventListener("click", async () => {
-
-            const button =
-                document.querySelector(
-                    "#confirmOrderPayment"
-                );
-
-            try {
-
-                button.disabled = true;
-
-                await confirmPayment(order.id);
-
-                window.alert(
-                    "Pagamento confirmado."
-                );
-
-                await openOrderDetails(order.id);
-
-            } catch (error) {
-
-                console.error(
-                    "[ADMIN ORDER] Erro ao confirmar pagamento:",
-                    error
-                );
-
-                button.disabled = false;
-
-                window.alert(
-                    error?.message ||
-                    "Não foi possível confirmar o pagamento."
-                );
-            }
-        });
 
     document
-        .querySelector("#advanceOrderLogistics")
-        ?.addEventListener("click", async () => {
+        .querySelector(
+            '#confirmOrderPayment'
+        )
+        ?.addEventListener(
+            'click',
+            async () => {
 
-            const button =
-                document.querySelector(
-                    "#advanceOrderLogistics"
-                );
+                const button =
+                    document.querySelector(
+                        '#confirmOrderPayment'
+                    );
 
-            try {
 
-                button.disabled = true;
+                if (!button) {
+                    return;
+                }
 
-                await advanceLogistics(order.id);
 
-                window.alert(
-                    "Status log?stico atualizado."
-                );
+                try {
 
-                await openOrderDetails(order.id);
+                    button.disabled =
+                        true;
 
-            } catch (error) {
 
-                console.error(
-                    "[ADMIN ORDER] Erro ao avan?ar logística:",
-                    error
-                );
+                    await confirmPayment(
+                        order.id
+                    );
 
-                button.disabled = false;
 
-                window.alert(
-                    error?.message ||
-                    "Não foi possível atualizar a logística."
-                );
+                    window.alert(
+                        'Pagamento confirmado.'
+                    );
+
+
+                    await openOrderDetails(
+                        order.id
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        '[ADMIN ORDER] Erro ao confirmar pagamento:',
+                        error
+                    );
+
+
+                    button.disabled =
+                        false;
+
+
+                    window.alert(
+                        error?.message ||
+                        'Não foi possível confirmar o pagamento.'
+                    );
+                }
             }
-        });
+        );
+
+
+    document
+        .querySelector(
+            '#advanceOrderLogistics'
+        )
+        ?.addEventListener(
+            'click',
+            async () => {
+
+                const button =
+                    document.querySelector(
+                        '#advanceOrderLogistics'
+                    );
+
+
+                if (!button) {
+                    return;
+                }
+
+
+                try {
+
+                    button.disabled =
+                        true;
+
+
+                    await advanceLogistics(
+                        order.id
+                    );
+
+
+                    window.alert(
+                        'Status logístico atualizado.'
+                    );
+
+
+                    await openOrderDetails(
+                        order.id
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        '[ADMIN ORDER] Erro ao avançar logística:',
+                        error
+                    );
+
+
+                    button.disabled =
+                        false;
+
+
+                    window.alert(
+                        error?.message ||
+                        'Não foi possível atualizar a logística.'
+                    );
+                }
+            }
+        );
 }
 
 
@@ -4072,53 +4999,15 @@ function renderOrderDetails(content, order) {
    EVENTOS
    ============================================================ */
 
-document.addEventListener("click", async (event) => {
-    // 1. Intercepta o clique no botão Editar Produto
-    const editBtn = event.target.closest(".admin-product-edit");
-    if (editBtn) {
-        event.preventDefault();
-        const productId = editBtn.dataset.productId;
-
-        if (!productId) {
-            console.error("ID do produto não encontrado no BOTÃO.");
-            return;
-        }
-
-        try {
-            // Busca os dados do produto (via adminAPI ou array local) e abre o modal
-            let product = null;
-            if (window.adminAPI && typeof window.adminAPI.getProductById === "function") {
-                product = await window.adminAPI.getProductById(productId);
-            } else if (Array.isArray(window.productsList)) {
-                product = window.productsList.find(p => String(p.id || p.productId) === String(productId));
-            }
-
-            if (product) {
-                openProductEditor(product);
-            } else {
-                alert("Produto não encontrado para edição.");
-            }
-        } catch (error) {
-            console.error("Erro ao carregar produto para edição:", error);
-        }
-        return;
-    }
-
-    // 2. Navegação por seções
-    const sectionButton = event.target.closest("[data-admin-section]");
-    if (sectionButton) {
-        // Navegação interna entre as seções do Admin
-    }
-});
-
 document.addEventListener(
-    "click",
+    'click',
     event => {
 
         const sectionButton =
             event.target.closest(
-                "[data-admin-section]"
+                '[data-admin-section]'
             );
+
 
         if (sectionButton) {
 
@@ -4134,8 +5023,9 @@ document.addEventListener(
 
         const orderButton =
             event.target.closest(
-                "[data-order-details]"
+                '[data-order-details]'
             );
+
 
         if (orderButton) {
 
@@ -4149,24 +5039,27 @@ document.addEventListener(
 
         if (
             event.target.closest(
-                "[data-close-order-modal]"
+                '[data-close-order-modal]'
             )
         ) {
 
             event.preventDefault();
-            event.stopImmediatePropagation();
+
 
             const modal =
                 document.querySelector(
-                    "#adminOrderModal"
+                    '#adminOrderModal'
                 );
+
 
             if (!modal) {
                 return;
             }
 
+
             const activeElement =
                 document.activeElement;
+
 
             if (
                 activeElement &&
@@ -4175,26 +5068,23 @@ document.addEventListener(
                 activeElement.blur();
             }
 
+
             modal.classList.remove(
-                "is-open"
+                'is-open'
             );
+
 
             modal.setAttribute(
-                "aria-hidden",
-                "true"
+                'aria-hidden',
+                'true'
             );
+
 
             modal.setAttribute(
-                "inert",
-                ""
+                'inert',
+                ''
             );
 
-            if (
-                document.activeElement &&
-                document.activeElement !== document.body
-            ) {
-                document.activeElement.blur();
-            }
 
             return;
         }
@@ -4202,11 +5092,12 @@ document.addEventListener(
 
         if (
             event.target.closest(
-                "#adminLogout"
+                '#adminLogout'
             )
         ) {
-window.location.href =
-                "./admin-login.html";
+
+            window.location.href =
+                './admin-login.html';
         }
 
     }
@@ -4214,158 +5105,195 @@ window.location.href =
 
 
 /* ============================================================
-   INICIALIZACAO
+   EDITOR DE PRODUTO
    ============================================================ */
 
-load("dashboard");
+(function installProductEditHandler() {
 
-/** NEFER_PRODUCT_EDIT_HANDLER_V2_START */
-(function installAureaProductEditHandler() {
-    if (window.__aureaProductEditHandlerV2) {
+    if (
+        window.__aureaProductEditHandlerInstalled
+    ) {
         return;
     }
 
-    document.addEventListener("click", async function (event) {
-        const button = event.target.closest(
-            "button.admin-product-edit"
-        );
 
-        if (!button) {
-            return;
-        }
+    document.addEventListener(
+        'click',
+        async event => {
 
-        event.preventDefault();
-        event.stopImmediatePropagation();
+            const button =
+                event.target.closest(
+                    'button.admin-product-edit'
+                );
 
-        const productId = String(
-            button.getAttribute("data-product-id") || ""
-        ).trim();
 
-        if (!productId) {
-            console.error(
-                "[NEFER ADMIN] Editar: data-product-id vazio."
-            );
-            return;
-        }
+            if (!button) {
+                return;
+            }
 
-        console.log(
-            "[NEFER ADMIN] Editar clicado:",
-            productId
-        );
 
-        let products = Array.isArray(
-            window.__aureaAdminProducts
-        )
-            ? window.__aureaAdminProducts
-            : [];
+            event.preventDefault();
+            event.stopPropagation();
 
-        let product = products.find(function (item) {
-            return String(
-                item?.id ??
-                item?.productId ??
-                item?.docId ??
-                ""
-            ) === productId;
-        });
 
-        /*
-         * Se a lista global ainda nao estiver preenchida,
-         * tenta obter os produtos pela API administrativa.
-         */
-        if (!product) {
-            try {
-                if (
-                    window.AdminAPI &&
-                    typeof window.AdminAPI.products === "function"
-                ) {
-                    console.log(
-                        "[NEFER ADMIN] Buscando produto pela AdminAPI..."
-                    );
+            const productId =
+                String(
+                    button.getAttribute(
+                        'data-product-id'
+                    ) || ''
+                ).trim();
 
-                    const result =
-                        await window.AdminAPI.products();
 
-                    products = Array.isArray(result)
-                        ? result
-                        : Array.isArray(result?.products)
-                            ? result.products
-                            : Array.isArray(result?.data)
-                                ? result.data
-                                : [];
+            if (!productId) {
 
-                    product = products.find(function (item) {
-                        return String(
+                console.error(
+                    '[NEFER ADMIN] data-product-id vazio.'
+                );
+
+                return;
+            }
+
+
+            let products =
+                Array.isArray(
+                    window.__aureaAdminProducts
+                )
+                    ? window.__aureaAdminProducts
+                    : [];
+
+
+            let product =
+                products.find(
+                    item =>
+                        String(
                             item?.id ??
                             item?.productId ??
                             item?.docId ??
-                            ""
-                        ) === productId;
-                    });
+                            ''
+                        ) ===
+                        productId
+                );
+
+
+            if (!product) {
+
+                try {
+
+                    const result =
+                        await adminApi.products();
+
+
+                    products =
+                        Array.isArray(result)
+                            ? result
+                            : Array.isArray(
+                                result?.data
+                            )
+                                ? result.data
+                                : Array.isArray(
+                                    result?.products
+                                )
+                                    ? result.products
+                                    : [];
+
+
+                    product =
+                        products.find(
+                            item =>
+                                String(
+                                    item?.id ??
+                                    item?.productId ??
+                                    item?.docId ??
+                                    ''
+                                ) ===
+                                productId
+                        );
+
 
                     if (product) {
-                        window.__aureaAdminProducts = products;
+                        window.__aureaAdminProducts =
+                            products;
                     }
+
+                } catch (error) {
+
+                    console.error(
+                        '[NEFER ADMIN] Falha ao buscar produto:',
+                        error
+                    );
                 }
-            } catch (error) {
-                console.error(
-                    "[NEFER ADMIN] Falha ao buscar produto:",
-                    error
-                );
             }
-        }
 
-        if (!product) {
-            console.error(
-                "[NEFER ADMIN] Produto nao encontrado:",
-                productId
+
+            if (!product) {
+
+                showAdminToast?.(
+                    'Produto não encontrado.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            openProductEditor(
+                product
             );
-            return;
-        }
 
-        if (typeof openProductEditor !== "function") {
-            console.error(
-                "[NEFER ADMIN] openProductEditor() nao esta acessivel."
-            );
-            return;
-        }
-
-        console.log(
-            "[NEFER ADMIN] Abrindo editor:",
-            product
-        );
-
-        openProductEditor(product);
-    }, true);
-
-    window.__aureaProductEditHandlerV2 = true;
-
-    console.log(
-        "[NEFER ADMIN] Handler V2 do Editar instalado."
+        },
+        true
     );
+
+
+    window.__aureaProductEditHandlerInstalled =
+        true;
+
 })();
-/** NEFER_PRODUCT_EDIT_HANDLER_V2_END */
+
+
 /* ============================================================
-   NEFER ? POP-UP REAL DO EDITOR DE PRODUTOS
+   INICIALIZAÇÃO
    ============================================================ */
 
-(function installAureaProductEditorPopupStyle() {
+load('dashboard');
 
-    if (document.getElementById("aurea-product-editor-popup-style")) {
+
+/* ============================================================
+   ESTILO DO POP-UP DE PRODUTOS
+   ============================================================ */
+
+(function installProductEditorPopupStyle() {
+
+    if (
+        document.getElementById(
+            'aurea-product-editor-popup-style'
+        )
+    ) {
         return;
     }
 
-    const style = document.createElement("style");
 
-    style.id = "aurea-product-editor-popup-style";
+    const style =
+        document.createElement(
+            'style'
+        );
+
+
+    style.id =
+        'aurea-product-editor-popup-style';
+
 
     style.textContent = `
-        /* CAMADA ESCURA */
+
         .admin-product-editor-overlay {
+
             position: fixed !important;
             inset: 0 !important;
+
             z-index: 99999 !important;
 
             display: flex !important;
+
             align-items: center !important;
             justify-content: center !important;
 
@@ -4373,256 +5301,440 @@ load("dashboard");
             height: 100vh !important;
 
             padding: 24px !important;
+
             box-sizing: border-box !important;
 
-            background: rgba(0, 0, 0, 0.62) !important;
-            backdrop-filter: blur(5px) !important;
+            background:
+                rgba(0, 0, 0, 0.62) !important;
+
+            backdrop-filter:
+                blur(5px) !important;
 
             overflow-y: auto !important;
         }
 
-        /* PAINEL CENTRAL */
-        .admin-product-editor-overlay .admin-product-editor {
+
+        .admin-product-editor-overlay
+        .admin-product-editor {
+
             position: relative !important;
 
-            width: min(820px, 100%) !important;
-            max-width: 820px !important;
+            width:
+                min(820px, 100%) !important;
 
-            max-height: calc(100vh - 48px) !important;
-            overflow-y: auto !important;
+            max-width:
+                820px !important;
 
-            margin: auto !important;
-            padding: 28px !important;
+            max-height:
+                calc(100vh - 48px) !important;
 
-            box-sizing: border-box !important;
+            overflow-y:
+                auto !important;
 
-            background: #ffffff !important;
-            color: #171717 !important;
+            margin:
+                auto !important;
 
-            border-radius: 18px !important;
+            padding:
+                28px !important;
+
+            box-sizing:
+                border-box !important;
+
+            background:
+                #ffffff !important;
+
+            color:
+                #171717 !important;
+
+            border-radius:
+                18px !important;
 
             box-shadow:
-                0 25px 80px rgba(0, 0, 0, 0.38),
-                0 8px 30px rgba(0, 0, 0, 0.18) !important;
+                0 25px 80px
+                    rgba(0, 0, 0, 0.38),
+                0 8px 30px
+                    rgba(0, 0, 0, 0.18) !important;
 
-            transform: none !important;
-            opacity: 1 !important;
+            transform:
+                none !important;
+
+            opacity:
+                1 !important;
         }
 
-        /* CABE?ALHO */
-        .admin-product-editor .admin-product-editor-header {
-            display: flex !important;
-            align-items: flex-start !important;
-            justify-content: space-between !important;
 
-            gap: 20px !important;
-            margin-bottom: 24px !important;
+        .admin-product-editor
+        .admin-product-editor-header {
 
-            padding-bottom: 18px !important;
+            display:
+                flex !important;
 
-            border-bottom: 1px solid #eeeeee !important;
+            align-items:
+                flex-start !important;
+
+            justify-content:
+                space-between !important;
+
+            gap:
+                20px !important;
+
+            margin-bottom:
+                24px !important;
+
+            padding-bottom:
+                18px !important;
+
+            border-bottom:
+                1px solid #eeeeee !important;
         }
 
-        .admin-product-editor .admin-product-editor-header h2 {
-            margin: 0 0 6px 0 !important;
 
-            color: #171717 !important;
+        .admin-product-editor
+        .admin-product-editor-header h2 {
 
-            font-size: 22px !important;
-            line-height: 1.25 !important;
+            margin:
+                0 0 6px 0 !important;
+
+            color:
+                #171717 !important;
+
+            font-size:
+                22px !important;
+
+            line-height:
+                1.25 !important;
         }
 
-        .admin-product-editor .admin-product-editor-header p {
-            margin: 0 !important;
 
-            color: #777777 !important;
+        .admin-product-editor
+        .admin-product-editor-header p {
 
-            font-size: 13px !important;
+            margin:
+                0 !important;
+
+            color:
+                #777777 !important;
+
+            font-size:
+                13px !important;
         }
 
-        /* botão X */
-        .admin-product-editor .admin-product-editor-close {
-            flex: 0 0 auto !important;
 
-            width: 38px !important;
-            height: 38px !important;
+        .admin-product-editor
+        .admin-product-editor-close {
 
-            padding: 0 !important;
+            flex:
+                0 0 auto !important;
 
-            border: 0 !important;
-            border-radius: 50% !important;
+            width:
+                38px !important;
 
-            background: #f1f1f1 !important;
-            color: #222222 !important;
+            height:
+                38px !important;
 
-            font-size: 24px !important;
-            line-height: 38px !important;
+            padding:
+                0 !important;
 
-            cursor: pointer !important;
+            border:
+                0 !important;
 
-            transition:
-                background 0.15s ease,
-                transform 0.15s ease !important;
+            border-radius:
+                50% !important;
+
+            background:
+                #f1f1f1 !important;
+
+            color:
+                #222222 !important;
+
+            font-size:
+                24px !important;
+
+            line-height:
+                38px !important;
+
+            cursor:
+                pointer !important;
         }
 
-        .admin-product-editor .admin-product-editor-close:hover {
-            background: #e5e5e5 !important;
-            transform: scale(1.05) !important;
+
+        .admin-product-editor
+        .admin-product-editor-close:hover {
+
+            background:
+                #e5e5e5 !important;
+
+            transform:
+                scale(1.05) !important;
         }
 
-        /* FORMULÁRIO */
-        .admin-product-editor .admin-product-editor-form {
-            display: grid !important;
-            gap: 18px !important;
 
-            width: 100% !important;
+        .admin-product-editor
+        .admin-product-editor-form {
+
+            display:
+                grid !important;
+
+            gap:
+                18px !important;
+
+            width:
+                100% !important;
         }
 
-        /* GRID DOS CAMPOS */
-        .admin-product-editor .admin-product-editor-grid {
-            display: grid !important;
+
+        .admin-product-editor
+        .admin-product-editor-grid {
+
+            display:
+                grid !important;
 
             grid-template-columns:
-                repeat(2, minmax(0, 1fr)) !important;
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                ) !important;
 
-            gap: 16px !important;
+            gap:
+                16px !important;
 
-            width: 100% !important;
+            width:
+                100% !important;
         }
 
-        /* LABEL */
+
+        .admin-product-editor
+        .admin-product-editor-full {
+
+            grid-column:
+                1 / -1 !important;
+        }
+
+
         .admin-product-editor label {
-            display: flex !important;
-            flex-direction: column !important;
 
-            gap: 7px !important;
+            display:
+                flex !important;
 
-            color: #333333 !important;
+            flex-direction:
+                column !important;
 
-            font-size: 13px !important;
-            font-weight: 600 !important;
+            gap:
+                7px !important;
+
+            color:
+                #333333 !important;
+
+            font-size:
+                13px !important;
+
+            font-weight:
+                600 !important;
         }
 
-        /* CAMPOS */
+
         .admin-product-editor input,
         .admin-product-editor textarea,
         .admin-product-editor select {
-            width: 100% !important;
 
-            min-height: 42px !important;
+            width:
+                100% !important;
 
-            box-sizing: border-box !important;
+            min-height:
+                42px !important;
 
-            padding: 10px 12px !important;
+            box-sizing:
+                border-box !important;
 
-            border: 1px solid #d8d8d8 !important;
-            border-radius: 9px !important;
+            padding:
+                10px 12px !important;
 
-            background: #ffffff !important;
-            color: #171717 !important;
+            border:
+                1px solid #d8d8d8 !important;
 
-            font-family: inherit !important;
-            font-size: 14px !important;
+            border-radius:
+                9px !important;
 
-            outline: none !important;
+            background:
+                #ffffff !important;
 
-            transition:
-                border-color 0.15s ease,
-                box-shadow 0.15s ease !important;
+            color:
+                #171717 !important;
+
+            font-family:
+                inherit !important;
+
+            font-size:
+                14px !important;
+
+            outline:
+                none !important;
         }
+
 
         .admin-product-editor input:focus,
         .admin-product-editor textarea:focus,
         .admin-product-editor select:focus {
-            border-color: #888888 !important;
+
+            border-color:
+                #888888 !important;
 
             box-shadow:
-                0 0 0 3px rgba(0, 0, 0, 0.06) !important;
+                0 0 0 3px
+                rgba(0, 0, 0, 0.06)
+                !important;
         }
+
 
         .admin-product-editor textarea {
-            min-height: 110px !important;
-            resize: vertical !important;
+
+            min-height:
+                110px !important;
+
+            resize:
+                vertical !important;
         }
 
-        /* ?REA DOS BOT?ES */
-        .admin-product-editor .admin-product-editor-actions {
-            display: flex !important;
 
-            justify-content: flex-end !important;
-            align-items: center !important;
+        .admin-product-editor
+        .admin-product-editor-actions {
 
-            gap: 10px !important;
+            display:
+                flex !important;
 
-            margin-top: 4px !important;
-            padding-top: 18px !important;
+            justify-content:
+                flex-end !important;
 
-            border-top: 1px solid #eeeeee !important;
+            align-items:
+                center !important;
+
+            gap:
+                10px !important;
+
+            margin-top:
+                4px !important;
+
+            padding-top:
+                18px !important;
+
+            border-top:
+                1px solid #eeeeee !important;
         }
 
-        .admin-product-editor .admin-product-editor-actions button {
-            min-height: 42px !important;
 
-            padding: 10px 20px !important;
+        .admin-product-editor
+        .admin-product-editor-actions button {
 
-            border: 0 !important;
-            border-radius: 9px !important;
+            min-height:
+                42px !important;
 
-            cursor: pointer !important;
+            padding:
+                10px 20px !important;
 
-            font-family: inherit !important;
-            font-size: 14px !important;
-            font-weight: 700 !important;
+            border:
+                0 !important;
+
+            border-radius:
+                9px !important;
+
+            cursor:
+                pointer !important;
+
+            font-family:
+                inherit !important;
+
+            font-size:
+                14px !important;
+
+            font-weight:
+                700 !important;
         }
 
-        .admin-product-editor .admin-product-editor-cancel {
-            background: #eeeeee !important;
-            color: #222222 !important;
+
+        .admin-product-editor
+        .admin-product-editor-cancel {
+
+            background:
+                #eeeeee !important;
+
+            color:
+                #222222 !important;
         }
 
-        .admin-product-editor .admin-product-editor-save {
-            background: #171717 !important;
-            color: #ffffff !important;
+
+        .admin-product-editor
+        .admin-product-editor-save {
+
+            background:
+                #171717 !important;
+
+            color:
+                #ffffff !important;
         }
 
-        .admin-product-editor .admin-product-editor-save:hover {
-            background: #333333 !important;
+
+        .admin-product-editor
+        .admin-product-editor-save:hover {
+
+            background:
+                #333333 !important;
         }
 
-        /* MOBILE */
+
         @media (max-width: 700px) {
 
             .admin-product-editor-overlay {
-                padding: 12px !important;
+
+                padding:
+                    12px !important;
             }
 
-            .admin-product-editor-overlay .admin-product-editor {
-                width: 100% !important;
-                max-height: calc(100vh - 24px) !important;
 
-                padding: 20px !important;
+            .admin-product-editor-overlay
+            .admin-product-editor {
 
-                border-radius: 14px !important;
+                width:
+                    100% !important;
+
+                max-height:
+                    calc(100vh - 24px) !important;
+
+                padding:
+                    20px !important;
+
+                border-radius:
+                    14px !important;
             }
 
-            .admin-product-editor .admin-product-editor-grid {
-                grid-template-columns: 1fr !important;
+
+            .admin-product-editor
+            .admin-product-editor-grid {
+
+                grid-template-columns:
+                    1fr !important;
             }
 
-            .admin-product-editor .admin-product-editor-actions {
-                flex-direction: column-reverse !important;
+
+            .admin-product-editor
+            .admin-product-editor-actions {
+
+                flex-direction:
+                    column-reverse !important;
             }
 
-            .admin-product-editor .admin-product-editor-actions button {
-                width: 100% !important;
+
+            .admin-product-editor
+            .admin-product-editor-actions button {
+
+                width:
+                    100% !important;
             }
         }
     `;
 
-    document.head.appendChild(style);
 
-    console.log(
-        "[NEFER ADMIN] Estilo do popup de produtos instalado."
+    document.head.appendChild(
+        style
     );
 
 })();
