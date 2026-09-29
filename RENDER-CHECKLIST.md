@@ -1,4 +1,4 @@
-﻿# RENDER — CHECKLIST
+# RENDER — CHECKLIST
 
 ## Serviço
 
@@ -25,7 +25,7 @@ Health:
 NODE_ENV=production
 PORT=3000
 
-AUREA_ADMIN_TOKEN=<Secret>
+NEFER_ADMIN_TOKEN=<Secret>
 
 CORS_ORIGINS=https://www.fiosperfeitos.com.br,https://fiosperfeitos.com.br
 

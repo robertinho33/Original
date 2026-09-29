@@ -1,4 +1,4 @@
-﻿# AUREA — Core 08
+# NEFER — Core 08
 
 Camadas adicionadas:
 

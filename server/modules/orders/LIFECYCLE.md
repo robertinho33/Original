@@ -1,4 +1,4 @@
-﻿# AUREA — CORE 11
+# NEFER — CORE 11
 
 ## Ciclo operacional
 

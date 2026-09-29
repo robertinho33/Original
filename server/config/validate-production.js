@@ -1,9 +1,9 @@
-﻿'use strict';
+'use strict';
 
 const required = [
   'NODE_ENV',
   'PORT',
-  'AUREA_ADMIN_TOKEN'
+  'NEFER_ADMIN_TOKEN'
 ];
 
 const missing = [];
@@ -42,10 +42,10 @@ if (
 }
 
 if (
-  process.env.AUREA_ADMIN_TOKEN.length < 32
+  process.env.NEFER_ADMIN_TOKEN.length < 32
 ) {
   console.error(
-    'AUREA_ADMIN_TOKEN deve possuir pelo menos 32 caracteres.'
+    'NEFER_ADMIN_TOKEN deve possuir pelo menos 32 caracteres.'
   );
 
   process.exit(1);

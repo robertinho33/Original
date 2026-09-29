@@ -1,4 +1,4 @@
-﻿# AUREA — Core 06
+# NEFER — Core 06
 
 Responsabilidades:
 

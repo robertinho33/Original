@@ -1,4 +1,4 @@
-﻿import { ORDER_STATUS } from '../orders/order-status.js';
+import { ORDER_STATUS } from '../orders/order-status.js';
 import { db } from '../firebase-config.js';
 import { loadProducts as loadCatalogProducts } from '../catalog/catalog-service.js';
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
@@ -25,8 +25,8 @@ let appliedCoupon = null;
 
 
 const COUPONS = Object.freeze({
-    AUREA10: Object.freeze({
-        code: 'AUREA10',
+    NEFER10: Object.freeze({
+        code: 'NEFER10',
         type: 'percentage',
         value: 10
     })

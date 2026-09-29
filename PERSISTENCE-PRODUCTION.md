@@ -1,4 +1,4 @@
-﻿# PERSISTÊNCIA — AUREA
+# PERSISTÊNCIA — NEFER
 
 A aplicação utiliza:
 

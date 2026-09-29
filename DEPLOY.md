@@ -1,4 +1,4 @@
-﻿# AUREA — CORE 14
+# NEFER — CORE 14
 
 ## Runtime
 
@@ -10,7 +10,7 @@ NODE_ENV=production
 
 PORT=3000
 
-AUREA_ADMIN_TOKEN=<segredo>
+NEFER_ADMIN_TOKEN=<segredo>
 
 ## Docker
 

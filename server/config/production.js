@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const {
   environment
@@ -22,7 +22,7 @@ function assertProductionConfiguration() {
   }
 
   const required = [
-    'AUREA_ADMIN_TOKEN'
+    'NEFER_ADMIN_TOKEN'
   ];
 
   const missing =
@@ -39,11 +39,11 @@ function assertProductionConfiguration() {
 
   if (
     String(
-      process.env.AUREA_ADMIN_TOKEN
+      process.env.NEFER_ADMIN_TOKEN
     ).length < 32
   ) {
     throw new Error(
-      'AUREA_ADMIN_TOKEN deve possuir pelo menos 32 caracteres.'
+      'NEFER_ADMIN_TOKEN deve possuir pelo menos 32 caracteres.'
     );
   }
 

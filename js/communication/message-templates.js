@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 export function createPurchaseThankYouMessage({
     customerName,
@@ -25,7 +25,7 @@ export function createPurchaseThankYouMessage({
     return [
         `Olá, ${name}!`,
         '',
-        'Agradecemos pela sua compra na AURÉA COSMETICS.',
+        'Agradecemos pela sua compra na NEFER COSMETICS.',
         '',
         id
             ? `Seu pedido ${id} foi recebido com sucesso.`
@@ -35,7 +35,7 @@ export function createPurchaseThankYouMessage({
             ? `Valor do pedido: ${totalText}.`
             : '',
         '',
-        'Muito obrigado pela confiança e por escolher a AURÉA.',
+        'Muito obrigado pela confiança e por escolher a NEFER.',
         '',
         'Esperamos que sua experiência seja especial. ✨'
     ]
@@ -52,7 +52,7 @@ export function createPurchaseThankYouEmail({
     return {
         subject: orderId
             ? `Obrigado pela sua compra — pedido ${orderId}`
-            : 'Obrigado pela sua compra — AURÉA COSMETICS',
+            : 'Obrigado pela sua compra — NEFER COSMETICS',
 
         body: createPurchaseThankYouMessage({
             customerName,

@@ -1,10 +1,10 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 $file = ".\js\admin\products-importer.js"
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host " AUREA — FASE 02 — VALIDAÇÃO + IMPORTAÇÃO" -ForegroundColor Cyan
+Write-Host " AUREA â€” FASE 02 â€” VALIDAÃ‡ÃƒO + IMPORTAÃ‡ÃƒO" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 
 $content = Get-Content $file -Raw -Encoding UTF8
@@ -13,18 +13,18 @@ Write-Host ""
 Write-Host "[01/04] Verificando parser..." -ForegroundColor Yellow
 
 if (-not $content.Contains("function parsePrice")) {
-    throw "parsePrice não encontrada."
+    throw "parsePrice nÃ£o encontrada."
 }
 
 if (-not $content.Contains("number = number / 100")) {
-    throw "Regra Brae não encontrada."
+    throw "Regra Brae nÃ£o encontrada."
 }
 
 if (-not $content.Contains("parsePrice(row.price, source)")) {
-    throw "normalizeProduct ainda não envia source para parsePrice."
+    throw "normalizeProduct ainda nÃ£o envia source para parsePrice."
 }
 
-Write-Host "PASS — parser Brae configurado." -ForegroundColor Green
+Write-Host "PASS â€” parser Brae configurado." -ForegroundColor Green
 
 Write-Host ""
 Write-Host "[02/04] Validando JavaScript..." -ForegroundColor Yellow
@@ -35,7 +35,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "products-importer.js possui erro de sintaxe."
 }
 
-Write-Host "PASS — JavaScript válido." -ForegroundColor Green
+Write-Host "PASS â€” JavaScript vÃ¡lido." -ForegroundColor Green
 
 Write-Host ""
 Write-Host "[03/04] Conferindo arquivos da Fase 02..." -ForegroundColor Yellow
@@ -47,20 +47,19 @@ $required = @(
     ".\js\admin\product-model.js",
     ".\js\admin\product-repository.js",
     ".\js\admin\products-importer.js",
-    ".\pages\admin-products-import.html"
 )
 
 foreach ($item in $required) {
 
     if (-not (Test-Path $item)) {
-        throw "Arquivo obrigatório não encontrado: $item"
+        throw "Arquivo obrigatÃ³rio nÃ£o encontrado: $item"
     }
 
     Write-Host "PASS | $item" -ForegroundColor Green
 }
 
 Write-Host ""
-Write-Host "[04/04] Preparando importação dos 522 produtos..." -ForegroundColor Yellow
+Write-Host "[04/04] Preparando importaÃ§Ã£o dos 522 produtos..." -ForegroundColor Yellow
 
 $rows = @()
 
@@ -93,7 +92,7 @@ if ($rows.Count -ne 522) {
     throw "Quantidade inesperada. Esperado: 522 | Encontrado: $($rows.Count)"
 }
 
-Write-Host "PASS — 522 produtos comerciais encontrados." -ForegroundColor Green
+Write-Host "PASS â€” 522 produtos comerciais encontrados." -ForegroundColor Green
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan

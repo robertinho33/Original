@@ -32,7 +32,7 @@ let modalQuantity = 1;
 let lastProductTriggerEl = null;
 
 /* =========================================================
-   ESTADO DOS FILTROS E PAGINAÇÃO
+   ESTADO DOS FILTROS E PAGINAÃ‡ÃƒO
    ========================================================= */
 
 const ITEMS_PER_PAGE = 8;
@@ -44,8 +44,8 @@ let currentSortOption = 'default';
 const productsEl = document.querySelector('#products');
 const filtersEl = document.querySelector('#filters');
 
-// Elementos de busca, ordenação e paginação
-// (criados via JS se não existirem no HTML)
+// Elementos de busca, ordenaÃ§Ã£o e paginaÃ§Ã£o
+// (criados via JS se nÃ£o existirem no HTML)
 const searchInputEl = document.querySelector('#searchInput');
 const sortSelectEl = document.querySelector('#sortSelect');
 const paginationEl = document.querySelector('#pagination');
@@ -213,7 +213,7 @@ function removeFromCart(sku) {
 }
 
 /* =========================================================
-   VML-14 — CAMADA DE CATÁLOGO
+   VML-14 â€” CAMADA DE CATÃLOGO
    ========================================================= */
 
 function normalizeCatalogText(value) {
@@ -455,7 +455,7 @@ function renderPagination(totalItems) {
             class="pagination-button"
             data-page="${catalogPage - 1}"
             ${catalogPage === 1 ? 'disabled' : ''}
-            aria-label="Página anterior"
+            aria-label="PÃ¡gina anterior"
         >
             Anterior
         </button>
@@ -506,9 +506,9 @@ function renderPagination(totalItems) {
                     ? 'disabled'
                     : ''
             }
-            aria-label="Próxima página"
+            aria-label="PrÃ³xima pÃ¡gina"
         >
-            Próxima
+            PrÃ³xima
         </button>
     `);
 
@@ -556,7 +556,7 @@ async function renderCatalog() {
 
     productsEl.innerHTML = `
         <div class="catalog-empty">
-            <p>Carregando catálogo...</p>
+            <p>Carregando catÃ¡logo...</p>
         </div>
     `;
 
@@ -616,7 +616,7 @@ async function renderCatalog() {
                             <div
                                 class="product-image-placeholder"
                             >
-                                NUVERYA
+                                NEFER
                             </div>
                         `;
 
@@ -716,7 +716,7 @@ async function renderCatalog() {
                                     )}"
                                     aria-label="Adicionar ${escapeAttribute(
                                         product.name
-                                    )} à sacola"
+                                    )} Ã  sacola"
                                 >
                                     +
                                 </button>
@@ -730,14 +730,14 @@ async function renderCatalog() {
 
     } catch (error) {
         console.error(
-            'Erro ao renderizar catálogo:',
+            'Erro ao renderizar catÃ¡logo:',
             error
         );
 
         productsEl.innerHTML = `
             <div class="catalog-empty">
                 <p>
-                    Não foi possível carregar o catálogo.
+                    NÃ£o foi possÃ­vel carregar o catÃ¡logo.
                 </p>
             </div>
         `;
@@ -747,7 +747,7 @@ async function renderCatalog() {
 }
 
 /* =========================================================
-   SACOLA — RENDER E MODAIS
+   SACOLA â€” RENDER E MODAIS
    ========================================================= */
 
 function renderCart() {
@@ -782,7 +782,7 @@ function renderCart() {
     if (!cart.length) {
         cartItemsEl.innerHTML = `
             <div class="empty">
-                Sua sacola está esperando por você.
+                Sua sacola estÃ¡ esperando por vocÃª.
             </div>
         `;
 
@@ -962,7 +962,7 @@ function updateModalStock(product) {
 
     if (stock <= 0) {
         productModalStockEl.textContent =
-            'Produto indisponível';
+            'Produto indisponÃ­vel';
 
         productModalStockEl.dataset.stockState =
             'out';
@@ -972,8 +972,8 @@ function updateModalStock(product) {
 
     productModalStockEl.textContent =
         stock === 1
-            ? '1 unidade disponível'
-            : `${stock} unidades disponíveis`;
+            ? '1 unidade disponÃ­vel'
+            : `${stock} unidades disponÃ­veis`;
 
     productModalStockEl.dataset.stockState =
         'available';
@@ -1048,13 +1048,13 @@ function renderProductModal(product) {
         String(
             product.description || ''
         ).trim() ||
-        'Descrição não informada.';
+        'DescriÃ§Ã£o nÃ£o informada.';
 
     const weight =
         String(
             product.weight || ''
         ).trim() ||
-        'Peso não informado';
+        'Peso nÃ£o informado';
 
     if (productModalCategoryEl) {
         productModalCategoryEl.textContent =
@@ -1103,8 +1103,8 @@ function renderProductModal(product) {
 
         modalAddToCartButton.textContent =
             unavailable
-                ? 'Indisponível'
-                : 'Adicionar à sacola';
+                ? 'IndisponÃ­vel'
+                : 'Adicionar Ã  sacola';
     }
 }
 
@@ -1129,7 +1129,7 @@ function openProductModal(
 
     if (!product) {
         console.error(
-            'Produto não encontrado para o SKU:',
+            'Produto nÃ£o encontrado para o SKU:',
             normalizedSku
         );
 
@@ -1198,7 +1198,7 @@ function closeProductModal() {
             false;
 
         modalAddToCartButton.textContent =
-            'Adicionar à sacola';
+            'Adicionar Ã  sacola';
     }
 
     const trigger =
@@ -1336,7 +1336,7 @@ filtersEl?.addEventListener(
     }
 );
 
-// Evento de clique na paginação
+// Evento de clique na paginaÃ§Ã£o
 paginationEl?.addEventListener(
     'click',
     event => {
@@ -1521,7 +1521,7 @@ document
     );
 
 /* =========================================================
-   INICIALIZAÇÃO
+   INICIALIZAÃ‡ÃƒO
    ========================================================= */
 
 async function init() {
@@ -1538,7 +1538,7 @@ async function init() {
 
     } catch (error) {
         console.error(
-            'Erro ao inicializar aplicação:',
+            'Erro ao inicializar aplicaÃ§Ã£o:',
             error
         );
 
@@ -1546,11 +1546,11 @@ async function init() {
             productsEl.innerHTML = `
                 <div class="catalog-error">
                     <h3>
-                        Não foi possível carregar o catálogo.
+                        NÃ£o foi possÃ­vel carregar o catÃ¡logo.
                     </h3>
 
                     <p>
-                        Tente atualizar a página.
+                        Tente atualizar a pÃ¡gina.
                     </p>
                 </div>
             `;
@@ -1561,7 +1561,7 @@ async function init() {
 init();
 
 /* ============================================================
-   AUREA_DISCOVERY_LAYER_V1
+   NEFER_DISCOVERY_LAYER_V1
    ============================================================ */
 
 (() => {

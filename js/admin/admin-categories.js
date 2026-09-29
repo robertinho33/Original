@@ -1,4 +1,4 @@
-﻿import { waitForAuthorizedAdmin } from "../auth/admin-guard.js";
+import { waitForAuthorizedAdmin } from "../auth/admin-guard.js";
 import { listCategories } from "./category-repository.js";
 
 const result = document.getElementById("categoryList");
@@ -46,11 +46,11 @@ async function init() {
 
         const categories = await listCategories();
 
-        console.log("[AUREA] Categorias carregadas:", categories);
+        console.log("[NEFER] Categorias carregadas:", categories);
 
         renderCategories(categories);
     } catch (error) {
-        console.error("[AUREA] Erro ao carregar categorias:", error);
+        console.error("[NEFER] Erro ao carregar categorias:", error);
 
         result.innerHTML = `
             <div class="error-state">

@@ -1,4 +1,4 @@
-﻿# AUREA — MANIFESTO DE DEPLOY
+# NEFER — MANIFESTO DE DEPLOY
 
 ## Aplicação
 
@@ -19,7 +19,7 @@ NODE_ENV=production
 
 ## Segredo administrativo
 
-AUREA_ADMIN_TOKEN
+NEFER_ADMIN_TOKEN
 
 ## CORS
 

@@ -1,4 +1,4 @@
-﻿# AUREA — CORE 09
+# NEFER — CORE 09
 
 ## Operação administrativa
 

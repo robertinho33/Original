@@ -1,10 +1,10 @@
-﻿'use strict';
+'use strict';
 
 const crypto = require('crypto');
 
 function getAdminToken() {
   return String(
-    process.env.AUREA_ADMIN_TOKEN || ''
+    process.env.NEFER_ADMIN_TOKEN || ''
   ).trim();
 }
 

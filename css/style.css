@@ -1857,7 +1857,7 @@ body.modal-open {
 
 
 /* ============================================================
-   AUREA_DISCOVERY_LAYER_V1
+   NEFER_DISCOVERY_LAYER_V1
    Camada isolada de descoberta de produtos.
    N?o altera carrinho, checkout, PIX ou pedidos.
    ============================================================ */
@@ -2002,7 +2002,7 @@ body.modal-open {
     }
 }
 
-/* AUREA MOBILE SAFETY �?" ETAPA 07/12 */
+/* NEFER MOBILE SAFETY �?" ETAPA 07/12 */
 
 /* Evita cálculo incorreto de largura em telas pequenas */
 html {
@@ -2085,7 +2085,7 @@ table {
     }
 }
 
-/* AUREA MOBILE SAFETY — ETAPA 07/12 */
+/* NEFER MOBILE SAFETY — ETAPA 07/12 */
 
 /* Evita cálculo incorreto de largura em telas pequenas */
 html {

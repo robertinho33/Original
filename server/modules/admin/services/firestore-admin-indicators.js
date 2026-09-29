@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * AURÉA — INDICADORES ADMINISTRATIVOS FIRESTORE
+ * NEFER — INDICADORES ADMINISTRATIVOS FIRESTORE
  *
  * Esta camada é a única responsável pelas regras de:
  * - estoque

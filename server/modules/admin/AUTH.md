@@ -1,10 +1,10 @@
-﻿# AUREA — CORE 12
+# NEFER — CORE 12
 
 ## Autenticação administrativa
 
 A API administrativa utiliza:
 
-Authorization: Bearer <AUREA_ADMIN_TOKEN>
+Authorization: Bearer <NEFER_ADMIN_TOKEN>
 
 O token deve possuir no mínimo 32 caracteres.
 
@@ -12,11 +12,11 @@ O token deve possuir no mínimo 32 caracteres.
 
 PowerShell:
 
-$env:AUREA_ADMIN_TOKEN = "SEU_TOKEN_FORTE"
+$env:NEFER_ADMIN_TOKEN = "SEU_TOKEN_FORTE"
 
 Produção:
 
-AUREA_ADMIN_TOKEN deve ser configurado
+NEFER_ADMIN_TOKEN deve ser configurado
 como variável secreta do ambiente.
 
 Nunca colocar o token:

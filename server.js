@@ -1,4 +1,4 @@
-﻿require("dotenv").config();
+require("dotenv").config();
 const aureaAdminRoutes = require("./server/modules/admin/admin-routes");
 const orderRoutes = require('./server/modules/orders/order-routes');
 const { applyHttpFoundation } = require('./server/core/http');
@@ -28,13 +28,13 @@ const PORT = process.env.PORT || 3000;
 
 /*
 =========================================================
- CONFIGURAÃƒâ€¡ÃƒÆ’O PIX
+ CONFIGURAÃƒÆ’Ã¢â‚¬Â¡ÃƒÆ’Ã†â€™O PIX
 =========================================================
 */
 
 const PIX_KEY = '+5511986215473';
 const PIX_CITY = 'SAO PAULO';
-const PIX_MERCHANT_NAME = 'AUREA COSMETICS';
+const PIX_MERCHANT_NAME = 'NEFER COSMETICS';
 
 /*
 =========================================================
@@ -81,7 +81,7 @@ app.use('/api/orders', orderRoutes);
 
 /*
 =========================================================
- UTILITÃƒÂRIOS PIX
+ UTILITÃƒÆ’Ã‚ÂRIOS PIX
 =========================================================
 */
 
@@ -140,7 +140,7 @@ function crc16(payload) {
 
 /*
 =========================================================
- NORMALIZAÃƒâ€¡ÃƒÆ’O DO TXID
+ NORMALIZAÃƒÆ’Ã¢â‚¬Â¡ÃƒÆ’Ã†â€™O DO TXID
 =========================================================
 */
 
@@ -169,7 +169,7 @@ function createPixPayload({ amount, orderId }) {
         numericAmount <= 0
     ) {
         throw new Error(
-            'Valor invÃƒÂ¡lido para o PIX.'
+            'Valor invÃƒÆ’Ã‚Â¡lido para o PIX.'
         );
     }
 
@@ -177,7 +177,7 @@ function createPixPayload({ amount, orderId }) {
         normalizeText(
             PIX_MERCHANT_NAME,
             25
-        ) || 'AUREA COSMETICS';
+        ) || 'NEFER COSMETICS';
 
     const city =
         normalizeText(
@@ -286,7 +286,7 @@ function createPixPayload({ amount, orderId }) {
 
 /*
 =========================================================
- API Ã¢â‚¬â€ CRIAR PIX
+ API ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â CRIAR PIX
 =========================================================
 */
 
@@ -307,14 +307,14 @@ app.post(
             if (!orderId) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Pedido sem identificação.'
+                    message: 'Pedido sem identificaÃ§Ã£o.'
                 });
             }
 
             if (!Number.isFinite(amount) || amount <= 0) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Valor do pedido inválido.'
+                    message: 'Valor do pedido invÃ¡lido.'
                 });
             }
 
@@ -324,14 +324,14 @@ app.post(
             });
 
             console.log(
-                `[AUREA PIX] cobrança criada: ${orderId} | R$ ${amount.toFixed(2)} | ${payment.txid}`
+                `[NEFER PIX] cobranÃ§a criada: ${orderId} | R$ ${amount.toFixed(2)} | ${payment.txid}`
             );
 
             return res.json(payment);
 
         } catch (error) {
             console.error(
-                '[AUREA PIX] erro:',
+                '[NEFER PIX] erro:',
                 error
             );
 
@@ -339,7 +339,7 @@ app.post(
                 success: false,
                 message:
                     error?.message ||
-                    'Erro ao criar cobrança PIX.'
+                    'Erro ao criar cobranÃ§a PIX.'
             });
         }
     }
@@ -364,7 +364,7 @@ app.listen(
             '========================================'
         );
         console.log(
-            ' AUREA COSMETICS Ã¢â‚¬â€ SERVIDOR'
+  ' NEFER COSMETICS — SERVIDOR'
         );
         console.log(
             '========================================'

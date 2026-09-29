@@ -95,7 +95,7 @@ function formatNumber(value) {
 function formatDate(value) {
 
     if (!value) {
-        return "Ã¢â‚¬â€";
+        return "�";
     }
 
     const date =
@@ -143,7 +143,7 @@ function labelize(value) {
         value === undefined ||
         value === ""
     ) {
-        return "Ã¢â‚¬â€";
+        return "�";
     }
 
     return String(value)
@@ -158,7 +158,7 @@ function labelize(value) {
 function renderStatus(status) {
 
     const value =
-        String(status ?? "Ã¢â‚¬â€");
+        String(status ?? "�");
 
     const normalized =
         value
@@ -234,7 +234,7 @@ function stockStatus(value) {
 
     return `
         <span class="admin-status-badge success">
-            DisponÃƒÂ­vel
+            Dispon�vel
         </span>
     `;
 }
@@ -263,7 +263,7 @@ function shell(title, subtitle = "") {
                 <div>
 
                     <span class="module-eyebrow">
-                        AURÃƒâ€°A ADMIN
+                        AUR�A ADMIN
                     </span>
 
                     <h2>
@@ -281,7 +281,7 @@ function shell(title, subtitle = "") {
             </div>
 
             <div class="admin-loading">
-                Preparando mÃƒÂ³dulo...
+                Preparando m�dulo...
             </div>
 
         </section>
@@ -393,7 +393,7 @@ function table(title, columns, rows) {
                                                     pick(
                                                         row,
                                                         column.keys || [],
-                                                        "Ã¢â‚¬â€"
+                                                        "�"
                                                     )
                                                 )
                                         }
@@ -423,7 +423,7 @@ async function load(section) {
     if (!root) {
 
         console.error(
-            "[AUREA ADMIN] #admin-root nÃƒÂ£o encontrado."
+            "[NEFER ADMIN] #admin-root n�o encontrado."
         );
 
         return;
@@ -447,7 +447,7 @@ async function load(section) {
 
         updateHeader(
             "Dashboard",
-            "VisÃƒÂ£o geral da operaÃƒÂ§ÃƒÂ£o da AURÃƒâ€°A"
+            "Vis�o geral da opera��o da AUR�A"
         );
 
         return;
@@ -458,27 +458,27 @@ async function load(section) {
 
         orders: [
             "Pedidos",
-            "GestÃƒÂ£o completa dos pedidos."
+            "Gest�o completa dos pedidos."
         ],
 
         products: [
             "Produtos",
-            "CatÃƒÂ¡logo, SKU, preÃƒÂ§os e disponibilidade."
+            "Cat�logo, SKU, pre�os e disponibilidade."
         ],
 
         categories: [
             "Categorias",
-            "OrganizaÃƒÂ§ÃƒÂ£o do catÃƒÂ¡logo."
+            "Organiza��o do cat�logo."
         ],
 
         inventory: [
             "Estoque",
-            "Saldo, movimentaÃƒÂ§ÃƒÂµes e disponibilidade."
+            "Saldo, movimenta��es e disponibilidade."
         ],
 
         customers: [
             "Clientes",
-            "Base comercial e histÃƒÂ³rico."
+            "Base comercial e hist�rico."
         ],
 
         finance: [
@@ -492,23 +492,23 @@ async function load(section) {
         ],
 
         logistics: [
-            "LogÃƒÂ­stica",
-            "ExpediÃƒÂ§ÃƒÂ£o, envio e rastreamento."
+            "Log�stica",
+            "Expedi��o, envio e rastreamento."
         ],
 
         reports: [
-            "RelatÃƒÂ³rios",
-            "InteligÃƒÂªncia operacional e comercial."
+            "Relat�rios",
+            "Intelig�ncia operacional e comercial."
         ],
 
         audit: [
             "Auditoria",
-            "HistÃƒÂ³rico das operaÃƒÂ§ÃƒÂµes administrativas."
+            "Hist�rico das opera��es administrativas."
         ],
 
         settings: [
-            "ConfiguraÃƒÂ§ÃƒÂµes",
-            "ParÃƒÂ¢metros centrais da AURÃƒâ€°A."
+            "Configura��es",
+            "Par�metros centrais da AUR�A."
         ]
 
     };
@@ -516,7 +516,7 @@ async function load(section) {
 
     const info =
         labels[section] || [
-            "AURÃƒâ€°A ADMIN",
+            "AUR�A ADMIN",
             ""
         ];
 
@@ -779,7 +779,7 @@ async function loadModuleData(section) {
             <div class="admin-error">
 
                 <strong>
-                    NÃƒÂ£o foi possÃƒÂ­vel carregar este mÃƒÂ³dulo.
+                    N�o foi poss�vel carregar este m�dulo.
                 </strong>
 
                 <div style="margin-top:7px;">
@@ -836,7 +836,7 @@ function renderProducts(content, products) {
                 )}
 
                 ${metricCard(
-                    "DisponÃƒÂ­veis",
+                    "Dispon�veis",
                     formatNumber(available)
                 )}
 
@@ -854,7 +854,7 @@ function renderProducts(content, products) {
 
 
             ${table(
-                "CatÃƒÂ¡logo de produtos",
+                "Cat�logo de produtos",
 
                 [
                     {
@@ -884,13 +884,13 @@ function renderProducts(content, products) {
                                 pick(
                                     row,
                                     ["category_name", "category"],
-                                    "Ã¢â‚¬â€"
+                                    "�"
                                 )
                             )
                     },
 
                     {
-                        label: "PreÃƒÂ§o",
+                        label: "Pre�o",
                         render: row =>
                             formatCurrency(
                                 pick(
@@ -914,7 +914,7 @@ function renderProducts(content, products) {
                     },
 
                     {
-                        label: "SituaÃƒÂ§ÃƒÂ£o",
+                        label: "Situa��o",
                         render: row =>
                             stockStatus(
                                 pick(
@@ -926,7 +926,7 @@ function renderProducts(content, products) {
                     }
 ,
                     {
-                        label: "AÃ§Ãµes",
+                        label: "A??es",
                         render: row => `
                             <button
                                 type="button"
@@ -984,7 +984,7 @@ function openProductEditor(product) {
         );
 
         showAdminToast?.(
-            "N�o foi poss�vel identificar o produto.",
+            "N?o foi poss?vel identificar o produto.",
             "error"
         );
 
@@ -1016,7 +1016,7 @@ function openProductEditor(product) {
                     </h2>
 
                     <p>
-                        Altera��es salvas no Firebase / Firestore.
+                        Altera??es salvas no Firebase / Firestore.
                     </p>
                 </div>
 
@@ -1025,7 +1025,7 @@ function openProductEditor(product) {
                     class="admin-product-editor-close"
                     aria-label="Fechar"
                 >
-                    �
+                    ?
                 </button>
 
             </div>
@@ -1078,7 +1078,7 @@ function openProductEditor(product) {
                     </label>
 
                     <label>
-                        Pre�o
+                        Preço
 
                         <input
                             name="price"
@@ -1100,7 +1100,7 @@ function openProductEditor(product) {
                     </label>
 
                     <label>
-                        Pre�o promocional
+                        Preço promocional
 
                         <input
                             name="promotionalPrice"
@@ -1145,7 +1145,7 @@ function openProductEditor(product) {
                     </label>
 
                     <label class="admin-product-editor-full">
-                        Descri��o
+                        Descri??o
 
                         <textarea
                             name="description"
@@ -1186,7 +1186,7 @@ function openProductEditor(product) {
                         type="submit"
                         class="admin-product-editor-save"
                     >
-                        Salvar altera��es
+                        Salvar altera??es
                     </button>
 
                 </div>
@@ -1424,7 +1424,7 @@ function openProductEditor(product) {
 
                 showAdminToast?.(
                     error?.message ||
-                    "N�o foi poss�vel salvar o produto.",
+                    "N?o foi poss?vel salvar o produto.",
                     "error"
                 );
 
@@ -1435,7 +1435,7 @@ function openProductEditor(product) {
 
                 saveButton.textContent =
                     saveButton.dataset.originalText ||
-                    "Salvar altera��es";
+                    "Salvar altera??es";
             }
         }
     );
@@ -1504,7 +1504,7 @@ function renderCategories(content, categories) {
                     },
 
                     {
-                        label: "DescriÃƒÂ§ÃƒÂ£o",
+                        label: "Descri��o",
                         keys: ["description", "details"]
                     },
 
@@ -1521,7 +1521,7 @@ function renderCategories(content, categories) {
                     }
 ,
                     {
-                        label: "AÃ§Ãµes",
+                        label: "A??es",
                         render: row => `
                             <button
                                 type="button"
@@ -1666,7 +1666,7 @@ function renderInventory(content, inventory) {
                     },
 
                     {
-                        label: "PreÃƒÂ§o",
+                        label: "Pre�o",
                         render: row =>
                             formatCurrency(
                                 pick(
@@ -1678,7 +1678,7 @@ function renderInventory(content, inventory) {
                     },
 
                     {
-                        label: "SituaÃƒÂ§ÃƒÂ£o",
+                        label: "Situa��o",
                         render: row =>
                             stockStatus(
                                 pick(
@@ -1690,7 +1690,7 @@ function renderInventory(content, inventory) {
                     }
 ,
                     {
-                        label: "AÃ§Ãµes",
+                        label: "A??es",
                         render: row => `
                             <button
                                 type="button"
@@ -1801,7 +1801,7 @@ function renderCustomers(content, customers) {
                     }
 ,
                     {
-                        label: "AÃ§Ãµes",
+                        label: "A??es",
                         render: row => `
                             <button
                                 type="button"
@@ -1882,7 +1882,7 @@ function renderFinance(content, finance) {
                 )}
 
                 ${metricCard(
-                    "Ticket mÃƒÂ©dio",
+                    "Ticket m�dio",
                     formatCurrency(average)
                 )}
 
@@ -1900,7 +1900,7 @@ function renderFinance(content, finance) {
 
                     <div>
                         <span class="module-eyebrow">
-                            VISÃƒÆ’O FINANCEIRA
+                            VIS�O FINANCEIRA
                         </span>
 
                         <h3>
@@ -1943,7 +1943,7 @@ function renderFinance(content, finance) {
                     <article class="admin-operation-card">
 
                         <span>
-                            Ticket mÃƒÂ©dio
+                            Ticket m�dio
                         </span>
 
                         <strong>
@@ -2010,14 +2010,14 @@ function renderCoupons(content, coupons) {
 
                 [
                     {
-                        label: "CÃƒÂ³digo",
+                        label: "C�digo",
                         render: row => `
                             <strong>
                                 ${escapeHtml(
                                     pick(
                                         row,
                                         ["code", "coupon_code"],
-                                        "Ã¢â‚¬â€"
+                                        "�"
                                     )
                                 )}
                             </strong>
@@ -2084,7 +2084,7 @@ function renderCoupons(content, coupons) {
                     }
 ,
                     {
-                        label: "AÃ§Ãµes",
+                        label: "A??es",
                         render: row => `
                             <button
                                 type="button"
@@ -2165,7 +2165,7 @@ function renderLogistics(content, shipments) {
 
 
             ${table(
-                "ExpediÃƒÂ§ÃƒÂ£o e rastreamento",
+                "Expedi��o e rastreamento",
 
                 [
                     {
@@ -2201,7 +2201,7 @@ function renderLogistics(content, shipments) {
                     },
 
                     {
-                        label: "AtualizaÃƒÂ§ÃƒÂ£o",
+                        label: "Atualiza��o",
                         render: row =>
                             formatDate(
                                 pick(
@@ -2213,7 +2213,7 @@ function renderLogistics(content, shipments) {
                     }
 ,
                     {
-                        label: "AÃ§Ãµes",
+                        label: "A??es",
                         render: row => `
                             <button
                                 type="button"
@@ -2298,7 +2298,7 @@ function renderReports(content, reports) {
                 )}
 
                 ${metricCard(
-                    "Ticket mÃƒÂ©dio",
+                    "Ticket m�dio",
                     formatCurrency(
                         pick(
                             metrics,
@@ -2317,7 +2317,7 @@ function renderReports(content, reports) {
 
 
             ${table(
-                "EvoluÃƒÂ§ÃƒÂ£o das vendas",
+                "Evolu��o das vendas",
 
                 [
                     {
@@ -2373,7 +2373,7 @@ function renderReports(content, reports) {
                                     pick(
                                         row,
                                         ["order_number", "number", "id"],
-                                        "Ã¢â‚¬â€"
+                                        "�"
                                     )
                                 )}
                             </strong>
@@ -2457,7 +2457,7 @@ function renderAudit(content, logs) {
 
 
             ${table(
-                "HistÃƒÂ³rico administrativo",
+                "Hist�rico administrativo",
 
                 [
                     {
@@ -2477,7 +2477,7 @@ function renderAudit(content, logs) {
                     },
 
                     {
-                        label: "AÃƒÂ§ÃƒÂ£o",
+                        label: "A��o",
                         render: row => `
                             <strong>
                                 ${escapeHtml(
@@ -2489,7 +2489,7 @@ function renderAudit(content, logs) {
                                                 "event",
                                                 "operation"
                                             ],
-                                            "Ã¢â‚¬â€"
+                                            "�"
                                         )
                                     )
                                 )}
@@ -2498,7 +2498,7 @@ function renderAudit(content, logs) {
                     },
 
                     {
-                        label: "UsuÃƒÂ¡rio",
+                        label: "Usu�rio",
                         keys: [
                             "user_name",
                             "admin_name",
@@ -2529,7 +2529,7 @@ function renderAudit(content, logs) {
                     }
 ,
                     {
-                        label: "AÃ§Ãµes",
+                        label: "A??es",
                         render: row => `
                             <button
                                 type="button"
@@ -2574,7 +2574,7 @@ function renderSettings(content, settings) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "ParÃƒÂ¢metros cadastrados",
+                    "Par�metros cadastrados",
                     formatNumber(list.length)
                 )}
 
@@ -2587,7 +2587,7 @@ function renderSettings(content, settings) {
 
 
             ${table(
-                "ParÃƒÂ¢metros da AURÃƒâ€°A",
+                "Par�metros da AUR�A",
 
                 [
                     {
@@ -2598,7 +2598,7 @@ function renderSettings(content, settings) {
                                     pick(
                                         row,
                                         ["key", "name", "setting_key"],
-                                        "Ã¢â‚¬â€"
+                                        "�"
                                     )
                                 )}
                             </strong>
@@ -2613,7 +2613,7 @@ function renderSettings(content, settings) {
                                 pick(
                                     row,
                                     ["value", "setting_value", "content"],
-                                    "Ã¢â‚¬â€"
+                                    "�"
                                 );
 
                             return `
@@ -2625,7 +2625,7 @@ function renderSettings(content, settings) {
                     },
 
                     {
-                        label: "DescriÃƒÂ§ÃƒÂ£o",
+                        label: "Descri��o",
                         keys: [
                             "description",
                             "label",
@@ -2634,7 +2634,7 @@ function renderSettings(content, settings) {
                     },
 
                     {
-                        label: "AtualizaÃƒÂ§ÃƒÂ£o",
+                        label: "Atualiza��o",
                         render: row =>
                             formatDate(
                                 pick(
@@ -2646,7 +2646,7 @@ function renderSettings(content, settings) {
                     }
 ,
                     {
-                        label: "AÃ§Ãµes",
+                        label: "A??es",
                         render: row => `
                             <button
                                 type="button"
@@ -2689,12 +2689,12 @@ function renderOrders(content, orders) {
 
             const orderNumber =
                 order.order_number ||
-                `#${order.id ?? "Ã¢â‚¬â€"}`;
+                `#${order.id ?? "�"}`;
 
             const customerName =
                 order.customer?.name ||
                 order.customer_name ||
-                "Cliente nÃƒÂ£o identificado";
+                "Cliente n�o identificado";
 
             const total =
                 Number(
@@ -2706,12 +2706,12 @@ function renderOrders(content, orders) {
 
             const orderStatus =
                 order.status ||
-                "Ã¢â‚¬â€";
+                "�";
 
             const paymentStatus =
                 order.payment_status ||
                 order.payment?.status ||
-                "Ã¢â‚¬â€";
+                "�";
 
 
             return `
@@ -2789,7 +2789,7 @@ function renderOrders(content, orders) {
                     <div>
 
                         <span class="module-eyebrow">
-                            OPERAÃƒâ€¡ÃƒÆ’O
+                            OPERA��O
                         </span>
 
                         <h3>
@@ -2814,7 +2814,7 @@ function renderOrders(content, orders) {
                                 <th>Total</th>
                                 <th>Pedido</th>
                                 <th>Pagamento</th>
-                                <th>AÃƒÂ§ÃƒÂµes</th>
+                                <th>A��es</th>
 
                             </tr>
 
@@ -2906,7 +2906,7 @@ async function openOrderDetails(orderId) {
 
         if (!data) {
             throw new Error(
-                "Pedido nÃƒÂ£o encontrado."
+                "Pedido n�o encontrado."
             );
         }
 
@@ -2924,7 +2924,7 @@ async function openOrderDetails(orderId) {
 
                 ${escapeHtml(
                     error?.message ||
-                    "NÃƒÂ£o foi possÃƒÂ­vel carregar os detalhes."
+                    "N�o foi poss�vel carregar os detalhes."
                 )}
 
             </div>
@@ -2972,7 +2972,7 @@ function createOrderModal() {
                     <div>
 
                         <span class="module-eyebrow">
-                            AURÃƒâ€°A ADMIN
+                            AUR�A ADMIN
                         </span>
 
                         <h2 id="adminOrderModalTitle">
@@ -2988,7 +2988,7 @@ function createOrderModal() {
                         data-close-order-modal
                         aria-label="Fechar"
                     >
-                        Ãƒâ€”
+                        �
                     </button>
 
                 </div>
@@ -3182,7 +3182,7 @@ function renderOrderDetails(content, order) {
                     </article>
 
                     <article class="admin-operation-card">
-                        <span>Log?stica</span>
+                        <span>Logística</span>
                         <strong>
                             ${escapeHtml(logisticsLabel)}
                         </strong>
@@ -3226,7 +3226,7 @@ function renderOrderDetails(content, order) {
                                     type="button"
                                     id="advanceOrderLogistics"
                                 >
-                                    Avan?ar log?stica
+                                    Avançar log?stica
                                 </button>
                             `
                             : ""
@@ -3302,7 +3302,7 @@ function renderOrderDetails(content, order) {
                             <tr>
                                 <th>Produto</th>
                                 <th>Qtd.</th>
-                                <th>Pre?o</th>
+                                <th>Preço</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
@@ -3334,7 +3334,7 @@ function renderOrderDetails(content, order) {
 
                     <div>
                         <span class="module-eyebrow">
-                            HIST?RICO
+                            HISTÓRICO
                         </span>
 
                         <h3>
@@ -3479,14 +3479,14 @@ function renderOrderDetails(content, order) {
    ============================================================ */
 
 document.addEventListener("click", async (event) => {
-    // 1. Intercepta o clique no botão Editar Produto
+    // 1. Intercepta o clique no bot?o Editar Produto
     const editBtn = event.target.closest(".admin-product-edit");
     if (editBtn) {
         event.preventDefault();
         const productId = editBtn.dataset.productId;
 
         if (!productId) {
-            console.error("ID do produto não encontrado no botão.");
+            console.error("ID do produto n?o encontrado no bot?o.");
             return;
         }
 
@@ -3502,18 +3502,18 @@ document.addEventListener("click", async (event) => {
             if (product) {
                 openProductEditor(product);
             } else {
-                alert("Produto não encontrado para edição.");
+                alert("Produto n?o encontrado para edi??o.");
             }
         } catch (error) {
-            console.error("Erro ao carregar produto para edição:", error);
+            console.error("Erro ao carregar produto para edi??o:", error);
         }
         return;
     }
 
-    // 2. Navegação por seções (código já existente no seu arquivo)
+    // 2. Navega??o por se??es (c?digo j? existente no seu arquivo)
     const sectionButton = event.target.closest("[data-admin-section]");
     if (sectionButton) {
-        // ... sua lógica existente de trocar de seção ...
+        // ... sua l?gica existente de trocar de se??o ...
     }
 });
 
@@ -3631,7 +3631,7 @@ window.location.href =
 
 load("dashboard");
 
-/** AUREA_PRODUCT_EDIT_HANDLER_V2_START */
+/** NEFER_PRODUCT_EDIT_HANDLER_V2_START */
 (function installAureaProductEditHandler() {
     if (window.__aureaProductEditHandlerV2) {
         return;
@@ -3655,13 +3655,13 @@ load("dashboard");
 
         if (!productId) {
             console.error(
-                "[AUREA ADMIN] Editar: data-product-id vazio."
+                "[NEFER ADMIN] Editar: data-product-id vazio."
             );
             return;
         }
 
         console.log(
-            "[AUREA ADMIN] Editar clicado:",
+            "[NEFER ADMIN] Editar clicado:",
             productId
         );
 
@@ -3691,7 +3691,7 @@ load("dashboard");
                     typeof window.AdminAPI.products === "function"
                 ) {
                     console.log(
-                        "[AUREA ADMIN] Buscando produto pela AdminAPI..."
+                        "[NEFER ADMIN] Buscando produto pela AdminAPI..."
                     );
 
                     const result =
@@ -3720,7 +3720,7 @@ load("dashboard");
                 }
             } catch (error) {
                 console.error(
-                    "[AUREA ADMIN] Falha ao buscar produto:",
+                    "[NEFER ADMIN] Falha ao buscar produto:",
                     error
                 );
             }
@@ -3728,7 +3728,7 @@ load("dashboard");
 
         if (!product) {
             console.error(
-                "[AUREA ADMIN] Produto nao encontrado:",
+                "[NEFER ADMIN] Produto nao encontrado:",
                 productId
             );
             return;
@@ -3736,13 +3736,13 @@ load("dashboard");
 
         if (typeof openProductEditor !== "function") {
             console.error(
-                "[AUREA ADMIN] openProductEditor() nao esta acessivel."
+                "[NEFER ADMIN] openProductEditor() nao esta acessivel."
             );
             return;
         }
 
         console.log(
-            "[AUREA ADMIN] Abrindo editor:",
+            "[NEFER ADMIN] Abrindo editor:",
             product
         );
 
@@ -3752,12 +3752,12 @@ load("dashboard");
     window.__aureaProductEditHandlerV2 = true;
 
     console.log(
-        "[AUREA ADMIN] Handler V2 do Editar instalado."
+        "[NEFER ADMIN] Handler V2 do Editar instalado."
     );
 })();
-/** AUREA_PRODUCT_EDIT_HANDLER_V2_END */
+/** NEFER_PRODUCT_EDIT_HANDLER_V2_END */
 /* ============================================================
-   AUREA — POP-UP REAL DO EDITOR DE PRODUTOS
+   NEFER ? POP-UP REAL DO EDITOR DE PRODUTOS
    ============================================================ */
 
 (function installAureaProductEditorPopupStyle() {
@@ -3821,7 +3821,7 @@ load("dashboard");
             opacity: 1 !important;
         }
 
-        /* CABEÇALHO */
+        /* CABE?ALHO */
         .admin-product-editor .admin-product-editor-header {
             display: flex !important;
             align-items: flex-start !important;
@@ -3852,7 +3852,7 @@ load("dashboard");
             font-size: 13px !important;
         }
 
-        /* BOTÃO X */
+        /* BOT?O X */
         .admin-product-editor .admin-product-editor-close {
             flex: 0 0 auto !important;
 
@@ -3882,7 +3882,7 @@ load("dashboard");
             transform: scale(1.05) !important;
         }
 
-        /* FORMULÁRIO */
+        /* FORMUL?RIO */
         .admin-product-editor .admin-product-editor-form {
             display: grid !important;
             gap: 18px !important;
@@ -3957,7 +3957,7 @@ load("dashboard");
             resize: vertical !important;
         }
 
-        /* ÁREA DOS BOTÕES */
+        /* ?REA DOS BOT?ES */
         .admin-product-editor .admin-product-editor-actions {
             display: flex !important;
 
@@ -4034,7 +4034,7 @@ load("dashboard");
     document.head.appendChild(style);
 
     console.log(
-        "[AUREA ADMIN] Estilo do popup de produtos instalado."
+        "[NEFER ADMIN] Estilo do popup de produtos instalado."
     );
 
 })();

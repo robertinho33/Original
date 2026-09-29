@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import {
     normalizeCatalogProducts
@@ -22,7 +22,7 @@ import {
  *   ↓
  * enriquecimento
  *   ↓
- * contrato AURÉA
+ * contrato NEFER
  *
  * Este módulo permanece isolado do:
  * - carrinho;
@@ -294,7 +294,7 @@ function getWeight(product) {
 
 /**
  * Converte um produto EcoBelle
- * para o contrato interno da AURÉA.
+ * para o contrato interno da NEFER.
  */
 export function mapEcoBelleProduct(
     product = {}
@@ -479,7 +479,7 @@ async function enrichProducts(
  * 2. Extrai produtos estruturados.
  * 3. Remove duplicados.
  * 4. Enriquece pela página individual.
- * 5. Normaliza para o contrato AURÉA.
+ * 5. Normaliza para o contrato NEFER.
  */
 export async function loadEcoBelleProducts() {
 

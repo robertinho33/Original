@@ -1,4 +1,4 @@
-﻿import {
+import {
     loginAdmin,
     observeAdminAuth
 } from '../auth/admin-auth.js';
@@ -82,7 +82,7 @@ if (form) {
             } catch (error) {
 
                 console.error(
-                    '[AUREA AUTH]',
+                    '[NEFER AUTH]',
                     error
                 );
 
@@ -105,7 +105,7 @@ observeAdminAuth(user => {
     if (user) {
 
         console.log(
-            '[AUREA AUTH] Administrador autenticado:',
+            '[NEFER AUTH] Administrador autenticado:',
             user.email
         );
 
@@ -113,6 +113,6 @@ observeAdminAuth(user => {
     }
 
     console.log(
-        '[AUREA AUTH] Nenhuma sessão administrativa ativa.'
+        '[NEFER AUTH] Nenhuma sessão administrativa ativa.'
     );
 });

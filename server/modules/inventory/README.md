@@ -1,4 +1,4 @@
-﻿# AUREA — CORE 10
+# NEFER — CORE 10
 
 ## Estoque persistente
 

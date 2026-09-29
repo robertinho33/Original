@@ -1,9 +1,9 @@
-# Auréa �?" Web App
+# NEFER — Web App
 
-Uma aplicação web de loja de beleza criada do zero, sem framework, com:
+Uma aplicaÃƒÂ§ÃƒÂ£o web de loja de beleza criada do zero, sem framework, com:
 - layout responsivo;
-- catálogo filtrável;
+- catÃƒÂ¡logo filtrÃƒÂ¡vel;
 - sacola lateral;
-- persistência da sacola em localStorage;
-- cálculo de total;
+- persistÃƒÂªncia da sacola em localStorage;
+- cÃƒÂ¡lculo de total;
 - estrutura simples para evoluir para Firebase/API/checkout real.

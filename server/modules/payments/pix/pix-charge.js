@@ -1,16 +1,16 @@
-﻿'use strict';
+'use strict';
 
 const PIX_KEY =
-    process.env.AUREA_PIX_KEY ||
+    process.env.NEFER_PIX_KEY ||
     '+5511986215473';
 
 const PIX_CITY =
-    process.env.AUREA_PIX_CITY ||
+    process.env.NEFER_PIX_CITY ||
     'SAO PAULO';
 
 const PIX_MERCHANT_NAME =
-    process.env.AUREA_PIX_MERCHANT_NAME ||
-    'AUREA COSMETICS';
+    process.env.NEFER_PIX_MERCHANT_NAME ||
+    'NEFER COSMETICS';
 
 function normalizeText(value, maxLength) {
     return String(value || '')
@@ -70,7 +70,7 @@ function createPixPayload({ amount, orderId }) {
 
     const merchantName =
         normalizeText(PIX_MERCHANT_NAME, 25) ||
-        'AUREA COSMETICS';
+        'NEFER COSMETICS';
 
     const city =
         normalizeText(PIX_CITY, 15) ||

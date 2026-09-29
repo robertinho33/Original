@@ -1,6 +1,6 @@
 const PIX_KEY = '11986215473';
 const PIX_CITY = 'SAO PAULO'; 
-const PIX_MERCHANT_NAME = 'AUREA COSMETICS';
+const PIX_MERCHANT_NAME = 'NEFER COSMETICS';
 
 function normalizeText(value, maxLength) {
 return String(value || '')
@@ -68,7 +68,7 @@ const merchantName =
     normalizeText(
         PIX_MERCHANT_NAME,
         25
-    ) || 'AUREA COSMETICS';
+    ) || 'NEFER COSMETICS';
 
 const city =
     normalizeText(

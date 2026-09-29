@@ -1,4 +1,4 @@
-﻿# AUREA COSMETICS
+# NEFER COSMETICS
 # CHECKLIST OPERACIONAL DE PUBLICAÇÃO
 
 ## 1. SERVIDOR
@@ -19,7 +19,7 @@ PORT
 
 NODE_ENV=production
 PORT=3000
-AUREA_ADMIN_TOKEN=<segredo>
+NEFER_ADMIN_TOKEN=<segredo>
 
 ## 3. SEGURANÇA
 
@@ -53,7 +53,7 @@ GET /api/monitoring/metrics
 
 Endpoints administrativos exigem:
 
-Authorization: Bearer <AUREA_ADMIN_TOKEN>
+Authorization: Bearer <NEFER_ADMIN_TOKEN>
 
 ## 7. DOMÍNIO
 

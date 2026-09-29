@@ -1,4 +1,4 @@
-﻿# AUREA COSMETICS — DEPLOY
+# NEFER COSMETICS — DEPLOY
 
 ## 1. GitHub
 
@@ -31,7 +31,7 @@ Environment
 
 Criar:
 
-AUREA_ADMIN_TOKEN
+NEFER_ADMIN_TOKEN
 
 O valor deve possuir pelo menos
 32 caracteres.

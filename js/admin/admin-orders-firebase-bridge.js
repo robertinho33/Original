@@ -56,4 +56,4 @@ window.dispatchEvent(
     new CustomEvent('aurea:firebase-orders-ready')
 );
 
-console.info('[AUREA] Firebase Orders conectado.');
+console.info('[NEFER] Firebase Orders conectado.');

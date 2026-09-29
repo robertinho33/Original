@@ -1,4 +1,4 @@
-﻿# AUREA — CORE 13
+# NEFER — CORE 13
 
 ## Observabilidade
 
@@ -37,7 +37,7 @@ ao diretório de dados.
 
 NODE_ENV=production
 
-AUREA_ADMIN_TOKEN deve existir
+NEFER_ADMIN_TOKEN deve existir
 e possuir pelo menos 32 caracteres.
 
 Segredos devem permanecer

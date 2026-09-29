@@ -13,7 +13,7 @@ export async function renderOperationalEnvironment(root) {
         <section class="module-panel">
             <div class="module-panel-header">
                 <div>
-                    <span class="module-eyebrow">AURÉA COSMETICS</span>
+                    <span class="module-eyebrow">NEFER COSMETICS</span>
                     <h2>Ambiente operacional</h2>
                     <p>Visão consolidada da operação.</p>
                 </div>

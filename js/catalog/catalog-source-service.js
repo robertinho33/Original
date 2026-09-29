@@ -1,7 +1,7 @@
-﻿'use strict';
+'use strict';
 
 /**
- * Serviço central das fontes de catálogo da AURÉA.
+ * Serviço central das fontes de catálogo da NEFER.
  *
  * Responsabilidades:
  * - executar fontes de catálogo de forma isolada;

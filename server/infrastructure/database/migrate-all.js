@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -273,7 +273,7 @@ async function migrateAudit() {
 async function main() {
     console.log('');
     console.log('==================================================');
-    console.log(' AUREA — MIGRAÇÃO JSON → POSTGRESQL');
+    console.log(' NEFER — MIGRAÇÃO JSON → POSTGRESQL');
     console.log('==================================================');
 
     console.log('[1/4] Verificando banco...');

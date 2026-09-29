@@ -1,4 +1,4 @@
-﻿import {
+import {
     collection,
     getDocs,
     query,
@@ -57,7 +57,7 @@ function status(message) {
         result.textContent = message;
     }
 
-    console.log("[AUREA]", message);
+    console.log("[NEFER]", message);
 }
 
 async function countCategories() {
@@ -124,12 +124,12 @@ async function seedCategories() {
         );
 
         console.log(
-            "[AUREA] Categorias oficiais:",
+            "[NEFER] Categorias oficiais:",
             OFFICIAL_CATEGORIES
         );
 
     } catch (error) {
-        console.error("[AUREA] Erro no seed:", error);
+        console.error("[NEFER] Erro no seed:", error);
 
         status(
             `ERRO AO CRIAR CATEGORIAS: ${error.message}`
