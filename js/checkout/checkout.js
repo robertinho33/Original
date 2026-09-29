@@ -8,7 +8,7 @@ import { saveOrder as persistOrder } from '../orders/order-service.js';
 
 
 /* =========================================================
-   CONFIGURAï¿½?ï¿½fO
+   CONFIGURAÇÃO
    ========================================================= */
 
 const CART_STORAGE_KEY = 'aurea-cart';
@@ -151,7 +151,7 @@ const elements = {
 
 
 /* =========================================================
-   UTILITÃRIOS
+   UTILITÁRIOS
    ========================================================= */
 
 function formatCurrency(value) {
@@ -370,9 +370,9 @@ function normalizeProduct(product) {
 
         price:
             parsePrice(
-                product['PreÃ§o'] ??
+                product['Preço'] ??
                 product.Preco ??
-                product['preÃ§o'] ??
+                product['preço'] ??
                 product.preco ??
                 product.Price ??
                 product.price ??
@@ -392,9 +392,9 @@ function normalizeProduct(product) {
             '',
 
         description:
-            product['DescriÃ§Ã£o'] ??
+            product['Descrição'] ??
             product.Descricao ??
-            product['descriÃ§Ã£o'] ??
+            product['descrição'] ??
             product.descricao ??
             ''
     };
@@ -402,6 +402,7 @@ function normalizeProduct(product) {
 
 
 async function loadProducts() {
+
     const catalogProducts =
         await loadCatalogProducts();
 
@@ -411,6 +412,7 @@ async function loadProducts() {
                 product?.active !== false
         )
         .map(product => ({
+
             ...product,
 
             sku: String(
@@ -433,6 +435,8 @@ async function loadProducts() {
             )
         }));
 }
+
+
 async function handleCep() {
 
     if (!elements.cep) {
@@ -458,8 +462,9 @@ async function handleCep() {
     }
 
     if (elements.cepStatus) {
+
         elements.cepStatus.textContent =
-            'Consultando endereÃ§o...';
+            'Consultando endereço...';
 
         elements.cepStatus.style.color =
             '';
@@ -472,7 +477,7 @@ async function handleCep() {
 
         if (!address) {
             throw new Error(
-                'CEP nÃ£o encontrado.'
+                'CEP não encontrado.'
             );
         }
 
@@ -499,7 +504,7 @@ async function handleCep() {
         if (elements.cepStatus) {
 
             elements.cepStatus.textContent =
-                'EndereÃ§o preenchido automaticamente.';
+                'Endereço preenchido automaticamente.';
 
             elements.cepStatus.style.color =
                 'var(--success)';
@@ -517,7 +522,7 @@ async function handleCep() {
         if (elements.cepStatus) {
 
             elements.cepStatus.textContent =
-                'NÃ£o foi possÃ­vel localizar este CEP.';
+                'Não foi possível localizar este CEP.';
 
             elements.cepStatus.style.color =
                 'var(--danger)';
@@ -527,7 +532,7 @@ async function handleCep() {
 
 
 /* =========================================================
-   VALIDAï¿½?ï¿½fO
+   VALIDAÇÃO
    ========================================================= */
 
 function clearValidation() {
@@ -608,103 +613,102 @@ function validateForm() {
     ) {
         valid = false;
     }
+if (
+    !elements.customerEmail?.value.trim() ||
+    !validateEmail(
+        elements.customerEmail.value
+    )
+) {
 
-    if (
-        !elements.customerEmail?.value.trim() ||
-        !validateEmail(
-            elements.customerEmail.value
-        )
-    ) {
+    markInvalid(
+        elements.customerEmail
+    );
 
-        markInvalid(
-            elements.customerEmail
-        );
+    valid = false;
+}
 
-        valid = false;
-    }
+if (
+    !validatePhone(
+        elements.customerPhone?.value
+    )
+) {
 
-    if (
-        !validatePhone(
-            elements.customerPhone?.value
-        )
-    ) {
+    markInvalid(
+        elements.customerPhone
+    );
 
-        markInvalid(
-            elements.customerPhone
-        );
+    valid = false;
+}
 
-        valid = false;
-    }
+if (delivery === 'delivery') {
 
-    if (delivery === 'delivery') {
+    const requiredAddress = [
 
-        const requiredAddress = [
+        elements.cep,
+        elements.street,
+        elements.number,
+        elements.neighborhood,
+        elements.city,
+        elements.state
+    ];
 
-            elements.cep,
-            elements.street,
-            elements.number,
-            elements.neighborhood,
-            elements.city,
-            elements.state
-        ];
-
-        requiredAddress.forEach(input => {
-
-            if (
-                !validateRequired(input)
-            ) {
-                valid = false;
-            }
-        });
+    requiredAddress.forEach(input => {
 
         if (
-            onlyDigits(
-                elements.cep?.value
-            ).length !== 8
+            !validateRequired(input)
         ) {
-
-            markInvalid(
-                elements.cep
-            );
-
             valid = false;
         }
-    }
+    });
 
-    const paymentMethod =
+    if (
+        onlyDigits(
+            elements.cep?.value
+        ).length !== 8
+    ) {
+
+        markInvalid(
+            elements.cep
+        );
+
+        valid = false;
+    }
+}
+
+const paymentMethod =
+    document.querySelector(
+        'input[name="paymentMethod"]:checked'
+    );
+
+if (!paymentMethod) {
+
+    const paymentError =
         document.querySelector(
-            'input[name="paymentMethod"]:checked'
+            '[data-payment-error]'
         );
 
-    if (!paymentMethod) {
+    if (paymentError) {
 
-        const paymentError =
-            document.querySelector(
-                '[data-payment-error]'
-            );
-
-        if (paymentError) {
-
-            paymentError.textContent =
-                'Selecione uma forma de pagamento.';
-        }
-
-        valid = false;
+        paymentError.textContent =
+            'Selecione uma forma de pagamento.';
     }
 
-    const items =
-        getCartItems();
+    valid = false;
+}
 
-    if (!items.length) {
+const items =
+    getCartItems();
 
-        showMessage(
-            'Seu carrinho estÃ¡ vazio. Adicione produtos antes de finalizar o pedido.'
-        );
+if (!items.length) {
 
-        valid = false;
-    }
+    showMessage(
+        'Seu carrinho está vazio. Adicione produtos antes de finalizar o pedido.'
+    );
 
-    return valid;
+    valid = false;
+}
+
+return valid;
 }
 
 
@@ -961,8 +965,8 @@ function createOrder() {
    PIX
    =========================================================
    IMPORTANTE:
-   A lÃ³gica de geraÃ§Ã£o PIX abaixo permanece preservada.
-   A validaÃ§Ã£o/UX do PIX pertence Ã  ETAPA 05/12.
+   A lógica de geração PIX abaixo permanece preservada.
+   A validação/UX do PIX pertence à ETAPA 05/12.
    ========================================================= */
 
 async function createPixPayment(order) {
@@ -1005,7 +1009,7 @@ async function createPixPayment(order) {
 
         throw new Error(
             result?.message ||
-            'O servidor nÃ£o conseguiu criar o pagamento PIX.'
+            'O servidor não conseguiu criar o pagamento PIX.'
         );
     }
 
@@ -1063,7 +1067,7 @@ function renderPixPayment(result) {
     if (!qrSource && !copyCode) {
 
         throw new Error(
-            'O servidor criou o PIX, mas nÃ£o retornou os dados do pagamento.'
+            'O servidor criou o PIX, mas não retornou os dados do pagamento.'
         );
     }
 
@@ -1141,7 +1145,7 @@ function showSuccess(order) {
         if (elements.successMessage) {
 
             elements.successMessage.textContent =
-                'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os prÃ³ximos passos.';
+                'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os próximos passos.';
         }
     }
 
@@ -1174,13 +1178,13 @@ async function copyPixCode() {
         if (elements.pixCopyStatus) {
 
             elements.pixCopyStatus.textContent =
-                'CÃ³digo PIX copiado.';
+                'Código PIX copiado.';
         }
 
     } catch (error) {
 
         console.warn(
-            '[PIX] Clipboard indisponÃ­vel:',
+            '[PIX] Clipboard indisponível:',
             error
         );
 
@@ -1193,7 +1197,7 @@ async function copyPixCode() {
         if (elements.pixCopyStatus) {
 
             elements.pixCopyStatus.textContent =
-                'CÃ³digo PIX copiado.';
+                'Código PIX copiado.';
         }
     }
 }
@@ -1250,9 +1254,9 @@ async function handleSubmit(event) {
 
         /*
          * O PIX precisa ser gerado antes da primeira
-         * gravaÃ§Ã£o do pedido.
+         * gravação do pedido.
          *
-         * Assim o pedido Ã© salvo somente uma vez.
+         * Assim o pedido é salvo somente uma vez.
          */
 
         if (
@@ -1289,55 +1293,55 @@ async function handleSubmit(event) {
                     );
 
                 order.payment.status =
-    pixResult.status || 'pending';
+                    pixResult.status || 'pending';
 
-order.payment.provider =
-    pixResult.provider || 'aurea-pix-core';
+                order.payment.provider =
+                    pixResult.provider || 'aurea-pix-core';
 
-order.payment.orderId =
-    pixResult.order_id || order.id;
+                order.payment.orderId =
+                    pixResult.order_id || order.id;
 
-order.payment.txid =
-    pixResult.txid || '';
+                order.payment.txid =
+                    pixResult.txid || '';
 
-order.payment.pixKey =
-    pixResult.pix_key || '';
+                order.payment.pixKey =
+                    pixResult.pix_key || '';
 
-order.payment.pixCity =
-    pixResult.pix_city || '';
+                order.payment.pixCity =
+                    pixResult.pix_city || '';
 
-order.payment.merchantName =
-    pixResult.pix_merchant_name || '';
+                order.payment.merchantName =
+                    pixResult.pix_merchant_name || '';
 
-order.payment.pixCode =
-    pixResult.pix_code || '';
+                order.payment.pixCode =
+                    pixResult.pix_code || '';
 
-order.payment.pixGeneratedAt =
-    new Date().toISOString();
+                order.payment.pixGeneratedAt =
+                    new Date().toISOString();
 
-appendOrderEvent(
-    order,
-    ORDER_EVENT.PIX_GENERATED,
-    {
-        amount:
-            pixResult.amount,
+                appendOrderEvent(
+                    order,
+                    ORDER_EVENT.PIX_GENERATED,
+                    {
+                        amount:
+                            pixResult.amount,
 
-        provider:
-            pixResult.provider,
+                        provider:
+                            pixResult.provider,
 
-        status:
-            pixResult.status,
+                        status:
+                            pixResult.status,
 
-        orderId:
-            pixResult.order_id,
+                        orderId:
+                            pixResult.order_id,
 
-        txid:
-            pixResult.txid,
+                        txid:
+                            pixResult.txid,
 
-        pixKey:
-            pixResult.pix_key
-    }
-);
+                        pixKey:
+                            pixResult.pix_key
+                    }
+                );
 
                 elements.pixPaymentContainer.innerHTML = `
                     <div class="pix-heading">
@@ -1351,7 +1355,7 @@ appendOrderEvent(
                         </h3>
 
                         <p>
-                            Escaneie o QR Code ou copie o cÃ³digo PIX.
+                            Escaneie o QR Code ou copie o código PIX.
                         </p>
 
                     </div>
@@ -1436,17 +1440,17 @@ appendOrderEvent(
                 );
 
                 throw new Error(
-                    'NÃ£o foi possÃ­vel gerar o PIX. ' +
-                    'O pedido nÃ£o foi registrado. Tente novamente.'
+                    'Não foi possível gerar o PIX. ' +
+                    'O pedido não foi registrado. Tente novamente.'
                 );
             }
         }
 
 
         /*
-         * ï¿½sNICA gravaÃ§Ã£o do pedido.
+         * ÚNICA gravação do pedido.
          *
-         * No caso do PIX, o objeto jÃ¡ contÃ©m:
+         * No caso do PIX, o objeto já contém:
          *
          * - pixCode
          * - pixGeneratedAt
@@ -1469,8 +1473,8 @@ appendOrderEvent(
 
 
         /*
-         * O pedido foi concluÃ­do.
-         * NÃ£o deixamos o botÃ£o continuar bloqueado
+         * O pedido foi concluído.
+         * Não deixamos o botão continuar bloqueado
          * como se ainda estivesse processando.
          */
 
@@ -1486,7 +1490,7 @@ appendOrderEvent(
 
         showMessage(
             error?.message ||
-            'NÃ£o foi possÃ­vel finalizar o pedido. Tente novamente.'
+            'Não foi possível finalizar o pedido. Tente novamente.'
         );
 
         elements.submitOrder.disabled =
@@ -1648,7 +1652,7 @@ function setupEvents() {
 
 
 /* =========================================================
-   INICIALIZAï¿½?ï¿½fO
+   INICIALIZAÇÃO
    ========================================================= */
 
 async function init() {
@@ -1665,7 +1669,7 @@ async function init() {
         if (!cart.length) {
 
             showMessage(
-                'Sua sacola estÃ¡ vazia. Volte Ã  loja e adicione produtos.'
+                'Sua sacola está vazia. Volte à loja e adicione produtos.'
             );
 
             if (elements.submitOrder) {
@@ -1678,6 +1682,7 @@ async function init() {
 
 
         products = await loadProducts();
+
         cart =
             cart
                 .map(normalizeCartItem)
@@ -1696,7 +1701,7 @@ async function init() {
             );
 
             showMessage(
-                'Os produtos da sua sacola nÃ£o estÃ£o mais disponÃ­veis.'
+                'Os produtos da sua sacola não estão mais disponíveis.'
             );
 
             if (elements.submitOrder) {
@@ -1722,12 +1727,12 @@ async function init() {
     } catch (error) {
 
         console.error(
-            '[CHECKOUT] Falha na inicializaÃ§Ã£o:',
+            '[CHECKOUT] Falha na inicialização:',
             error
         );
 
         showMessage(
-            'NÃ£o foi possÃ­vel carregar o checkout. Atualize a pÃ¡gina e tente novamente.'
+            'Não foi possível carregar o checkout. Atualize a página e tente novamente.'
         );
 
         if (elements.submitOrder) {
