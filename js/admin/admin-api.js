@@ -127,8 +127,24 @@ const adminApi = {
     finance:
         () => request("/finance"),
 
-    coupons:
-        () => request("/coupons"),
+    coupons: () => request("/coupons"),
+
+createCoupon: data =>
+    request("/coupons", {
+        method: "POST",
+        body: JSON.stringify(data)
+    }),
+
+updateCoupon: (id, data) =>
+    request(`/coupons/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+    }),
+
+deleteCoupon: id =>
+    request(`/coupons/${encodeURIComponent(id)}`, {
+        method: "DELETE"
+    }),
 
     logistics:
         () => request("/logistics"),

@@ -132,6 +132,53 @@ async function settings(req, res, next) {
     }
 }
 
+async function createCoupon(req, res, next) {
+    try {
+        const coupon =
+            await adminService.createCoupon(req.body);
+
+        res.status(201).json({
+            success: true,
+            data: coupon
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function updateCoupon(req, res, next) {
+    try {
+        const coupon =
+            await adminService.updateCoupon(
+                req.params.id,
+                req.body
+            );
+
+        res.json({
+            success: true,
+            data: coupon
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function deleteCoupon(req, res, next) {
+    try {
+        const coupon =
+            await adminService.deleteCoupon(
+                req.params.id
+            );
+
+        res.json({
+            success: true,
+            data: coupon
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     dashboard,
     orders,
@@ -141,6 +188,9 @@ module.exports = {
     customers,
     finance,
     coupons,
+    createCoupon,
+    updateCoupon,
+    deleteCoupon,
     logistics,
     reports,
     audit,

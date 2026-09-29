@@ -234,7 +234,7 @@ function stockStatus(value) {
 
     return `
         <span class="admin-status-badge success">
-            Dispon�vel
+            Disponível
         </span>
     `;
 }
@@ -281,7 +281,7 @@ function shell(title, subtitle = "") {
             </div>
 
             <div class="admin-loading">
-                Preparando m�dulo...
+                Preparando módulo...
             </div>
 
         </section>
@@ -423,7 +423,7 @@ async function load(section) {
     if (!root) {
 
         console.error(
-            "[NEFER ADMIN] #admin-root n�o encontrado."
+            "[NEFER ADMIN] #admin-root não encontrado."
         );
 
         return;
@@ -443,82 +443,82 @@ async function load(section) {
 
     if (section === "dashboard") {
 
-        await renderOperationalEnvironment(root);
+    await renderOperationalEnvironment(root);
 
-        updateHeader(
-            "Dashboard",
-            "Vis�o geral da opera��o da AUR�A"
-        );
+    updateHeader(
+        "Dashboard",
+        "Visão geral da operação da NEFER"
+    );
 
-        return;
-    }
-
-
-    const labels = {
-
-        orders: [
-            "Pedidos",
-            "Gest�o completa dos pedidos."
-        ],
-
-        products: [
-            "Produtos",
-            "Cat�logo, SKU, pre�os e disponibilidade."
-        ],
-
-        categories: [
-            "Categorias",
-            "Organiza��o do cat�logo."
-        ],
-
-        inventory: [
-            "Estoque",
-            "Saldo, movimenta��es e disponibilidade."
-        ],
-
-        customers: [
-            "Clientes",
-            "Base comercial e hist�rico."
-        ],
-
-        finance: [
-            "Financeiro",
-            "Receitas, pagamentos e indicadores."
-        ],
-
-        coupons: [
-            "Cupons",
-            "Campanhas e desempenho comercial."
-        ],
-
-        logistics: [
-            "Log�stica",
-            "Expedi��o, envio e rastreamento."
-        ],
-
-        reports: [
-            "Relat�rios",
-            "Intelig�ncia operacional e comercial."
-        ],
-
-        audit: [
-            "Auditoria",
-            "Hist�rico das opera��es administrativas."
-        ],
-
-        settings: [
-            "Configura��es",
-            "Par�metros centrais da AUR�A."
-        ]
-
-    };
+    return;
+}
 
 
-    const info =
-        labels[section] || [
-            "NEFER ADMIN",
-            ""
-        ];
+const labels = {
+
+    orders: [
+        "Pedidos",
+        "Gestão completa dos pedidos."
+    ],
+
+    products: [
+        "Produtos",
+        "Catálogo, SKU, preços e disponibilidade."
+    ],
+
+    categories: [
+        "Categorias",
+        "Organização do catálogo."
+    ],
+
+    inventory: [
+        "Estoque",
+        "Saldo, movimentações e disponibilidade."
+    ],
+
+    customers: [
+        "Clientes",
+        "Base comercial e histórico."
+    ],
+
+    finance: [
+        "Financeiro",
+        "Receitas, pagamentos e indicadores."
+    ],
+
+    coupons: [
+        "Cupons",
+        "Campanhas e desempenho comercial."
+    ],
+
+    logistics: [
+        "Logística",
+        "Expedição, envio e rastreamento."
+    ],
+
+    reports: [
+        "Relatórios",
+        "Inteligência operacional e comercial."
+    ],
+
+    audit: [
+        "Auditoria",
+        "Histórico das operações administrativas."
+    ],
+
+    settings: [
+        "Configurações",
+        "Parâmetros centrais da NEFER."
+    ]
+
+};
+
+
+const info =
+    labels[section] || [
+        "NEFER ADMIN",
+        ""
+    ];
 
 
     updateHeader(
@@ -779,7 +779,7 @@ async function loadModuleData(section) {
             <div class="admin-error">
 
                 <strong>
-                    N�o foi poss�vel carregar este m�dulo.
+                    Não foi possível carregar este módulo.
                 </strong>
 
                 <div style="margin-top:7px;">
@@ -836,7 +836,7 @@ function renderProducts(content, products) {
                 )}
 
                 ${metricCard(
-                    "Dispon�veis",
+                    "Disponíveis",
                     formatNumber(available)
                 )}
 
@@ -854,7 +854,7 @@ function renderProducts(content, products) {
 
 
             ${table(
-                "Cat�logo de produtos",
+                "Catálogo de produtos",
 
                 [
                     {
@@ -880,12 +880,11 @@ function renderProducts(content, products) {
                     {
                         label: "Categoria",
                         render: row =>
-                            escapeHtml(
-                                pick(
-                                    row,
-                                    ["category_name", "category"],
-                                    "�"
-                                )
+                            escapeHtml(pick(
+    row,
+    ["category_name", "category"],
+    "Sem categoria"
+)
                             )
                     },
 
@@ -914,7 +913,7 @@ function renderProducts(content, products) {
                     },
 
                     {
-                        label: "Situa��o",
+                        label: "Situação",
                         render: row =>
                             stockStatus(
                                 pick(
@@ -926,7 +925,7 @@ function renderProducts(content, products) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -1016,7 +1015,7 @@ function openProductEditor(product) {
                     </h2>
 
                     <p>
-                        Altera??es salvas no Firebase / Firestore.
+                        AlterAções salvas no Firebase / Firestore.
                     </p>
                 </div>
 
@@ -1504,7 +1503,7 @@ function renderCategories(content, categories) {
                     },
 
                     {
-                        label: "Descri��o",
+                        label: "Descrição",
                         keys: ["description", "details"]
                     },
 
@@ -1521,7 +1520,7 @@ function renderCategories(content, categories) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -1678,7 +1677,7 @@ function renderInventory(content, inventory) {
                     },
 
                     {
-                        label: "Situa��o",
+                        label: "Situação",
                         render: row =>
                             stockStatus(
                                 pick(
@@ -1690,7 +1689,7 @@ function renderInventory(content, inventory) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -1801,7 +1800,7 @@ function renderCustomers(content, customers) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -1984,23 +1983,32 @@ function renderFinance(content, finance) {
 
         </div>
     `;
-}
-
 
 /* ============================================================
    CUPONS
    ============================================================ */
 
 function renderCoupons(content, coupons) {
+    const list = Array.isArray(coupons)
+        ? coupons
+        : [];
 
-    const list =
-        Array.isArray(coupons)
-            ? coupons
-            : [];
+    const activeCount = list.filter(row => {
+        const status = String(
+            pick(
+                row,
+                ["status", "state"],
+                "active"
+            )
+        ).toLowerCase();
 
+        return (
+            status === "active" ||
+            status === "ativo"
+        );
+    }).length;
 
     content.outerHTML = `
-
         <div class="admin-module-data">
 
             <div class="admin-metrics-grid">
@@ -2011,117 +2019,692 @@ function renderCoupons(content, coupons) {
                 )}
 
                 ${metricCard(
+                    "Cupons ativos",
+                    formatNumber(activeCount)
+                )}
+
+                ${metricCard(
                     "Fonte",
                     "Firebase / Firestore"
                 )}
 
             </div>
 
+            <div class="admin-panel">
 
-            ${table(
-                "Campanhas e cupons",
+                <div class="admin-panel-header">
 
-                [
-                    {
-                        label: "C�digo",
-                        render: row => `
-                            <strong>
-                                ${escapeHtml(
-                                    pick(
-                                        row,
-                                        ["code", "coupon_code"],
-                                        "�"
-                                    )
-                                )}
-                            </strong>
+                    <div>
+                        <h3>Campanhas e cupons</h3>
+
+                        <p>
+                            Crie e edite seus cupons diretamente no painel.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="admin-primary-button"
+                        id="admin-new-coupon"
+                    >
+                        Novo cupom
+                    </button>
+
+                </div>
+
+                ${
+                    list.length === 0
+                        ? `
+                            <div class="admin-empty">
+                                Nenhum cupom cadastrado.
+                            </div>
                         `
-                    },
+                        : table(
+                            "Campanhas e cupons",
+                            [
+                                {
+                                    label: "Código",
 
-                    {
-                        label: "Desconto",
-                        render: row => {
+                                    render: row => `
+                                        <strong>
+                                            ${escapeHtml(
+                                                String(
+                                                    pick(
+                                                        row,
+                                                        [
+                                                            "code",
+                                                            "coupon_code",
+                                                            "couponCode"
+                                                        ],
+                                                        "—"
+                                                    )
+                                                )
+                                            )}
+                                        </strong>
+                                    `
+                                },
 
-                            const value =
-                                pick(
-                                    row,
-                                    [
-                                        "discount",
-                                        "discount_value",
-                                        "percentage"
-                                    ],
-                                    0
-                                );
+                                {
+                                    label: "Desconto",
 
-                            const type =
-                                String(
-                                    pick(
-                                        row,
-                                        ["discount_type", "type"],
-                                        ""
-                                    )
-                                ).toLowerCase();
+                                    render: row => {
+                                        const value =
+                                            pick(
+                                                row,
+                                                [
+                                                    "discount",
+                                                    "discount_value",
+                                                    "percentage",
+                                                    "value"
+                                                ],
+                                                0
+                                            );
 
-                            if (
-                                type.includes("percent") ||
-                                type === "%"
-                            ) {
-                                return `${escapeHtml(value)}%`;
-                            }
+                                        const type =
+                                            String(
+                                                pick(
+                                                    row,
+                                                    [
+                                                        "discountType",
+                                                        "discount_type",
+                                                        "type"
+                                                    ],
+                                                    "percentage"
+                                                )
+                                            ).toLowerCase();
 
-                            return formatCurrency(value);
-                        }
-                    },
+                                        if (
+                                            type.includes(
+                                                "percent"
+                                            ) ||
+                                            type === "%"
+                                        ) {
+                                            return `${escapeHtml(
+                                                String(value)
+                                            )}%`;
+                                        }
 
-                    {
-                        label: "Status",
-                        render: row =>
-                            renderStatus(
-                                pick(
-                                    row,
-                                    ["status", "state"],
-                                    "active"
-                                )
-                            )
-                    },
+                                        return formatCurrency(
+                                            value
+                                        );
+                                    }
+                                },
 
-                    {
-                        label: "Validade",
-                        render: row =>
-                            formatDate(
-                                pick(
-                                    row,
-                                    ["expires_at", "expiration_date", "valid_until"],
-                                    null
-                                )
-                            )
+                                {
+                                    label: "Status",
+
+                                    render: row =>
+                                        renderStatus(
+                                            pick(
+                                                row,
+                                                [
+                                                    "status",
+                                                    "state"
+                                                ],
+                                                "active"
+                                            )
+                                        )
+                                },
+
+                                {
+                                    label: "Validade",
+
+                                    render: row =>
+                                        formatDate(
+                                            pick(
+                                                row,
+                                                [
+                                                    "expiresAt",
+                                                    "expires_at",
+                                                    "expirationDate",
+                                                    "expiration_date",
+                                                    "validUntil",
+                                                    "valid_until"
+                                                ],
+                                                null
+                                            )
+                                        )
+                                },
+
+                                {
+                                    label: "Ações",
+
+                                    render: row => `
+                                        <div class="admin-actions">
+
+                                            <button
+                                                type="button"
+                                                class="admin-product-edit admin-coupon-edit"
+                                                data-coupon-id="${escapeHtml(
+                                                    String(
+                                                        row.id ||
+                                                        row.couponId ||
+                                                        ""
+                                                    )
+                                                )}"
+                                            >
+                                                Editar
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="admin-coupon-delete"
+                                                data-coupon-id="${escapeHtml(
+                                                    String(
+                                                        row.id ||
+                                                        row.couponId ||
+                                                        ""
+                                                    )
+                                                )}"
+                                            >
+                                                Excluir
+                                            </button>
+
+                                        </div>
+                                    `
+                                }
+                            ],
+                            list
+                        )
+                }
+
+            </div>
+        </div>
+    `;
+
+    const newButton =
+        document.getElementById(
+            "admin-new-coupon"
+        );
+
+    if (newButton) {
+        newButton.addEventListener(
+            "click",
+            () => openCouponEditor(null)
+        );
+    }
+
+    document
+        .querySelectorAll(
+            ".admin-coupon-edit"
+        )
+        .forEach(button => {
+            button.addEventListener(
+                "click",
+                () => {
+                    const id =
+                        button.dataset.couponId;
+
+                    const coupon =
+                        list.find(
+                            row =>
+                                String(row.id) ===
+                                String(id)
+                        );
+
+                    if (coupon) {
+                        openCouponEditor(coupon);
                     }
-,
-                    {
-                        label: "A??es",
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        ""
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }                ],
+                }
+            );
+        });
 
-                list
-            )}
+    document
+        .querySelectorAll(
+            ".admin-coupon-delete"
+        )
+        .forEach(button => {
+            button.addEventListener(
+                "click",
+                async () => {
+                    const id =
+                        button.dataset.couponId;
+
+                    if (!id) {
+                        return;
+                    }
+
+                    const confirmed =
+                        window.confirm(
+                            "Excluir este cupom?"
+                        );
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    try {
+                        await adminApi.deleteCoupon(
+                            id
+                        );
+
+                        showAdminToast(
+                            "Cupom excluído.",
+                            "success"
+                        );
+
+                        await loadModule(
+                            "coupons"
+                        );
+                    } catch (error) {
+                        console.error(
+                            "[COUPON DELETE]",
+                            error
+                        );
+
+                        showAdminToast(
+                            error.message ||
+                            "Erro ao excluir cupom.",
+                            "error"
+                        );
+                    }
+                }
+            );
+        });
+}
+
+function openCouponEditor(coupon = null) {
+    const editing = Boolean(coupon);
+
+    const oldModal =
+        document.getElementById(
+            "nefer-coupon-editor"
+        );
+
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "nefer-coupon-editor";
+
+    modal.className =
+        "admin-modal-overlay";
+
+    modal.innerHTML = `
+        <div class="admin-modal">
+
+            <div class="admin-modal-header">
+
+                <div>
+                    <h2>
+                        ${
+                            editing
+                                ? "Editar cupom"
+                                : "Novo cupom"
+                        }
+                    </h2>
+
+                    <p>
+                        Dados comerciais do cupom.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="admin-modal-close"
+                    id="coupon-editor-close"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <form id="coupon-editor-form">
+
+                <div class="admin-form-grid">
+
+                    <label>
+                        <span>Código</span>
+
+                        <input
+                            id="coupon-code"
+                            type="text"
+                            required
+                            maxlength="50"
+                            value="${escapeHtml(
+                                String(
+                                    coupon?.code ||
+                                    coupon?.coupon_code ||
+                                    ""
+                                )
+                            )}"
+                        >
+                    </label>
+
+                    <label>
+                        <span>Tipo de desconto</span>
+
+                        <select
+                            id="coupon-discount-type"
+                        >
+                            <option
+                                value="percentage"
+                                ${
+                                    String(
+                                        coupon?.discountType ||
+                                        coupon?.discount_type ||
+                                        "percentage"
+                                    ) === "percentage"
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                Percentual
+                            </option>
+
+                            <option
+                                value="fixed"
+                                ${
+                                    String(
+                                        coupon?.discountType ||
+                                        coupon?.discount_type ||
+                                        ""
+                                    ) === "fixed"
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                Valor fixo
+                            </option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Desconto</span>
+
+                        <input
+                            id="coupon-discount"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            required
+                            value="${escapeHtml(
+                                String(
+                                    coupon?.discount ??
+                                    coupon?.discount_value ??
+                                    coupon?.value ??
+                                    0
+                                )
+                            )}"
+                        >
+                    </label>
+
+                    <label>
+                        <span>Limite de uso</span>
+
+                        <input
+                            id="coupon-usage-limit"
+                            type="number"
+                            min="0"
+                            step="1"
+                            value="${escapeHtml(
+                                String(
+                                    coupon?.usageLimit ??
+                                    coupon?.usage_limit ??
+                                    ""
+                                )
+                            )}"
+                        >
+                    </label>
+
+                    <label>
+                        <span>Validade</span>
+
+                        <input
+                            id="coupon-expires-at"
+                            type="date"
+                            value="${escapeHtml(
+                                String(
+                                    coupon?.expiresAt ||
+                                    coupon?.expires_at ||
+                                    ""
+                                ).slice(0, 10)
+                            )}"
+                        >
+                    </label>
+
+                    <label>
+                        <span>Status</span>
+
+                        <select
+                            id="coupon-status"
+                        >
+                            <option
+                                value="active"
+                                ${
+                                    String(
+                                        coupon?.status ||
+                                        "active"
+                                    ) === "active"
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                Ativo
+                            </option>
+
+                            <option
+                                value="inactive"
+                                ${
+                                    String(
+                                        coupon?.status ||
+                                        ""
+                                    ) === "inactive"
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                Inativo
+                            </option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Afiliado / Influenciador</span>
+
+                        <input
+                            id="coupon-affiliate"
+                            type="text"
+                            maxlength="120"
+                            value="${escapeHtml(
+                                String(
+                                    coupon?.affiliateName ||
+                                    coupon?.affiliate_name ||
+                                    ""
+                                )
+                            )}"
+                        >
+                    </label>
+
+                    <label>
+                        <span>Comissão (%)</span>
+
+                        <input
+                            id="coupon-commission"
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            value="${escapeHtml(
+                                String(
+                                    coupon?.commission ||
+                                    0
+                                )
+                            )}"
+                        >
+                    </label>
+
+                </div>
+
+                <div class="admin-modal-footer">
+
+                    <button
+                        type="button"
+                        class="admin-secondary-button"
+                        id="coupon-editor-cancel"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="admin-primary-button"
+                    >
+                        ${
+                            editing
+                                ? "Salvar alterações"
+                                : "Criar cupom"
+                        }
+                    </button>
+
+                </div>
+
+            </form>
 
         </div>
     `;
-}
 
+    document.body.appendChild(modal);
+
+    const close = () => {
+        modal.remove();
+    };
+
+    document
+        .getElementById(
+            "coupon-editor-close"
+        )
+        ?.addEventListener(
+            "click",
+            close
+        );
+
+    document
+        .getElementById(
+            "coupon-editor-cancel"
+        )
+        ?.addEventListener(
+            "click",
+            close
+        );
+
+    document
+        .getElementById(
+            "coupon-editor-form"
+        )
+        ?.addEventListener(
+            "submit",
+            async event => {
+                event.preventDefault();
+
+                const data = {
+                    code:
+                        document
+                            .getElementById(
+                                "coupon-code"
+                            )
+                            .value
+                            .trim()
+                            .toUpperCase(),
+
+                    discountType:
+                        document
+                            .getElementById(
+                                "coupon-discount-type"
+                            )
+                            .value,
+
+                    discount:
+                        Number(
+                            document
+                                .getElementById(
+                                    "coupon-discount"
+                                )
+                                .value
+                        ),
+
+                    usageLimit:
+                        document
+                            .getElementById(
+                                "coupon-usage-limit"
+                            )
+                            .value,
+
+                    expiresAt:
+                        document
+                            .getElementById(
+                                "coupon-expires-at"
+                            )
+                            .value,
+
+                    status:
+                        document
+                            .getElementById(
+                                "coupon-status"
+                            )
+                            .value,
+
+                    affiliateName:
+                        document
+                            .getElementById(
+                                "coupon-affiliate"
+                            )
+                            .value
+                            .trim(),
+
+                    commission:
+                        Number(
+                            document
+                                .getElementById(
+                                    "coupon-commission"
+                                )
+                                .value
+                        )
+                };
+
+                try {
+                    if (editing) {
+                        await adminApi.updateCoupon(
+                            coupon.id,
+                            data
+                        );
+                    } else {
+                        await adminApi.createCoupon(
+                            data
+                        );
+                    }
+
+                    close();
+
+                    showAdminToast(
+                        editing
+                            ? "Cupom atualizado."
+                            : "Cupom criado.",
+                        "success"
+                    );
+
+                    await loadModule(
+                        "coupons"
+                    );
+                } catch (error) {
+                    console.error(
+                        "[COUPON SAVE]",
+                        error
+                    );
+
+                    showAdminToast(
+                        error.message ||
+                        "Erro ao salvar cupom.",
+                        "error"
+                    );
+                }
+            }
+        );
+}
 
 /* ============================================================
    LOGISTICA
@@ -2214,7 +2797,7 @@ function renderLogistics(content, shipments) {
                     },
 
                     {
-                        label: "Atualiza��o",
+                        label: "Atualização",
                         render: row =>
                             formatDate(
                                 pick(
@@ -2226,7 +2809,7 @@ function renderLogistics(content, shipments) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -2330,7 +2913,7 @@ function renderReports(content, reports) {
 
 
             ${table(
-                "Evolu��o das vendas",
+                "Evolução das vendas",
 
                 [
                     {
@@ -2375,23 +2958,23 @@ function renderReports(content, reports) {
 
 
             ${table(
-                "Pedidos recentes",
+               "Pedidos recentes",
 
-                [
-                    {
-                        label: "Pedido",
-                        render: row => `
-                            <strong>
-                                ${escapeHtml(
-                                    pick(
-                                        row,
-                                        ["order_number", "number", "id"],
-                                        "�"
-                                    )
-                                )}
-                            </strong>
-                        `
-                    },
+[
+    {
+        label: "Pedido",
+        render: row => `
+            <strong>
+                ${escapeHtml(
+                    pick(
+                        row,
+                        ["order_number", "number", "id"],
+                        "—"
+                    )
+                )}
+            </strong>
+        `
+    },
 
                     {
                         label: "Data",
@@ -2470,7 +3053,7 @@ function renderAudit(content, logs) {
 
 
             ${table(
-                "Hist�rico administrativo",
+                "Histórico administrativo",
 
                 [
                     {
@@ -2490,7 +3073,7 @@ function renderAudit(content, logs) {
                     },
 
                     {
-                        label: "A��o",
+                        label: "Ação",
                         render: row => `
                             <strong>
                                 ${escapeHtml(
@@ -2502,7 +3085,7 @@ function renderAudit(content, logs) {
                                                 "event",
                                                 "operation"
                                             ],
-                                            "�"
+                                            "-"
                                         )
                                     )
                                 )}
@@ -2511,7 +3094,7 @@ function renderAudit(content, logs) {
                     },
 
                     {
-                        label: "Usu�rio",
+                        label: "Usuário",
                         keys: [
                             "user_name",
                             "admin_name",
@@ -2542,7 +3125,7 @@ function renderAudit(content, logs) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -2587,7 +3170,7 @@ function renderSettings(content, settings) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Par�metros cadastrados",
+                    "Parâmetros cadastrados",
                     formatNumber(list.length)
                 )}
 
@@ -2600,7 +3183,7 @@ function renderSettings(content, settings) {
 
 
             ${table(
-                "Par�metros da AUR�A",
+                "Parâmetros da NEFER",
 
                 [
                     {
@@ -2611,7 +3194,7 @@ function renderSettings(content, settings) {
                                     pick(
                                         row,
                                         ["key", "name", "setting_key"],
-                                        "�"
+                                        "-"
                                     )
                                 )}
                             </strong>
@@ -2626,7 +3209,7 @@ function renderSettings(content, settings) {
                                 pick(
                                     row,
                                     ["value", "setting_value", "content"],
-                                    "�"
+                                    "-"
                                 );
 
                             return `
@@ -2638,7 +3221,7 @@ function renderSettings(content, settings) {
                     },
 
                     {
-                        label: "Descri��o",
+                        label: "Descrição",
                         keys: [
                             "description",
                             "label",
@@ -2647,7 +3230,7 @@ function renderSettings(content, settings) {
                     },
 
                     {
-                        label: "Atualiza��o",
+                        label: "Atualização",
                         render: row =>
                             formatDate(
                                 pick(
@@ -2659,7 +3242,7 @@ function renderSettings(content, settings) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -2697,83 +3280,82 @@ function renderOrders(content, orders) {
             : [];
 
 
-    const rows =
-        list.map(order => {
+   const rows =
+    list.map(order => {
 
-            const orderNumber =
-                order.order_number ||
-                `#${order.id ?? "�"}`;
+        const orderNumber =
+            order.order_number ||
+            `#${order.id ?? "—"}`;
 
-            const customerName =
-                order.customer?.name ||
-                order.customer_name ||
-                "Cliente n�o identificado";
+        const customerName =
+            order.customer?.name ||
+            order.customer_name ||
+            "Cliente não identificado";
 
-            const total =
-                Number(
-                    order.total ??
-                    order.total_amount ??
-                    order.totals?.total ??
-                    0
-                );
+        const total =
+            Number(
+                order.total ??
+                order.total_amount ??
+                order.totals?.total ??
+                0
+            );
 
-            const orderStatus =
-                order.status ||
-                "�";
+        const orderStatus =
+            order.status ||
+            "—";
 
-            const paymentStatus =
-                order.payment_status ||
-                order.payment?.status ||
-                "�";
+        const paymentStatus =
+            order.payment_status ||
+            order.payment?.status ||
+            "—";
 
+        return `
 
-            return `
+            <tr>
 
-                <tr>
+                <td>
+                    <strong>
+                        ${escapeHtml(orderNumber)}
+                    </strong>
+                </td>
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(orderNumber)}
-                        </strong>
-                    </td>
+                <td>
+                    ${escapeHtml(customerName)}
+                </td>
 
-                    <td>
-                        ${escapeHtml(customerName)}
-                    </td>
+                <td>
+                    ${formatCurrency(total)}
+                </td>
 
-                    <td>
-                        ${formatCurrency(total)}
-                    </td>
+                <td>
+                    ${renderStatus(orderStatus)}
+                </td>
 
-                    <td>
-                        ${renderStatus(orderStatus)}
-                    </td>
+                <td>
+                    ${renderStatus(paymentStatus)}
+                </td>
 
-                    <td>
-                        ${renderStatus(paymentStatus)}
-                    </td>
+                <td>
 
-                    <td>
+                    <div class="table-actions">
 
-                        <div class="table-actions">
+                        <button
+                            type="button"
+                            class="admin-button"
+                            data-order-details="${escapeHtml(
+                                order.id ?? orderNumber
+                            )}"
+                        >
+                            Ver detalhes
+                        </button>
 
-                            <button
-                                type="button"
-                                class="admin-button"
-                                data-order-details="${escapeHtml(
-                                    order.id ?? orderNumber
-                                )}"
-                            >
-                                Ver detalhes
-                            </button>
+                    </div>
 
-                        </div>
+                </td>
 
-                    </td>
-
-                </tr>
-            `;
-        }).join("");
+            </tr>
+        `;
+    }).join("");
 
 
     content.outerHTML = `
@@ -2802,7 +3384,7 @@ function renderOrders(content, orders) {
                     <div>
 
                         <span class="module-eyebrow">
-                            OPERA��O
+                            OPERAÇÃO
                         </span>
 
                         <h3>
@@ -2827,7 +3409,7 @@ function renderOrders(content, orders) {
                                 <th>Total</th>
                                 <th>Pedido</th>
                                 <th>Pagamento</th>
-                                <th>A��es</th>
+                                <th>Ações</th>
 
                             </tr>
 
@@ -2919,7 +3501,7 @@ async function openOrderDetails(orderId) {
 
         if (!data) {
             throw new Error(
-                "Pedido n�o encontrado."
+                "Pedido não encontrado."
             );
         }
 
@@ -2995,17 +3577,16 @@ function createOrderModal() {
                     </div>
 
 
-                    <button
-                        type="button"
-                        class="admin-modal-close"
-                        data-close-order-modal
-                        aria-label="Fechar"
-                    >
-                        �
-                    </button>
+<button
+    type="button"
+    class="admin-modal-close"
+    data-close-order-modal
+    aria-label="Fechar"
+>
+    ×
+</button>
 
-                </div>
-
+</div>
 
                 <div class="admin-modal-content">
 
@@ -3492,14 +4073,14 @@ function renderOrderDetails(content, order) {
    ============================================================ */
 
 document.addEventListener("click", async (event) => {
-    // 1. Intercepta o clique no bot?o Editar Produto
+    // 1. Intercepta o clique no botão Editar Produto
     const editBtn = event.target.closest(".admin-product-edit");
     if (editBtn) {
         event.preventDefault();
         const productId = editBtn.dataset.productId;
 
         if (!productId) {
-            console.error("ID do produto não encontrado no bot?o.");
+            console.error("ID do produto não encontrado no BOTÃO.");
             return;
         }
 
@@ -3859,7 +4440,7 @@ load("dashboard");
             font-size: 13px !important;
         }
 
-        /* BOT?O X */
+        /* botão X */
         .admin-product-editor .admin-product-editor-close {
             flex: 0 0 auto !important;
 
@@ -3889,7 +4470,7 @@ load("dashboard");
             transform: scale(1.05) !important;
         }
 
-        /* FORMUL?RIO */
+        /* FORMULÁRIO */
         .admin-product-editor .admin-product-editor-form {
             display: grid !important;
             gap: 18px !important;

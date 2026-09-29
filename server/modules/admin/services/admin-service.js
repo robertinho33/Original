@@ -155,6 +155,210 @@ async function getCoupons() {
     return getCollection("coupons");
 }
 
+async function createCoupon(data = {}) {
+    const code = String(
+        data.code ??
+        data.coupon_code ??
+        data.couponCode ??
+        ""
+    ).trim().toUpperCase();
+
+    if (!code) {
+        throw new Error("Código do cupom é obrigatório.");
+    }
+
+    const discountType = String(
+        data.discountType ??
+        data.discount_type ??
+        "percentage"
+    ).trim().toLowerCase();
+
+    const discount = Number(
+        data.discount ??
+        data.discount_value ??
+        data.value ??
+        0
+    );
+
+    if (!Number.isFinite(discount) || discount < 0) {
+        throw new Error("Valor do desconto inválido.");
+    }
+
+    const coupon = {
+        code,
+        discount,
+        discountType,
+        status:
+            data.status === "inactive"
+                ? "inactive"
+                : "active",
+        uses: Number(data.uses || 0),
+        usageLimit:
+            data.usageLimit === "" ||
+            data.usageLimit == null
+                ? null
+                : Number(data.usageLimit),
+        expiresAt:
+            data.expiresAt ||
+            data.expires_at ||
+            null,
+        affiliateName:
+            String(
+                data.affiliateName ??
+                data.affiliate_name ??
+                ""
+            ).trim(),
+        commission:
+            Number(data.commission || 0),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    const reference =
+        await db()
+            .collection("coupons")
+            .add(coupon);
+
+    return {
+        id: reference.id,
+        ...coupon
+    };
+}
+
+async function updateCoupon(id, data = {}) {
+    if (!id) {
+        throw new Error("ID do cupom é obrigatório.");
+    }
+
+    const reference =
+        db()
+            .collection("coupons")
+            .doc(id);
+
+    const snapshot =
+        await reference.get();
+
+    if (!snapshot.exists) {
+        throw new Error("Cupom não encontrado.");
+    }
+
+    const current = snapshot.data();
+
+    const code = String(
+        data.code ??
+        data.coupon_code ??
+        data.couponCode ??
+        current.code ??
+        ""
+    ).trim().toUpperCase();
+
+    if (!code) {
+        throw new Error("Código do cupom é obrigatório.");
+    }
+
+    const discountType = String(
+        data.discountType ??
+        data.discount_type ??
+        current.discountType ??
+        current.discount_type ??
+        "percentage"
+    ).trim().toLowerCase();
+
+    const discount = Number(
+        data.discount ??
+        data.discount_value ??
+        data.value ??
+        current.discount ??
+        0
+    );
+
+    if (!Number.isFinite(discount) || discount < 0) {
+        throw new Error("Valor do desconto inválido.");
+    }
+
+    const updated = {
+        code,
+        discount,
+        discountType,
+        status:
+            data.status ??
+            current.status ??
+            "active",
+        uses:
+            Number(
+                data.uses ??
+                current.uses ??
+                0
+            ),
+        usageLimit:
+            data.usageLimit !== undefined
+                ? (
+                    data.usageLimit === ""
+                        ? null
+                        : Number(data.usageLimit)
+                )
+                : (
+                    current.usageLimit ??
+                    current.usage_limit ??
+                    null
+                ),
+        expiresAt:
+            data.expiresAt !== undefined
+                ? data.expiresAt
+                : (
+                    current.expiresAt ??
+                    current.expires_at ??
+                    null
+                ),
+        affiliateName:
+            data.affiliateName !== undefined
+                ? String(data.affiliateName).trim()
+                : String(
+                    current.affiliateName ??
+                    current.affiliate_name ??
+                    ""
+                ).trim(),
+        commission:
+            data.commission !== undefined
+                ? Number(data.commission || 0)
+                : Number(current.commission || 0),
+        updatedAt: new Date().toISOString()
+    };
+
+    await reference.update(updated);
+
+    return {
+        id,
+        ...current,
+        ...updated
+    };
+}
+
+async function deleteCoupon(id) {
+    if (!id) {
+        throw new Error("ID do cupom é obrigatório.");
+    }
+
+    const reference =
+        db()
+            .collection("coupons")
+            .doc(id);
+
+    const snapshot =
+        await reference.get();
+
+    if (!snapshot.exists) {
+        throw new Error("Cupom não encontrado.");
+    }
+
+    await reference.delete();
+
+    return {
+        id,
+        deleted: true
+    };
+}
+
 async function getLogistics() {
     return getCollection(TRACKING);
 }
@@ -250,5 +454,8 @@ module.exports = {
     getLogistics,
     getReports,
     getAudit,
+    createCoupon,
+    updateCoupon,
+    deleteCoupon,
     getSettings
 };

@@ -979,7 +979,7 @@ function applyCouponCode() {
     }
 
     renderCart();
-}
+}  
 
 /* =========================================================
    VALIDAÇÃO

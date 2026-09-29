@@ -627,7 +627,7 @@ function escapeHTML(value) {
         .replace(/'/g, '&#039;');
 }
 
-function formatBRL(value) {
+function formatBRL(value) { 
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
