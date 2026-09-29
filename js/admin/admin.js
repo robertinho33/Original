@@ -443,82 +443,82 @@ async function load(section) {
 
     if (section === "dashboard") {
 
-        await renderOperationalEnvironment(root);
+    await renderOperationalEnvironment(root);
 
-        updateHeader(
-            "Dashboard",
-            "Vis�o geral da opera��o da AUR�A"
-        );
+    updateHeader(
+        "Dashboard",
+        "Visão geral da operação da NEFER"
+    );
 
-        return;
-    }
-
-
-    const labels = {
-
-        orders: [
-            "Pedidos",
-            "Gest�o completa dos pedidos."
-        ],
-
-        products: [
-            "Produtos",
-            "Cat�logo, SKU, pre�os e disponibilidade."
-        ],
-
-        categories: [
-            "Categorias",
-            "Organiza��o do cat�logo."
-        ],
-
-        inventory: [
-            "Estoque",
-            "Saldo, movimenta��es e disponibilidade."
-        ],
-
-        customers: [
-            "Clientes",
-            "Base comercial e hist�rico."
-        ],
-
-        finance: [
-            "Financeiro",
-            "Receitas, pagamentos e indicadores."
-        ],
-
-        coupons: [
-            "Cupons",
-            "Campanhas e desempenho comercial."
-        ],
-
-        logistics: [
-            "Log�stica",
-            "Expedi��o, envio e rastreamento."
-        ],
-
-        reports: [
-            "Relat�rios",
-            "Intelig�ncia operacional e comercial."
-        ],
-
-        audit: [
-            "Auditoria",
-            "Hist�rico das opera��es administrativas."
-        ],
-
-        settings: [
-            "Configura��es",
-            "Par�metros centrais da AUR�A."
-        ]
-
-    };
+    return;
+}
 
 
-    const info =
-        labels[section] || [
-            "NEFER ADMIN",
-            ""
-        ];
+const labels = {
+
+    orders: [
+        "Pedidos",
+        "Gestão completa dos pedidos."
+    ],
+
+    products: [
+        "Produtos",
+        "Catálogo, SKU, preços e disponibilidade."
+    ],
+
+    categories: [
+        "Categorias",
+        "Organização do catálogo."
+    ],
+
+    inventory: [
+        "Estoque",
+        "Saldo, movimentações e disponibilidade."
+    ],
+
+    customers: [
+        "Clientes",
+        "Base comercial e histórico."
+    ],
+
+    finance: [
+        "Financeiro",
+        "Receitas, pagamentos e indicadores."
+    ],
+
+    coupons: [
+        "Cupons",
+        "Campanhas e desempenho comercial."
+    ],
+
+    logistics: [
+        "Logística",
+        "Expedição, envio e rastreamento."
+    ],
+
+    reports: [
+        "Relatórios",
+        "Inteligência operacional e comercial."
+    ],
+
+    audit: [
+        "Auditoria",
+        "Histórico das operações administrativas."
+    ],
+
+    settings: [
+        "Configurações",
+        "Parâmetros centrais da NEFER."
+    ]
+
+};
+
+
+const info =
+    labels[section] || [
+        "NEFER ADMIN",
+        ""
+    ];
 
 
     updateHeader(
@@ -779,7 +779,7 @@ async function loadModuleData(section) {
             <div class="admin-error">
 
                 <strong>
-                    N�o foi poss�vel carregar este m�dulo.
+                    Não foi possível carregar este módulo.
                 </strong>
 
                 <div style="margin-top:7px;">
@@ -836,7 +836,7 @@ function renderProducts(content, products) {
                 )}
 
                 ${metricCard(
-                    "Dispon�veis",
+                    "Disponíveis",
                     formatNumber(available)
                 )}
 
@@ -854,7 +854,7 @@ function renderProducts(content, products) {
 
 
             ${table(
-                "Cat�logo de produtos",
+                "Catálogo de produtos",
 
                 [
                     {
@@ -880,12 +880,11 @@ function renderProducts(content, products) {
                     {
                         label: "Categoria",
                         render: row =>
-                            escapeHtml(
-                                pick(
-                                    row,
-                                    ["category_name", "category"],
-                                    "�"
-                                )
+                            escapeHtml(pick(
+    row,
+    ["category_name", "category"],
+    "Sem categoria"
+)
                             )
                     },
 
@@ -914,7 +913,7 @@ function renderProducts(content, products) {
                     },
 
                     {
-                        label: "Situa��o",
+                        label: "Situação",
                         render: row =>
                             stockStatus(
                                 pick(
@@ -926,7 +925,7 @@ function renderProducts(content, products) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -1016,7 +1015,7 @@ function openProductEditor(product) {
                     </h2>
 
                     <p>
-                        Altera??es salvas no Firebase / Firestore.
+                        AlterAções salvas no Firebase / Firestore.
                     </p>
                 </div>
 
@@ -1504,7 +1503,7 @@ function renderCategories(content, categories) {
                     },
 
                     {
-                        label: "Descri��o",
+                        label: "Descrição",
                         keys: ["description", "details"]
                     },
 
@@ -1521,7 +1520,7 @@ function renderCategories(content, categories) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -1690,7 +1689,7 @@ function renderInventory(content, inventory) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -1801,7 +1800,7 @@ function renderCustomers(content, customers) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -2097,7 +2096,7 @@ function renderCoupons(content, coupons) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -2214,7 +2213,7 @@ function renderLogistics(content, shipments) {
                     },
 
                     {
-                        label: "Atualiza��o",
+                        label: "Atualização",
                         render: row =>
                             formatDate(
                                 pick(
@@ -2226,7 +2225,7 @@ function renderLogistics(content, shipments) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -2330,7 +2329,7 @@ function renderReports(content, reports) {
 
 
             ${table(
-                "Evolu��o das vendas",
+                "Evolução das vendas",
 
                 [
                     {
@@ -2375,23 +2374,23 @@ function renderReports(content, reports) {
 
 
             ${table(
-                "Pedidos recentes",
+               "Pedidos recentes",
 
-                [
-                    {
-                        label: "Pedido",
-                        render: row => `
-                            <strong>
-                                ${escapeHtml(
-                                    pick(
-                                        row,
-                                        ["order_number", "number", "id"],
-                                        "�"
-                                    )
-                                )}
-                            </strong>
-                        `
-                    },
+[
+    {
+        label: "Pedido",
+        render: row => `
+            <strong>
+                ${escapeHtml(
+                    pick(
+                        row,
+                        ["order_number", "number", "id"],
+                        "—"
+                    )
+                )}
+            </strong>
+        `
+    },
 
                     {
                         label: "Data",
@@ -2470,7 +2469,7 @@ function renderAudit(content, logs) {
 
 
             ${table(
-                "Hist�rico administrativo",
+                "Histórico administrativo",
 
                 [
                     {
@@ -2490,7 +2489,7 @@ function renderAudit(content, logs) {
                     },
 
                     {
-                        label: "A��o",
+                        label: "Ação",
                         render: row => `
                             <strong>
                                 ${escapeHtml(
@@ -2502,7 +2501,7 @@ function renderAudit(content, logs) {
                                                 "event",
                                                 "operation"
                                             ],
-                                            "�"
+                                            "-"
                                         )
                                     )
                                 )}
@@ -2511,7 +2510,7 @@ function renderAudit(content, logs) {
                     },
 
                     {
-                        label: "Usu�rio",
+                        label: "Usuário",
                         keys: [
                             "user_name",
                             "admin_name",
@@ -2542,7 +2541,7 @@ function renderAudit(content, logs) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -2587,7 +2586,7 @@ function renderSettings(content, settings) {
             <div class="admin-metrics-grid">
 
                 ${metricCard(
-                    "Par�metros cadastrados",
+                    "Parâmetros cadastrados",
                     formatNumber(list.length)
                 )}
 
@@ -2600,7 +2599,7 @@ function renderSettings(content, settings) {
 
 
             ${table(
-                "Par�metros da AUR�A",
+                "Parâmetros da NEFER",
 
                 [
                     {
@@ -2611,7 +2610,7 @@ function renderSettings(content, settings) {
                                     pick(
                                         row,
                                         ["key", "name", "setting_key"],
-                                        "�"
+                                        "-"
                                     )
                                 )}
                             </strong>
@@ -2626,7 +2625,7 @@ function renderSettings(content, settings) {
                                 pick(
                                     row,
                                     ["value", "setting_value", "content"],
-                                    "�"
+                                    "-"
                                 );
 
                             return `
@@ -2638,7 +2637,7 @@ function renderSettings(content, settings) {
                     },
 
                     {
-                        label: "Descri��o",
+                        label: "Descrição",
                         keys: [
                             "description",
                             "label",
@@ -2647,7 +2646,7 @@ function renderSettings(content, settings) {
                     },
 
                     {
-                        label: "Atualiza��o",
+                        label: "Atualização",
                         render: row =>
                             formatDate(
                                 pick(
@@ -2659,7 +2658,7 @@ function renderSettings(content, settings) {
                     }
 ,
                     {
-                        label: "A??es",
+                        label: "Ações",
                         render: row => `
                             <button
                                 type="button"
@@ -2697,83 +2696,82 @@ function renderOrders(content, orders) {
             : [];
 
 
-    const rows =
-        list.map(order => {
+   const rows =
+    list.map(order => {
 
-            const orderNumber =
-                order.order_number ||
-                `#${order.id ?? "�"}`;
+        const orderNumber =
+            order.order_number ||
+            `#${order.id ?? "—"}`;
 
-            const customerName =
-                order.customer?.name ||
-                order.customer_name ||
-                "Cliente n�o identificado";
+        const customerName =
+            order.customer?.name ||
+            order.customer_name ||
+            "Cliente não identificado";
 
-            const total =
-                Number(
-                    order.total ??
-                    order.total_amount ??
-                    order.totals?.total ??
-                    0
-                );
+        const total =
+            Number(
+                order.total ??
+                order.total_amount ??
+                order.totals?.total ??
+                0
+            );
 
-            const orderStatus =
-                order.status ||
-                "�";
+        const orderStatus =
+            order.status ||
+            "—";
 
-            const paymentStatus =
-                order.payment_status ||
-                order.payment?.status ||
-                "�";
+        const paymentStatus =
+            order.payment_status ||
+            order.payment?.status ||
+            "—";
 
+        return `
 
-            return `
+            <tr>
 
-                <tr>
+                <td>
+                    <strong>
+                        ${escapeHtml(orderNumber)}
+                    </strong>
+                </td>
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(orderNumber)}
-                        </strong>
-                    </td>
+                <td>
+                    ${escapeHtml(customerName)}
+                </td>
 
-                    <td>
-                        ${escapeHtml(customerName)}
-                    </td>
+                <td>
+                    ${formatCurrency(total)}
+                </td>
 
-                    <td>
-                        ${formatCurrency(total)}
-                    </td>
+                <td>
+                    ${renderStatus(orderStatus)}
+                </td>
 
-                    <td>
-                        ${renderStatus(orderStatus)}
-                    </td>
+                <td>
+                    ${renderStatus(paymentStatus)}
+                </td>
 
-                    <td>
-                        ${renderStatus(paymentStatus)}
-                    </td>
+                <td>
 
-                    <td>
+                    <div class="table-actions">
 
-                        <div class="table-actions">
+                        <button
+                            type="button"
+                            class="admin-button"
+                            data-order-details="${escapeHtml(
+                                order.id ?? orderNumber
+                            )}"
+                        >
+                            Ver detalhes
+                        </button>
 
-                            <button
-                                type="button"
-                                class="admin-button"
-                                data-order-details="${escapeHtml(
-                                    order.id ?? orderNumber
-                                )}"
-                            >
-                                Ver detalhes
-                            </button>
+                    </div>
 
-                        </div>
+                </td>
 
-                    </td>
-
-                </tr>
-            `;
-        }).join("");
+            </tr>
+        `;
+    }).join("");
 
 
     content.outerHTML = `
@@ -2802,7 +2800,7 @@ function renderOrders(content, orders) {
                     <div>
 
                         <span class="module-eyebrow">
-                            OPERA��O
+                            OPERAÇÃO
                         </span>
 
                         <h3>
@@ -2827,7 +2825,7 @@ function renderOrders(content, orders) {
                                 <th>Total</th>
                                 <th>Pedido</th>
                                 <th>Pagamento</th>
-                                <th>A��es</th>
+                                <th>Ações</th>
 
                             </tr>
 
@@ -2919,7 +2917,7 @@ async function openOrderDetails(orderId) {
 
         if (!data) {
             throw new Error(
-                "Pedido n�o encontrado."
+                "Pedido não encontrado."
             );
         }
 
@@ -2995,17 +2993,16 @@ function createOrderModal() {
                     </div>
 
 
-                    <button
-                        type="button"
-                        class="admin-modal-close"
-                        data-close-order-modal
-                        aria-label="Fechar"
-                    >
-                        �
-                    </button>
+<button
+    type="button"
+    class="admin-modal-close"
+    data-close-order-modal
+    aria-label="Fechar"
+>
+    ×
+</button>
 
-                </div>
-
+</div>
 
                 <div class="admin-modal-content">
 
@@ -3492,14 +3489,14 @@ function renderOrderDetails(content, order) {
    ============================================================ */
 
 document.addEventListener("click", async (event) => {
-    // 1. Intercepta o clique no bot?o Editar Produto
+    // 1. Intercepta o clique no botão Editar Produto
     const editBtn = event.target.closest(".admin-product-edit");
     if (editBtn) {
         event.preventDefault();
         const productId = editBtn.dataset.productId;
 
         if (!productId) {
-            console.error("ID do produto não encontrado no bot?o.");
+            console.error("ID do produto não encontrado no BOTÃO.");
             return;
         }
 
@@ -3859,7 +3856,7 @@ load("dashboard");
             font-size: 13px !important;
         }
 
-        /* BOT?O X */
+        /* botão X */
         .admin-product-editor .admin-product-editor-close {
             flex: 0 0 auto !important;
 
@@ -3889,7 +3886,7 @@ load("dashboard");
             transform: scale(1.05) !important;
         }
 
-        /* FORMUL?RIO */
+        /* FORMULÁRIO */
         .admin-product-editor .admin-product-editor-form {
             display: grid !important;
             gap: 18px !important;
