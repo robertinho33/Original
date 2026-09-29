@@ -95,7 +95,7 @@ function formatNumber(value) {
 function formatDate(value) {
 
     if (!value) {
-        return "�";
+        return "—";
     }
 
     const date =
@@ -143,7 +143,7 @@ function labelize(value) {
         value === undefined ||
         value === ""
     ) {
-        return "�";
+        return "—";
     }
 
     return String(value)
@@ -158,7 +158,7 @@ function labelize(value) {
 function renderStatus(status) {
 
     const value =
-        String(status ?? "�");
+        String(status ?? "—");
 
     const normalized =
         value
@@ -984,7 +984,7 @@ function openProductEditor(product) {
         );
 
         showAdminToast?.(
-            "Não foi poss?vel identificar o produto.",
+            "Não foi possível identificar o produto.",
             "error"
         );
 
@@ -1424,7 +1424,7 @@ function openProductEditor(product) {
 
                 showAdminToast?.(
                     error?.message ||
-                    "Não foi poss?vel salvar o produto.",
+                    "Não foi possível salvar o produto.",
                     "error"
                 );
 
@@ -2937,7 +2937,7 @@ async function openOrderDetails(orderId) {
 
                 ${escapeHtml(
                     error?.message ||
-                    "N�o foi poss�vel carregar os detalhes."
+                    "Não foi possível carregar os detalhes."
                 )}
 
             </div>
@@ -3443,7 +3443,7 @@ function renderOrderDetails(content, order) {
 
                 window.alert(
                     error?.message ||
-                    "Não foi poss?vel confirmar o pagamento."
+                    "Não foi possível confirmar o pagamento."
                 );
             }
         });
@@ -3480,7 +3480,7 @@ function renderOrderDetails(content, order) {
 
                 window.alert(
                     error?.message ||
-                    "Não foi poss?vel atualizar a logística."
+                    "Não foi possível atualizar a logística."
                 );
             }
         });
@@ -3523,10 +3523,10 @@ document.addEventListener("click", async (event) => {
         return;
     }
 
-    // 2. Navega??o por se??es (c?digo j? existente no seu arquivo)
+    // 2. Navegação por seções
     const sectionButton = event.target.closest("[data-admin-section]");
     if (sectionButton) {
-        // ... sua l?gica existente de trocar de se??o ...
+        // Navegação interna entre as seções do Admin
     }
 });
 
@@ -3544,12 +3544,6 @@ document.addEventListener(
             const section =
                 sectionButton.dataset.adminSection;
 
-            if (section === "inventory") {
-                window.location.href =
-                    "./admin-inventory.html";
-
-                return;
-            }
 
             load(section);
 
