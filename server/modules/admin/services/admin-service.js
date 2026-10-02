@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 const {
     getFirestore
@@ -188,10 +188,18 @@ async function createCoupon(data = {}) {
         code,
         discount,
         discountType,
+        active:
+            data.active !== undefined
+                ? Boolean(data.active)
+                : data.status === "inactive"
+                    ? false
+                    : true,
         status:
-            data.status === "inactive"
-                ? "inactive"
-                : "active",
+            data.active !== undefined
+                ? (Boolean(data.active) ? "active" : "inactive")
+                : data.status === "inactive"
+                    ? "inactive"
+                    : "active",
         uses: Number(data.uses || 0),
         usageLimit:
             data.usageLimit === "" ||
@@ -276,14 +284,21 @@ async function updateCoupon(id, data = {}) {
         throw new Error("Valor do desconto inválido.");
     }
 
+    const requestedActive =
+        data.active !== undefined
+            ? Boolean(data.active)
+            : data.status !== undefined
+                ? data.status !== "inactive"
+                : current.active !== undefined
+                    ? Boolean(current.active)
+                    : current.status !== "inactive";
+
     const updated = {
         code,
         discount,
         discountType,
-        status:
-            data.status ??
-            current.status ??
-            "active",
+        active: requestedActive,
+        status: requestedActive ? "active" : "inactive",
         uses:
             Number(
                 data.uses ??

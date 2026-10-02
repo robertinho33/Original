@@ -3,11 +3,14 @@
 const { AppError } = require('../../core/app-error');
 
 const {
-  findProductBySku,
+  getFirestore
+} = require('../../infrastructure/firebase/firebase-admin');
+
+const {
   getProductSku,
   getProductPrice,
   getProductStock
-} = require('../catalog/catalog-service');
+} = require('./catalog-service');
 
 function normalizePrice(value) {
   if (typeof value === 'number') {
@@ -34,8 +37,42 @@ function normalizeStock(value) {
     : NaN;
 }
 
-function resolveProduct(sku, quantity) {
-  const product = findProductBySku(sku);
+async function findProductBySku(sku) {
+  const db = getFirestore();
+
+  const snapshot = await db
+    .collection('products')
+    .where('sku', '==', String(sku))
+    .limit(1)
+    .get();
+
+  if (!snapshot.empty) {
+    const doc = snapshot.docs[0];
+
+    return {
+      id: doc.id,
+      ...doc.data()
+    };
+  }
+
+  const fallbackSnapshot = await db
+    .collection('products')
+    .get();
+
+  const product = fallbackSnapshot.docs
+    .map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+    .find(item => {
+      return String(getProductSku(item)) === String(sku);
+    });
+
+  return product || null;
+}
+
+async function resolveProduct(sku, quantity) {
+  const product = await findProductBySku(sku);
 
   if (!product) {
     throw new AppError(
@@ -47,8 +84,13 @@ function resolveProduct(sku, quantity) {
     );
   }
 
-  const unitPrice = normalizePrice(getProductPrice(product));
-  const stock = normalizeStock(getProductStock(product));
+  const unitPrice = normalizePrice(
+    getProductPrice(product)
+  );
+
+  const stock = normalizeStock(
+    getProductStock(product)
+  );
 
   if (!Number.isFinite(unitPrice) || unitPrice < 0) {
     throw new AppError(
@@ -87,7 +129,12 @@ function resolveProduct(sku, quantity) {
 
   return {
     sku: getProductSku(product),
-    name: product.Produto ?? product.produto ?? product.name ?? '',
+    name:
+      product.name ??
+      product.nome ??
+      product.Produto ??
+      product.produto ??
+      '',
     quantity,
     unitPrice,
     stock

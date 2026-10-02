@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 import {
     getAdminIdToken
@@ -127,7 +127,7 @@ const adminApi = {
     finance:
         () => request("/finance"),
 
-       coupons:
+    coupons:
         () =>
             request("/coupons"),
 

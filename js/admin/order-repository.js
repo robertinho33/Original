@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import { db } from '../firebase-config.js';
 
@@ -95,22 +95,21 @@ function normalizeQuantity(value) {
         quantity <= 0
     ) {
         throw new Error(
-            'Quantidade de produto inválida no pedido.'
+            'Quantidade de produto invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lida no pedido.'
         );
     }
 
     return quantity;
 }
 
-async function findProductBySkuTransaction(
-    transaction,
+async function findProductBySku(
     sku
 ) {
     const normalizedSku = normalizeSku(sku);
 
     if (!normalizedSku) {
         throw new Error(
-            'SKU do produto não informada.'
+            'SKU do produto ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© obrigatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ria.'
         );
     }
 
@@ -121,11 +120,11 @@ async function findProductBySkuTransaction(
     );
 
     const snapshot =
-        await transaction.get(productsQuery);
+        await getDocs(productsQuery);
 
     if (snapshot.empty) {
         throw new Error(
-            `Produto ${normalizedSku} não encontrado no Firestore.`
+            `Produto ${normalizedSku} nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o encontrado no Firestore.`
         );
     }
 
@@ -142,14 +141,22 @@ function shouldCommitStock(
     currentOrder,
     nextOrder
 ) {
+    const paymentChangedToConfirmed =
+        nextOrder.payment?.status === 'confirmed' &&
+        currentOrder.payment?.status !== 'confirmed';
+
     const paymentChangedToPaid =
         nextOrder.payment?.status === 'paid' &&
         currentOrder.payment?.status !== 'paid';
 
+    const paymentChanged =
+        paymentChangedToConfirmed ||
+        paymentChangedToPaid;
+
     const alreadyCommitted =
         currentOrder.stockCommitted === true;
 
-    return paymentChangedToPaid &&
+    return paymentChanged &&
         !alreadyCommitted;
 }
 
@@ -420,7 +427,7 @@ export async function updateOrder(
 ) {
     if (!orderId) {
         throw new Error(
-            'ID do pedido não informado.'
+            'ID do pedido nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o informado.'
         );
     }
 
@@ -444,7 +451,7 @@ export async function updateOrder(
 
             if (!orderSnapshot.exists()) {
                 throw new Error(
-                    'Pedido não encontrado.'
+                    'Pedido nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o encontrado.'
                 );
             }
 
@@ -511,6 +518,7 @@ export async function updateOrder(
                     nextOrder
                 );
 
+    let trackingSnapshot = null;
             if (committingStock) {
                 const items =
                     Array.isArray(
@@ -527,6 +535,10 @@ export async function updateOrder(
 
                 const productReads = [];
 
+                /*
+                 * Todas as leituras da transaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o acontecem
+                 * antes de qualquer escrita.
+                 */
                 for (const item of items) {
                     const sku =
                         normalizeSku(item?.sku);
@@ -536,21 +548,44 @@ export async function updateOrder(
                             item?.quantity
                         );
 
+                    if (!sku) {
+                        throw new Error(
+                            'SKU do produto nÃƒÆ’Ã‚Â£o informada.'
+                        );
+                    }
+
+                    if (
+                        !Number.isInteger(quantity) ||
+                        quantity <= 0
+                    ) {
+                        throw new Error(
+                            `Quantidade invÃƒÆ’Ã‚Â¡lida para ${sku}.`
+                        );
+                    }
+
                     const productDoc =
-                        await findProductBySkuTransaction(
-                            transaction,
-                            sku
+                        await findProductBySku(sku);
+
+                    const productSnapshot =
+                        await transaction.get(
+                            productDoc.ref
                         );
 
                     productReads.push({
                         item,
                         sku,
                         quantity,
-                        ref: productDoc.ref,
-                        data: productDoc.data()
+                        ref:
+                            productSnapshot.ref,
+                        data:
+                            productSnapshot.data()
                     });
                 }
 
+                /*
+                 * ValidaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o dos estoques.
+                 * Nenhuma escrita ocorre neste ponto.
+                 */
                 for (
                     const product of productReads
                 ) {
@@ -565,7 +600,7 @@ export async function updateOrder(
                         )
                     ) {
                         throw new Error(
-                            `Estoque inválido para ${product.sku}.`
+                            `Estoque invÃƒÆ’Ã‚Â¡lido para ${product.sku}.`
                         );
                     }
 
@@ -574,14 +609,23 @@ export async function updateOrder(
                         product.quantity
                     ) {
                         throw new Error(
-                            `Estoque insuficiente para ${product.sku}. Disponível: ${currentStock}. Solicitado: ${product.quantity}.`
+                            `Estoque insuficiente para ${product.sku}. DisponÃƒÆ’Ã‚Â­vel: ${currentStock}. Solicitado: ${product.quantity}.`
                         );
                     }
                 }
 
+            trackingSnapshot =
+                await transaction.get(
+                    trackingRef
+                );
+
                 const committedAt =
                     nowIso();
 
+                /*
+                 * Somente depois de todas as leituras
+                 * e validaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes comeÃƒÆ’Ã‚Â§am as escritas.
+                 */
                 for (
                     const product of productReads
                 ) {
@@ -601,34 +645,36 @@ export async function updateOrder(
                         }
                     );
 
-                    const movementRef = doc(
-                        collection(
-                            db,
-                            INVENTORY_MOVEMENTS_COLLECTION
-                        )
-                    );
+                    const movementRef =
+                        doc(
+                            collection(
+                                db,
+                                INVENTORY_MOVEMENTS_COLLECTION
+                            )
+                        );
 
                     transaction.set(
                         movementRef,
                         {
                             type: 'VENDA',
-                            orderId,
-                            productId: product.ref.id,
-                            sku: product.sku,
-                            quantity: -product.quantity,
-                            previousStock: currentStock,
-                            remainingStock:
+                            sku:
+                                product.sku,
+                            quantity:
+                                -product.quantity,
+                            previousStock:
+                                currentStock,
+                            newStock:
                                 currentStock -
                                 product.quantity,
-                            reason:
-                                `Venda ${orderId}`,
+                            orderId,
                             createdAt:
-                                committedAt
+                                committedAt,
+                            source:
+                                'admin'
                         }
                     );
                 }
-
-                nextOrder.stockCommitted = true;
+            nextOrder.stockCommitted = true;
 
                 nextOrder.stockCommittedAt =
                     committedAt;
@@ -675,16 +721,11 @@ export async function updateOrder(
             nextOrder.updatedAt =
                 updatedAt;
 
-            const trackingSnapshot =
-                await transaction.get(
-                    trackingRef
-                );
-
             const previousTracking =
-                trackingSnapshot.exists()
-                    ? trackingSnapshot.data()
-                    : null;
-
+                trackingSnapshot &&
+                    trackingSnapshot.exists()
+                        ? trackingSnapshot.data()
+                        : null;
             const tracking =
                 buildTracking(
                     nextOrder,

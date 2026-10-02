@@ -4,9 +4,6 @@ import { loadProducts as loadCatalogProducts } from '../catalog/catalog-service.
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
 import { fetchAddressByCep } from './address-service.js';
-import { saveOrder as persistOrder } from '../orders/order-service.js';
-
-
 /* =========================================================
    CONFIGURAÇÃO
    ========================================================= */
@@ -22,17 +19,6 @@ let products = [];
 let cart = [];
 let submitting = false;
 let appliedCoupon = null;
-
-
-const COUPONS = Object.freeze({
-    NEFER10: Object.freeze({
-        code: 'NEFER10',
-        type: 'percentage',
-        value: 10
-    })
-});
-
-
 /* =========================================================
    ELEMENTOS
    ========================================================= */
@@ -693,26 +679,35 @@ function getDiscount(subtotal) {
         return 0;
     }
 
+    const base = Number(subtotal) || 0;
+    const value = Number(
+        appliedCoupon.value ??
+        appliedCoupon.discount ??
+        0
+    ) || 0;
+
+    let discount = 0;
+
     if (
         appliedCoupon.type ===
         'percentage'
     ) {
-        return (
-            subtotal *
-            (
-                Number(
-                    appliedCoupon.value
-                ) || 0
-            ) /
-            100
+        discount =
+            base *
+            value /
+            100;
+    } else {
+        discount = Math.min(
+            base,
+            value
         );
     }
 
-    return Math.min(
-        subtotal,
-        Number(
-            appliedCoupon.value
-        ) || 0
+    return Number(
+        Math.max(
+            0,
+            discount
+        ).toFixed(2)
     );
 }
 
@@ -926,7 +921,7 @@ function updateDeliveryFields() {
    CUPOM
    ========================================================= */
 
-function applyCouponCode() {
+async function applyCouponCode() {
 
     const code =
         String(
@@ -949,36 +944,82 @@ function applyCouponCode() {
         return;
     }
 
-    const coupon =
-        COUPONS[code];
+    if (elements.couponMessage) {
+        elements.couponMessage.textContent =
+            'Validando cupom...';
+    }
 
-    if (!coupon) {
+    try {
+
+        const response = await fetch(
+            `/api/coupons/validate?code=${encodeURIComponent(code)}`,
+            {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json'
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (
+            !response.ok ||
+            !result.valid ||
+            !result.coupon
+        ) {
+
+            appliedCoupon = null;
+
+            if (elements.couponMessage) {
+                elements.couponMessage.textContent =
+                    result.message ||
+                    'Cupom inválido ou expirado.';
+            }
+
+            renderCart();
+
+            return;
+        }
+
+        const coupon = result.coupon;
+
+        appliedCoupon = {
+            code: coupon.code,
+            type: coupon.discountType,
+            value: Number(coupon.discount || 0),
+            id: coupon.id,
+            affiliateName:
+                coupon.affiliateName || '',
+            commission:
+                Number(coupon.commission || 0)
+        };
+
+        if (elements.couponMessage) {
+            elements.couponMessage.textContent =
+                coupon.discountType === 'percentage'
+                    ? `Cupom ${coupon.code} aplicado: ${coupon.discount}% de desconto.`
+                    : `Cupom ${coupon.code} aplicado.`;
+        }
+
+        renderCart();
+
+    } catch (error) {
+
+        console.error(
+            '[NEFER CHECKOUT] erro ao validar cupom:',
+            error
+        );
 
         appliedCoupon = null;
 
         if (elements.couponMessage) {
             elements.couponMessage.textContent =
-                'Cupom inválido ou expirado.';
+                'Não foi possível validar o cupom.';
         }
 
         renderCart();
-
-        return;
     }
-
-    appliedCoupon = {
-        ...coupon
-    };
-
-    if (elements.couponMessage) {
-
-        elements.couponMessage.textContent =
-            coupon.type === 'percentage'
-                ? `Cupom ${coupon.code} aplicado: ${coupon.value}% de desconto.`
-                : `Cupom ${coupon.code} aplicado.`;
-    }
-
-    renderCart();
 }  
 
 /* =========================================================
@@ -1907,10 +1948,6 @@ async function handleSubmit(event) {
          * - PIX_GENERATED
          */
 
-        await persistOrder(
-            order
-        );
-
 
         localStorage.removeItem(
             CART_STORAGE_KEY
@@ -2194,7 +2231,3 @@ async function init() {
 
 
 init();
-
-
-
-

@@ -455,7 +455,7 @@ function renderPagination(totalItems) {
             class="pagination-button"
             data-page="${catalogPage - 1}"
             ${catalogPage === 1 ? 'disabled' : ''}
-            aria-label="PÃ¡gina anterior"
+            aria-label="Página anterior"
         >
             Anterior
         </button>
@@ -506,9 +506,9 @@ function renderPagination(totalItems) {
                     ? 'disabled'
                     : ''
             }
-            aria-label="PrÃ³xima pÃ¡gina"
+            aria-label="Próxima página"
         >
-            PrÃ³xima
+            Próxima
         </button>
     `);
 
@@ -730,14 +730,14 @@ async function renderCatalog() {
 
     } catch (error) {
         console.error(
-            'Erro ao renderizar catÃ¡logo:',
+            'Erro ao renderizar catálogo:',
             error
         );
 
         productsEl.innerHTML = `
             <div class="catalog-empty">
                 <p>
-                    NÃ£o foi possÃ­vel carregar o catÃ¡logo.
+                    NÃ£o foi poss­veíl carregar o catálogo.
                 </p>
             </div>
         `;

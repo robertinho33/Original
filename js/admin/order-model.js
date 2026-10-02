@@ -12,6 +12,7 @@ const ORDER_STATUSES = Object.freeze([
 
 const PAYMENT_STATUSES = Object.freeze([
     'pending',
+    'confirmed',
     'paid',
     'failed',
     'cancelled'
@@ -182,14 +183,35 @@ function normalizeOrder(data = {}) {
         );
     }
 
-    const subtotal = normalizeMoney(data.subtotal);
+    const totals =
+        data.totals &&
+        typeof data.totals === 'object'
+            ? data.totals
+            : {};
+
+    const subtotal = normalizeMoney(
+        data.subtotal ??
+        totals.subtotal ??
+        0
+    );
+
     const discount = normalizeMoney(
-        data.discount ?? 0
+        data.discount ??
+        totals.discount ??
+        0
     );
+
     const shipping = normalizeMoney(
-        data.shipping ?? 0
+        data.shipping ??
+        totals.shipping ??
+        0
     );
-    const total = normalizeMoney(data.total);
+
+    const total = normalizeMoney(
+        data.total ??
+        totals.total ??
+        0
+    );
 
     const expectedTotal = normalizeMoney(
         subtotal - discount + shipping

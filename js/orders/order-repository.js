@@ -15,38 +15,6 @@ import {
 const ORDERS_COLLECTION = 'orders';
 const TRACKING_COLLECTION = 'orderTracking';
 
-function createTrackingData(order) {
-    return {
-        id: order.id,
-        status: order.status || 'new',
-        paymentStatus: order.payment?.status || 'pending',
-        total: Number(order.total || 0),
-        logisticsStatus: order.logistics?.status || 'new',
-        history: Array.isArray(order.history)
-            ? order.history
-            : [],
-        updatedAt: new Date().toISOString()
-    };
-}
-
-async function saveTracking(order) {
-    const trackingData = createTrackingData(order);
-
-    const trackingRef = doc(
-        db,
-        TRACKING_COLLECTION,
-        order.id
-    );
-
-    await setDoc(
-        trackingRef,
-        removeUndefined(trackingData)
-    );
-
-    return trackingData;
-}
-
-
 function removeUndefined(value) {
     if (Array.isArray(value)) {
         return value
@@ -71,110 +39,260 @@ function removeUndefined(value) {
 
     return value;
 }
+
+function normalizeOrder(docSnap) {
+    if (!docSnap || !docSnap.exists()) {
+        return null;
+    }
+
+    const data = docSnap.data() || {};
+
+    return {
+        id: docSnap.id,
+        ...data
+    };
+}
+
+function createTrackingData(order) {
+    return {
+        id: order.id,
+        orderNumber:
+            order.orderNumber ||
+            null,
+        status:
+            order.status ||
+            'pending',
+        paymentStatus:
+            order.payment?.status ||
+            'pending',
+        total:
+            Number(
+                order.totals?.total ??
+                order.total ??
+                0
+            ),
+        logisticsStatus:
+            order.logistics?.status ||
+            'pending',
+        history:
+            Array.isArray(order.history)
+                ? order.history
+                : [],
+        updatedAt:
+            new Date().toISOString()
+    };
+}
+
+async function saveTracking(order) {
+    if (!order?.id) {
+        return null;
+    }
+
+    const trackingData =
+        createTrackingData(order);
+
+    const trackingRef =
+        doc(
+            db,
+            TRACKING_COLLECTION,
+            order.id
+        );
+
+    await setDoc(
+        trackingRef,
+        removeUndefined(trackingData)
+    );
+
+    return trackingData;
+}
+
 export async function saveOrder(order) {
-    try {
-        const orderRef = doc(
+    if (!order || !order.id) {
+        throw new Error(
+            'Pedido inválido para gravação.'
+        );
+    }
+
+    const orderRef =
+        doc(
             db,
             ORDERS_COLLECTION,
             order.id
         );
 
-        const sanitizedOrder = removeUndefined(order);
+    const sanitizedOrder =
+        removeUndefined(order);
 
-        await setDoc(
-            orderRef,
-            sanitizedOrder
-        );
-
-        try {
-            await saveTracking(order);
-        } catch (trackingError) {
-            console.error(
-                '[TRACKING] Erro ao sincronizar rastreamento:',
-                trackingError
-            );
+    await setDoc(
+        orderRef,
+        sanitizedOrder,
+        {
+            merge: true
         }
+    );
 
-        return {
-            success: true,
-            id: order.id,
-            data: order
-        };
-
-    } catch (error) {
-
+    try {
+        await saveTracking({
+            ...sanitizedOrder,
+            id: order.id
+        });
+    } catch (trackingError) {
         console.error(
-            'Erro ao salvar pedido no Firestore:',
+            '[TRACKING] Erro ao sincronizar rastreamento:',
+            trackingError
+        );
+    }
+
+    const updatedSnapshot =
+        await getDoc(orderRef);
+
+    return normalizeOrder(
+        updatedSnapshot
+    );
+}
+
+export async function getOrder(orderId) {
+    if (!orderId) {
+        return null;
+    }
+
+    try {
+        const orderRef =
+            doc(
+                db,
+                ORDERS_COLLECTION,
+                String(orderId)
+            );
+
+        const snapshot =
+            await getDoc(orderRef);
+
+        return normalizeOrder(
+            snapshot
+        );
+    } catch (error) {
+        console.error(
+            '[NEFER ORDERS] Erro ao buscar pedido:',
             error
         );
 
-        throw new Error(
-            'NÃ£o foi possÃ­vel registrar o pedido no banco de dados.'
-        );
+        return null;
     }
 }
 
 export async function findOrderById(orderId) {
+    return getOrder(orderId);
+}
 
-    if (!orderId) {
-        return null;
-    }
-
+export async function listOrders(limit = 100) {
     try {
-
-        const docRef =
-            doc(
-                db,
-                ORDERS_COLLECTION,
-                orderId
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    ORDERS_COLLECTION
+                )
             );
 
-        const docSnap =
-            await getDoc(docRef);
+        const orders =
+            snapshot.docs
+                .map(normalizeOrder)
+                .filter(order => {
+                    return Boolean(
+                        order?.orderNumber &&
+                        order?.totals &&
+                        typeof order.totals === 'object'
+                    );
+                })
+                .sort((a, b) => {
+                    const dateA =
+                        new Date(
+                            a.createdAt || 0
+                        ).getTime();
 
-        if (docSnap.exists()) {
-            return docSnap.data();
-        }
+                    const dateB =
+                        new Date(
+                            b.createdAt || 0
+                        ).getTime();
 
-        return null;
+                    return dateB - dateA;
+                });
 
+        return orders.slice(
+            0,
+            Math.max(
+                1,
+                Number(limit) || 100
+            )
+        );
     } catch (error) {
-
         console.error(
-            'Erro ao buscar pedido por ID:',
+            '[NEFER ORDERS] Erro ao listar pedidos:',
             error
         );
 
-        return null;
+        return [];
     }
 }
 
-export async function findTrackingById(orderId) {
+export async function loadOrders() {
+    return listOrders(500);
+}
 
+export async function updateOrder(order) {
+    if (!order || !order.id) {
+        throw new Error(
+            'Pedido inválido para atualização.'
+        );
+    }
+
+    const existingOrder =
+        await getOrder(order.id);
+
+    if (!existingOrder) {
+        throw new Error(
+            'Pedido não encontrado para atualização.'
+        );
+    }
+
+    const updatedOrder = {
+        ...existingOrder,
+        ...order,
+        id: existingOrder.id,
+        updatedAt:
+            new Date().toISOString()
+    };
+
+    return saveOrder(
+        updatedOrder
+    );
+}
+
+export async function findTrackingById(orderId) {
     if (!orderId) {
         return null;
     }
 
     try {
-
-        const docRef =
+        const trackingRef =
             doc(
                 db,
                 TRACKING_COLLECTION,
-                orderId
+                String(orderId)
             );
 
-        const docSnap =
-            await getDoc(docRef);
+        const snapshot =
+            await getDoc(trackingRef);
 
-        if (docSnap.exists()) {
-            return docSnap.data();
+        if (!snapshot.exists()) {
+            return null;
         }
 
-        return null;
-
+        return {
+            id: snapshot.id,
+            ...snapshot.data()
+        };
     } catch (error) {
-
         console.error(
             '[TRACKING] Erro ao buscar rastreamento:',
             error
@@ -183,59 +301,3 @@ export async function findTrackingById(orderId) {
         return null;
     }
 }
-
-export async function loadOrders() {
-
-    try {
-
-        const querySnapshot =
-            await getDocs(
-                collection(
-                    db,
-                    ORDERS_COLLECTION
-                )
-            );
-
-        const orders = [];
-
-        querySnapshot.forEach(
-            docSnap => {
-                orders.push(
-                    docSnap.data()
-                );
-            }
-        );
-
-        return orders;
-
-    } catch (error) {
-
-        console.error(
-            'Erro ao carregar lista de pedidos:',
-            error
-        );
-
-        return [];
-    }
-}
-
-export async function updateOrder(order) {
-
-    if (!order || !order.id) {
-        throw new Error(
-            'Pedido invÃ¡lido para atualizaÃ§Ã£o.'
-        );
-    }
-
-    const existingOrder =
-        await findOrderById(order.id);
-
-    if (!existingOrder) {
-        throw new Error(
-            'Pedido nÃ£o encontrado para atualizaÃ§Ã£o.'
-        );
-    }
-
-    return await saveOrder(order);
-}
-

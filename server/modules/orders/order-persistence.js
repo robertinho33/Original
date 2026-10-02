@@ -5,9 +5,11 @@ const repository = require('./order-repository');
 const { prepareOrder } = require('./order-authority');
 
 async function createOrder(payload) {
-  const order = prepareOrder(payload);
+  const order = await prepareOrder(payload);
 
-  const existing = await repository.findByOrderNumber(order.orderNumber);
+  const existing = await repository.findByOrderNumber(
+    order.orderNumber
+  );
 
   if (existing) {
     throw new AppError(
@@ -43,7 +45,10 @@ async function listOrders(options) {
 }
 
 async function updateOrder(orderNumber, changes) {
-  const updated = await repository.update(orderNumber, changes);
+  const updated = await repository.update(
+    orderNumber,
+    changes
+  );
 
   if (!updated) {
     throw new AppError(
@@ -64,4 +69,3 @@ module.exports = {
   listOrders,
   updateOrder
 };
-

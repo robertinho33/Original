@@ -26,10 +26,10 @@ const {
   recordEvent
 } = require('../../infrastructure/audit');
 
-function createCompleteOrder(payload, requestId) {
-  const draft = buildCompleteOrder(payload);
+async function createCompleteOrder(payload, requestId) {
+  const draft = await buildCompleteOrder(payload);
 
-  const order = createOrder({
+  const order = await createOrder({
     ...draft,
     status: 'pending'
   });
@@ -72,7 +72,7 @@ function createCompleteOrder(payload, requestId) {
       : null;
 
   const finalOrder =
-    updateOrder(
+    await updateOrder(
       order.orderNumber,
       {
         status: 'confirmed',
@@ -107,7 +107,7 @@ function createCompleteOrder(payload, requestId) {
   return finalOrder;
 }
 
-function getCompleteOrder(orderNumber) {
+async function getCompleteOrder(orderNumber) {
   return getOrder(orderNumber);
 }
 

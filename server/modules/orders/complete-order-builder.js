@@ -1,6 +1,4 @@
-﻿'use strict';
-
-const { AppError } = require('../../core/app-error');
+'use strict';
 
 const {
   prepareCustomerAndShipping
@@ -10,7 +8,7 @@ const {
   prepareOrder
 } = require('./order-authority');
 
-function buildCompleteOrder(payload = {}) {
+async function buildCompleteOrder(payload = {}) {
   const {
     items,
     customer = {},
@@ -27,17 +25,13 @@ function buildCompleteOrder(payload = {}) {
       deliveryMethod
     });
 
-  if (!Array.isArray(items) || items.length === 0) {
-    throw new AppError(
-      'O pedido precisa conter produtos.',
-      {
-        code: 'ORDER_ITEMS_REQUIRED',
-        status: 400
-      }
+  if (!items || !Array.isArray(items)) {
+    throw new Error(
+      'Itens do pedido são obrigatórios.'
     );
   }
 
-  const order = prepareOrder({
+  const order = await prepareOrder({
     items,
     shipping: customerShipping.shipping.cost,
     discount,
@@ -47,11 +41,8 @@ function buildCompleteOrder(payload = {}) {
 
   return {
     ...order,
-
-    shipping: customerShipping.shipping,
-
+    address,
     customer: customerShipping.customer,
-
     totals: {
       ...order.totals,
       shipping: Number(

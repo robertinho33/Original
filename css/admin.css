@@ -2375,3 +2375,333 @@ button {
     }
 }
 
+
+/* ============================================================
+   AUREA � CUPOM MODAL OVERLAY
+   Estrutura usada por js/admin/admin.js:
+   .admin-modal-overlay > .admin-modal
+   ============================================================ */
+
+.admin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    padding: 24px;
+    box-sizing: border-box;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.admin-modal-overlay .admin-modal {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: min(720px, calc(100vw - 48px));
+    max-width: 720px;
+    max-height: calc(100vh - 48px);
+    height: auto;
+    margin: 0;
+    overflow: auto;
+    box-sizing: border-box;
+    background: #fff;
+    color: #20201d;
+    opacity: 1;
+    transform: none;
+    border-radius: 16px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+}
+
+.admin-modal-overlay .admin-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    background: #fff;
+    border-bottom: 1px solid var(--border, #e5e3dc);
+}
+
+.admin-modal-overlay .admin-modal-header h2 {
+    margin: 0;
+}
+
+.admin-modal-overlay .admin-modal-close {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.admin-modal-overlay .admin-modal-content {
+    padding: 20px;
+}
+
+@media (max-width: 720px) {
+    .admin-modal-overlay {
+        padding: 12px;
+    }
+
+    .admin-modal-overlay .admin-modal {
+        width: calc(100vw - 24px);
+        max-height: calc(100vh - 24px);
+    }
+}
+
+/* ============================================================
+   AUREA — CUPOM MODAL
+   Visual integrado ao Admin
+   ============================================================ */
+
+.admin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(18, 18, 16, 0.62);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.admin-modal-overlay .admin-modal {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: min(680px, calc(100vw - 48px));
+    max-width: 680px;
+    max-height: calc(100vh - 48px);
+    height: auto;
+    margin: 0;
+    overflow: auto;
+    box-sizing: border-box;
+
+    background: #fff;
+    color: #24231f;
+
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.24),
+        0 4px 18px rgba(0, 0, 0, 0.08);
+
+    opacity: 1;
+    transform: none;
+}
+
+.admin-modal-overlay .admin-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 68px;
+    padding: 0 22px;
+
+    background: #fff;
+    border-bottom: 1px solid #eceae4;
+}
+
+.admin-modal-overlay .admin-modal-header h2 {
+    margin: 0;
+    color: #25241f;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.admin-modal-overlay .admin-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+    padding: 0;
+
+    border: 1px solid #e4e1d9;
+    border-radius: 10px;
+
+    background: #faf9f6;
+    color: #55524b;
+
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+
+    transition:
+        background .15s ease,
+        border-color .15s ease,
+        color .15s ease;
+}
+
+.admin-modal-overlay .admin-modal-close:hover {
+    background: #f1efe9;
+    border-color: #d8d4ca;
+    color: #22211e;
+}
+
+.admin-modal-overlay .admin-modal-content {
+    padding: 24px;
+}
+
+/* Campos do formulário */
+
+.admin-modal-overlay .admin-modal-content label {
+    display: block;
+    margin: 0 0 7px;
+    color: #4b4942;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-modal-overlay .admin-modal-content input,
+.admin-modal-overlay .admin-modal-content select,
+.admin-modal-overlay .admin-modal-content textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    min-height: 42px;
+    padding: 10px 12px;
+
+    border: 1px solid #ddd9d0;
+    border-radius: 9px;
+
+    background: #fff;
+    color: #292822;
+
+    font: inherit;
+    outline: none;
+
+    transition:
+        border-color .15s ease,
+        box-shadow .15s ease;
+}
+
+.admin-modal-overlay .admin-modal-content textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.admin-modal-overlay .admin-modal-content input:focus,
+.admin-modal-overlay .admin-modal-content select:focus,
+.admin-modal-overlay .admin-modal-content textarea:focus {
+    border-color: #9c9278;
+    box-shadow: 0 0 0 3px rgba(156, 146, 120, 0.13);
+}
+
+/* Espaçamento entre campos */
+
+.admin-modal-overlay .admin-modal-content .form-group,
+.admin-modal-overlay .admin-modal-content .field,
+.admin-modal-overlay .admin-modal-content .form-field {
+    margin-bottom: 16px;
+}
+
+/* Botões */
+
+.admin-modal-overlay .admin-modal-content button {
+    min-height: 40px;
+    padding: 9px 16px;
+
+    border-radius: 9px;
+    border: 1px solid #d9d5cc;
+
+    background: #fff;
+    color: #37352f;
+
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        border-color .15s ease,
+        transform .1s ease;
+}
+
+.admin-modal-overlay .admin-modal-content button:hover {
+    background: #f6f4ef;
+    border-color: #c9c4b8;
+}
+
+.admin-modal-overlay .admin-modal-content button:active {
+    transform: translateY(1px);
+}
+
+/* Botão principal */
+
+.admin-modal-overlay .admin-modal-content button[type="submit"],
+.admin-modal-overlay .admin-modal-content .btn-primary,
+.admin-modal-overlay .admin-modal-content .admin-btn-primary {
+    background: #25241f;
+    border-color: #25241f;
+    color: #fff;
+}
+
+.admin-modal-overlay .admin-modal-content button[type="submit"]:hover,
+.admin-modal-overlay .admin-modal-content .btn-primary:hover,
+.admin-modal-overlay .admin-modal-content .admin-btn-primary:hover {
+    background: #3a3831;
+    border-color: #3a3831;
+}
+
+/* Rodapé */
+
+.admin-modal-overlay .admin-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+
+    padding: 18px 24px;
+
+    border-top: 1px solid #eceae4;
+    background: #faf9f6;
+}
+
+/* Mobile */
+
+@media (max-width: 720px) {
+    .admin-modal-overlay {
+        padding: 12px;
+    }
+
+    .admin-modal-overlay .admin-modal {
+        width: calc(100vw - 24px);
+        max-height: calc(100vh - 24px);
+        border-radius: 14px;
+    }
+
+    .admin-modal-overlay .admin-modal-header {
+        min-height: 60px;
+        padding: 0 16px;
+    }
+
+    .admin-modal-overlay .admin-modal-content {
+        padding: 18px 16px;
+    }
+
+    .admin-modal-overlay .admin-modal-footer {
+        padding: 14px 16px;
+    }
+}
+

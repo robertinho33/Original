@@ -1,5 +1,63 @@
 'use strict';
 
+/* ============================================================
+   AUREA — ADMIN TOAST
+   ============================================================ */
+
+function showAdminToast(message, type = 'info') {
+    let toast = document.getElementById('aurea-admin-toast');
+
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'aurea-admin-toast';
+
+        Object.assign(toast.style, {
+            position: 'fixed',
+            right: '24px',
+            bottom: '24px',
+            zIndex: '1000000',
+            maxWidth: '360px',
+            padding: '13px 17px',
+            borderRadius: '10px',
+            background: '#25241f',
+            color: '#fff',
+            fontSize: '14px',
+            fontWeight: '600',
+            lineHeight: '1.4',
+            boxShadow: '0 12px 35px rgba(0,0,0,.22)',
+            opacity: '0',
+            transform: 'translateY(10px)',
+            transition: 'opacity .18s ease, transform .18s ease',
+            pointerEvents: 'none'
+        });
+
+        document.body.appendChild(toast);
+    }
+
+    const colors = {
+        success: '#2f6b45',
+        error: '#9b3535',
+        warning: '#8a681f',
+        info: '#25241f'
+    };
+
+    toast.style.background = colors[type] || colors.info;
+    toast.textContent = String(message ?? '');
+
+    clearTimeout(toast.__hideTimer);
+
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    });
+
+    toast.__hideTimer = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+    }, 3000);
+}
+
+
 const adminApi = window.AdminAPI;
 
 import { updateProduct } from './product-repository.js';
@@ -4036,7 +4094,7 @@ function renderOrders(content, orders) {
             .map(order => {
 
                 const orderNumber =
-                    order.order_number ||
+                    order.orderNumber || order.order_number ||
                     `#${order.id ?? '—'}`;
 
 
@@ -4375,7 +4433,7 @@ function createOrderModal() {
 function renderOrderDetails(content, order) {
 
     const orderNumber =
-        order.order_number ||
+        order.orderNumber || order.order_number ||
         `#${order.id || '—'}`;
 
 

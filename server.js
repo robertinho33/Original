@@ -1,4 +1,5 @@
 require("dotenv").config();
+const couponRoutes = require('./server/modules/coupons/coupon-routes');
 const aureaAdminRoutes = require("./server/modules/admin/admin-routes");
 const orderRoutes = require('./server/modules/orders/order-routes');
 const { applyHttpFoundation } = require('./server/core/http');
@@ -7,6 +8,8 @@ const { registerGracefulShutdown } = require('./server/infrastructure/shutdown')
 const { logger } = require('./server/infrastructure/logger');
 const express = require('express');
 const { createPixCharge } = require('./server/modules/payments/pix/pix-service');
+const { validateCoupon } = require('./server/modules/coupons/coupon-service');
+
 const { adminRoutes } = require('./server/modules/admin');
 const { inventoryRoutes } = require('./server/modules/inventory');
 const monitoringRoutes = require('./server/infrastructure/monitoring/monitoring-routes');
@@ -73,6 +76,7 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/admin', aureaAdminRoutes);
+app.use('/api/coupons', couponRoutes);
 app.use('/api/orders', orderRoutes);
 
 // =========================================================
@@ -300,34 +304,219 @@ app.post(
                 order.id || ''
             ).trim();
 
-            const amount = Number(
-                order.total
-            );
-
             if (!orderId) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Pedido sem identificaÃ§Ã£o.'
+                    message: 'Pedido sem identificação.'
                 });
             }
 
-            if (!Number.isFinite(amount) || amount <= 0) {
+            const requestedItems =
+                Array.isArray(order.items)
+                    ? order.items
+                    : [];
+
+            if (!requestedItems.length) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Valor do pedido invÃ¡lido.'
+                    message: 'Pedido sem produtos.'
                 });
             }
 
-            const payment = await createPixCharge({
-                orderId,
-                amount
+            const deliveryMethod =
+                String(
+                    order.delivery?.method ||
+                    order.deliveryMethod ||
+                    'delivery'
+                ).trim().toLowerCase();
+
+            const requestedShipping =
+                Number(
+                    order.delivery?.cost ??
+                    order.shipping ??
+                    19.90
+                );
+
+            const shipping =
+                deliveryMethod === 'pickup'
+                    ? 0
+                    : Number.isFinite(requestedShipping) &&
+                      requestedShipping >= 0
+                        ? requestedShipping
+                        : 19.90;
+
+            if (!Number.isFinite(shipping) || shipping < 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Frete do pedido inválido.'
+                });
+            }
+
+            const { prepareOrder } = require('./server/modules/orders/order-authority');
+
+            const baseOrder = await prepareOrder({
+                items: requestedItems,
+                shipping,
+                discount: 0,
+                customer: order.customer || {},
+                paymentMethod:
+                    order.payment?.method || 'pix'
             });
 
+            const subtotal =
+                Number(baseOrder.totals.subtotal);
+
+            let discount = 0;
+            let coupon = null;
+
+            const couponCode =
+                String(
+                    order.coupon?.code || ''
+                ).trim();
+
+            if (couponCode) {
+                const couponResult =
+                    await validateCoupon(couponCode);
+
+                if (!couponResult.valid) {
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            couponResult.message ||
+                            'Cupom inválido ou expirado.'
+                    });
+                }
+
+                coupon = couponResult.coupon;
+
+                const couponValue =
+                    Number(coupon.discount);
+
+                if (
+                    !Number.isFinite(couponValue) ||
+                    couponValue < 0
+                ) {
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            'Cupom com configuração inválida.'
+                    });
+                }
+
+                if (
+                    coupon.discountType ===
+                    'percentage'
+                ) {
+                    discount =
+                        subtotal *
+                        couponValue /
+                        100;
+                } else {
+                    discount =
+                        Math.min(
+                            subtotal,
+                            couponValue
+                        );
+                }
+
+                discount = Number(
+                    Math.max(
+                        0,
+                        discount
+                    ).toFixed(2)
+                );
+            }
+
+            const authoritativeOrder =
+                await prepareOrder({
+                    items: requestedItems,
+                    shipping,
+                    discount,
+                    customer: order.customer || {},
+                    paymentMethod:
+                        order.payment?.method || 'pix'
+                });
+
+            const orderRepository =
+                require('./server/modules/orders/order-repository');
+
+            const persistedOrder =
+                await orderRepository.create(
+                    authoritativeOrder
+                );
+
             console.log(
-                `[NEFER PIX] cobranÃ§a criada: ${orderId} | R$ ${amount.toFixed(2)} | ${payment.txid}`
+                '[NEFER ORDER] pedido salvo no Firestore:',
+                persistedOrder.id,
+                '|',
+                persistedOrder.orderNumber
             );
 
-            return res.json(payment);
+            const amount =
+                Number(
+                    persistedOrder.totals.total
+                );
+
+            if (
+                !Number.isFinite(amount) ||
+                amount <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'Total autorizado do pedido inválido.'
+                });
+            }
+
+            const payment =
+                await createPixCharge({
+                    orderId:
+                        persistedOrder.orderNumber,
+                    amount
+                });
+
+            console.log(
+                '[NEFER PIX] cobrança criada:',
+                orderId,
+                '| R$',
+                amount.toFixed(2),
+                '| cupom:',
+                coupon
+                    ? coupon.code
+                    : 'nenhum',
+                '|',
+                payment.txid
+            );
+
+            return res.json({
+                ...payment,
+                order: {
+                    orderNumber:
+                        persistedOrder.orderNumber,
+                    subtotal:
+                        persistedOrder.totals.subtotal,
+                    discount:
+                        persistedOrder.totals.discount,
+                    shipping:
+                        persistedOrder.totals.shipping,
+                    total:
+                        persistedOrder.totals.total,
+                    coupon: coupon
+                        ? {
+                            id: coupon.id,
+                            code: coupon.code,
+                            discount:
+                                coupon.discount,
+                            discountType:
+                                coupon.discountType,
+                            affiliateName:
+                                coupon.affiliateName,
+                            commission:
+                                coupon.commission
+                        }
+                        : null
+                }
+            });
 
         } catch (error) {
             console.error(
@@ -335,18 +524,17 @@ app.post(
                 error
             );
 
-            return res.status(500).json({
+            return res.status(
+                error?.status || 500
+            ).json({
                 success: false,
                 message:
                     error?.message ||
-                    'Erro ao criar cobranÃ§a PIX.'
+                    'Erro ao criar cobrança PIX.'
             });
         }
     }
 );
-
-
-
 /*
 =========================================================
  SERVIDOR
@@ -390,24 +578,3 @@ app.listen(
         console.log('');
     }
 );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

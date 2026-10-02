@@ -1,87 +1,133 @@
 ﻿'use strict';
 
 const {
-  readDatabase,
-  writeDatabase
-} = require('../../infrastructure/database');
+    getFirestore
+} = require('../../infrastructure/firebase/firebase-admin');
 
-function create(order) {
-  const database = readDatabase();
-
-  const now = new Date().toISOString();
-
-  const storedOrder = {
-    ...order,
-    createdAt: order.createdAt || now,
-    updatedAt: now
-  };
-
-  database.orders.push(storedOrder);
-
-  writeDatabase(database);
-
-  return storedOrder;
+function getDb() {
+    return getFirestore();
 }
 
-function findByOrderNumber(orderNumber) {
-  const database = readDatabase();
-
-  return database.orders.find(
-    order => order.orderNumber === orderNumber
-  ) || null;
+function ordersCollection() {
+    return getDb().collection('orders');
 }
 
-function findByEmail(email) {
-  const database = readDatabase();
+function normalizeOrder(doc) {
+    if (!doc || !doc.exists) {
+        return null;
+    }
 
-  const normalized =
-    String(email || '').trim().toLowerCase();
-
-  return database.orders.filter(order => {
-    return String(
-      order.customer?.email || ''
-    ).toLowerCase() === normalized;
-  });
+    return {
+        id: doc.id,
+        ...doc.data()
+    };
 }
 
-function findAll({
-  limit = 100,
-  offset = 0
+async function create(order) {
+    const now = new Date().toISOString();
+
+    const storedOrder = {
+        ...order,
+        createdAt: order.createdAt || now,
+        updatedAt: now
+    };
+
+    const docRef = await ordersCollection().add(storedOrder);
+
+    return {
+        id: docRef.id,
+        ...storedOrder
+    };
+}
+
+async function findByOrderNumber(orderNumber) {
+    const snapshot = await ordersCollection()
+        .where('orderNumber', '==', String(orderNumber))
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) {
+        return null;
+    }
+
+    return normalizeOrder(snapshot.docs[0]);
+}
+
+async function findByEmail(email) {
+    const normalized = String(email || '')
+        .trim()
+        .toLowerCase();
+
+    if (!normalized) {
+        return [];
+    }
+
+    const snapshot = await ordersCollection()
+        .where('customer.email', '==', normalized)
+        .get();
+
+    return snapshot.docs.map(normalizeOrder);
+}
+
+async function findAll({
+    limit = 100,
+    offset = 0
 } = {}) {
-  const database = readDatabase();
+    const safeLimit = Math.max(
+        1,
+        Math.min(
+            Number(limit) || 100,
+            500
+        )
+    );
 
-  return database.orders
-    .slice()
-    .reverse()
-    .slice(offset, offset + limit);
+    const safeOffset = Math.max(
+        0,
+        Number(offset) || 0
+    );
+
+    const snapshot = await ordersCollection()
+        .orderBy('createdAt', 'desc')
+        .offset(safeOffset)
+        .limit(safeLimit)
+        .get();
+
+    return snapshot.docs.map(normalizeOrder);
 }
 
-function update(orderNumber, changes) {
-  const database = readDatabase();
+async function update(orderNumber, changes) {
+    const snapshot = await ordersCollection()
+        .where('orderNumber', '==', String(orderNumber))
+        .limit(1)
+        .get();
 
-  const index = database.orders.findIndex(
-    order => order.orderNumber === orderNumber
-  );
+    if (snapshot.empty) {
+        return null;
+    }
 
-  if (index === -1) {
-    return null;
-  }
+    const doc = snapshot.docs[0];
 
-  database.orders[index] = {
-    ...database.orders[index],
-    ...changes,
-    updatedAt: new Date().toISOString()
-  };
+    const updatedOrder = {
+        ...changes,
+        updatedAt: new Date().toISOString()
+    };
 
-  writeDatabase(database);
+    await doc.ref.set(
+        updatedOrder,
+        {
+            merge: true
+        }
+    );
 
-  return database.orders[index];
+    const updatedSnapshot = await doc.ref.get();
+
+    return normalizeOrder(updatedSnapshot);
 }
 
 module.exports = {
-  create,
-  findByOrderNumber,
-  findByEmail,
-  findAll,
-  update
+    create,
+    findByOrderNumber,
+    findByEmail,
+    findAll,
+    update
 };

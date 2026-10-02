@@ -1,9 +1,9 @@
 ﻿'use strict';
 
 import {
-    getOrderById,
-    updateOrder
-} from './order-service.js';
+    getOrder,
+    updateOrder as updateFirebaseOrder
+} from '../admin/order-repository.js';
 
 import {
     ORDER_STATUS
@@ -31,40 +31,18 @@ function createUpdatedTimestamp() {
 
 
 export async function confirmPayment(orderId) {
-
     if (!orderId) {
         throw new Error(
             'Identificação do pedido não informada.'
         );
     }
 
-    const existingOrder =
-        await getOrderById(orderId);
-
-    if (!existingOrder) {
-        throw new Error(
-            'Pedido não encontrado.'
-        );
-    }
-
     const order =
-        cloneOrder(existingOrder);
+        await getOrder(orderId);
 
-    const currentPaymentStatus =
-        order.payment?.status || 'pending';
-
-    if (currentPaymentStatus === 'confirmed') {
+    if (!order) {
         throw new Error(
-            'O pagamento deste pedido já está confirmado.'
-        );
-    }
-
-    if (
-        currentPaymentStatus === 'cancelled' ||
-        currentPaymentStatus === 'rejected'
-    ) {
-        throw new Error(
-            'Não é possível confirmar um pagamento cancelado.'
+            'Pedido não encontrado no Firestore.'
         );
     }
 
@@ -73,7 +51,6 @@ export async function confirmPayment(orderId) {
     }
 
     order.payment.status = 'confirmed';
-
     order.payment.confirmedAt =
         createUpdatedTimestamp();
 
@@ -85,113 +62,88 @@ export async function confirmPayment(orderId) {
         ORDER_EVENT.PAYMENT_CONFIRMED,
         {
             paymentMethod:
-                order.payment.method || null
+                order.payment.method || 'pix'
         }
     );
 
-    await updateOrder(order);
+    const updatedOrder =
+        await updateFirebaseOrder(
+            order.id,
+            {
+                payment: order.payment,
+                status: order.status,
+                history: order.history,
+                updatedAt: createUpdatedTimestamp()
+            }
+        );
 
-    return order;
+    return updatedOrder;
 }
-
-
 export async function advanceLogistics(orderId) {
-
     if (!orderId) {
         throw new Error(
             'Identificação do pedido não informada.'
         );
     }
 
-    const existingOrder =
-        await getOrderById(orderId);
-
-    if (!existingOrder) {
-        throw new Error(
-            'Pedido não encontrado.'
-        );
-    }
-
     const order =
-        cloneOrder(existingOrder);
+        await getOrder(orderId);
 
-    const paymentStatus =
-        order.payment?.status || 'pending';
-
-    if (paymentStatus !== 'confirmed') {
+    if (!order) {
         throw new Error(
-            'O pagamento precisa estar confirmado antes do avanço logístico.'
+            'Pedido não encontrado no Firestore.'
         );
-    }
-
-    if (!order.logistics) {
-        order.logistics = {};
     }
 
     const currentStatus =
-        order.logistics.status ||
-        LOGISTICS_STATUS.NEW;
+        order.logistics?.status ||
+        'pending';
 
-    const currentIndex =
-        LOGISTICS_FLOW.indexOf(currentStatus);
+    const statusFlow = {
+        pending: 'processing',
+        processing: 'shipped',
+        shipped: 'delivered',
+        delivered: 'delivered'
+    };
 
-    if (currentIndex === -1) {
+    const nextStatus =
+        statusFlow[currentStatus];
+
+    if (!nextStatus) {
         throw new Error(
             'Status logístico inválido.'
         );
     }
 
-    const nextStatus =
-        LOGISTICS_FLOW[currentIndex + 1];
-
-    if (!nextStatus) {
-        throw new Error(
-            'O pedido já está com a entrega concluída.'
-        );
+    if (currentStatus === 'delivered') {
+        return order;
     }
 
-    order.logistics.status =
-        nextStatus;
-
-    if (nextStatus === LOGISTICS_STATUS.DELIVERED) {
-        order.status =
-            ORDER_STATUS.COMPLETED;
-    } else {
-        order.status =
-            ORDER_STATUS.PROCESSING;
-    }
-
-    const eventMap = {
-        [LOGISTICS_STATUS.PREPARING]:
-            ORDER_EVENT.PREPARING,
-
-        [LOGISTICS_STATUS.PACKED]:
-            ORDER_EVENT.PACKED,
-
-        [LOGISTICS_STATUS.SHIPPED]:
-            ORDER_EVENT.SHIPPED,
-
-        [LOGISTICS_STATUS.IN_TRANSIT]:
-            ORDER_EVENT.IN_TRANSIT,
-
-        [LOGISTICS_STATUS.OUT_FOR_DELIVERY]:
-            ORDER_EVENT.OUT_FOR_DELIVERY,
-
-        [LOGISTICS_STATUS.DELIVERED]:
-            ORDER_EVENT.DELIVERED
+    const updatedLogistics = {
+        ...(order.logistics || {}),
+        status: nextStatus,
+        updatedAt: createUpdatedTimestamp()
     };
 
-    const eventType =
-        eventMap[nextStatus];
+    const history =
+        Array.isArray(order.history)
+            ? [...order.history]
+            : [];
 
-    if (eventType) {
-        appendOrderEvent(
-            order,
-            eventType
-        );
-    }
+    history.push({
+        type: 'logistics_status_changed',
+        previousStatus: currentStatus,
+        status: nextStatus,
+        createdAt: createUpdatedTimestamp(),
+        source: 'admin'
+    });
 
-    await updateOrder(order);
-
-    return order;
+    return await updateFirebaseOrder(
+        order.id,
+        {
+            logistics: updatedLogistics,
+            history,
+            updatedAt: createUpdatedTimestamp()
+        }
+    );
 }
