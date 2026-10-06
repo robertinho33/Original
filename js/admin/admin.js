@@ -79,6 +79,7 @@ import {
 
 import { renderRelationships, renderContracts } from './modules/partnerships-contracts.js';
 import { renderCommissionLedger } from './modules/commission-ledger.js';
+import { renderStorefront, renderIncentiveCampaigns } from './modules/marketing-tools.js';
 
 const root =
     document.querySelector('#admin-root');
@@ -98,6 +99,8 @@ const sections = [
     'customers',
     'finance',
     'coupons',
+    'storefront',
+    'campaigns',
     'influencers',
     'commissions',
     'partnerships',
@@ -577,6 +580,16 @@ async function load(section) {
             'Termos, vigência e histórico das parcerias.'
         ],
 
+        storefront: [
+            'Banner da vitrine',
+            'Crie e programe campanhas promocionais para a página inicial.'
+        ],
+
+        campaigns: [
+            'Campanhas de incentivo',
+            'Segmente clientes e influenciadores pelas atividades registradas.'
+        ],
+
         logistics: [
             'Logística',
             'Expedição, envio e rastreamento.'
@@ -620,12 +633,14 @@ async function load(section) {
         );
 
 
-    if (section === 'partnerships' || section === 'contracts' || section === 'commissions') {
+    if (section === 'partnerships' || section === 'contracts' || section === 'commissions' || section === 'storefront' || section === 'campaigns') {
         try {
             const content = root.querySelector('.admin-loading');
             if (section === 'partnerships') await renderRelationships(content);
             else if (section === 'contracts') await renderContracts(content);
-            else await renderCommissionLedger(content);
+            else if (section === 'commissions') await renderCommissionLedger(content);
+            else if (section === 'storefront') await renderStorefront(content);
+            else await renderIncentiveCampaigns(content);
         } catch (error) {
             root.innerHTML = '';
             const errorBox = document.createElement('div');
@@ -2028,102 +2043,38 @@ function renderInventory(content, inventory) {
         });
 }
 function renderCustomers(content, customers) {
-
     const list =
         Array.isArray(customers)
             ? customers
             : [];
-
-
+    const paidOrders = list.reduce((sum, item) => sum + Number(item.paidOrders || 0), 0);
+    const totalSpent = list.reduce((sum, item) => sum + Number(item.totalSpent || 0), 0);
     content.outerHTML = `
-
         <div class="admin-module-data">
-
             <div class="admin-metrics-grid">
-
-                ${metricCard(
-                    'Clientes cadastrados',
-                    formatNumber(list.length)
-                )}
-
-                ${metricCard(
-                    'Fonte',
-                    'Firebase / Firestore'
-                )}
-
+                ${metricCard('Clientes com atividade', formatNumber(list.length))}
+                ${metricCard('Pedidos pagos', formatNumber(paidOrders))}
+                ${metricCard('Valor pago registrado', formatCurrency(totalSpent))}
             </div>
-
-
-            ${table(
-                'Base de clientes',
-
-                [
-                    {
-                        label: 'Cliente',
-                        render: row => `
-                            <strong>
-                                ${escapeHtml(
-                                    pick(
-                                        row,
-                                        [
-                                            'name',
-                                            'full_name'
-                                        ],
-                                        'Cliente'
-                                    )
-                                )}
-                            </strong>
-                        `
-                    },
-
-                    {
-                        label: 'E-mail',
-                        keys: ['email']
-                    },
-
-                    {
-                        label: 'Telefone',
-                        keys: [
-                            'phone',
-                            'telephone',
-                            'whatsapp'
-                        ]
-                    },
-
-                    {
-                        label: 'Cadastro',
-                        render: row =>
-                            formatDate(
-                                pick(
-                                    row,
-                                    [
-                                        'created_at',
-                                        'createdAt'
-                                    ],
-                                    null
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Status',
-                        render: row =>
-                            renderStatus(
-                                pick(
-                                    row,
-                                    [
-                                        'status',
-                                        'state'
-                                    ],
-                                    'active'
-                                )
-                            )
-                    }
-                ],
-
-                list
-            )}
-
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead><tr><th>Cliente</th><th>Contato</th><th>Pedidos</th><th>Compras pagas</th><th>Última atividade</th><th>Histórico</th></tr></thead>
+                    <tbody>
+                        ${list.length ? list.map(customer => {
+                            const history = Array.isArray(customer.activityHistory) ? customer.activityHistory : [];
+                            const name = customer.name || customer.full_name || 'Cliente';
+                            return `<tr>
+                                <td><strong>${escapeHtml(name)}</strong><small>${escapeHtml(customer.status || 'Ativo')}</small></td>
+                                <td>${escapeHtml(customer.email || '—')}<small>${escapeHtml(customer.phone || customer.whatsapp || '—')}</small></td>
+                                <td>${formatNumber(customer.ordersCount || 0)}</td>
+                                <td>${formatNumber(customer.paidOrders || 0)}<small>${formatCurrency(customer.totalSpent || 0)}</small></td>
+                                <td>${formatDate(customer.lastPurchaseAt || customer.updatedAt || customer.createdAt)}</td>
+                                <td><details><summary>Ver ${history.length} evento(s)</summary><ul class="customer-activity-history">${history.length ? history.map(event => `<li><time>${escapeHtml(formatDate(event.at))}</time> ${escapeHtml(event.label || event.type || 'Atividade registrada')}</li>`).join('') : '<li>Sem atividade registrada.</li>'}</ul></details></td>
+                            </tr>`;
+                        }).join('') : '<tr><td colspan="6">Ainda não há clientes ou pedidos registrados.</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
         </div>
     `;
 }

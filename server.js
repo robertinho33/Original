@@ -77,6 +77,7 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/admin', aureaAdminRoutes);
+app.get('/api/storefront/hero', require('./server/modules/admin/controllers/marketing-controller').publicHero);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/orders', orderRoutes);
 

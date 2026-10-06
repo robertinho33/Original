@@ -19,6 +19,7 @@ const influencerController =
 const partnershipController = require("./controllers/partnership-controller");
 const contractController = require("./controllers/influencer-contract-controller");
 const commissionController = require("./controllers/commission-controller");
+const marketingController = require("./controllers/marketing-controller");
 
 const globalSearchController =
     require("./controllers/admin-global-search-controller");
@@ -33,8 +34,8 @@ router.use(adminAuth);
 /* COLLABORATOR_SCOPE */
 router.use((req, res, next) => {
     if (req.admin?.role !== "collaborator") return next();
-    const readOnlyPaths = new Set(["/access", "/partnerships/overview", "/contracts", "/influencers", "/commissions"]);
-    const mayPrepareDraft = req.method === "POST" && req.path === "/contracts";
+    const readOnlyPaths = new Set(["/access", "/partnerships/overview", "/contracts", "/influencers", "/commissions", "/marketing/hero", "/marketing/campaigns"]);
+    const mayPrepareDraft = (req.method === "POST" && ["/contracts", "/marketing/audience", "/marketing/campaigns"].includes(req.path)) || (req.method === "PUT" && req.path === "/marketing/hero");
     if ((req.method === "GET" && readOnlyPaths.has(req.path)) || mayPrepareDraft) return next();
     return res.status(403).json({ success: false, error: "Colaboradores podem consultar e preparar rascunhos. A ativação e o encerramento cabem ao administrador." });
 });
@@ -71,6 +72,13 @@ router.get("/influencers/:id", influencerController.get);
 router.post("/influencers", influencerController.create);
 router.put("/influencers/:id", influencerController.update);
 router.delete("/influencers/:id", influencerController.remove);
+router.get("/marketing/hero", marketingController.hero);
+router.put("/marketing/hero", marketingController.saveHero);
+router.put("/marketing/hero/activate", marketingController.activateHero);
+router.get("/marketing/campaigns", marketingController.campaigns);
+router.post("/marketing/audience", marketingController.previewAudience);
+router.post("/marketing/campaigns", marketingController.createCampaign);
+router.put("/marketing/campaigns/:id/launch", marketingController.launchCampaign);
 router.post("/coupons",adminController.createCoupon);
 router.post(
     "/inventory/movement",

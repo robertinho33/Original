@@ -82,21 +82,21 @@
 
       <div class="hero-copy">
 
-        <p class="eyebrow">
+        <p class="eyebrow" id="heroCampaignEyebrow">
           BEAUTY • CARE • RITUAL
         </p>
 
         <h1>
-          Beleza que<br>
-          <em>começa</em> no ritual.
+          <span id="heroCampaignTitle">Beleza que</span><br>
+          <em id="heroCampaignEmphasis">começa</em><span id="heroCampaignEnding"> no ritual.</span>
         </h1>
 
-        <p class="hero-text">
+        <p class="hero-text" id="heroCampaignDescription">
           Uma loja digital pensada para transformar a escolha
           de produtos em uma experiência simples, elegante e pessoal.
         </p>
 
-        <a class="primary" href="#colecao">
+        <a class="primary" id="heroCampaignButton" href="#colecao">
           Explorar coleção
           <span>→</span>
         </a>
@@ -104,6 +104,7 @@
       </div>
 
       <div class="hero-card">
+        <img id="heroCampaignImage" class="campaign-hero-image" alt="" hidden>
         <div class="orb"></div>
         <div class="product-shape"></div>
 
@@ -406,6 +407,7 @@
     type="module"
     src="js/app.js"
   ></script>
+  <script type="module" src="js/storefront-hero.js"></script>
 
   <!-- =====================================================
        ETAPA 3/7 — MODAL DE PRODUTO

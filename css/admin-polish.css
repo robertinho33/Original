@@ -70,6 +70,20 @@
     transition: .18s ease;
 }
 
+.customer-activity-history { margin: 10px 0 0; padding-left: 18px; max-width: 420px; }
+.customer-activity-history li { margin: 0 0 8px; line-height: 1.4; }
+.customer-activity-history time { display: block; color: var(--muted); font-size: 11px; }
+.marketing-form-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.marketing-form-actions [role="status"] { color: var(--muted); font-size: 13px; }
+.marketing-preview { border: 1px solid var(--border); border-radius: 14px; padding: 20px; background: var(--surface); }
+.marketing-preview strong { display: block; font-size: 22px; }
+.marketing-preview p { margin: 8px 0 14px; color: var(--muted); }
+.marketing-audience-preview { margin-top: 18px; }
+.marketing-check { display: flex !important; align-items: center; gap: 9px; }
+.marketing-check input { width: auto; }
+.marketing-check[hidden] { display: none !important; }
+.admin-form label[hidden] { display: none !important; }
+
 .admin-action-button,
 .admin-button-secondary {
     background: var(--surface);

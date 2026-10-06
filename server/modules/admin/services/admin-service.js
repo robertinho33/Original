@@ -92,25 +92,104 @@ async function getInventory() {
 }
 
 async function getCustomers() {
-    const snapshot = await db()
-        .collection(USERS)
-        .limit(50)
-        .get();
+    const [users, orders] = await Promise.all([
+        getCollection(USERS),
+        getOrders()
+    ]);
+    const byKey = new Map();
+    const byEmail = new Map();
+    const byPhone = new Map();
 
-    return snapshot.docs
-        .map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }))
-        .sort((a, b) => {
-            const da =
-                new Date(a.createdAt || 0).getTime();
+    for (const user of users) {
+        const email = String(user.email || "").trim().toLowerCase();
+        const phone = String(user.phone || user.whatsapp || "").replace(/\D/g, "");
+        const profile = {
+            ...user,
+            createdAt: normalizeDate(user.createdAt),
+            updatedAt: normalizeDate(user.updatedAt),
+            email,
+            phone,
+            ordersCount: 0,
+            paidOrders: 0,
+            totalSpent: 0,
+            lastPurchaseAt: null,
+            couponsUsed: [],
+            activityHistory: []
+        };
+        byKey.set(`id:${user.id}`, profile);
+        if (email) byEmail.set(email, profile);
+        if (phone) byPhone.set(phone, profile);
+    }
 
-            const db =
-                new Date(b.createdAt || 0).getTime();
+    for (const order of orders) {
+        const email = String(order.customer?.email || order.email || "").trim().toLowerCase();
+        const phone = String(order.customer?.phone || order.phone || "").replace(/\D/g, "");
+        const userId = String(order.userId || order.customerId || order.customer?.id || "").trim();
+        let profile = (email && byEmail.get(email)) || (phone && byPhone.get(phone)) || (userId && byKey.get(`id:${userId}`));
+        if (!profile) {
+            const key = email ? `email:${email}` : phone ? `phone:${phone}` : `order:${order.id}`;
+            profile = byKey.get(key);
+        }
+        if (!profile) {
+            const key = email ? `email:${email}` : phone ? `phone:${phone}` : `order:${order.id}`;
+            profile = {
+                id: email || order.id,
+                name: order.customer?.name || order.customerName || "Cliente",
+                email,
+                phone,
+                createdAt: order.createdAt || null,
+                ordersCount: 0,
+                paidOrders: 0,
+                totalSpent: 0,
+                lastPurchaseAt: null,
+                couponsUsed: [],
+                activityHistory: []
+            };
+            byKey.set(key, profile);
+            if (email) byEmail.set(email, profile);
+            if (phone) byPhone.set(phone, profile);
+        }
 
-            return db - da;
+        const orderDate = order.createdAt || null;
+        const orderNumber = order.orderNumber || order.order_number || order.id;
+        const total = money(order.total ?? order.totals?.total);
+        const paymentStatus = String(order.payment?.status || order.paymentStatus || "").toLowerCase();
+        const isPaid = ["paid", "pago", "confirmed", "confirmado", "approved", "aprovado"].includes(paymentStatus);
+        profile.ordersCount += 1;
+        if (isPaid) {
+            profile.paidOrders += 1;
+            profile.totalSpent += total;
+        }
+        if (orderDate && (!profile.lastPurchaseAt || new Date(orderDate) > new Date(profile.lastPurchaseAt))) profile.lastPurchaseAt = orderDate;
+        const couponCode = typeof order.coupon === "string" ? order.coupon : order.coupon?.code || order.couponCode || order.coupon_code;
+        if (couponCode && !profile.couponsUsed.includes(couponCode)) profile.couponsUsed.push(couponCode);
+        profile.activityHistory.push({
+            at: orderDate,
+            type: "order",
+            label: `Pedido ${orderNumber} · ${isPaid ? "Pago" : "Pagamento pendente"} · R$ ${total.toFixed(2)}`,
+            orderNumber,
+            status: order.status || "pending"
         });
+        for (const event of Array.isArray(order.history) ? order.history : []) {
+            profile.activityHistory.push({
+                at: normalizeDate(event.createdAt || event.at) || orderDate,
+                type: String(event.type || "order_event"),
+                label: String(event.label || event.type || "Atualização do pedido"),
+                orderNumber
+            });
+        }
+        if (couponCode) profile.activityHistory.push({ at: orderDate, type: "coupon_used", label: `Cupom usado: ${couponCode}`, orderNumber });
+    }
+
+    return [...new Set(byKey.values())]
+        .map(profile => ({
+            ...profile,
+            totalSpent: Number(profile.totalSpent.toFixed(2)),
+            activityHistory: profile.activityHistory
+                .sort((a, b) => new Date(b.at || 0).getTime() - new Date(a.at || 0).getTime())
+                .slice(0, 30)
+        }))
+        .sort((a, b) => new Date(b.lastPurchaseAt || b.createdAt || 0).getTime() - new Date(a.lastPurchaseAt || a.createdAt || 0).getTime());
 }
 
 async function getFinance() {
