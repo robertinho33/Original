@@ -115,6 +115,23 @@ const adminApi = {
     products:
         () => request("/products"),
 
+    catalogVisibility:
+        () => request("/catalog/visibility"),
+
+    setCatalogSourceVisibility:
+        (id, visible) =>
+            request(`/catalog/sources/${encodeURIComponent(id)}/visibility`, {
+                method: "PUT",
+                body: JSON.stringify({ visible: Boolean(visible) })
+            }),
+
+    setCatalogProductVisibility:
+        (id, visible) =>
+            request(`/catalog/products/${encodeURIComponent(id)}/visibility`, {
+                method: "PUT",
+                body: JSON.stringify({ visible: Boolean(visible) })
+            }),
+
     categories:
         () => request("/categories"),
 

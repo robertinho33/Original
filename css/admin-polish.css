@@ -696,3 +696,78 @@
     #partnership-contract-form .admin-form-full { grid-column: auto; }
 }
 
+/* Catálogo: controle da visibilidade pública por fornecedor e por produto. */
+.admin-catalog-visibility {
+    margin: 24px 0;
+    padding: 20px;
+    border: 1px solid rgba(35, 31, 28, .12);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.admin-catalog-visibility-heading h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.admin-catalog-visibility-heading p {
+    margin: 6px 0 16px;
+    color: #706a65;
+    font-size: .88rem;
+}
+
+.admin-catalog-source-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+}
+
+.admin-catalog-source-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid rgba(35, 31, 28, .1);
+    border-radius: 9px;
+}
+
+.admin-catalog-source-control > div {
+    display: grid;
+    gap: 4px;
+}
+
+.admin-catalog-source-control small {
+    color: #706a65;
+}
+
+.admin-catalog-source-toggle,
+.admin-catalog-product-toggle {
+    min-height: 34px;
+    padding: 7px 10px;
+    border: 1px solid rgba(35, 31, 28, .2);
+    border-radius: 7px;
+    background: #fff;
+    color: #292521;
+    font: inherit;
+    font-size: .82rem;
+    cursor: pointer;
+}
+
+.admin-catalog-source-toggle:hover,
+.admin-catalog-product-toggle:hover {
+    background: #f5f1ec;
+}
+
+.admin-catalog-source-toggle:disabled,
+.admin-catalog-product-toggle:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+@media (max-width: 560px) {
+    .admin-catalog-source-control {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

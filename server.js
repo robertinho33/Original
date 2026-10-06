@@ -78,6 +78,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/admin', aureaAdminRoutes);
 app.get('/api/storefront/hero', require('./server/modules/admin/controllers/marketing-controller').publicHero);
+app.get('/api/storefront/catalog-visibility', require('./server/modules/catalog/catalog-visibility-controller').storefront);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/orders', orderRoutes);
 

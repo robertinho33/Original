@@ -927,16 +927,17 @@ body.modal-open {
     min-height: 0;
 
     display: grid;
-    grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
+    grid-template-columns: minmax(0, 1fr);
 
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .product-modal-image {
     position: relative;
 
-    min-height: 560px;
-    max-height: 700px;
+    min-height: 340px;
+    max-height: 420px;
 
     display: grid;
     place-items: center;
@@ -1002,7 +1003,7 @@ body.modal-open {
 
     background: var(--paper);
 
-    overflow-y: auto;
+    overflow: visible;
 }
 
 .product-modal-details h2 {

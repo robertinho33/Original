@@ -15,9 +15,13 @@ const RUNTIME_CATALOG_PATH =
 
 const MANIFEST_PATH =
     '/data/catalog/manifests/catalog-sources.json';
+const VISIBILITY_PATH =
+    '/api/storefront/catalog-visibility';
 
 let catalogCache = null;
 let sourceCache = null;
+let visibilityCache = null;
+let visibilityCacheAt = 0;
 let catalogListeners = new Set();
 
 function normalizeProduct(product, documentId = '') {
@@ -98,6 +102,25 @@ async function fetchJson(path) {
     return response.json();
 }
 
+async function loadVisibilityOverrides() {
+    if (visibilityCache && Date.now() - visibilityCacheAt < 30000) {
+        return visibilityCache;
+    }
+
+    try {
+        const response = await fetch(VISIBILITY_PATH, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        visibilityCache = payload?.data || {};
+    } catch (error) {
+        console.warn('[CATALOG] Não foi possível carregar as preferências de visibilidade:', error?.message || error);
+        visibilityCache = {};
+    }
+
+    visibilityCacheAt = Date.now();
+    return visibilityCache;
+}
+
 /*
  * Catálogo público:
  *
@@ -140,12 +163,27 @@ export async function loadCatalog() {
 }
 
 export async function loadProducts() {
-    const products =
-        await loadRawCatalog();
+    const [products, visibility] = await Promise.all([
+        loadRawCatalog(),
+        loadVisibilityOverrides()
+    ]);
+    const inactiveSkus = new Set(
+        (Array.isArray(visibility.inactiveProductSkus)
+            ? visibility.inactiveProductSkus
+            : []).map(value => String(value).trim().toLowerCase())
+    );
+    const visibleSources = Array.isArray(visibility.visibleSources)
+        ? new Set(visibility.visibleSources.map(value => String(value).trim().toLowerCase()))
+        : null;
 
     return products.filter(
-        product =>
-            product?.active !== false
+        product => {
+            const sku = String(product?.sku || '').trim().toLowerCase();
+            const sourceId = String(product?.sourceId || '').trim().toLowerCase();
+            return product?.active !== false &&
+                !inactiveSkus.has(sku) &&
+                (!visibleSources || !sourceId || visibleSources.has(sourceId));
+        }
     );
 }
 
@@ -171,6 +209,17 @@ export async function loadSources() {
         sourceCache = data.sources;
     } else {
         sourceCache = [];
+    }
+
+    const visibility = await loadVisibilityOverrides();
+    const visibleSources = Array.isArray(visibility.visibleSources)
+        ? new Set(visibility.visibleSources.map(value => String(value).trim().toLowerCase()))
+        : null;
+    if (visibleSources) {
+        sourceCache = sourceCache.map(source => ({
+            ...source,
+            visible: source.visible !== false && visibleSources.has(String(source.id || '').trim().toLowerCase())
+        }));
     }
 
     return sourceCache;

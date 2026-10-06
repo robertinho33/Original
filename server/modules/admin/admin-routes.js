@@ -34,7 +34,7 @@ router.use(adminAuth);
 /* COLLABORATOR_SCOPE */
 router.use((req, res, next) => {
     if (req.admin?.role !== "collaborator") return next();
-    const readOnlyPaths = new Set(["/access", "/partnerships/overview", "/contracts", "/influencers", "/commissions", "/marketing/hero", "/marketing/campaigns"]);
+    const readOnlyPaths = new Set(["/access", "/partnerships/overview", "/contracts", "/influencers", "/commissions", "/marketing/hero", "/marketing/campaigns", "/catalog/visibility"]);
     const mayPrepareDraft = (req.method === "POST" && ["/contracts", "/marketing/audience", "/marketing/campaigns"].includes(req.path)) || (req.method === "PUT" && req.path === "/marketing/hero");
     if ((req.method === "GET" && readOnlyPaths.has(req.path)) || mayPrepareDraft) return next();
     return res.status(403).json({ success: false, error: "Colaboradores podem consultar e preparar rascunhos. A ativação e o encerramento cabem ao administrador." });
@@ -90,6 +90,10 @@ router.get("/logistics", adminController.logistics);
 router.get("/reports", adminController.reports);
 router.get("/audit", adminController.audit);
 router.get("/settings", adminController.settings);
+const catalogVisibilityController = require("../catalog/catalog-visibility-controller");
+router.get("/catalog/visibility", catalogVisibilityController.adminRead);
+router.put("/catalog/sources/:id/visibility", catalogVisibilityController.updateSource);
+router.put("/catalog/products/:id/visibility", catalogVisibilityController.updateProduct);
 
 /* ============================================================
    DASHBOARD OPERACIONAL

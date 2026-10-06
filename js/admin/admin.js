@@ -704,8 +704,19 @@ async function loadModuleData(section) {
                 break;
 
             case 'products':
-                response =
-                    await adminApi.products();
+                {
+                    const [productsResponse, visibilityResponse] = await Promise.all([
+                        adminApi.products(),
+                        adminApi.catalogVisibility()
+                    ]);
+                    response = {
+                        success: true,
+                        data: {
+                            products: productsResponse?.data ?? productsResponse ?? [],
+                            visibility: visibilityResponse?.data ?? visibilityResponse ?? {}
+                        }
+                    };
+                }
                 break;
 
             case 'categories':
@@ -788,7 +799,10 @@ async function loadModuleData(section) {
                 content,
                 Array.isArray(data)
                     ? data
-                    : []
+                    : Array.isArray(data?.products)
+                        ? data.products
+                        : [],
+                data?.visibility || {}
             );
             return;
         }
@@ -925,7 +939,7 @@ async function loadModuleData(section) {
    PRODUTOS
    ============================================================ */
 
-function renderProducts(content, products) {
+function renderProducts(content, products, visibility = {}) {
 
     const list =
         Array.isArray(products)
@@ -959,10 +973,32 @@ function renderProducts(content, products) {
             ) <= 0
         ).length;
 
+    const sources = Array.isArray(visibility.sources)
+        ? visibility.sources
+        : [];
+
+    const sourceControls = sources.length
+        ? sources.map(source => `
+            <article class="admin-catalog-source-control">
+                <div>
+                    <strong>${escapeHtml(source.name || source.id)}</strong>
+                    <small>${source.visible ? 'Visível na vitrine' : 'Oculto na vitrine'}</small>
+                </div>
+                <button
+                    type="button"
+                    class="admin-catalog-source-toggle"
+                    data-source-id="${escapeHtml(source.id)}"
+                    data-visible="${source.visible ? 'true' : 'false'}"
+                    aria-pressed="${source.visible ? 'true' : 'false'}"
+                >${source.visible ? 'Desativar fornecedor' : 'Ativar fornecedor'}</button>
+            </article>
+        `).join('')
+        : '<p>Não há fornecedores configurados no catálogo.</p>';
+
 
     const html = `
 
-        <div class="admin-module-data">
+        <div class="admin-module-data" id="admin-products-module">
 
             <div class="admin-metrics-grid">
 
@@ -987,6 +1023,16 @@ function renderProducts(content, products) {
                 )}
 
             </div>
+
+            <section class="admin-catalog-visibility" aria-labelledby="admin-catalog-visibility-title">
+                <div class="admin-catalog-visibility-heading">
+                    <div>
+                        <h3 id="admin-catalog-visibility-title">Visibilidade na vitrine</h3>
+                        <p>Ative ou oculte fornecedores inteiros; os itens também podem ser controlados individualmente na lista.</p>
+                    </div>
+                </div>
+                <div class="admin-catalog-source-controls">${sourceControls}</div>
+            </section>
 
 
             ${table(
@@ -1022,6 +1068,13 @@ function renderProducts(content, products) {
                     },
 
                     {
+                        label: 'Fornecedor',
+                        render: row => escapeHtml(
+                            row.sourceName || row.source_name || row.supplierName || row.supplier || row.sourceId || '—'
+                        )
+                    },
+
+                    {
                         label: 'Categoria',
                         render: row =>
                             escapeHtml(
@@ -1029,6 +1082,7 @@ function renderProducts(content, products) {
                                     row,
                                     [
                                         'category_name',
+                                        'categoryName',
                                         'category'
                                     ],
                                     'Sem categoria'
@@ -1085,6 +1139,22 @@ function renderProducts(content, products) {
                     },
 
                     {
+                        label: 'Vitrine',
+                        render: row => {
+                            const visible = row.active !== false;
+                            return `
+                                <button
+                                    type="button"
+                                    class="admin-catalog-product-toggle"
+                                    data-product-id="${escapeHtml(String(row.id || row.productId || row.docId || ''))}"
+                                    data-visible="${visible ? 'true' : 'false'}"
+                                    aria-pressed="${visible ? 'true' : 'false'}"
+                                >${visible ? 'Visível · ocultar' : 'Oculto · exibir'}</button>
+                            `;
+                        }
+                    },
+
+                    {
                         label: 'Ações',
                         render: row => `
                             <button
@@ -1114,6 +1184,41 @@ function renderProducts(content, products) {
 
     content.outerHTML =
         html;
+
+    const module = document.getElementById('admin-products-module');
+    module?.addEventListener('click', async event => {
+        const sourceButton = event.target.closest('.admin-catalog-source-toggle');
+        const productButton = event.target.closest('.admin-catalog-product-toggle');
+        const button = sourceButton || productButton;
+        if (!button || button.disabled) return;
+
+        const visible = button.dataset.visible !== 'true';
+        button.disabled = true;
+        try {
+            if (sourceButton) {
+                await adminApi.setCatalogSourceVisibility(button.dataset.sourceId, visible);
+                button.textContent = visible ? 'Desativar fornecedor' : 'Ativar fornecedor';
+            } else {
+                await adminApi.setCatalogProductVisibility(button.dataset.productId, visible);
+                button.textContent = visible ? 'Visível · ocultar' : 'Oculto · exibir';
+            }
+
+            button.dataset.visible = String(visible);
+            button.setAttribute('aria-pressed', String(visible));
+            const status = sourceButton ? button.previousElementSibling?.querySelector('small') : null;
+            if (status) status.textContent = visible ? 'Visível na vitrine' : 'Oculto na vitrine';
+            showAdminToast?.(
+                sourceButton
+                    ? `Fornecedor ${visible ? 'ativado' : 'ocultado'} na vitrine.`
+                    : `Produto ${visible ? 'ativado' : 'ocultado'} na vitrine.`,
+                'success'
+            );
+        } catch (error) {
+            showAdminToast?.(error?.message || 'Não foi possível atualizar a vitrine.', 'error');
+        } finally {
+            button.disabled = false;
+        }
+    });
 }
 
 
@@ -1324,10 +1429,14 @@ function openProductEditor(product) {
                         Categoria
 
                         <input
-                            name="category"
+                            name="categoryName"
                             type="text"
                             value="${escapeHtml(
-                                read(['category'])
+                                read([
+                                    'categoryName',
+                                    'category_name',
+                                    'category'
+                                ])
                             )}"
                         >
                     </label>
@@ -1470,6 +1579,19 @@ function openProductEditor(product) {
                         : 0;
                 };
 
+            const optionalNumeric =
+                value => {
+                    if (String(value ?? '').trim() === '') {
+                        return null;
+                    }
+
+                    const parsed = Number(value);
+
+                    return Number.isFinite(parsed)
+                        ? parsed
+                        : null;
+                };
+
 
             const updatedProduct = {
 
@@ -1489,7 +1611,7 @@ function openProductEditor(product) {
                     ),
 
                 promotionalPrice:
-                    numeric(
+                    optionalNumeric(
                         formData.get(
                             'promotionalPrice'
                         )
@@ -1505,9 +1627,9 @@ function openProductEditor(product) {
                         )
                     ),
 
-                category:
+                categoryName:
                     String(
-                        formData.get('category') ?? ''
+                        formData.get('categoryName') ?? ''
                     ).trim(),
 
                 description:
