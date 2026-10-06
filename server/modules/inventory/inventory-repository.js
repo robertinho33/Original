@@ -1,235 +1,244 @@
-﻿'use strict';
+﻿"use strict";
 
-const { query } = require('../../infrastructure/postgres');
+const { getFirestore } = require("../../infrastructure/firebase/firebase-admin");
 
-function mapItem(row) {
-    if (!row) {
-        return null;
-    }
+const db = getFirestore();
+
+const INVENTORY_COLLECTION = "inventory";
+const PRODUCTS_COLLECTION = "products";
+const RESERVATIONS_COLLECTION = "inventoryReservations";
+
+function mapInventory(id, data = {}) {
+    const quantity = Number(data.quantity ?? data.stock ?? 0);
+    const reserved = Number(data.reserved ?? 0);
 
     return {
-        sku: row.sku,
-        product: row.product,
-        stock: Number(row.stock),
-        reserved: Number(row.reserved),
-        updatedAt: row.updated_at
+        id,
+        sku: String(data.sku ?? id),
+        productId: data.productId ?? null,
+        quantity,
+        reserved,
+        available: Number(
+            data.available ?? Math.max(0, quantity - reserved)
+        ),
+        minimumStock: Number(data.minimumStock ?? data.minStock ?? 0),
+        updatedAt: data.updatedAt ?? null,
+        createdAt: data.createdAt ?? null
     };
 }
 
-function mapReservation(row) {
-    if (!row) {
-        return null;
-    }
-
+function mapReservation(id, data = {}) {
     return {
-        id: row.reservation_id,
-        orderNumber: row.order_number,
-        sku: row.sku,
-        quantity: Number(row.quantity),
-        status: row.status,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
+        id,
+        sku: String(data.sku ?? ""),
+        quantity: Number(data.quantity ?? 0),
+        status: data.status ?? "active",
+        orderId: data.orderId ?? null,
+        createdAt: data.createdAt ?? null,
+        updatedAt: data.updatedAt ?? null
     };
 }
 
 async function getItem(sku) {
-    const result = await query(
-        `
-        SELECT
-            sku,
-            product,
-            stock,
-            reserved,
-            updated_at
-        FROM inventory
-        WHERE sku = $1
-        `,
-        [String(sku)]
-    );
+    const normalizedSku = String(sku ?? "").trim();
 
-    return mapItem(result.rows[0]);
+    if (!normalizedSku) return null;
+
+    const ref = db.collection(INVENTORY_COLLECTION).doc(normalizedSku);
+    const snapshot = await ref.get();
+
+    if (!snapshot.exists) return null;
+
+    return mapInventory(snapshot.id, snapshot.data());
 }
 
 async function getAllItems() {
-    const result = await query(
-        `
-        SELECT
-            sku,
-            product,
-            stock,
-            reserved,
-            updated_at
-        FROM inventory
-        ORDER BY sku
-        `
-    );
+    const snapshot = await db.collection(INVENTORY_COLLECTION).get();
 
-    return result.rows.map(mapItem);
+    return snapshot.docs.map((doc) =>
+        mapInventory(doc.id, doc.data())
+    );
 }
 
-async function saveItem(item) {
-    if (!item || !item.sku) {
-        throw new Error('SKU obrigatória para estoque.');
+async function upsertItem(sku, data = {}) {
+    const normalizedSku = String(sku ?? "").trim();
+
+    if (!normalizedSku) {
+        throw new Error("SKU do estoque é obrigatório.");
     }
 
-    const result = await query(
-        `
-        INSERT INTO inventory (
-            sku,
-            product,
-            stock,
-            reserved
-        )
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (sku)
-        DO UPDATE SET
-            product = EXCLUDED.product,
-            stock = EXCLUDED.stock,
-            reserved = EXCLUDED.reserved,
-            updated_at = NOW()
-        RETURNING
-            sku,
-            product,
-            stock,
-            reserved,
-            updated_at
-        `,
-        [
-            String(item.sku),
-            item.product || null,
-            Number(item.stock || 0),
-            Number(item.reserved || 0)
-        ]
+    const ref = db.collection(INVENTORY_COLLECTION).doc(normalizedSku);
+    const existing = await ref.get();
+    const current = existing.exists ? existing.data() : {};
+
+    const quantity = Number(
+        data.quantity ??
+        data.stock ??
+        current.quantity ??
+        current.stock ??
+        0
     );
 
-    return mapItem(result.rows[0]);
+    const reserved = Number(
+        data.reserved ??
+        current.reserved ??
+        0
+    );
+
+    const productId =
+        data.productId ??
+        current.productId ??
+        null;
+
+    const now = new Date().toISOString();
+
+    const payload = {
+        sku: normalizedSku,
+        productId,
+        quantity,
+        reserved,
+        available: Math.max(0, quantity - reserved),
+        minimumStock: Number(
+            data.minimumStock ??
+            data.minStock ??
+            current.minimumStock ??
+            current.minStock ??
+            0
+        ),
+        updatedAt: now,
+        ...(existing.exists
+            ? {}
+            : { createdAt: now })
+    };
+
+    const batch = db.batch();
+
+    batch.set(ref, payload, { merge: true });
+
+    if (productId) {
+        const productRef = db
+            .collection(PRODUCTS_COLLECTION)
+            .doc(String(productId));
+
+        batch.update(productRef, {
+            stock: quantity,
+            updatedAt: now
+        });
+    }
+
+    await batch.commit();
+
+    return mapInventory(normalizedSku, payload);
 }
 
 async function updateItem(sku, changes = {}) {
-    const current = await getItem(sku);
+    const normalizedSku = String(sku ?? "").trim();
+
+    if (!normalizedSku) {
+        throw new Error("SKU do estoque é obrigatório.");
+    }
+
+    const current = await getItem(normalizedSku);
 
     if (!current) {
-        return null;
+        return upsertItem(normalizedSku, changes);
     }
 
-    const next = {
-        sku: current.sku,
-        product:
-            changes.product !== undefined
-                ? changes.product
-                : current.product,
-        stock:
-            changes.stock !== undefined
-                ? Number(changes.stock)
-                : current.stock,
-        reserved:
-            changes.reserved !== undefined
-                ? Number(changes.reserved)
-                : current.reserved
-    };
-
-    return saveItem(next);
+    return upsertItem(normalizedSku, {
+        ...current,
+        ...changes
+    });
 }
 
-async function saveReservation(reservation) {
-    if (!reservation || !reservation.id) {
-        throw new Error('Reserva inválida.');
-    }
+async function createReservation(data = {}) {
+    const ref = db.collection(RESERVATIONS_COLLECTION).doc();
 
-    const result = await query(
-        `
-        INSERT INTO inventory_reservations (
-            reservation_id,
-            order_number,
-            sku,
-            quantity,
-            status
-        )
-        VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (reservation_id)
-        DO UPDATE SET
-            order_number = EXCLUDED.order_number,
-            sku = EXCLUDED.sku,
-            quantity = EXCLUDED.quantity,
-            status = EXCLUDED.status,
-            updated_at = NOW()
-        RETURNING
-            reservation_id,
-            order_number,
-            sku,
-            quantity,
-            status,
-            created_at,
-            updated_at
-        `,
-        [
-            String(reservation.id),
-            reservation.orderNumber || null,
-            String(reservation.sku),
-            Number(reservation.quantity),
-            reservation.status || 'reserved'
-        ]
-    );
+    const now = new Date().toISOString();
 
-    return mapReservation(result.rows[0]);
+    const payload = {
+        sku: String(data.sku ?? ""),
+        quantity: Number(data.quantity ?? 0),
+        status: data.status ?? "active",
+        orderId: data.orderId ?? null,
+        createdAt: now,
+        updatedAt: now
+    };
+
+    await ref.set(payload);
+
+    return mapReservation(ref.id, payload);
 }
 
 async function getReservation(id) {
-    const result = await query(
-        `
-        SELECT
-            reservation_id,
-            order_number,
-            sku,
-            quantity,
-            status,
-            created_at,
-            updated_at
-        FROM inventory_reservations
-        WHERE reservation_id = $1
-        `,
-        [String(id)]
-    );
+    if (!id) return null;
 
-    return mapReservation(result.rows[0]);
+    const ref = db
+        .collection(RESERVATIONS_COLLECTION)
+        .doc(String(id));
+
+    const snapshot = await ref.get();
+
+    if (!snapshot.exists) return null;
+
+    return mapReservation(snapshot.id, snapshot.data());
 }
 
-async function deleteReservation(id) {
-    await query(
-        `
-        DELETE FROM inventory_reservations
-        WHERE reservation_id = $1
-        `,
-        [String(id)]
-    );
+async function updateReservation(id, changes = {}) {
+    if (!id) {
+        throw new Error("ID da reserva é obrigatório.");
+    }
+
+    const ref = db
+        .collection(RESERVATIONS_COLLECTION)
+        .doc(String(id));
+
+    const snapshot = await ref.get();
+
+    if (!snapshot.exists) {
+        return null;
+    }
+
+    const payload = {
+        ...changes,
+        updatedAt: new Date().toISOString()
+    };
+
+    await ref.set(payload, { merge: true });
+
+    const updated = await ref.get();
+
+    return mapReservation(updated.id, updated.data());
 }
 
 async function getAllReservations() {
-    const result = await query(
-        `
-        SELECT
-            reservation_id,
-            order_number,
-            sku,
-            quantity,
-            status,
-            created_at,
-            updated_at
-        FROM inventory_reservations
-        ORDER BY created_at DESC
-        `
-    );
+    const snapshot = await db
+        .collection(RESERVATIONS_COLLECTION)
+        .get();
 
-    return result.rows.map(mapReservation);
+    return snapshot.docs.map((doc) =>
+        mapReservation(doc.id, doc.data())
+    );
+}
+
+async function deleteReservation(id) {
+    if (!id) return false;
+
+    await db
+        .collection(RESERVATIONS_COLLECTION)
+        .doc(String(id))
+        .delete();
+
+    return true;
 }
 
 module.exports = {
     getItem,
     getAllItems,
-    saveItem,
+    upsertItem,
     updateItem,
-    saveReservation,
+    createReservation,
     getReservation,
-    deleteReservation,
-    getAllReservations
+    updateReservation,
+    getAllReservations,
+    deleteReservation
 };

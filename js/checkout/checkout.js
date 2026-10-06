@@ -13,7 +13,10 @@ const CATALOG_PATH = '../data/produtos.csv';
 const DELIVERY_COST = 19.90;
 
 const PIX_API_URL =
-    'https://aurea-pix-api.onrender.com/api/create-pix-payment';
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+        ? '/api/create-pix-payment'
+        : 'https://aurea-pix-api.onrender.com/api/create-pix-payment';
 
 let products = [];
 let cart = [];
@@ -989,6 +992,7 @@ async function applyCouponCode() {
             type: coupon.discountType,
             value: Number(coupon.discount || 0),
             id: coupon.id,
+            influencerId: coupon.influencerId || '',
             affiliateName:
                 coupon.affiliateName || '',
             commission:
@@ -1422,8 +1426,20 @@ function createOrder() {
         coupon:
             appliedCoupon
                 ? {
+                    id:
+                        appliedCoupon.id,
+
                     code:
                         appliedCoupon.code,
+
+                    influencerId:
+                        appliedCoupon.influencerId,
+
+                    affiliateName:
+                        appliedCoupon.affiliateName,
+
+                    commission:
+                        appliedCoupon.commission,
 
                     type:
                         appliedCoupon.type,
@@ -1598,9 +1614,9 @@ function showSuccess(order) {
     if (trackOrderButton) {
 
         trackOrderButton.href =
-            `../pages/rastrear-pedido.html?pedido=${encodeURIComponent(
-                order.orderId
-            )}`;
+            order.trackingToken
+                ? '../pages/rastrear-pedido.html?token=' + encodeURIComponent(order.trackingToken)
+                : '../pages/rastrear-pedido.html?pedido=' + encodeURIComponent(order.orderId);
     }
 
     if (elements.form) {
@@ -1782,6 +1798,13 @@ async function handleSubmit(event) {
                     await createPixPayment(
                         order
                     );
+
+                if (pixResult.order?.orderNumber) {
+                    order.id = pixResult.order.orderNumber;
+                    order.orderId = pixResult.order.orderNumber;
+                }
+                order.trackingToken =
+                    pixResult.order?.publicTrackingToken || '';
 
                 order.payment.status =
                     pixResult.status || 'pending';

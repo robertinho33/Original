@@ -15,7 +15,8 @@ async function buildCompleteOrder(payload = {}) {
     address = null,
     deliveryMethod = 'delivery',
     discount = 0,
-    paymentMethod = 'pix'
+    paymentMethod = 'pix',
+    coupon = null
   } = payload;
 
   const customerShipping =
@@ -36,7 +37,8 @@ async function buildCompleteOrder(payload = {}) {
     shipping: customerShipping.shipping.cost,
     discount,
     customer: customerShipping.customer,
-    paymentMethod
+    paymentMethod,
+    coupon
   });
 
   return {

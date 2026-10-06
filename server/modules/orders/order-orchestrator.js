@@ -139,7 +139,7 @@ async function confirmPayment(orderNumber, requestId) {
     return order;
   }
 
-  const updated = updateOrder(
+  const updated = await updateOrder(
     orderNumber,
     {
       status: 'processing',
@@ -156,6 +156,13 @@ async function confirmPayment(orderNumber, requestId) {
     orderNumber,
     requestId
   });
+
+  try {
+    const commissionService = require('../admin/services/commission-service');
+    await commissionService.sync('payment-confirmation');
+  } catch (error) {
+    console.error('[ORDER PAYMENT] Commission sync failed after confirmed payment:', error);
+  }
 
   return updated;
 }

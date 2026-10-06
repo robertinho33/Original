@@ -28,6 +28,8 @@
 
     <main class="order-tracking-page">
 
+        <a class="tracking-back-link" href="../index.html" aria-label="Voltar à loja">← Voltar à loja</a>
+
         <header class="tracking-header">
 
             <p class="eyebrow">
@@ -39,8 +41,8 @@
             </h1>
 
             <p>
-                Informe o número do pedido para consultar
-                o status da entrega.
+                Acompanhe cada etapa do pedido. Use o link seguro recebido
+                após a compra ou consulte um pedido antigo pelo número.
             </p>
 
         </header>
@@ -98,6 +100,16 @@
                     id="trackingPayment"
                     class="tracking-payment"
                 ></div>
+
+                <div id="trackingShipping" class="tracking-shipping"></div>
+
+                <div id="trackingShare" class="tracking-share" hidden>
+                    <p>Compartilhe este link seguro com quem acompanha a entrega.</p>
+                    <button id="trackingShareButton" type="button" class="btn btn-primary">
+                        Copiar link de acompanhamento
+                    </button>
+                    <span id="trackingShareMessage" role="status"></span>
+                </div>
 
             </article>
 

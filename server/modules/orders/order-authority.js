@@ -7,7 +7,8 @@ async function prepareOrder({
   shipping = 0,
   discount = 0,
   customer = {},
-  paymentMethod = 'pix'
+  paymentMethod = 'pix',
+  coupon = null
 }) {
   if (!Array.isArray(items) || items.length === 0) {
     throw new Error('Itens do pedido são obrigatórios.');
@@ -64,7 +65,8 @@ async function prepareOrder({
     shipping,
     discount,
     customer,
-    paymentMethod
+    paymentMethod,
+    coupon
   });
 }
 

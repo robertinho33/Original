@@ -16,7 +16,6 @@ const {
 } = require('./order-controller');
 
 const router = express.Router();
-
 router.post('/', createOrderController);
 
 router.post('/complete', createCompleteOrderController);

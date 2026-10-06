@@ -181,7 +181,16 @@ async function getCustomerCommercialHistory(id) {
 }
 
 async function getInventoryMovements() {
-    return getInventory();
+    return collection("inventoryMovements")
+        .then(items =>
+            items
+                .sort((a, b) =>
+                    String(b.createdAt || "").localeCompare(
+                        String(a.createdAt || "")
+                    )
+                )
+                .slice(0, 100)
+        );
 }
 
 async function getShippingQueue() {

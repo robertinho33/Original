@@ -143,68 +143,100 @@
    ========================================================= */
 
 .tracking-timeline {
-    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
     margin-top: 24px;
-    padding-left: 38px;
 }
 
-.tracking-timeline::before {
-    content: "";
-    position: absolute;
-    left: 10px;
-    top: 5px;
-    bottom: 5px;
-    width: 2px;
-    background: linear-gradient(
-        to bottom,
-        currentColor,
-        rgba(0, 0, 0, .10)
-    );
-    opacity: .55;
+.tracking-step {
+    min-width: 0;
+    padding: 14px 10px;
+    border: 1px solid rgba(0, 0, 0, .10);
+    border-radius: 12px;
+    background: #fafafa;
 }
 
-.tracking-event {
-    position: relative;
-    margin-bottom: 26px;
-    padding: 0 0 2px;
-}
-
-.tracking-event:last-child {
-    margin-bottom: 0;
-}
-
-.tracking-event::before {
-    content: "";
-    position: absolute;
-    left: -34px;
-    top: 1px;
-    width: 14px;
-    height: 14px;
+.tracking-step-marker {
+    display: block;
+    width: 13px;
+    height: 13px;
+    margin: 0 auto 12px;
+    border: 2px solid #aeb4b8;
     border-radius: 50%;
     background: #fff;
-    border: 3px solid #aaa;
-    box-sizing: border-box;
-    z-index: 1;
 }
 
-.tracking-event.active::before {
-    border-color: currentColor;
-    background: currentColor;
-    box-shadow:
-        0 0 0 4px rgba(0, 0, 0, .05);
+.tracking-step-content {
+    display: grid;
+    gap: 6px;
+    text-align: center;
 }
 
-.tracking-event-label {
-    font-size: .98rem;
-    font-weight: 750;
+.tracking-step-content strong {
+    font-size: .88rem;
+    line-height: 1.3;
+}
+
+.tracking-step-content span {
+    min-height: 2.3em;
+    color: #737b82;
+    font-size: .76rem;
     line-height: 1.35;
 }
 
-.tracking-event-date {
-    margin-top: 5px;
-    color: #7a7f87;
-    font-size: .82rem;
-    line-height: 1.4;
+.tracking-step.is-done {
+    border-color: rgba(0, 69, 79, .20);
+    background: #f0f7f6;
+}
+
+.tracking-step.is-done .tracking-step-marker,
+.tracking-step.is-current .tracking-step-marker {
+    border-color: #00454f;
+    background: #00454f;
+    box-shadow: 0 0 0 4px rgba(0, 69, 79, .08);
+}
+
+.tracking-step.is-current {
+    border-color: #00454f;
+    box-shadow: 0 5px 18px rgba(0, 69, 79, .08);
+}
+
+.tracking-terminal {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fff4e5;
+    color: #7a4611;
+}
+
+.tracking-shipping {
+    margin-top: 16px;
+    line-height: 1.5;
+    color: #374151;
+}
+
+.tracking-share {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, .08);
+}
+
+.tracking-share p {
+    margin: 0 0 10px;
+    color: #59636b;
+    font-size: .9rem;
+}
+
+.tracking-share span {
+    display: block;
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+}
+
+.tracking-token-mode {
+    display: none;
 }
 
 /* =========================================================
@@ -264,18 +296,49 @@
     }
 
     .tracking-timeline {
-        padding-left: 34px;
+        grid-template-columns: 1fr;
+        gap: 8px;
     }
 
-    .tracking-event {
-        margin-bottom: 23px;
+    .tracking-step {
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        gap: 10px;
+        align-items: start;
+        padding: 12px;
     }
 
-    .tracking-event::before {
-        left: -30px;
+    .tracking-step-marker {
+        margin: 3px 0 0;
     }
 
-    .tracking-timeline::before {
-        left: 10px;
+    .tracking-step-content {
+        text-align: left;
     }
+
+    .tracking-step-content span {
+        min-height: 0;
+    }
+}
+
+.tracking-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin: 0 0 20px;
+    color: #374151;
+    font-size: .92rem;
+    font-weight: 700;
+}
+
+.tracking-back-link:hover {
+    color: #00454f;
+}
+
+.tracking-back-link:focus-visible,
+.order-lookup-link:focus-visible {
+    outline: 3px solid rgba(0, 69, 79, .35);
+    outline-offset: 4px;
+    border-radius: 3px;
 }

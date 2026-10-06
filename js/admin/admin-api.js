@@ -121,11 +121,54 @@ const adminApi = {
     inventory:
         () => request("/inventory"),
 
+    createInventoryMovement:
+        data =>
+            request("/inventory/movement", {
+                method: "POST",
+                body: JSON.stringify(data)
+            }),
+
     customers:
         () => request("/customers"),
 
     finance:
         () => request("/finance"),
+
+    commissions: () => request("/commissions"),
+    syncCommissions: () => request("/commissions/sync", { method: "POST", body: JSON.stringify({}) }),
+
+    partnerships: () => request("/partnerships/overview"),
+    contracts: () => request("/contracts"),
+
+    influencers:
+        () =>
+            request("/influencers"),
+
+    createInfluencer:
+        data =>
+            request("/influencers", {
+                method: "POST",
+                body: JSON.stringify(data)
+            }),
+
+    updateInfluencer:
+        (id, data) =>
+            request(
+                `/influencers/${encodeURIComponent(id)}`,
+                {
+                    method: "PUT",
+                    body: JSON.stringify(data)
+                }
+            ),
+
+    deleteInfluencer:
+        id =>
+            request(
+                `/influencers/${encodeURIComponent(id)}`,
+                {
+                    method: "DELETE"
+                }
+            ),
 
     coupons:
         () =>

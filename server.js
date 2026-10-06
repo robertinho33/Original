@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { randomBytes } = require('node:crypto');
 const couponRoutes = require('./server/modules/coupons/coupon-routes');
 const aureaAdminRoutes = require("./server/modules/admin/admin-routes");
 const orderRoutes = require('./server/modules/orders/order-routes');
@@ -434,15 +435,24 @@ app.post(
                     discount,
                     customer: order.customer || {},
                     paymentMethod:
-                        order.payment?.method || 'pix'
+                        order.payment?.method || 'pix',
+                    coupon
                 });
 
             const orderRepository =
                 require('./server/modules/orders/order-repository');
+            const publicTrackingToken =
+                randomBytes(32).toString('hex');
 
             const persistedOrder =
                 await orderRepository.create(
-                    authoritativeOrder
+                    {
+                        ...authoritativeOrder,
+                        publicTrackingToken,
+                        coupon: coupon
+                            ? { ...coupon }
+                            : null
+                    }
                 );
 
             console.log(
@@ -493,6 +503,8 @@ app.post(
                 order: {
                     orderNumber:
                         persistedOrder.orderNumber,
+                    publicTrackingToken:
+                        persistedOrder.publicTrackingToken,
                     subtotal:
                         persistedOrder.totals.subtotal,
                     discount:
@@ -511,6 +523,8 @@ app.post(
                                 coupon.discountType,
                             affiliateName:
                                 coupon.affiliateName,
+                            influencerId:
+                                coupon.influencerId || '',
                             commission:
                                 coupon.commission
                         }

@@ -153,8 +153,16 @@ function normalizeLogistics(logistics = {}) {
 
     return {
         status,
+        carrier:
+            normalizeText(logistics.carrier || logistics.shippingCarrier),
         trackingCode:
-            normalizeText(logistics.trackingCode)
+            normalizeText(logistics.trackingCode),
+        postedAt:
+            normalizeText(logistics.postedAt || logistics.shippedAt),
+        estimatedDelivery:
+            normalizeText(logistics.estimatedDelivery),
+        deliveredAt:
+            normalizeText(logistics.deliveredAt)
     };
 }
 
@@ -235,6 +243,10 @@ function normalizeOrder(data = {}) {
     return {
         id,
         orderId: id,
+        orderNumber:
+            normalizeText(data.orderNumber || data.order_number) || id,
+        publicTrackingToken:
+            normalizeText(data.publicTrackingToken),
 
         status,
 

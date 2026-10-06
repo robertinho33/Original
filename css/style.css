@@ -7,6 +7,7 @@ a{text-decoration:none;color:inherit}button{font:inherit;border:0;background:non
 .brand{font-size:15px;font-weight:700;letter-spacing:.22em}.brand span{display:inline-grid;place-items:center;width:30px;height:30px;border:1px solid var(--ink);border-radius:50%;margin-right:8px}
 nav{display:flex;gap:34px;color:var(--muted);font-size:13px}nav a:hover{color:var(--ink)}
 .cart-button{font-size:13px}.cart-button b{display:inline-grid;place-items:center;background:var(--ink);color:var(--paper);width:22px;height:22px;border-radius:50%;margin-left:7px;font-size:11px}
+.order-lookup-link{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;border-bottom:1px solid var(--accent);padding:6px 0}
 .hero{min-height:calc(100vh - 78px);padding:7vw 6vw;display:grid;grid-template-columns:1fr 1fr;gap:7vw;align-items:center}
 .eyebrow{font-size:10px;letter-spacing:.24em;font-weight:700;color:var(--muted);margin:0 0 22px}.hero h1{font-size:clamp(52px,7vw,100px);line-height:.92;letter-spacing:-.05em;margin:0 0 28px;font-weight:500}.hero h1 em,.ritual h2 em{font-family:"Playfair Display",serif;font-weight:500}.hero-text{max-width:480px;color:var(--muted);line-height:1.8;font-size:15px;margin-bottom:34px}
 .primary{display:inline-flex;gap:22px;align-items:center;background:var(--ink);color:var(--white);padding:16px 20px;font-size:12px;font-weight:700;transition:.2s}.primary:hover{transform:translateY(-2px)}.primary span{font-size:18px}

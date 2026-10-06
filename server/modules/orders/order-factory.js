@@ -18,7 +18,8 @@ function createOrderDraft({
   discount = 0,
   total,
   customer = {},
-  paymentMethod = 'pix'
+  paymentMethod = 'pix',
+  coupon = null
 }) {
   const now = new Date().toISOString();
 
@@ -37,6 +38,10 @@ function createOrderDraft({
     },
 
     customer,
+
+    coupon: coupon && typeof coupon === 'object'
+      ? { ...coupon }
+      : null,
 
     payment: {
       method: paymentMethod,

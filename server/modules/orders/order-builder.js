@@ -78,7 +78,8 @@ function buildOrder({
   shipping = 0,
   discount = 0,
   customer = {},
-  paymentMethod = 'pix'
+  paymentMethod = 'pix',
+  coupon = null
 }) {
   const normalized =
     normalizeAuthoritativeItems(items);
@@ -117,7 +118,8 @@ function buildOrder({
     discount,
     total,
     customer,
-    paymentMethod
+    paymentMethod,
+    coupon
   });
 }
 

@@ -1,7 +1,16 @@
-﻿const { transaction } = require("./admin-db");
+let transaction;
+
+function getTransaction() {
+    if (!transaction) {
+        transaction =
+            require("./admin-db").transaction;
+    }
+
+    return transaction;
+}
 
 async function updateProduct(id, data) {
-    return transaction(async (client) => {
+    return getTransaction()(async (client) => {
         const result = await client.query(
             `
             UPDATE products
@@ -47,7 +56,7 @@ async function updateProduct(id, data) {
 }
 
 async function updateOrderStatus(id, status) {
-    return transaction(async (client) => {
+    return getTransaction()(async (client) => {
         const result = await client.query(
             `
             UPDATE orders
@@ -84,47 +93,14 @@ async function updateOrderStatus(id, status) {
 }
 
 async function createInventoryMovement(data) {
-    return transaction(async (client) => {
-        const result = await client.query(
-            `
-            INSERT INTO inventory_movements
-                (product_id, movement_type, quantity, reason, created_at)
-            VALUES
-                ($1, $2, $3, $4, NOW())
-         RETURNING *
-            `,
-            [
-                data.productId,
-                data.type,
-                data.quantity,
-                data.reason || "Movimentação administrativa"
-            ]
-        );
+    const inventoryRepository =
+        require("./admin-inventory-repository");
 
-        await client.query(
-            `
-            INSERT INTO audit_logs
-                (action, entity_type, entity_id, metadata, created_at)
-            VALUES
-                ('CREATE', 'inventory_movement', $1, $2::jsonb, NOW())
-            `,
-            [
-                result.rows[0].id,
-                JSON.stringify({
-                    source: "admin",
-                    productId: data.productId,
-                    type: data.type,
-                    quantity: data.quantity
-                })
-            ]
-        );
-
-        return result.rows[0];
-    });
+    return inventoryRepository.createMovement(data);
 }
 
 async function updateShipment(id, data) {
-    return transaction(async (client) => {
+    return getTransaction()(async (client) => {
         const result = await client.query(
             `
             UPDATE shipments
@@ -166,7 +142,7 @@ async function updateShipment(id, data) {
 }
 
 async function updateSettings(data) {
-    return transaction(async (client) => {
+    return getTransaction()(async (client) => {
         for (const [key, value] of Object.entries(data)) {
             await client.query(
                 `

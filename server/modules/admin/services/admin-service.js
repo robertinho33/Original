@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const {
     getFirestore
@@ -155,6 +155,21 @@ async function getCoupons() {
     return getCollection("coupons");
 }
 
+async function normalizeCouponPartner(data = {}, current = {}) {
+    const influencerId = String(data.influencerId ?? current.influencerId ?? "").trim();
+    let influencerName = String(data.influencerName ?? data.affiliateName ?? current.influencerName ?? current.affiliateName ?? "").trim();
+    let linkedInfluencer = null;
+    if (influencerId) {
+        const snapshot = await db().collection("influencers").doc(influencerId).get();
+        if (!snapshot.exists) throw new Error("O influenciador selecionado não existe.");
+        linkedInfluencer = snapshot.data() || {};
+        influencerName = String(linkedInfluencer.name || influencerName).trim();
+    }
+    const changedInfluencer = influencerId && influencerId !== String(current.influencerId || "");
+    const commission = Number(data.commission ?? (changedInfluencer ? linkedInfluencer?.commissionDefault : current.commission) ?? linkedInfluencer?.commissionDefault ?? 0);
+    if (!Number.isFinite(commission) || commission < 0 || commission > 100) throw new Error("A comissão deve estar entre 0 e 100%.");
+    return { influencerId, influencerName, affiliateName: influencerName, commission };
+}
 async function createCoupon(data = {}) {
     const code = String(
         data.code ??
@@ -184,6 +199,8 @@ async function createCoupon(data = {}) {
         throw new Error("Valor do desconto inválido.");
     }
 
+    const partner = await normalizeCouponPartner(data);
+
     const coupon = {
         code,
         discount,
@@ -210,14 +227,10 @@ async function createCoupon(data = {}) {
             data.expiresAt ||
             data.expires_at ||
             null,
-        affiliateName:
-            String(
-                data.affiliateName ??
-                data.affiliate_name ??
-                ""
-            ).trim(),
-        commission:
-            Number(data.commission || 0),
+        influencerId: partner.influencerId,
+        influencerName: partner.influencerName,
+        affiliateName: partner.affiliateName,
+        commission: partner.commission,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     };
@@ -293,6 +306,8 @@ async function updateCoupon(id, data = {}) {
                     ? Boolean(current.active)
                     : current.status !== "inactive";
 
+    const partner = await normalizeCouponPartner(data, current);
+
     const updated = {
         code,
         discount,
@@ -325,18 +340,10 @@ async function updateCoupon(id, data = {}) {
                     current.expires_at ??
                     null
                 ),
-        affiliateName:
-            data.affiliateName !== undefined
-                ? String(data.affiliateName).trim()
-                : String(
-                    current.affiliateName ??
-                    current.affiliate_name ??
-                    ""
-                ).trim(),
-        commission:
-            data.commission !== undefined
-                ? Number(data.commission || 0)
-                : Number(current.commission || 0),
+        influencerId: partner.influencerId,
+        influencerName: partner.influencerName,
+        affiliateName: partner.affiliateName,
+        commission: partner.commission,
         updatedAt: new Date().toISOString()
     };
 

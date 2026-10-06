@@ -40,10 +40,9 @@ async function ensureStockItem({
         return existing;
     }
 
-    return repository.saveItem({
-        sku: normalizedSku,
-        product,
-        stock: Number(stock || 0),
+    return repository.upsertItem(normalizedSku, {
+        productId: product?.id ?? product?.productId ?? null,
+        quantity: Number(stock || 0),
         reserved: 0
     });
 }
@@ -57,7 +56,8 @@ async function getAvailableStock(sku) {
 
     return Math.max(
         0,
-        Number(item.stock) - Number(item.reserved)
+        Number(item.quantity) -
+        Number(item.reserved)
     );
 }
 
@@ -81,7 +81,7 @@ async function reserve({
     }
 
     const available =
-        Number(item.stock) -
+        Number(item.quantity) -
         Number(item.reserved);
 
     if (available < normalizedQuantity) {
@@ -103,13 +103,17 @@ async function reserve({
         }
     );
 
-    return repository.saveReservation({
+    return repository.createReservation({
         id: reservationId,
-        orderNumber,
+        orderId: orderNumber,
         sku: normalizedSku,
         quantity: normalizedQuantity,
         status: 'reserved',
-        product
+        productId:
+            product?.id ??
+            product?.productId ??
+            item.productId ??
+            null
     });
 }
 
@@ -149,10 +153,15 @@ async function release(reservationId) {
         );
     }
 
-    return repository.saveReservation({
-        ...reservation,
-        status: 'released'
-    });
+    return repository.updateReservation
+        ? repository.updateReservation(
+            reservationId,
+            { status: 'released' }
+        )
+        : {
+            ...reservation,
+            status: 'released'
+        };
 }
 
 async function commit(reservationId) {
@@ -198,7 +207,7 @@ async function commit(reservationId) {
         Number(reservation.quantity);
 
     if (
-        Number(item.stock) < quantity ||
+        Number(item.quantity) < quantity ||
         Number(item.reserved) < quantity
     ) {
         throw new AppError(
@@ -211,8 +220,8 @@ async function commit(reservationId) {
     await repository.updateItem(
         reservation.sku,
         {
-            stock:
-                Number(item.stock) -
+            quantity:
+                Number(item.quantity) -
                 quantity,
             reserved:
                 Number(item.reserved) -
@@ -220,10 +229,15 @@ async function commit(reservationId) {
         }
     );
 
-    return repository.saveReservation({
-        ...reservation,
-        status: 'committed'
-    });
+    return repository.updateReservation
+        ? repository.updateReservation(
+            reservationId,
+            { status: 'committed' }
+        )
+        : {
+            ...reservation,
+            status: 'committed'
+        };
 }
 
 module.exports = {
@@ -234,4 +248,3 @@ module.exports = {
     release,
     commit
 };
-

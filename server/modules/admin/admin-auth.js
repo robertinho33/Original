@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const { getAuth } = require("../../infrastructure/firebase/firebase-admin");
 
@@ -41,18 +41,24 @@ module.exports = async function adminAuth(req, res, next) {
             });
         }
 
-        if (email !== MASTER_EMAIL.toLowerCase()) {
+        const claimRole = String(decodedToken.role || "").trim().toLowerCase();
+        const isMaster = email === MASTER_EMAIL.toLowerCase();
+        const isAdminClaim = decodedToken.admin === true || claimRole === "admin";
+        const isCollaborator = claimRole === "collaborator";
+
+        if (!isMaster && !isAdminClaim && !isCollaborator) {
             return res.status(403).json({
                 success: false,
                 error: "Usuário sem autorização administrativa."
             });
         }
 
+        const role = isMaster || isAdminClaim ? "admin" : "collaborator";
         req.admin = {
             authenticated: true,
             uid: decodedToken.uid,
             email,
-            role: "admin"
+            role
         };
 
         return next();

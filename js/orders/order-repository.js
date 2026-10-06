@@ -9,7 +9,10 @@ import {
     setDoc,
     getDoc,
     getDocs,
-    collection
+    collection,
+    query,
+    where,
+    limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const ORDERS_COLLECTION = 'orders';
@@ -74,10 +77,44 @@ function createTrackingData(order) {
         logisticsStatus:
             order.logistics?.status ||
             'pending',
+        carrier:
+            order.logistics?.carrier ||
+            order.logistics?.shippingCarrier ||
+            '',
+        trackingCode:
+            order.logistics?.trackingCode ||
+            '',
+        postedAt:
+            order.logistics?.postedAt ||
+            null,
+        estimatedDelivery:
+            order.logistics?.estimatedDelivery ||
+            null,
+        deliveredAt:
+            order.logistics?.deliveredAt ||
+            null,
         history:
-            Array.isArray(order.history)
-                ? order.history
-                : [],
+            (Array.isArray(order.history) ? order.history : [])
+                .filter(event => event && [
+                    'ORDER_CREATED',
+                    'PAYMENT_CONFIRMED',
+                    'PREPARING',
+                    'PACKED',
+                    'SHIPPED',
+                    'IN_TRANSIT',
+                    'OUT_FOR_DELIVERY',
+                    'DELIVERED',
+                    'status_changed',
+                    'payment_status_changed',
+                    'logistics_status_changed'
+                ].includes(String(event.type || '')))
+                .map(event => ({
+                    type: String(event.type || ''),
+                    label: String(event.label || '').slice(0, 120),
+                    status: String(event.status || ''),
+                    paymentStatus: String(event.paymentStatus || ''),
+                    createdAt: event.createdAt || null
+                })),
         updatedAt:
             new Date().toISOString()
     };
@@ -102,6 +139,17 @@ async function saveTracking(order) {
         trackingRef,
         removeUndefined(trackingData)
     );
+
+    if (order.publicTrackingToken) {
+        await setDoc(
+            doc(db, TRACKING_COLLECTION, order.publicTrackingToken),
+            removeUndefined({
+                ...trackingData,
+                id: order.orderNumber || order.orderId || order.id
+            }),
+            { merge: true }
+        );
+    }
 
     return trackingData;
 }
@@ -269,25 +317,33 @@ export async function updateOrder(order) {
 }
 
 export async function findTrackingById(orderId) {
-    if (!orderId) {
+    const safeOrderId = String(orderId || '').trim();
+    if (!safeOrderId) {
         return null;
     }
 
     try {
-        const trackingRef =
-            doc(
-                db,
-                TRACKING_COLLECTION,
-                String(orderId)
-            );
-
-        const snapshot =
-            await getDoc(trackingRef);
-
-        if (!snapshot.exists()) {
-            return null;
+        // Compatibility: older records may use the visible order number as
+        // their document ID. Current records are keyed by Firestore ID, so
+        // resolve the public order number through its indexed field as well.
+        const directSnapshot = await getDoc(
+            doc(db, TRACKING_COLLECTION, safeOrderId)
+        );
+        if (directSnapshot.exists()) {
+            return {
+                id: directSnapshot.id,
+                ...directSnapshot.data()
+            };
         }
 
+        const matchingOrders = await getDocs(query(
+            collection(db, TRACKING_COLLECTION),
+            where('orderNumber', '==', safeOrderId),
+            limit(1)
+        ));
+        if (matchingOrders.empty) return null;
+
+        const snapshot = matchingOrders.docs[0];
         return {
             id: snapshot.id,
             ...snapshot.data()
@@ -298,6 +354,24 @@ export async function findTrackingById(orderId) {
             error
         );
 
+        return null;
+    }
+}
+
+export async function findTrackingByToken(token) {
+    const safeToken = String(token || '').trim();
+    if (!/^[a-f0-9]{64}$/i.test(safeToken)) return null;
+    try {
+        const snapshot = await getDoc(
+            doc(db, TRACKING_COLLECTION, safeToken)
+        );
+        if (!snapshot.exists()) return null;
+        return {
+            id: snapshot.id,
+            ...snapshot.data()
+        };
+    } catch (error) {
+        console.error('[TRACKING] Erro ao buscar link seguro:', error);
         return null;
     }
 }

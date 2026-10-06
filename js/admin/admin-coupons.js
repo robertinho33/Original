@@ -89,6 +89,10 @@ function formatDate(value) {
     );
 }
 
+/* =========================================================
+   NORMALIZAÇÃO
+   ========================================================= */
+
 function normalizeCoupon(data = {}) {
     return {
         id:
@@ -112,18 +116,21 @@ function normalizeCoupon(data = {}) {
             ).trim(),
 
         type:
+            data.discountType === "fixed" ||
             data.type === "fixed"
                 ? "fixed"
                 : "percentage",
 
         value:
             money(
+                data.discount ??
                 data.value
             ),
 
         minimumOrder:
             money(
-                data.minimumOrder
+                data.minimumOrder ??
+                data.minimumOrderValue
             ),
 
         usageLimit:
@@ -133,7 +140,9 @@ function normalizeCoupon(data = {}) {
 
         usageCount:
             Number(
-                data.usageCount || 0
+                data.uses ??
+                data.usageCount ??
+                0
             ),
 
         active:
@@ -147,9 +156,19 @@ function normalizeCoupon(data = {}) {
 
         influencerName:
             String(
-                data.influencerName ||
+                data.affiliateName ??
+                data.influencerName ??
                 ""
             ).trim(),
+
+        commission:
+            money(
+                data.commission
+            ),
+
+        expiresAt:
+            data.expiresAt ||
+            null,
 
         createdAt:
             data.createdAt ||

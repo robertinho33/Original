@@ -77,6 +77,9 @@ import {
 } from './modules/operational-environment.js';
 
 
+import { renderRelationships, renderContracts } from './modules/partnerships-contracts.js';
+import { renderCommissionLedger } from './modules/commission-ledger.js';
+
 const root =
     document.querySelector('#admin-root');
 
@@ -95,6 +98,10 @@ const sections = [
     'customers',
     'finance',
     'coupons',
+    'influencers',
+    'commissions',
+    'partnerships',
+    'contracts',
     'logistics',
     'reports',
     'audit',
@@ -543,9 +550,31 @@ async function load(section) {
             'Receitas, pagamentos e indicadores.'
         ],
 
+
+
         coupons: [
             'Cupons',
             'Campanhas e desempenho comercial.'
+        ],
+
+        influencers: [
+            'Influenciadores',
+            'Gerencie influenciadores e comissões.'
+        ],
+
+        commissions: [
+            'Comissões',
+            'Conciliação e pagamento das comissões de influenciadores.'
+        ],
+
+        partnerships: [
+            'Relacionamentos',
+            'Relacionamentos e atribuição de vendas.'
+        ],
+
+        contracts: [
+            'Contratos',
+            'Termos, vigência e histórico das parcerias.'
         ],
 
         logistics: [
@@ -591,6 +620,22 @@ async function load(section) {
         );
 
 
+    if (section === 'partnerships' || section === 'contracts' || section === 'commissions') {
+        try {
+            const content = root.querySelector('.admin-loading');
+            if (section === 'partnerships') await renderRelationships(content);
+            else if (section === 'contracts') await renderContracts(content);
+            else await renderCommissionLedger(content);
+        } catch (error) {
+            root.innerHTML = '';
+            const errorBox = document.createElement('div');
+            errorBox.className = 'admin-error';
+            errorBox.textContent = error?.message || 'Falha ao carregar o módulo.';
+            root.appendChild(errorBox);
+        }
+        state.ready = true;
+        return;
+    }
     await loadModuleData(section);
 
     state.ready = true;
@@ -668,9 +713,16 @@ async function loadModuleData(section) {
                     await adminApi.finance();
                 break;
 
+
+
             case 'coupons':
                 response =
                     await adminApi.coupons();
+                break;
+
+            case 'influencers':
+                response =
+                    await adminApi.influencers();
                 break;
 
             case 'logistics':
@@ -769,8 +821,20 @@ async function loadModuleData(section) {
         }
 
 
+
+
         if (section === 'coupons') {
             renderCoupons(
+                content,
+                Array.isArray(data)
+                    ? data
+                    : []
+            );
+            return;
+        }
+
+        if (section === 'influencers') {
+            window.NEFERInfluencers.render(
                 content,
                 Array.isArray(data)
                     ? data
@@ -1693,7 +1757,6 @@ function renderInventory(content, inventory) {
             ? inventory
             : [];
 
-
     const totalUnits =
         list.reduce(
             (sum, row) =>
@@ -1714,7 +1777,6 @@ function renderInventory(content, inventory) {
             0
         );
 
-
     const lowStock =
         list.filter(row =>
             Number(
@@ -1730,7 +1792,6 @@ function renderInventory(content, inventory) {
             ) <= 5
         ).length;
 
-
     const emptyStock =
         list.filter(row =>
             Number(
@@ -1745,7 +1806,6 @@ function renderInventory(content, inventory) {
                 )
             ) <= 0
         ).length;
-
 
     content.outerHTML = `
 
@@ -1774,7 +1834,6 @@ function renderInventory(content, inventory) {
                 )}
 
             </div>
-
 
             ${table(
                 'Controle de estoque',
@@ -1852,6 +1911,56 @@ function renderInventory(content, inventory) {
                                     0
                                 )
                             )
+                    },
+
+                    {
+                        label: 'Movimentar',
+                        render: row => {
+
+                            const productId =
+                                pick(
+                                    row,
+                                    [
+                                        'productId',
+                                        'product_id'
+                                    ],
+                                    ''
+                                );
+
+                            const sku =
+                                pick(
+                                    row,
+                                    [
+                                        'sku',
+                                        'code'
+                                    ],
+                                    ''
+                                );
+
+                            return `
+                                <div class="admin-stock-actions">
+
+                                    <button
+                                        type="button"
+                                        class="admin-btn admin-btn-secondary admin-stock-movement"
+                                        data-product-id="${escapeHtml(productId)}"
+                                        data-sku="${escapeHtml(sku)}"
+                                        data-delta="-1"
+                                        title="Retirar 1 unidade"
+                                    >-1</button>
+
+                                    <button
+                                        type="button"
+                                        class="admin-btn admin-btn-primary admin-stock-movement"
+                                        data-product-id="${escapeHtml(productId)}"
+                                        data-sku="${escapeHtml(sku)}"
+                                        data-delta="1"
+                                        title="Adicionar 1 unidade"
+                                    >+1</button>
+
+                                </div>
+                            `;
+                        }
                     }
                 ],
 
@@ -1860,13 +1969,64 @@ function renderInventory(content, inventory) {
 
         </div>
     `;
+
+        document
+        .querySelectorAll('.admin-stock-movement')
+        .forEach(button => {
+
+            button.addEventListener(
+                'click',
+                async () => {
+
+                    const productId =
+                        button.dataset.productId;
+
+                    const delta =
+                        Number(
+                            button.dataset.delta
+                        );
+
+                    if (!productId || !delta) {
+                        return;
+                    }
+
+                    button.disabled = true;
+
+                    try {
+
+                        const response =
+                            await adminApi.createInventoryMovement({
+                                product_id: productId,
+                                quantity: delta
+                            });
+
+                        if (!response?.success) {
+                            throw new Error(
+                                response?.message ||
+                                'Não foi possível movimentar o estoque.'
+                            );
+                        }
+
+                        await load('inventory');
+
+                    } catch (error) {
+
+                        console.error(
+                            '[ADMIN] Falha ao movimentar estoque:',
+                            error
+                        );
+
+                        alert(
+                            error?.message ||
+                            'Não foi possível movimentar o estoque.'
+                        );
+
+                        button.disabled = false;
+                    }
+                }
+            );
+        });
 }
-
-
-/* ============================================================
-   CLIENTES
-   ============================================================ */
-
 function renderCustomers(content, customers) {
 
     const list =
@@ -2996,56 +3156,15 @@ function openCouponEditor(coupon = null) {
                     </label>
 
 
-                    <label>
-
-                        <span>Influenciador</span>
-
-                        <input
-                            id="coupon-influencer-name"
-                            type="text"
-                            maxlength="120"
-                            value="${escapeHtml(
-                                String(
-                                    pick(
-                                        coupon || {},
-                                        [
-                                            'influencerName',
-                                            'influencer_name'
-                                        ],
-                                        ''
-                                    )
-                                )
-                            )}"
-                        >
-
+                    <label class="admin-form-full">
+                        <span>Influenciador vinculado</span>
+                        <input type="hidden" id="coupon-influencer-name" value="${escapeHtml(String(pick(coupon || {}, ['influencerName', 'influencer_name', 'affiliateName'], '')))}">
+                        <select id="coupon-influencer-id" data-saved-id="${escapeHtml(String(pick(coupon || {}, ['influencerId', 'influencer_id'], '')))}">
+                            <option value="">Sem vínculo (cupom geral)</option>
+                            ${pick(coupon || {}, ['influencerId', 'influencer_id'], '') ? `<option value="${escapeHtml(String(pick(coupon || {}, ['influencerId', 'influencer_id'], '')))}" selected>Carregando influenciador…</option>` : ''}
+                        </select>
+                        <small id="coupon-influencer-help">Selecione pelo nome. Cada opção mostra também o ID que será salvo no cupom.</small>
                     </label>
-
-
-                    <label>
-
-                        <span>ID do influenciador</span>
-
-                        <input
-                            id="coupon-influencer-id"
-                            type="text"
-                            maxlength="120"
-                            value="${escapeHtml(
-                                String(
-                                    pick(
-                                        coupon || {},
-                                        [
-                                            'influencerId',
-                                            'influencer_id'
-                                        ],
-                                        ''
-                                    )
-                                )
-                            )}"
-                        >
-
-                    </label>
-
-
                     <label
                         class="admin-form-full"
                     >
@@ -3134,6 +3253,64 @@ function openCouponEditor(coupon = null) {
     document.body.appendChild(
         modal
     );
+
+    const influencerSelect = modal.querySelector("#coupon-influencer-id");
+    const influencerNameField = modal.querySelector("#coupon-influencer-name");
+    const influencerHelp = modal.querySelector("#coupon-influencer-help");
+    const saveButtonForInfluencers = modal.querySelector("#coupon-editor-save");
+    const savedInfluencerId = influencerSelect?.dataset.savedId || "";
+    const savedInfluencerName = influencerNameField?.value || "";
+    if (saveButtonForInfluencers) {
+        saveButtonForInfluencers.disabled = true;
+        saveButtonForInfluencers.textContent = "Carregando influenciadores…";
+    }
+    influencerSelect?.addEventListener("change", () => {
+        const option = influencerSelect.selectedOptions[0];
+        influencerNameField.value = option?.dataset.name || "";
+        const rate = option?.dataset.commission;
+        influencerHelp.textContent = option?.value
+            ? `ID vinculado: ${option.value}${rate ? ` · Comissão padrão: ${rate}%` : ""}`
+            : "Cupom geral: nenhuma venda será atribuída a um influenciador.";
+    });
+    (async () => {
+        try {
+            const response = await adminApi.influencers();
+            if (!response?.success || !Array.isArray(response.data)) throw new Error(response?.error || "Lista indisponível.");
+            const influencers = response.data;
+            const currentMatch = savedInfluencerId
+                ? influencers.find(item => String(item.id) === savedInfluencerId)
+                : influencers.filter(item => String(item.name || "").trim().toLowerCase() === savedInfluencerName.trim().toLowerCase()).length === 1
+                    ? influencers.find(item => String(item.name || "").trim().toLowerCase() === savedInfluencerName.trim().toLowerCase())
+                    : null;
+            influencerSelect.replaceChildren(new Option("Sem vínculo (cupom geral)", ""));
+            for (const influencer of influencers) {
+                const option = new Option(`${influencer.name} — ID: ${influencer.id}`, String(influencer.id));
+                option.dataset.name = String(influencer.name || "");
+                option.dataset.commission = String(Number(influencer.commissionDefault || 0));
+                influencerSelect.add(option);
+            }
+            if (currentMatch) {
+                influencerSelect.value = String(currentMatch.id);
+                influencerNameField.value = String(currentMatch.name || "");
+                influencerHelp.textContent = `ID vinculado: ${currentMatch.id} · Comissão padrão: ${Number(currentMatch.commissionDefault || 0)}%`;
+            } else if (savedInfluencerId) {
+                const legacy = new Option(`${savedInfluencerName || "Vínculo anterior"} — ID não localizado: ${savedInfluencerId}`, savedInfluencerId);
+                legacy.dataset.name = savedInfluencerName;
+                influencerSelect.add(legacy);
+                influencerSelect.value = savedInfluencerId;
+                influencerHelp.textContent = "O ID atual não apareceu na lista. Escolha um influenciador válido antes de salvar.";
+            } else if (savedInfluencerName) {
+                influencerHelp.textContent = `Vínculo antigo pelo nome “${savedInfluencerName}” sem ID. Selecione o influenciador para salvar o vínculo correto.`;
+            }
+        } catch (error) {
+            if (influencerHelp) influencerHelp.textContent = `Não foi possível carregar a lista: ${error.message} Tente novamente antes de vincular.`;
+        } finally {
+            if (saveButtonForInfluencers) {
+                saveButtonForInfluencers.disabled = false;
+                saveButtonForInfluencers.textContent = editing ? "Salvar alterações" : "Criar cupom";
+            }
+        }
+    })();
 
 
     const close =
@@ -5313,7 +5490,33 @@ document.addEventListener(
    INICIALIZAÇÃO
    ============================================================ */
 
-load('dashboard');
+async function initializeAdminAccess() {
+    try {
+        const response = await adminApi.get("/access");
+        if (!response?.success) throw new Error(response?.error || "Acesso não autorizado.");
+        const isCollaborator = response.data?.role === "collaborator";
+        const roleLabel = document.getElementById("adminUserRole");
+        const accessLabel = document.getElementById("adminAccessLabel");
+        if (roleLabel) roleLabel.textContent = isCollaborator ? "Colaborador" : "Administrador";
+        if (accessLabel) accessLabel.textContent = isCollaborator ? "Consulta e rascunhos" : "Acesso total";
+        if (isCollaborator) {
+            navigation.forEach(item => {
+                item.hidden = !["partnerships", "contracts"].includes(item.dataset.adminSection);
+            });
+            await load("commissions");
+            return;
+        }
+        await load("dashboard");
+    } catch (error) {
+        root.innerHTML = "";
+        const errorBox = document.createElement("div");
+        errorBox.className = "admin-error";
+        errorBox.textContent = error?.message || "Não foi possível validar seu acesso.";
+        root.appendChild(errorBox);
+    }
+}
+
+initializeAdminAccess();
 
 
 /* ============================================================
@@ -5794,5 +5997,247 @@ load('dashboard');
     document.head.appendChild(
         style
     );
+
+})();
+
+
+
+
+
+/* ============================================================
+   NEFER — INFLUENCIADORES
+   ============================================================ */
+
+(function initInfluencersModule() {
+
+    async function loadInfluencers() {
+        const result = await window.AdminAPI.influencers();
+
+        if (!result?.success) {
+            throw new Error(result?.error || "Erro ao carregar influenciadores.");
+        }
+
+        return result.data || [];
+    }
+
+    async function createInfluencer(data) {
+        const result =
+            await window.AdminAPI.createInfluencer(data);
+
+        if (!result?.success) {
+            throw new Error(result?.error || "Erro ao cadastrar influenciador.");
+        }
+
+        return result.data;
+    }
+
+    function renderInfluencers(container, influencers) {
+
+        container.innerHTML = `
+            <div class="admin-module-header">
+                <div>
+                    <h2>Influenciadores</h2>
+                    <p>Gerencie influenciadores e comissões.</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="nefer-new-influencer">
+                    Novo influenciador
+                </button>
+            </div>
+
+            <div id="nefer-influencer-form-container"></div>
+
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Telefone</th>
+                            <th>Comissão</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        ${
+                            influencers.length
+                                ? influencers.map(item => `
+                                    <tr>
+                                        <td>${escapeHtml(item.name)}</td>
+                                        <td>${escapeHtml(item.email || "-")}</td>
+                                        <td>${escapeHtml(item.phone || "-")}</td>
+                                        <td>${Number(item.commissionDefault || 0).toFixed(2)}%</td>
+                                        <td>${item.active !== false ? "Ativo" : "Inativo"}</td>
+                                    </tr>
+                                `).join("")
+                                : `
+                                    <tr>
+                                        <td colspan="5">
+                                            Nenhum influenciador cadastrado.
+                                        </td>
+                                    </tr>
+                                `
+                        }
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        document
+            .getElementById("nefer-new-influencer")
+            ?.addEventListener("click", () => {
+                showInfluencerForm(container);
+            });
+    }
+
+    function showInfluencerForm(container) {
+
+        const formContainer =
+            document.getElementById(
+                "nefer-influencer-form-container"
+            );
+
+        if (!formContainer) return;
+
+        formContainer.innerHTML = `
+            <form id="nefer-influencer-form" class="admin-form">
+
+                <div>
+                    <label>Nome</label>
+                    <input
+                        name="name"
+                        required
+                        autocomplete="off">
+                </div>
+
+                <div>
+                    <label>E-mail</label>
+                    <input
+                        name="email"
+                        type="email"
+                        autocomplete="off">
+                </div>
+
+                <div>
+                    <label>Telefone</label>
+                    <input
+                        name="phone"
+                        autocomplete="off">
+                </div>
+
+                <div>
+                    <label>Comissão padrão (%)</label>
+                    <input
+                        name="commissionDefault"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value="0">
+                </div>
+
+                <div>
+                    <label>
+                        <input
+                            name="active"
+                            type="checkbox"
+                            checked>
+                        Ativo
+                    </label>
+                </div>
+
+                <div>
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+                        Salvar influenciador
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn"
+                        id="nefer-cancel-influencer">
+                        Cancelar
+                    </button>
+                </div>
+
+                <div id="nefer-influencer-message"></div>
+
+            </form>
+        `;
+
+        document
+            .getElementById("nefer-cancel-influencer")
+            ?.addEventListener("click", () => {
+                formContainer.innerHTML = "";
+            });
+
+        document
+            .getElementById("nefer-influencer-form")
+            ?.addEventListener("submit", async event => {
+
+                event.preventDefault();
+
+                const form = event.currentTarget;
+                const message =
+                    document.getElementById(
+                        "nefer-influencer-message"
+                    );
+
+                const data = {
+                    name: form.name.value.trim(),
+                    email: form.email.value.trim(),
+                    phone: form.phone.value.trim(),
+                    commissionDefault:
+                        Number(form.commissionDefault.value || 0),
+                    active:
+                        form.active.checked
+                };
+
+                try {
+
+                    await createInfluencer(data);
+
+                    message.textContent =
+                        "Influenciador cadastrado com sucesso.";
+
+                    const list =
+                        await loadInfluencers();
+
+                    renderInfluencers(
+                        container,
+                        list
+                    );
+
+                } catch (error) {
+
+                    message.textContent =
+                        error.message;
+
+                    console.error(
+                        "[NEFER INFLUENCERS]",
+                        error
+                    );
+                }
+            });
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    window.NEFERInfluencers = {
+        load: loadInfluencers,
+        render: renderInfluencers
+    };
 
 })();

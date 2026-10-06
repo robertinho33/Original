@@ -160,6 +160,13 @@ function renderDetails(order) {
     const history = Array.isArray(order.history)
         ? order.history
         : [];
+    const coupon = order.coupon && typeof order.coupon === 'object'
+        ? order.coupon
+        : null;
+    const couponCode = coupon?.code || (Number(order.discount || 0) > 0
+        ? 'Dados do cupom não foram salvos'
+        : 'Sem cupom');
+    const influencerName = coupon?.affiliateName || coupon?.influencerName || 'Não identificado';
 
     elements.details.hidden = false;
 
@@ -254,6 +261,29 @@ function renderDetails(order) {
                 <p>
                     <strong>Total:</strong>
                     ${money(order.total)}
+                </p>
+            </section>
+
+            <section>
+                <h3>Parceria</h3>
+
+                <p>
+                    <strong>Cupom:</strong>
+                    ${escapeHtml(couponCode)}
+                </p>
+
+                <p>
+                    <strong>Influenciador:</strong>
+                    ${escapeHtml(influencerName)}
+                </p>
+
+                <p>
+                    <strong>Comissão:</strong>
+                    ${coupon && coupon.influencerId
+                        ? `${Number(coupon.commission || 0).toFixed(2)}% — conciliada em Comissões após confirmação do pagamento`
+                        : Number(order.discount || 0) > 0
+                            ? 'Revisão necessária; identifique o cupom antes do repasse.'
+                            : 'Não se aplica'}
                 </p>
             </section>
 
@@ -389,6 +419,14 @@ function renderDetails(order) {
                     order.id,
                     changes
                 );
+
+                if (changes.payment?.status === 'paid') {
+                    try {
+                        await window.AdminAPI.syncCommissions();
+                    } catch (commissionError) {
+                        console.error('[NEFER] Pedido pago, mas a conciliação automática de comissões falhou:', commissionError);
+                    }
+                }
 
                 await loadOrders();
 

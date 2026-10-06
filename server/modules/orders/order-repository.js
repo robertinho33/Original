@@ -34,6 +34,30 @@ async function create(order) {
 
     const docRef = await ordersCollection().add(storedOrder);
 
+    if (storedOrder.publicTrackingToken) {
+        const logistics = storedOrder.logistics || {};
+        const payment = storedOrder.payment || {};
+        await getDb().collection('orderTracking')
+            .doc(storedOrder.publicTrackingToken)
+            .set({
+                id: storedOrder.orderNumber || docRef.id,
+                orderNumber: storedOrder.orderNumber || docRef.id,
+                createdAt: storedOrder.createdAt,
+                status: storedOrder.status || 'pending',
+                paymentStatus: payment.status || 'pending',
+                paymentConfirmedAt: payment.confirmedAt || payment.paidAt || null,
+                total: Number(storedOrder.totals?.total || 0),
+                logisticsStatus: logistics.status || 'new',
+                carrier: logistics.carrier || '',
+                trackingCode: logistics.trackingCode || '',
+                postedAt: logistics.postedAt || null,
+                estimatedDelivery: logistics.estimatedDelivery || null,
+                deliveredAt: logistics.deliveredAt || null,
+                history: [],
+                updatedAt: now
+            });
+    }
+
     return {
         id: docRef.id,
         ...storedOrder

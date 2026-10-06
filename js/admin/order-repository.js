@@ -44,10 +44,18 @@ function buildTracking(order, previousTracking = null) {
     return {
         id: order.id,
         orderId: order.orderId || order.id,
+        orderNumber: order.orderNumber || order.orderId || order.id,
         status: order.status || 'new',
         paymentStatus: order.payment?.status || 'pending',
+        paymentConfirmedAt: order.payment?.confirmedAt || order.payment?.paidAt || null,
+        createdAt: order.createdAt || null,
         total: Number(order.total || 0),
         logisticsStatus: order.logistics?.status || 'new',
+        carrier: order.logistics?.carrier || order.logistics?.shippingCarrier || '',
+        trackingCode: order.logistics?.trackingCode || '',
+        postedAt: order.logistics?.postedAt || order.logistics?.shippedAt || null,
+        estimatedDelivery: order.logistics?.estimatedDelivery || null,
+        deliveredAt: order.logistics?.deliveredAt || null,
         history: orderHistory.length
             ? orderHistory
             : previousHistory,
@@ -197,6 +205,14 @@ export async function createOrder(orderData) {
             buildTracking(order)
         )
         .commit();
+
+    if (order.publicTrackingToken) {
+        await setDoc(
+            doc(db, TRACKING_COLLECTION, order.publicTrackingToken),
+            buildTracking(order),
+            { merge: true }
+        );
+    }
 
     return {
         success: true,
@@ -745,6 +761,44 @@ export async function updateOrder(
                 tracking,
                 { merge: true }
             );
+
+            if (nextOrder.publicTrackingToken) {
+                const publicTrackingRef = doc(
+                    db,
+                    TRACKING_COLLECTION,
+                    nextOrder.publicTrackingToken
+                );
+                transaction.set(
+                    publicTrackingRef,
+                    {
+                        ...tracking,
+                        id: nextOrder.orderNumber || nextOrder.orderId || nextOrder.id,
+                        updatedAt,
+                        history: (Array.isArray(nextOrder.history) ? nextOrder.history : [])
+                            .filter(event => event && [
+                                'ORDER_CREATED',
+                                'PAYMENT_CONFIRMED',
+                                'PREPARING',
+                                'PACKED',
+                                'SHIPPED',
+                                'IN_TRANSIT',
+                                'OUT_FOR_DELIVERY',
+                                'DELIVERED',
+                                'status_changed',
+                                'payment_status_changed',
+                                'logistics_status_changed'
+                            ].includes(String(event.type || '')))
+                            .map(event => ({
+                                type: String(event.type || ''),
+                                label: String(event.label || '').slice(0, 120),
+                                status: String(event.status || ''),
+                                paymentStatus: String(event.paymentStatus || ''),
+                                createdAt: event.createdAt || null
+                            }))
+                    },
+                    { merge: true }
+                );
+            }
 
             return {
                 success: true,

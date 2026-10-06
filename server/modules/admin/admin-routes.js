@@ -13,6 +13,13 @@ const adminController =
 const overviewController =
     require("./controllers/admin-overview-controller");
 
+const influencerController =
+    require("./controllers/influencer-controller");
+
+const partnershipController = require("./controllers/partnership-controller");
+const contractController = require("./controllers/influencer-contract-controller");
+const commissionController = require("./controllers/commission-controller");
+
 const globalSearchController =
     require("./controllers/admin-global-search-controller");
 
@@ -21,7 +28,16 @@ const firestoreRepository =
 
 const router = express.Router();
 
+const adminWriteController = require("./controllers/admin-write-controller");
 router.use(adminAuth);
+/* COLLABORATOR_SCOPE */
+router.use((req, res, next) => {
+    if (req.admin?.role !== "collaborator") return next();
+    const readOnlyPaths = new Set(["/access", "/partnerships/overview", "/contracts", "/influencers", "/commissions"]);
+    const mayPrepareDraft = req.method === "POST" && req.path === "/contracts";
+    if ((req.method === "GET" && readOnlyPaths.has(req.path)) || mayPrepareDraft) return next();
+    return res.status(403).json({ success: false, error: "Colaboradores podem consultar e preparar rascunhos. A ativação e o encerramento cabem ao administrador." });
+});
 
 /* ============================================================
    PRINCIPAIS MÓDULOS
@@ -40,7 +56,26 @@ router.get("/inventory", adminController.inventory);
 router.get("/customers", adminController.customers);
 router.get("/finance", adminController.finance);
 router.get("/coupons", adminController.coupons);
+
+router.get("/access", (req, res) => res.json({ success: true, data: { role: req.admin?.role || "admin", email: req.admin?.email || "" } }));
+router.get("/partnerships/overview", partnershipController.overview);
+router.get("/commissions", commissionController.list);
+router.post("/commissions/sync", commissionController.sync);
+router.put("/commissions/:id/paid", commissionController.markPaid);
+router.get("/contracts", contractController.list);
+router.post("/contracts", contractController.create);
+router.put("/contracts/:id/activate", contractController.activate);
+router.put("/contracts/:id/end", contractController.end);
+router.get("/influencers", influencerController.list);
+router.get("/influencers/:id", influencerController.get);
+router.post("/influencers", influencerController.create);
+router.put("/influencers/:id", influencerController.update);
+router.delete("/influencers/:id", influencerController.remove);
 router.post("/coupons",adminController.createCoupon);
+router.post(
+    "/inventory/movement",
+    adminWriteController.createInventoryMovement
+);
 router.put("/coupons/:id",adminController.updateCoupon);
 router.delete("/coupons/:id",adminController.deleteCoupon);
 router.get("/logistics", adminController.logistics);

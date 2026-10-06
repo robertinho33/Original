@@ -111,7 +111,8 @@ async function validateCoupon(code) {
       discount,
       discountType,
       affiliateName:
-        String(coupon.affiliateName || '').trim(),
+        String(coupon.affiliateName || coupon.influencerName || '').trim(),
+      influencerId: String(coupon.influencerId || coupon.influencer_id || ''),
       commission: Number(coupon.commission || 0)
     }
   };
