@@ -80,6 +80,7 @@ import {
 import { renderRelationships, renderContracts } from './modules/partnerships-contracts.js';
 import { renderCommissionLedger } from './modules/commission-ledger.js';
 import { renderStorefront, renderIncentiveCampaigns } from './modules/marketing-tools.js';
+import { createWhatsAppUrl } from '../communication/whatsapp-service.js';
 
 const root =
     document.querySelector('#admin-root');
@@ -4839,6 +4840,29 @@ function renderOrderDetails(content, order) {
             normalizedPayment
         );
 
+    const orderItemsSummary = items
+        .map(item => `${Number(item.quantity) || 1} × ${item.name || item.product_name || 'Produto'}`)
+        .join('\n');
+    const trackingUrl = `${window.location.origin}/pages/rastrear-pedido.html?pedido=${encodeURIComponent(orderNumber)}`;
+    const customerMessage = [
+        `Olá, ${customer.name || 'tudo bem'}! Segue a confirmação do seu pedido na NEFER COSMETICS.`,
+        `Pedido: ${orderNumber}`,
+        orderItemsSummary ? `Itens:\n${orderItemsSummary}` : '',
+        `Total: ${formatCurrency(total)}`,
+        `Pagamento: ${String(paymentStatus)}`,
+        `Acompanhe o pedido: ${trackingUrl}`
+    ].filter(Boolean).join('\n');
+    let customerWhatsAppUrl = '';
+    try {
+        if (customer.phone) {
+            customerWhatsAppUrl = createWhatsAppUrl({ phone: customer.phone, message: customerMessage });
+        }
+    } catch (error) {
+        console.warn('[ADMIN ORDER] Telefone do cliente inválido para WhatsApp.', error?.message || error);
+    }
+    const coupon = order.coupon && typeof order.coupon === 'object' ? order.coupon : {};
+    const linkedInfluencerId = String(coupon.influencerId || coupon.influencer_id || '').trim();
+
 
     content.innerHTML = `
 
@@ -4988,6 +5012,20 @@ function renderOrderDetails(content, order) {
                             : ''
                     }
 
+                </div>
+
+                <div class="admin-order-whatsapp-actions">
+                    ${customerWhatsAppUrl ? `
+                        <a class="admin-button" href="${escapeHtml(customerWhatsAppUrl)}" target="_blank" rel="noopener noreferrer">
+                            Enviar confirmação ao cliente pelo WhatsApp
+                        </a>
+                    ` : ''}
+                    ${linkedInfluencerId ? `
+                        <a class="admin-button" id="adminOrderInfluencerWhatsApp" href="#" target="_blank" rel="noopener noreferrer" hidden>
+                            Avisar influenciador pelo WhatsApp
+                        </a>
+                    ` : ''}
+                    <small>O WhatsApp abre a mensagem preenchida; a equipe confirma o envio.</small>
                 </div>
 
             </section>
@@ -5180,6 +5218,31 @@ function renderOrderDetails(content, order) {
 
         </div>
     `;
+
+    if (linkedInfluencerId) {
+        const influencerLink = content.querySelector('#adminOrderInfluencerWhatsApp');
+        window.AdminAPI?.influencers?.().then(result => {
+            const influencer = (result?.data || []).find(item => String(item.id) === linkedInfluencerId);
+            if (!influencer?.phone || !influencerLink) return;
+            const influencerMessage = [
+                `Olá, ${influencer.name || 'tudo bem'}! Um pedido foi atribuído ao seu cupom.`,
+                `Pedido: ${orderNumber}`,
+                coupon.code ? `Cupom: ${coupon.code}` : '',
+                orderItemsSummary ? `Itens:\n${orderItemsSummary}` : '',
+                `Total do pedido: ${formatCurrency(total)}`,
+                `Pagamento: ${String(paymentStatus)}`,
+                `Acompanhe: ${trackingUrl}`
+            ].filter(Boolean).join('\n');
+            try {
+                influencerLink.href = createWhatsAppUrl({ phone: influencer.phone, message: influencerMessage });
+                influencerLink.hidden = false;
+            } catch (error) {
+                console.warn('[ADMIN ORDER] Telefone do influenciador inválido para WhatsApp.', error?.message || error);
+            }
+        }).catch(error => {
+            console.warn('[ADMIN ORDER] Não foi possível carregar o contato do influenciador.', error?.message || error);
+        });
+    }
 
 
     document
@@ -6104,6 +6167,14 @@ initializeAdminAccess();
         return result.data;
     }
 
+    async function updateInfluencer(id, data) {
+        const result = await window.AdminAPI.updateInfluencer(id, data);
+        if (!result?.success) {
+            throw new Error(result?.error || "Erro ao atualizar influenciador.");
+        }
+        return result.data;
+    }
+
     function renderInfluencers(container, influencers) {
 
         container.innerHTML = `
@@ -6130,8 +6201,10 @@ initializeAdminAccess();
                             <th>Nome</th>
                             <th>E-mail</th>
                             <th>Telefone</th>
+                            <th>Chave PIX</th>
                             <th>Comissão</th>
                             <th>Status</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
 
@@ -6143,13 +6216,15 @@ initializeAdminAccess();
                                         <td>${escapeHtml(item.name)}</td>
                                         <td>${escapeHtml(item.email || "-")}</td>
                                         <td>${escapeHtml(item.phone || "-")}</td>
+                                        <td>${escapeHtml(item.pixKey || "Não informada")}</td>
                                         <td>${Number(item.commissionDefault || 0).toFixed(2)}%</td>
                                         <td>${item.active !== false ? "Ativo" : "Inativo"}</td>
+                                        <td><button type="button" class="btn nefer-edit-influencer" data-influencer-id="${escapeHtml(item.id)}">Editar</button></td>
                                     </tr>
                                 `).join("")
                                 : `
                                     <tr>
-                                        <td colspan="5">
+                                        <td colspan="7">
                                             Nenhum influenciador cadastrado.
                                         </td>
                                     </tr>
@@ -6165,9 +6240,16 @@ initializeAdminAccess();
             ?.addEventListener("click", () => {
                 showInfluencerForm(container);
             });
+
+        container.querySelectorAll(".nefer-edit-influencer").forEach(button => {
+            button.addEventListener("click", () => {
+                const influencer = influencers.find(item => String(item.id) === button.dataset.influencerId);
+                if (influencer) showInfluencerForm(container, influencer);
+            });
+        });
     }
 
-    function showInfluencerForm(container) {
+    function showInfluencerForm(container, influencer = null) {
 
         const formContainer =
             document.getElementById(
@@ -6184,7 +6266,8 @@ initializeAdminAccess();
                     <input
                         name="name"
                         required
-                        autocomplete="off">
+                        autocomplete="off"
+                        value="${escapeHtml(influencer?.name || "")}">
                 </div>
 
                 <div>
@@ -6192,14 +6275,27 @@ initializeAdminAccess();
                     <input
                         name="email"
                         type="email"
-                        autocomplete="off">
+                        autocomplete="off"
+                        value="${escapeHtml(influencer?.email || "")}">
                 </div>
 
                 <div>
                     <label>Telefone</label>
                     <input
                         name="phone"
-                        autocomplete="off">
+                        autocomplete="off"
+                        value="${escapeHtml(influencer?.phone || "")}">
+                </div>
+
+                <div>
+                    <label>Chave PIX para repasses</label>
+                    <input
+                        name="pixKey"
+                        type="text"
+                        maxlength="160"
+                        autocomplete="off"
+                        placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
+                        value="${escapeHtml(influencer?.pixKey || "")}">
                 </div>
 
                 <div>
@@ -6218,7 +6314,7 @@ initializeAdminAccess();
                         <input
                             name="active"
                             type="checkbox"
-                            checked>
+                            ${influencer?.active === false ? "" : "checked"}>
                         Ativo
                     </label>
                 </div>
@@ -6227,7 +6323,7 @@ initializeAdminAccess();
                     <button
                         type="submit"
                         class="btn btn-primary">
-                        Salvar influenciador
+                        ${influencer ? "Salvar alterações" : "Salvar influenciador"}
                     </button>
 
                     <button
@@ -6265,6 +6361,7 @@ initializeAdminAccess();
                     name: form.name.value.trim(),
                     email: form.email.value.trim(),
                     phone: form.phone.value.trim(),
+                    pixKey: form.pixKey.value.trim(),
                     commissionDefault:
                         Number(form.commissionDefault.value || 0),
                     active:
@@ -6273,10 +6370,14 @@ initializeAdminAccess();
 
                 try {
 
-                    await createInfluencer(data);
+                    if (influencer?.id) {
+                        await updateInfluencer(influencer.id, data);
+                    } else {
+                        await createInfluencer(data);
+                    }
 
                     message.textContent =
-                        "Influenciador cadastrado com sucesso.";
+                        influencer ? "Dados do influenciador atualizados." : "Influenciador cadastrado com sucesso.";
 
                     const list =
                         await loadInfluencers();

@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { randomBytes } = require('node:crypto');
+
 const {
   buildCompleteOrder
 } = require('./complete-order-builder');
@@ -31,7 +33,8 @@ async function createCompleteOrder(payload, requestId) {
 
   const order = await createOrder({
     ...draft,
-    status: 'pending'
+    status: 'pending',
+    publicTrackingToken: randomBytes(32).toString('hex')
   });
 
   recordEvent({
@@ -45,7 +48,7 @@ async function createCompleteOrder(payload, requestId) {
   });
 
   const reservations =
-    reserveOrderStock(order);
+    await reserveOrderStock(order);
 
   recordEvent({
     type: 'STOCK_RESERVED',
@@ -75,7 +78,7 @@ async function createCompleteOrder(payload, requestId) {
     await updateOrder(
       order.orderNumber,
       {
-        status: 'confirmed',
+        status: 'pending',
 
         stock: {
           status: 'reserved',

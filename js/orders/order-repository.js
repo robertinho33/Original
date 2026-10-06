@@ -323,38 +323,21 @@ export async function findTrackingById(orderId) {
     }
 
     try {
-        // Compatibility: older records may use the visible order number as
-        // their document ID. Current records are keyed by Firestore ID, so
-        // resolve the public order number through its indexed field as well.
-        const directSnapshot = await getDoc(
-            doc(db, TRACKING_COLLECTION, safeOrderId)
+        const response = await fetch(
+            `/api/storefront/tracking/${encodeURIComponent(safeOrderId)}`,
+            { cache: 'no-store' }
         );
-        if (directSnapshot.exists()) {
-            return {
-                id: directSnapshot.id,
-                ...directSnapshot.data()
-            };
-        }
-
-        const matchingOrders = await getDocs(query(
-            collection(db, TRACKING_COLLECTION),
-            where('orderNumber', '==', safeOrderId),
-            limit(1)
-        ));
-        if (matchingOrders.empty) return null;
-
-        const snapshot = matchingOrders.docs[0];
-        return {
-            id: snapshot.id,
-            ...snapshot.data()
-        };
+        if (response.status === 404) return null;
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        return payload?.data || null;
     } catch (error) {
         console.error(
             '[TRACKING] Erro ao buscar rastreamento:',
             error
         );
 
-        return null;
+        throw error;
     }
 }
 
@@ -362,16 +345,16 @@ export async function findTrackingByToken(token) {
     const safeToken = String(token || '').trim();
     if (!/^[a-f0-9]{64}$/i.test(safeToken)) return null;
     try {
-        const snapshot = await getDoc(
-            doc(db, TRACKING_COLLECTION, safeToken)
+        const response = await fetch(
+            `/api/storefront/tracking/${encodeURIComponent(safeToken)}`,
+            { cache: 'no-store' }
         );
-        if (!snapshot.exists()) return null;
-        return {
-            id: snapshot.id,
-            ...snapshot.data()
-        };
+        if (response.status === 404) return null;
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        return payload?.data || null;
     } catch (error) {
         console.error('[TRACKING] Erro ao buscar link seguro:', error);
-        return null;
+        throw error;
     }
 }

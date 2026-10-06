@@ -7,11 +7,11 @@ const {
   getCompleteOrder
 } = require('./complete-order-service');
 
-function createCompleteOrderController(req, res, next) {
+async function createCompleteOrderController(req, res, next) {
   try {
     const payload = validateOrderPayload(req.body || {});
 
-    const order = createCompleteOrder(
+    const order = await createCompleteOrder(
       payload,
       req.requestId
     );

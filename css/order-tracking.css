@@ -342,3 +342,19 @@
     outline-offset: 4px;
     border-radius: 3px;
 }
+.tracking-code-notice {
+    display: grid;
+    gap: 5px;
+    margin: 18px 0 24px;
+    padding: 15px 18px;
+    border: 1px solid rgba(122, 91, 54, .24);
+    border-radius: 10px;
+    background: #fbf7f0;
+    color: #493c2f;
+    line-height: 1.5;
+}
+
+.tracking-code-notice strong {
+    color: #34271c;
+}
+

@@ -804,6 +804,46 @@ a {
     font-size: 20px;
 }
 
+.success-tracking-reminder {
+    max-width: 520px;
+    margin: 12px auto 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.success-tracking {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.success-tracking a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 11px 17px;
+    border: 1px solid var(--accent-dark);
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+}
+
+.success-tracking a:hover {
+    background: var(--accent-dark);
+}
+
+.success-whatsapp-note {
+    flex-basis: 100%;
+    color: var(--muted);
+    font-size: 12px;
+}
+
 
 /* =========================================================
    PIX

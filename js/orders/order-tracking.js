@@ -210,7 +210,10 @@ elements.shareButton?.addEventListener('click', async () => {
 const params = new URLSearchParams(window.location.search);
 const token = params.get('token');
 const initialOrder = params.get('pedido');
-if (initialOrder) elements.input.value = initialOrder;
+if (initialOrder) {
+    elements.input.value = initialOrder;
+    loadTracking(initialOrder);
+}
 if (token) {
     elements.input.closest('form')?.classList.add('tracking-token-mode');
     loadTracking(token, true);

@@ -41,6 +41,7 @@ function normalizeInfluencer(data = {}) {
         name,
         email: normalizeText(data.email),
         phone: normalizeText(data.phone),
+        pixKey: normalizeText(data.pixKey).slice(0, 160),
 
         active:
             data.active !== undefined
@@ -166,6 +167,11 @@ async function updateInfluencer(id, data = {}) {
             data.phone !== undefined
                 ? data.phone
                 : current.phone,
+
+        pixKey:
+            data.pixKey !== undefined
+                ? data.pixKey
+                : current.pixKey,
 
         active:
             data.active !== undefined

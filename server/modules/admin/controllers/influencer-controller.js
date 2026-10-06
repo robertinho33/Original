@@ -5,11 +5,19 @@ const influencerService =
 
 async function list(req, res) {
     try {
+        let influencers = await influencerService.listInfluencers();
+        if (req.admin?.role === "collaborator") {
+            influencers = influencers.map(influencer => {
+                const key = String(influencer.pixKey || "");
+                return {
+                    ...influencer,
+                    pixKey: key ? `••••${key.slice(-4)}` : ""
+                };
+            });
+        }
         res.json({
             success: true,
-            data:
-                await influencerService
-                    .listInfluencers()
+            data: influencers
         });
     } catch (error) {
         console.error(

@@ -6,10 +6,7 @@ function normalizeWhatsAppPhone(phone) {
         String(phone || '')
             .replace(/\D/g, '');
 
-    if (
-        digits.length === 13 &&
-        digits.startsWith('55')
-    ) {
+    if (digits.startsWith('55') && [12, 13].includes(digits.length)) {
         digits = digits.slice(2);
     }
 
