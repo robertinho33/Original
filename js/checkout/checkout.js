@@ -1499,15 +1499,15 @@ async function createPixPayment(order) {
             }
         );
 
-    if (!response.ok) {
+    const result = await response.json().catch(() => null);
 
+    if (!response.ok) {
         throw new Error(
+            result?.message ||
+            result?.error?.message ||
             `O servidor PIX respondeu com HTTP ${response.status}.`
         );
     }
-
-    const result =
-        await response.json();
 
     if (
         !result ||
@@ -1954,8 +1954,8 @@ async function handleSubmit(event) {
                 );
 
                 throw new Error(
-                    'Não foi possível gerar o PIX. ' +
-                    'O pedido não foi registrado. Tente novamente.'
+                    'Não foi possível gerar o PIX: ' +
+                    pixError.message
                 );
             }
         }

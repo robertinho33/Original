@@ -443,28 +443,9 @@ app.post(
                 require('./server/modules/orders/order-repository');
             const publicTrackingToken =
                 randomBytes(32).toString('hex');
-
-            const persistedOrder =
-                await orderRepository.create(
-                    {
-                        ...authoritativeOrder,
-                        publicTrackingToken,
-                        coupon: coupon
-                            ? { ...coupon }
-                            : null
-                    }
-                );
-
-            console.log(
-                '[NEFER ORDER] pedido salvo no Firestore:',
-                persistedOrder.id,
-                '|',
-                persistedOrder.orderNumber
-            );
-
             const amount =
                 Number(
-                    persistedOrder.totals.total
+                    authoritativeOrder.totals.total
                 );
 
             if (
@@ -481,9 +462,40 @@ app.post(
             const payment =
                 await createPixCharge({
                     orderId:
-                        persistedOrder.orderNumber,
+                        authoritativeOrder.orderNumber,
                     amount
                 });
+
+            const pixGeneratedAt = new Date().toISOString();
+            const persistedOrder =
+                await orderRepository.create(
+                    {
+                        ...authoritativeOrder,
+                        publicTrackingToken,
+                        coupon: coupon
+                            ? { ...coupon }
+                            : null,
+                        payment: {
+                            ...authoritativeOrder.payment,
+                            status: payment.status || 'pending',
+                            provider: payment.provider || 'aurea-pix-core',
+                            orderId: payment.order_id || authoritativeOrder.orderNumber,
+                            txid: payment.txid || '',
+                            pixKey: payment.pix_key || '',
+                            pixCity: payment.pix_city || '',
+                            merchantName: payment.pix_merchant_name || '',
+                            pixCode: payment.pix_code || '',
+                            pixGeneratedAt
+                        }
+                    }
+                );
+
+            console.log(
+                '[NEFER ORDER] pedido salvo no Firestore:',
+                persistedOrder.id,
+                '|',
+                persistedOrder.orderNumber
+            );
 
             console.log(
                 '[NEFER PIX] cobrança criada:',
@@ -538,13 +550,17 @@ app.post(
                 error
             );
 
+            const status = Number(error?.status) || 500;
+            const safeMessage = status >= 500
+                ? 'Não foi possível preparar o PIX. Tente novamente.'
+                : error?.message || 'Não foi possível validar o pedido.';
+
             return res.status(
-                error?.status || 500
+                status
             ).json({
                 success: false,
-                message:
-                    error?.message ||
-                    'Erro ao criar cobrança PIX.'
+                code: error?.code || 'PIX_CREATION_FAILED',
+                message: safeMessage
             });
         }
     }
