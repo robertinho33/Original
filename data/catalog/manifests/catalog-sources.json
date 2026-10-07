@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-15T18:44:57.693Z",
+  "generatedAt": "2026-10-07T14:27:56.247Z",
   "sources": [
     {
       "id": "brae",
@@ -22,6 +22,15 @@
       "id": "inovax",
       "name": "Inovax",
       "file": "Inovax.csv",
+      "enabled": true,
+      "visible": true,
+      "featured": true
+    },
+    {
+      "id": "truss",
+      "name": "TRUSS",
+      "url": "https://www.trussprofessional.com.br",
+      "file": "Truss.csv",
       "enabled": true,
       "visible": true,
       "featured": true

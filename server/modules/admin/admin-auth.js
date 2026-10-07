@@ -58,7 +58,8 @@ module.exports = async function adminAuth(req, res, next) {
             authenticated: true,
             uid: decodedToken.uid,
             email,
-            role
+            role,
+            isMaster
         };
 
         return next();

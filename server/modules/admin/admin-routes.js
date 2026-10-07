@@ -20,6 +20,7 @@ const partnershipController = require("./controllers/partnership-controller");
 const contractController = require("./controllers/influencer-contract-controller");
 const commissionController = require("./controllers/commission-controller");
 const marketingController = require("./controllers/marketing-controller");
+const supplierController = require("./controllers/supplier-controller");
 
 const globalSearchController =
     require("./controllers/admin-global-search-controller");
@@ -34,7 +35,7 @@ router.use(adminAuth);
 /* COLLABORATOR_SCOPE */
 router.use((req, res, next) => {
     if (req.admin?.role !== "collaborator") return next();
-    const readOnlyPaths = new Set(["/access", "/partnerships/overview", "/contracts", "/influencers", "/commissions", "/marketing/hero", "/marketing/campaigns", "/catalog/visibility"]);
+    const readOnlyPaths = new Set(["/access", "/partnerships/overview", "/contracts", "/influencers", "/commissions", "/marketing/hero", "/marketing/campaigns", "/catalog/visibility", "/suppliers"]);
     const mayPrepareDraft = (req.method === "POST" && ["/contracts", "/marketing/audience", "/marketing/campaigns"].includes(req.path)) || (req.method === "PUT" && req.path === "/marketing/hero");
     if ((req.method === "GET" && readOnlyPaths.has(req.path)) || mayPrepareDraft) return next();
     return res.status(403).json({ success: false, error: "Colaboradores podem consultar e preparar rascunhos. A ativação e o encerramento cabem ao administrador." });
@@ -58,7 +59,10 @@ router.get("/customers", adminController.customers);
 router.get("/finance", adminController.finance);
 router.get("/coupons", adminController.coupons);
 
-router.get("/access", (req, res) => res.json({ success: true, data: { role: req.admin?.role || "admin", email: req.admin?.email || "" } }));
+router.get("/access", (req, res) => res.json({ success: true, data: { role: req.admin?.role || "admin", email: req.admin?.email || "", isMaster: req.admin?.isMaster === true } }));
+router.get("/suppliers", supplierController.list);
+router.post("/suppliers", (req, res, next) => req.admin?.isMaster === true ? next() : res.status(403).json({ success: false, error: "Somente o usuário master pode cadastrar fornecedores." }), supplierController.create);
+router.post("/suppliers/:id/import", (req, res, next) => req.admin?.isMaster === true ? next() : res.status(403).json({ success: false, error: "Somente o usuário master pode importar catálogos." }), supplierController.importCatalog);
 router.get("/partnerships/overview", partnershipController.overview);
 router.get("/commissions", commissionController.list);
 router.post("/commissions/sync", commissionController.sync);

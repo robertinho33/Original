@@ -118,6 +118,15 @@ const adminApi = {
     catalogVisibility:
         () => request("/catalog/visibility"),
 
+    suppliers:
+        () => request("/suppliers"),
+
+    createSupplier:
+        data => request("/suppliers", { method: "POST", body: JSON.stringify(data) }),
+
+    importSupplierCatalog:
+        (id, csv = "") => request(`/suppliers/${encodeURIComponent(id)}/import`, { method: "POST", body: JSON.stringify(csv ? { csv } : {}) }),
+
     setCatalogSourceVisibility:
         (id, visible) =>
             request(`/catalog/sources/${encodeURIComponent(id)}/visibility`, {

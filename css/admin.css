@@ -2733,3 +2733,6 @@ button {
     min-height: 48px;
   }
 }
+
+
+.admin-navigation .admin-nav-item[hidden] { display: none !important; }

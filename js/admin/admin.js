@@ -81,6 +81,7 @@ import { renderRelationships, renderContracts } from './modules/partnerships-con
 import { renderCommissionLedger } from './modules/commission-ledger.js';
 import { renderStorefront, renderIncentiveCampaigns } from './modules/marketing-tools.js';
 import { createWhatsAppUrl } from '../communication/whatsapp-service.js';
+import { renderSupplierManager } from './modules/supplier-manager.js';
 
 const root =
     document.querySelector('#admin-root');
@@ -95,6 +96,7 @@ const sections = [
     'dashboard',
     'orders',
     'products',
+    'suppliers',
     'categories',
     'inventory',
     'customers',
@@ -493,6 +495,7 @@ function table(title, columns, rows) {
    ============================================================ */
 
 async function load(section) {
+    window.loadAdminSection = load;
     if (!root) {
         console.error(
             '[NEFER ADMIN] #admin-root não encontrado.'
@@ -532,6 +535,11 @@ async function load(section) {
         products: [
             'Produtos',
             'Catálogo, SKU, preços e disponibilidade.'
+        ],
+
+        suppliers: [
+            'Fornecedores',
+            'Cadastre fornecedores e incorpore catálogos de produtos.'
         ],
 
         categories: [
@@ -704,6 +712,10 @@ async function loadModuleData(section) {
                     await adminApi.orders();
                 break;
 
+            case 'suppliers':
+                response = await adminApi.suppliers();
+                break;
+
             case 'products':
                 {
                     const [productsResponse, visibilityResponse] = await Promise.all([
@@ -794,6 +806,11 @@ async function loadModuleData(section) {
             return;
         }
 
+
+        if (section === 'suppliers') {
+            renderSupplierManager(content, Array.isArray(data) ? data : []);
+            return;
+        }
 
         if (section === 'products') {
             renderProducts(
@@ -5631,6 +5648,8 @@ async function initializeAdminAccess() {
         const response = await adminApi.get("/access");
         if (!response?.success) throw new Error(response?.error || "Acesso não autorizado.");
         const isCollaborator = response.data?.role === "collaborator";
+        const supplierNavigation = document.querySelector('[data-admin-section="suppliers"]');
+        if (supplierNavigation) supplierNavigation.hidden = response.data?.isMaster !== true;
         const roleLabel = document.getElementById("adminUserRole");
         const accessLabel = document.getElementById("adminAccessLabel");
         if (roleLabel) roleLabel.textContent = isCollaborator ? "Colaborador" : "Administrador";

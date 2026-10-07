@@ -12,9 +12,11 @@ import {
 
 const RUNTIME_CATALOG_PATH =
     '/data/catalog/catalog-runtime.json';
+const PUBLIC_CATALOG_PATH = '/api/storefront/catalog';
 
 const MANIFEST_PATH =
     '/data/catalog/manifests/catalog-sources.json';
+const SOURCES_API_PATH = '/api/storefront/catalog-sources';
 const VISIBILITY_PATH =
     '/api/storefront/catalog-visibility';
 
@@ -134,17 +136,21 @@ async function loadRawCatalog() {
         return catalogCache;
     }
 
-    const data =
-        await fetchJson(
-            RUNTIME_CATALOG_PATH
-        );
+    let data;
+    try {
+        data = await fetchJson(PUBLIC_CATALOG_PATH);
+    } catch {
+        data = await fetchJson(RUNTIME_CATALOG_PATH);
+    }
 
     const rawProducts =
         Array.isArray(data)
             ? data
             : Array.isArray(data?.products)
                 ? data.products
-                : [];
+                : Array.isArray(data?.data?.products)
+                    ? data.data.products
+                    : [];
 
     catalogCache =
         rawProducts
@@ -196,17 +202,23 @@ export async function loadSources() {
         return sourceCache;
     }
 
-    const data =
-        await fetchJson(
-            MANIFEST_PATH
-        );
+    let data;
+    try {
+        data = await fetchJson(SOURCES_API_PATH);
+    } catch {
+        data = await fetchJson(MANIFEST_PATH);
+    }
 
     if (Array.isArray(data)) {
         sourceCache = data;
+    } else if (Array.isArray(data?.data)) {
+        sourceCache = data.data;
     } else if (
         Array.isArray(data?.sources)
     ) {
         sourceCache = data.sources;
+    } else if (Array.isArray(data?.data?.sources)) {
+        sourceCache = data.data.sources;
     } else {
         sourceCache = [];
     }

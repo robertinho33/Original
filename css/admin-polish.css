@@ -784,3 +784,27 @@
         flex-direction: column;
     }
 }
+
+
+.admin-supplier-module { display: grid; gap: 20px; }
+.admin-supplier-intro h3, .admin-supplier-panel h4, .admin-supplier-list-heading h4 { margin: 0; color: #292521; }
+.admin-supplier-intro p, .admin-supplier-panel p { margin: 8px 0 0; color: #706a65; line-height: 1.55; }
+.admin-supplier-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.admin-supplier-panel { display: grid; align-content: start; gap: 14px; padding: 20px; border: 1px solid rgba(35,31,28,.12); border-radius: 12px; background: #fff; }
+.admin-supplier-panel label { display: grid; gap: 6px; color: #403a34; font-size: 13px; font-weight: 600; }
+.admin-supplier-panel input, .admin-supplier-panel select { width: 100%; min-width: 0; min-height: 44px; padding: 9px 11px; border: 1px solid #ddd7cd; border-radius: 8px; background: #fff; color: #292521; font: inherit; }
+.admin-supplier-panel p { font-size: 12px; }
+.admin-supplier-panel .admin-primary-button { margin-top: 4px; }
+.admin-supplier-list-heading { display: flex; align-items: center; gap: 10px; }
+.admin-supplier-list-heading > span { display: grid; min-width: 26px; height: 26px; place-items: center; border-radius: 999px; background: #f1e9df; color: #5b4434; font-size: 12px; font-weight: 700; }
+.admin-supplier-list { display: grid; gap: 10px; }
+.admin-supplier-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px; border: 1px solid rgba(35,31,28,.1); border-radius: 10px; background: #fff; }
+.admin-supplier-card > div:first-child { display: grid; gap: 5px; min-width: 0; }
+.admin-supplier-card span, .admin-supplier-card a { color: #706a65; font-size: 12px; overflow-wrap: anywhere; }
+.admin-supplier-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.admin-supplier-badge { padding: 6px 9px; border-radius: 999px; background: #edf5ef; color: #345e40 !important; white-space: nowrap; }
+.admin-supplier-badge.is-hidden { background: #f3eeee; color: #754646 !important; }
+.admin-supplier-message { padding: 12px 14px; border-radius: 9px; background: #edf5ef; color: #345e40; line-height: 1.5; }
+.admin-supplier-message.is-error { background: #f8e9e9; color: #9a4e4e; }
+.admin-supplier-message[hidden] { display: none; }
+@media (max-width: 760px) { .admin-supplier-grid { grid-template-columns: 1fr; } .admin-supplier-card { align-items: flex-start; flex-direction: column; } .admin-supplier-actions { justify-content: flex-start; } }

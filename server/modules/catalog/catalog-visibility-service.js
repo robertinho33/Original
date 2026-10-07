@@ -15,6 +15,11 @@ function normalizeId(value) {
     return String(value ?? "").trim().toLowerCase();
 }
 
+async function loadManagedSources() {
+    const snapshot = await getFirestore().collection("catalogSuppliers").get();
+    return snapshot.docs.map(document => ({ id: document.id, ...document.data(), managed: true }));
+}
+
 function loadSources() {
     const raw = fs.readFileSync(SOURCES_MANIFEST, "utf8").replace(/^\uFEFF/, "");
     const parsed = JSON.parse(raw);
@@ -24,18 +29,27 @@ function loadSources() {
 
 async function readState() {
     const db = getFirestore();
-    const [settingsSnapshot, inactiveProducts] = await Promise.all([
+    const [settingsSnapshot, inactiveProducts, managedSources] = await Promise.all([
         db.collection(SETTINGS_COLLECTION).doc(SETTINGS_DOCUMENT).get(),
-        db.collection("products").where("active", "==", false).get()
+        db.collection("products").where("active", "==", false).get(),
+        loadManagedSources()
     ]);
 
     const settings = settingsSnapshot.exists ? settingsSnapshot.data() || {} : {};
     const sourceOverrides = settings.sources || {};
-    const sources = loadSources().map(source => {
+    const sourceMap = new Map();
+    [...loadSources(), ...managedSources].forEach(source => {
+        const id = normalizeId(source.id);
+        if (id) sourceMap.set(id, { ...source, id });
+    });
+    const sources = [...sourceMap.values()].map(source => {
         const id = normalizeId(source.id);
         return {
             id,
             name: String(source.name || source.id || "Fornecedor"),
+            url: String(source.url || ""),
+            file: String(source.file || ""),
+            managed: source.managed === true,
             visible: typeof sourceOverrides[id] === "boolean"
                 ? sourceOverrides[id]
                 : source.visible !== false
@@ -53,7 +67,8 @@ async function setSourceVisibility(id, visible, actor = "") {
         throw new Error("Informe se o fornecedor deve ficar visível.");
     }
     const normalizedId = normalizeId(id);
-    if (!loadSources().some(source => normalizeId(source.id) === normalizedId)) {
+    const sources = [...loadSources(), ...await loadManagedSources()];
+    if (!sources.some(source => normalizeId(source.id) === normalizedId)) {
         throw new Error("Fornecedor não encontrado no catálogo.");
     }
 
