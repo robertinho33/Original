@@ -10,6 +10,10 @@ import {
 } from './catalog/catalog-service.js';
 
 import { formatCurrency } from './utils/formatters.js';
+import { installProductImageFallbacks } from './catalog/image-fallback.js';
+
+installProductImageFallbacks();
+
 
 const CATALOG_PAGE_SIZE = 24;
 
@@ -983,6 +987,10 @@ function updateModalImage(product) {
     if (!productModalImageEl) {
         return;
     }
+
+    productModalImageEl.closest('.product-modal-image')
+        ?.querySelector('.product-modal-image-fallback')
+        ?.remove();
 
     const image =
         String(

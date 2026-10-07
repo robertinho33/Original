@@ -1,4 +1,5 @@
 import { ORDER_STATUS } from '../orders/order-status.js';
+import { installProductImageFallbacks } from '../catalog/image-fallback.js';
 import { db } from '../firebase-config.js';
 import { loadProducts as loadCatalogProducts } from '../catalog/catalog-service.js';
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
@@ -8,6 +9,8 @@ import { createWhatsAppUrl } from '../communication/whatsapp-service.js';
 /* =========================================================
    CONFIGURAÇÃO
    ========================================================= */
+
+installProductImageFallbacks();
 
 const CART_STORAGE_KEY = 'aurea-cart';
 const CATALOG_PATH = '../data/produtos.csv';
