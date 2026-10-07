@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
 
 :root{--ink:#1c1b19;--muted:#77736d;--paper:#f7f4ee;--cream:#eee7db;--line:#ddd7cd;--accent:#9b6b4b;--white:#fff}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",sans-serif}
@@ -2193,3 +2193,119 @@ table {
         max-width: calc(100vw - 24px);
     }
 }
+
+
+/* NEFER_CARD_EXPANSION_CSS */
+
+#products .product {
+    transition:
+        transform 220ms ease,
+        box-shadow 220ms ease,
+        border-color 220ms ease,
+        grid-column 220ms ease;
+}
+
+#products .product.is-expanded {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
+    align-items: stretch;
+    min-height: 360px;
+    transform: none;
+    border-color: rgba(0, 0, 0, 0.14);
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.12);
+}
+
+#products .product.is-expanded .product-visual {
+    min-height: 360px;
+    height: 100%;
+    aspect-ratio: auto;
+}
+
+#products .product.is-expanded .product-image {
+    padding: 32px;
+    transform: none;
+}
+
+#products .product.is-expanded .product-info {
+    justify-content: center;
+    padding: 32px;
+}
+
+#products .product.is-expanded .product-info h3 {
+    font-size: 1.35rem;
+    line-height: 1.3;
+}
+
+#products .product.is-expanded .product-info > p {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+    margin-top: 14px;
+}
+
+#products .product.is-expanded .product-stock {
+    margin-top: 14px;
+}
+
+#products .product.is-expanded .product-bottom {
+    margin-top: 22px;
+}
+
+@media (max-width: 850px) {
+    #products .product.is-expanded {
+        grid-column: span 2;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    #products .product.is-expanded {
+        grid-column: span 2;
+        grid-template-columns: 1fr;
+    }
+
+    #products .product.is-expanded .product-visual {
+        min-height: 260px;
+    }
+
+    #products .product.is-expanded .product-info {
+        padding: 22px;
+    }
+}
+
+
+
+/* NEFER_ORDER_LOOKUP_NAV */
+
+nav .order-lookup-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 16px;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--white);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    transition:
+        background 180ms ease,
+        color 180ms ease,
+        transform 180ms ease,
+        box-shadow 180ms ease;
+}
+
+nav .order-lookup-link:hover {
+    transform: translateY(-1px);
+    background: var(--accent);
+    color: var(--white);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+nav .order-lookup-link:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+}
+

@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 import { subscribeCatalog } from './catalog/catalog-service.js';
 
@@ -1722,3 +1722,73 @@ function activateCatalogRealtime() {
 }
 
 activateCatalogRealtime();
+
+
+/* NEFER_CARD_EXPANSION */
+(() => {
+    const isInteractive = (target) =>
+        target.closest(
+            'button, a, input, select, textarea, [role="button"][data-product-sku] button'
+        );
+
+    const toggleCard = (card) => {
+        if (!card) return;
+
+        const expanded = card.classList.toggle('is-expanded');
+
+        card.setAttribute(
+            'aria-expanded',
+            expanded ? 'true' : 'false'
+        );
+
+        if (expanded) {
+            document
+                .querySelectorAll('#products .product.is-expanded')
+                .forEach((other) => {
+                    if (other !== card) {
+                        other.classList.remove('is-expanded');
+                        other.setAttribute('aria-expanded', 'false');
+                    }
+                });
+        }
+    };
+
+    document.addEventListener(
+        'click',
+        (event) => {
+            const card = event.target.closest('#products .product');
+
+            if (!card || isInteractive(event.target)) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            toggleCard(card);
+        },
+        true
+    );
+
+    document.addEventListener(
+        'keydown',
+        (event) => {
+            const card = event.target.closest('#products .product');
+
+            if (!card || isInteractive(event.target)) {
+                return;
+            }
+
+            if (event.key !== 'Enter' && event.key !== ' ') {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            toggleCard(card);
+        },
+        true
+    );
+})();
+
