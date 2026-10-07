@@ -12,6 +12,22 @@ import { createWhatsAppUrl } from '../communication/whatsapp-service.js';
 const CART_STORAGE_KEY = 'aurea-cart';
 const CATALOG_PATH = '../data/produtos.csv';
 const DELIVERY_COST = 19.90;
+const CHECKOUT_DRAFT_STORAGE_KEY = 'nefer-checkout-draft';
+const CHECKOUT_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const CHECKOUT_DRAFT_FIELD_IDS = [
+    'customerName',
+    'customerEmail',
+    'customerPhone',
+    'cep',
+    'street',
+    'number',
+    'complement',
+    'neighborhood',
+    'city',
+    'state',
+    'orderNotes',
+    'couponCode'
+];
 
 const PIX_API_URL =
     window.location.hostname === 'localhost' ||
@@ -138,6 +154,63 @@ const elements = {
     pixCopyStatus:
         document.getElementById('pixCopyStatus')
 };
+
+
+function saveCheckoutDraft() {
+    try {
+        const fields = {};
+        CHECKOUT_DRAFT_FIELD_IDS.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) fields[id] = input.value;
+        });
+
+        const draft = {
+            expiresAt: Date.now() + CHECKOUT_DRAFT_TTL_MS,
+            fields,
+            deliveryMethod: getCheckedOption('deliveryMethod', 'delivery'),
+            paymentMethod: getCheckedOption('paymentMethod', 'pix')
+        };
+        localStorage.setItem(CHECKOUT_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch (error) {
+        console.warn('[CHECKOUT] Não foi possível salvar o rascunho local:', error);
+    }
+}
+
+function getCheckedOption(name, fallback) {
+    return document.querySelector(`input[name="${name}"]:checked`)?.value || fallback;
+}
+
+function restoreCheckoutDraft() {
+    try {
+        const raw = localStorage.getItem(CHECKOUT_DRAFT_STORAGE_KEY);
+        if (!raw) return false;
+
+        const draft = JSON.parse(raw);
+        if (!draft || !Number.isFinite(draft.expiresAt) || draft.expiresAt <= Date.now()) {
+            localStorage.removeItem(CHECKOUT_DRAFT_STORAGE_KEY);
+            return false;
+        }
+
+        CHECKOUT_DRAFT_FIELD_IDS.forEach(id => {
+            const input = document.getElementById(id);
+            const value = draft.fields?.[id];
+            if (input && typeof value === 'string') input.value = value;
+        });
+
+        ['deliveryMethod', 'paymentMethod'].forEach(name => {
+            const value = draft[name];
+            if (typeof value !== 'string') return;
+            const option = document.querySelector(`input[name="${name}"][value="${CSS.escape(value)}"]`);
+            if (option) option.checked = true;
+        });
+
+        return true;
+    } catch (error) {
+        console.warn('[CHECKOUT] Não foi possível recuperar o rascunho local:', error);
+        try { localStorage.removeItem(CHECKOUT_DRAFT_STORAGE_KEY); } catch {}
+        return false;
+    }
+}
 
 
 /* =========================================================
@@ -1607,19 +1680,6 @@ function renderPixPayment(result) {
 
 function showSuccess(order) {
 
-    const trackOrderButton =
-        document.getElementById(
-            'trackOrderButton'
-        );
-
-    if (trackOrderButton) {
-
-        trackOrderButton.href =
-            order.trackingToken
-                ? '../pages/rastrear-pedido.html?token=' + encodeURIComponent(order.trackingToken)
-                : '../pages/rastrear-pedido.html?pedido=' + encodeURIComponent(order.orderId);
-    }
-
     if (elements.form) {
         elements.form.hidden =
             true;
@@ -1637,9 +1697,9 @@ function showSuccess(order) {
             order.orderId;
     }
 
-    const trackingUrl = trackOrderButton
-        ? new URL(trackOrderButton.href, window.location.href).toString()
-        : '';
+    const trackingPage = new URL('../pages/rastrear-pedido.html', window.location.href);
+    trackingPage.searchParams.set('pedido', String(order.orderNumber || order.orderId || ''));
+    const trackingUrl = trackingPage.toString();
     const itemSummary = (Array.isArray(order.items) ? order.items : [])
         .map(item => `${Number(item.quantity) || 1} × ${item.name || item.sku || 'Produto'}`)
         .join('\n');
@@ -2044,6 +2104,7 @@ async function handleSubmit(event) {
         localStorage.removeItem(
             CART_STORAGE_KEY
         );
+        localStorage.removeItem(CHECKOUT_DRAFT_STORAGE_KEY);
 
 
         showSuccess(
@@ -2210,6 +2271,7 @@ function setupEvents() {
                         );
 
                     hideMessage();
+                    saveCheckoutDraft();
                 }
             );
 
@@ -2224,6 +2286,7 @@ function setupEvents() {
                         ?.classList.remove(
                             'invalid'
                         );
+                    saveCheckoutDraft();
                 }
             );
         });
@@ -2294,9 +2357,13 @@ async function init() {
 
         renderCart();
 
+        restoreCheckoutDraft();
         updateDeliveryFields();
-
         setupEvents();
+
+        if (elements.couponCode?.value.trim()) {
+            await applyCouponCode();
+        }
 
 
         console.log(

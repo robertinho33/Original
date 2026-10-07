@@ -1205,3 +1205,78 @@ a {
         word-break: break-word;
     }
 }
+
+
+.checkout-draft-note {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+    .checkout-header-inner {
+        width: calc(100% - 24px);
+        min-height: 68px;
+        gap: 10px;
+    }
+
+    .back-link {
+        max-width: 48%;
+        white-space: normal;
+        text-align: right;
+        line-height: 1.35;
+    }
+
+    .checkout-container,
+    #checkoutForm,
+    .checkout-section,
+    .checkout-summary,
+    .checkout-success {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .section-heading {
+        align-items: flex-start;
+    }
+
+    .section-heading > div,
+    .choice-content {
+        min-width: 0;
+    }
+
+    .section-heading p,
+    .checkout-heading > p,
+    .choice-content small,
+    .success-tracking-reminder {
+        overflow-wrap: anywhere;
+    }
+
+    .choice-card {
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px 12px;
+    }
+
+    .choice-price {
+        white-space: nowrap;
+    }
+
+    .submit-button,
+    .success-tracking a {
+        width: 100%;
+        min-height: 48px;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .success-tracking {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .checkout-success {
+        padding: 24px 16px;
+    }
+}
