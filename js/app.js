@@ -618,9 +618,11 @@ async function renderCatalog() {
                         `
                         : `
                             <div
-                                class="product-image-placeholder"
+                                class="product-image-placeholder product-image-fallback"
+                                role="img"
+                                aria-label="Foto do produto indisponível"
                             >
-                                NEFER
+                                ${product.sourceId === 'truss' ? 'Imagem indisponível' : 'NEFER'}
                             </div>
                         `;
 

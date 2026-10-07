@@ -30,7 +30,7 @@
       "id": "truss",
       "name": "TRUSS",
       "url": "https://www.trussprofessional.com.br",
-      "file": "Truss.csv",
+      "file": "Truss-clean.csv",
       "enabled": true,
       "visible": true,
       "featured": true
