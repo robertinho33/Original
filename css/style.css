@@ -2723,3 +2723,10 @@ nav {
   .catalog-select-wrap { flex: 1 1 0; min-width: 0; gap: 5px; }
   .catalog-select-wrap select { flex: 1; width: 0; min-width: 0; }
 }
+
+/* Busca integrada à navegação principal */
+.topbar nav > a { white-space: nowrap; }
+@media (max-width: 850px) {
+    .topbar nav { flex-wrap: wrap; overflow-x: visible; }
+    .topbar nav .catalog-search { order: 0; flex: 1 0 100%; width: 100%; }
+}
