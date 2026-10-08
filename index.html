@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 
 <head>
@@ -61,9 +61,13 @@
       <span>N</span> NEFER
     </a>
 
+    <label class="catalog-search" for="searchInput">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+      <input id="searchInput" type="search" placeholder="Buscar produtos, marcas..." autocomplete="off">
+    </label>
+
     <nav>
       <a href="#colecao">Coleção</a>
-      <a href="#ritual">Ritual</a>
       <a href="#sobre">Sobre</a>
           <a class="order-lookup-link" href="pages/rastrear-pedido.html">
         Consultar pedido
@@ -120,125 +124,11 @@
 
     </section>
 
-    <section
-      id="aurea-ritual-discovery"
-      class="aurea-ritual-discovery"
-      aria-labelledby="aurea-ritual-title"
-    >
-      <div class="aurea-ritual-discovery__intro">
-        <span class="aurea-ritual-discovery__eyebrow">
-          ENCONTRE SEU RITUAL
-        </span>
-
-        <h2 id="aurea-ritual-title">
-          O que seu cabelo precisa hoje?
-        </h2>
-
-        <p>
-          Escolha um objetivo e descubra produtos para transformar
-          seu cuidado em um ritual simples.
-        </p>
-      </div>
-
-      <div
-        class="aurea-ritual-discovery__grid"
-        role="list"
-        aria-label="Objetivos de cuidado"
-      >
-        <button
-          type="button"
-          class="aurea-ritual-card"
-          data-aurea-ritual="hidratação"
-          role="listitem"
-        >
-          <span class="aurea-ritual-card__number">01</span>
-          <strong>Hidratação</strong>
-          <span>Maciez, leveza e toque renovado.</span>
-        </button>
-
-        <button
-          type="button"
-          class="aurea-ritual-card"
-          data-aurea-ritual="nutrição"
-          role="listitem"
-        >
-          <span class="aurea-ritual-card__number">02</span>
-          <strong>Nutrição</strong>
-          <span>Mais cuidado para fios secos e opacos.</span>
-        </button>
-
-        <button
-          type="button"
-          class="aurea-ritual-card"
-          data-aurea-ritual="reconstrução"
-          role="listitem"
-        >
-          <span class="aurea-ritual-card__number">03</span>
-          <strong>Reconstrução</strong>
-          <span>Força e tratamento para fios fragilizados.</span>
-        </button>
-
-        <button
-          type="button"
-          class="aurea-ritual-card"
-          data-aurea-ritual="loiros"
-          role="listitem"
-        >
-          <span class="aurea-ritual-card__number">04</span>
-          <strong>Loiros</strong>
-          <span>Cuidado para cabelos claros e descoloridos.</span>
-        </button>
-
-        <button
-          type="button"
-          class="aurea-ritual-card"
-          data-aurea-ritual="cor"
-          role="listitem"
-        >
-          <span class="aurea-ritual-card__number">05</span>
-          <strong>Cor</strong>
-          <span>Rotinas para preservar brilho e aparência da cor.</span>
-        </button>
-
-        <button
-          type="button"
-          class="aurea-ritual-card"
-          data-aurea-ritual="finalização"
-          role="listitem"
-        >
-          <span class="aurea-ritual-card__number">06</span>
-          <strong>Finalização</strong>
-          <span>Textura, definição e acabamento para sua rotina.</span>
-        </button>
-      </div>
-
-      <div class="aurea-ritual-discovery__footer">
-        <button
-          type="button"
-          class="aurea-ritual-discovery__catalog-link"
-          data-aurea-show-catalog
-        >
-          Explorar coleção completa
-          <span aria-hidden="true">→</span>
-        </button>
-      </div>
-    </section>
 
     <section id="colecao" class="collection">
 
-      <div class="collection-heading">
-        <div>
-          <p class="eyebrow">CURADORIA NEFER</p>
-          <h2>Encontre seus favoritos.</h2>
-          <p class="collection-intro">Explore por categoria, marca ou pelo que combina com a sua rotina.</p>
-        </div>
-      </div>
-
-      <div class="catalog-toolbar" aria-label="Buscar e ordenar produtos">
-        <label class="catalog-search" for="searchInput">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
-          <input id="searchInput" type="search" placeholder="Buscar produtos, marcas..." autocomplete="off">
-        </label>
+      <div class="catalog-toolbar" aria-label="Filtros e ordenação do catálogo">
+        <div class="catalog-title"><h2>Produtos</h2><span id="catalogResultCount" class="catalog-result-count" aria-live="polite"></span></div>
 
         <div class="catalog-toolbar-controls">
           <label class="catalog-select-wrap" for="catalogSourceFilter">
@@ -260,58 +150,11 @@
       </div>
 
       <div class="catalog-category-bar">
-        <div class="catalog-category-heading">
-          <span>Explore por categoria</span>
-          <span id="catalogResultCount" class="catalog-result-count" aria-live="polite"></span>
-        </div>
         <div class="filters" id="filters" aria-label="Categorias de produtos"></div>
       </div>
 
       <div class="products" id="products"></div>
       <div id="pagination" class="pagination-container"></div>
-
-    </section>
-
-    <section id="ritual" class="ritual">
-
-      <div>
-        <p class="eyebrow">
-          SEU RITUAL
-        </p>
-
-        <h2>
-          Menos complicação.<br>
-          <em>Mais intenção.</em>
-        </h2>
-      </div>
-
-      <div class="steps">
-
-        <article>
-          <span>01</span>
-          <h3>Descubra</h3>
-          <p>
-            Produtos selecionados por função, não por excesso.
-          </p>
-        </article>
-
-        <article>
-          <span>02</span>
-          <h3>Escolha</h3>
-          <p>
-            Monte uma rotina que faça sentido para seu dia.
-          </p>
-        </article>
-
-        <article>
-          <span>03</span>
-          <h3>Cuide</h3>
-          <p>
-            Pequenos rituais criam grandes diferenças.
-          </p>
-        </article>
-
-      </div>
 
     </section>
 
@@ -553,4 +396,3 @@
 </body>
 
 </html>
-

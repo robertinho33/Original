@@ -317,28 +317,9 @@ export async function updateOrder(order) {
 }
 
 export async function findTrackingById(orderId) {
-    const safeOrderId = String(orderId || '').trim();
-    if (!safeOrderId) {
-        return null;
-    }
-
-    try {
-        const response = await fetch(
-            `/api/storefront/tracking/${encodeURIComponent(safeOrderId)}`,
-            { cache: 'no-store' }
-        );
-        if (response.status === 404) return null;
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
-        return payload?.data || null;
-    } catch (error) {
-        console.error(
-            '[TRACKING] Erro ao buscar rastreamento:',
-            error
-        );
-
-        throw error;
-    }
+    let token = '';
+    try { token = localStorage.getItem('nefer-tracking-' + String(orderId || '').trim()) || ''; } catch {}
+    return findTrackingByToken(token);
 }
 
 export async function findTrackingByToken(token) {

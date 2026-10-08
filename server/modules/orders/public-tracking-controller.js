@@ -8,7 +8,7 @@ const WINDOW_MS = 60 * 1000;
 
 function allowed(req) {
     const now = Date.now();
-    const ip = String(req.get?.('x-forwarded-for') || req.ip || req.socket?.remoteAddress || 'unknown')
+    const ip = String(req.ip || req.socket?.remoteAddress || 'unknown')
         .split(',')[0]
         .trim();
     const current = attempts.get(ip);
@@ -66,28 +66,29 @@ async function getPublicTracking(req, res) {
 
     const reference = String(req.params.reference || '').trim();
     const isToken = /^[a-f0-9]{64}$/i.test(reference);
-    const isOrderNumber = /^AUR-[A-Z0-9]{4,24}$/i.test(reference);
-    if (!isToken && !isOrderNumber) {
+
+    if (!isToken) {
         return res.status(404).json({ success: false, error: 'Pedido não encontrado.' });
     }
 
     try {
         const collection = getFirestore().collection('orderTracking');
         let snapshot = await collection.doc(reference).get();
-        if (!snapshot.exists && isOrderNumber) {
-            const matches = await collection
-                .where('orderNumber', '==', reference.toUpperCase())
-                .limit(1)
-                .get();
-            snapshot = matches.empty ? null : matches.docs[0];
-        }
-
         if (!snapshot || !snapshot.exists) {
             return res.status(404).json({ success: false, error: 'Pedido não encontrado.' });
         }
 
+        // A projeção não é autoridade de pagamento; ler o pedido persistido.
+        const matches = await getFirestore().collection('orders')
+            .where('publicTrackingToken', '==', reference).limit(1).get();
+        if (matches.empty) return res.status(404).json({ success: false, error: 'Pedido não encontrado.' });
+        const order = matches.docs[0].data();
+        const projection = snapshot.data();
+        projection.status = order.status || 'pending';
+        projection.paymentStatus = order.payment?.status || 'pending';
+        projection.paymentConfirmedAt = order.payment?.confirmedAt || order.payment?.paidAt || null;
         res.set('Cache-Control', 'no-store');
-        return res.json({ success: true, data: publicFields(snapshot.id, snapshot.data()) });
+        return res.json({ success: true, data: publicFields(snapshot.id, projection) });
     } catch (error) {
         console.error('[PUBLIC TRACKING] Consulta falhou:', error?.message || error);
         return res.status(503).json({ success: false, error: 'Não foi possível consultar o pedido agora.' });

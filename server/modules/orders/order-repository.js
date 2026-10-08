@@ -32,14 +32,14 @@ async function create(order) {
         updatedAt: now
     };
 
-    const docRef = await ordersCollection().add(storedOrder);
+    const docRef = ordersCollection().doc();
+    const batch = getDb().batch();
+    batch.create(docRef, storedOrder);
 
     if (storedOrder.publicTrackingToken) {
         const logistics = storedOrder.logistics || {};
         const payment = storedOrder.payment || {};
-        await getDb().collection('orderTracking')
-            .doc(storedOrder.publicTrackingToken)
-            .set({
+        batch.set(getDb().collection('orderTracking').doc(storedOrder.publicTrackingToken), {
                 id: storedOrder.orderNumber || docRef.id,
                 orderNumber: storedOrder.orderNumber || docRef.id,
                 createdAt: storedOrder.createdAt,
@@ -58,6 +58,7 @@ async function create(order) {
             });
     }
 
+    await batch.commit();
     return {
         id: docRef.id,
         ...storedOrder

@@ -2,9 +2,9 @@
 
 const orderService = require('./order-persistence');
 
-function createOrderController(req, res, next) {
+async function createOrderController(req, res, next) {
   try {
-    const order = orderService.createOrder(req.body || {});
+    const order = await orderService.createOrder(req.body || {});
 
     res.status(201).json({
       success: true,
@@ -16,9 +16,9 @@ function createOrderController(req, res, next) {
   }
 }
 
-function getOrderController(req, res, next) {
+async function getOrderController(req, res, next) {
   try {
-    const order = orderService.getOrder(
+    const order = await orderService.getOrder(
       String(req.params.orderNumber || '').trim()
     );
 
@@ -32,7 +32,7 @@ function getOrderController(req, res, next) {
   }
 }
 
-function listOrdersController(req, res, next) {
+async function listOrdersController(req, res, next) {
   try {
     const limit = Math.min(
       Math.max(Number(req.query.limit) || 100, 1),
@@ -44,7 +44,7 @@ function listOrdersController(req, res, next) {
       0
     );
 
-    const orders = orderService.listOrders({
+    const orders = await orderService.listOrders({
       limit,
       offset
     });

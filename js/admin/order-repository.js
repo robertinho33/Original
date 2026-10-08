@@ -476,6 +476,10 @@ export async function updateOrder(
                 ...orderSnapshot.data()
             };
 
+            if (changes.payment && JSON.stringify(changes.payment) !== JSON.stringify(currentOrder.payment)) {
+                throw new Error('Pagamento somente pode ser atualizado por confirmação confiável do backend.');
+            }
+            if (changes.status === 'paid') throw new Error('Pagamento requer confirmação do backend.');
             const previousStatus =
                 currentOrder.status;
 

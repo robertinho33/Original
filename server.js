@@ -21,7 +21,13 @@ const app = express();
 
 const path = require('path');
 
-app.use(express.static(__dirname));
+// Não servir código do backend, credenciais ou cópias de segurança.
+app.use((req, res, next) => {
+    const pathname = decodeURIComponent(req.path);
+    if (/^\/(?:server(?:\/|\.)|node_modules|\.git|\.env|package(?:-lock)?\.json)/i.test(pathname) || /\.bak|(?:^|\/)backup/i.test(pathname)) return res.sendStatus(404);
+    next();
+});
+app.use(express.static(__dirname, { dotfiles: 'deny' }));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -336,27 +342,13 @@ app.post(
                     'delivery'
                 ).trim().toLowerCase();
 
-            const requestedShipping =
-                Number(
-                    order.delivery?.cost ??
-                    order.shipping ??
-                    19.90
-                );
-
-            const shipping =
-                deliveryMethod === 'pickup'
-                    ? 0
-                    : Number.isFinite(requestedShipping) &&
-                      requestedShipping >= 0
-                        ? requestedShipping
-                        : 19.90;
-
-            if (!Number.isFinite(shipping) || shipping < 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Frete do pedido inválido.'
-                });
-            }
+            const { prepareCustomerAndShipping } = require('./server/modules/shipping/customer-shipping');
+            const customerShipping = prepareCustomerAndShipping({
+                customer: order.customer || {},
+                address: order.delivery?.address || order.address || null,
+                deliveryMethod
+            });
+            const shipping = customerShipping.shipping.cost;
 
             const { prepareOrder } = require('./server/modules/orders/order-authority');
 
@@ -364,7 +356,7 @@ app.post(
                 items: requestedItems,
                 shipping,
                 discount: 0,
-                customer: order.customer || {},
+                customer: customerShipping.customer,
                 paymentMethod:
                     order.payment?.method || 'pix'
             });
@@ -438,7 +430,7 @@ app.post(
                     items: requestedItems,
                     shipping,
                     discount,
-                    customer: order.customer || {},
+                    customer: customerShipping.customer,
                     paymentMethod:
                         order.payment?.method || 'pix',
                     coupon
@@ -477,7 +469,7 @@ app.post(
                     {
                         ...authoritativeOrder,
                         deliveryMethod,
-                        address: order.delivery?.address || null,
+                        address: customerShipping.shipping.address,
                         publicTrackingToken,
                         coupon: coupon
                             ? { ...coupon }

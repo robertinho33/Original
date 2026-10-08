@@ -22,11 +22,11 @@ router.post('/complete', createCompleteOrderController);
 
 router.post('/transaction', createOrderWithPaymentController);
 
-router.get('/', listOrdersController);
+router.get('/', requireAdmin, listOrdersController);
 
-router.get('/:orderNumber', getOrderController);
+router.get('/:orderNumber', requireAdmin, getOrderController);
 
-router.get('/:orderNumber/complete', getCompleteOrderController);
+router.get('/:orderNumber/complete', requireAdmin, getCompleteOrderController);
 
 router.get(
   '/lifecycle/states',

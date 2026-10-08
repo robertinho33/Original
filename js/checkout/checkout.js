@@ -1702,25 +1702,33 @@ function showSuccess(order) {
     if (elements.successOrderNumber) {
 
         elements.successOrderNumber.textContent =
-            order.orderId;
+            order.orderNumber || order.orderId;
     }
 
-    const paymentMethod = order.payment.method;
-
-    if (paymentMethod === 'pix') {
-        if (elements.successMessage) {
-            elements.successMessage.textContent = order.whatsappDelivery?.sent
-                ? 'Pedido registrado. Enviamos os detalhes pelo WhatsApp. Gere o pagamento PIX abaixo para concluir a compra.'
-                : order.customer?.whatsappOptIn
-                    ? 'Pedido registrado. O WhatsApp nao esta disponivel agora; gere o PIX abaixo e consulte os detalhes nesta tela.'
-                    : 'Pedido registrado. Gere o pagamento PIX abaixo para concluir a compra.';
-        }
-    } else if (elements.successMessage) {
-        elements.successMessage.textContent = order.whatsappDelivery?.sent
-            ? 'Pedido registrado e detalhes enviados pelo WhatsApp informado.'
-            : order.customer?.whatsappOptIn
-                ? 'Pedido registrado. Nao foi possivel enviar a confirmacao pelo WhatsApp agora; entraremos em contato em breve.'
-                : 'Seu pedido foi registrado com sucesso.';
+    elements.successMessage.textContent = 'Recebemos seu pedido. Aguardando confirmação de pagamento. Acompanhe as atualizações pelo seu link privado.';
+    const delivery = order.whatsappDelivery;
+    if (order.customer?.whatsappOptIn === true) {
+        elements.successMessage.textContent += delivery?.sent
+            ? ' Confirmação encaminhada ao WhatsApp informado.'
+            : ' Não foi possível encaminhar a confirmação pelo WhatsApp agora. Guarde seu número e o link privado abaixo.';
+    }
+    const number = order.orderNumber || order.orderId;
+    try {
+        sessionStorage.setItem('nefer-last-confirmed-order', JSON.stringify({
+            orderNumber: number, trackingToken: order.trackingToken,
+            savedAt: Date.now()
+        }));
+    } catch {}
+    document.getElementById('copyOrderNumber')?.addEventListener('click', async () => {
+        const feedback = document.getElementById('orderCopyStatus');
+        try { await navigator.clipboard.writeText(number); feedback.textContent = 'Número copiado.'; }
+        catch { feedback.textContent = 'Selecione e copie o número acima.'; }
+    });
+    const trackingLink = document.getElementById('successTrackingLink');
+    if (/^[a-f0-9]{64}$/i.test(order.trackingToken || '')) {
+        trackingLink.href = './rastrear-pedido.html#token=' + encodeURIComponent(order.trackingToken);
+        trackingLink.hidden = false;
+        try { localStorage.setItem('nefer-tracking-' + number, order.trackingToken); } catch {}
     }
     elements.checkoutSuccess?.scrollIntoView({
         behavior: 'smooth',
@@ -1754,7 +1762,8 @@ async function registerNonPixOrder(order) {
     order.id = saved.id || saved.orderNumber;
     order.orderId = saved.orderNumber || saved.id;
     order.orderNumber = saved.orderNumber || saved.id;
-    order.trackingToken = saved.publicTrackingToken || '';
+    if (!order.orderNumber || !/^[a-f0-9]{64}$/i.test(saved.publicTrackingToken || '')) throw new Error('Resposta de registro do pedido inválida.');
+    order.trackingToken = saved.publicTrackingToken;
     order.status = saved.status || 'pending';
     order.payment = { ...order.payment, ...(saved.payment || {}) };
     order.whatsappDelivery = saved.whatsappDelivery || null;
@@ -1902,7 +1911,9 @@ async function handleSubmit(event) {
                         order
                     );
 
+                if (!pixResult.order?.orderNumber || !/^[a-f0-9]{64}$/i.test(pixResult.order?.publicTrackingToken || '')) { throw new Error('Resposta de registro do pedido inválida.'); }
                 if (pixResult.order?.orderNumber) {
+                    order.orderNumber = pixResult.order.orderNumber;
                     order.id = pixResult.order.orderNumber;
                     order.orderId = pixResult.order.orderNumber;
                 }
@@ -2275,6 +2286,21 @@ function setupEvents() {
    ========================================================= */
 
 async function init() {
+    // Recuperar acesso ao pedido sem guardar nome, endereço ou código PIX.
+    try {
+        const receipt = JSON.parse(sessionStorage.getItem('nefer-last-confirmed-order') || 'null');
+        if (receipt && Date.now() - receipt.savedAt < 24 * 60 * 60 * 1000 &&
+            /^AUR-[A-Z0-9]{4,24}$/.test(receipt.orderNumber || '') &&
+            /^[a-f0-9]{64}$/i.test(receipt.trackingToken || '') && !loadCart().length) {
+            showSuccess({ orderNumber: receipt.orderNumber, orderId: receipt.orderNumber,
+                trackingToken: receipt.trackingToken, customer: {} });
+            const paymentLabel = document.getElementById('successPaymentStatus');
+            if (paymentLabel) paymentLabel.textContent = 'Consulte o status atualizado no acompanhamento';
+            elements.successMessage.textContent = 'Seu pedido foi registrado. Consulte o link privado para ver o status atual do pagamento e da entrega.';
+            return;
+        }
+    } catch {}
+
 
     console.log(
         '[CHECKOUT] Inicializando...'

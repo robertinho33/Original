@@ -26,9 +26,9 @@ async function createCompleteOrderController(req, res, next) {
   }
 }
 
-function getCompleteOrderController(req, res, next) {
+async function getCompleteOrderController(req, res, next) {
   try {
-    const order = getCompleteOrder(
+    const order = await getCompleteOrder(
       String(req.params.orderNumber || '').trim()
     );
 

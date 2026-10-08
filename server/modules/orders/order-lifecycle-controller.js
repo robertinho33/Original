@@ -8,7 +8,7 @@ const {
   ORDER_STATES
 } = require('./order-lifecycle');
 
-function changeStatus(req, res, next) {
+async function changeStatus(req, res, next) {
   try {
     const orderNumber =
       String(
@@ -31,7 +31,7 @@ function changeStatus(req, res, next) {
     }
 
     const order =
-      transitionOrder(
+      await transitionOrder(
         orderNumber,
         status,
         {

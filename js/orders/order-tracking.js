@@ -162,7 +162,7 @@ function renderOrder(order) {
     renderTimeline(order);
     elements.share.hidden = !order.trackingToken;
     if (order.trackingToken) {
-        elements.share.dataset.url = window.location.origin + window.location.pathname + '?token=' + encodeURIComponent(order.trackingToken);
+        elements.share.dataset.url = window.location.origin + window.location.pathname + '#token=' + encodeURIComponent(order.trackingToken);
     }
     elements.error.classList.remove('visible');
     elements.result.classList.add('visible');
@@ -176,7 +176,7 @@ async function loadTracking(orderIdOrToken, isToken = false) {
             ? await findTrackingByToken(orderIdOrToken)
             : await findTrackingById(orderIdOrToken);
         if (!order) {
-            showError('Pedido não encontrado. Confira o código/link informado.');
+            showError('Pedido não encontrado. Use o link privado recebido na confirmação ou consulte no dispositivo da compra.');
             return;
         }
         renderOrder(order);
@@ -188,7 +188,7 @@ async function loadTracking(orderIdOrToken, isToken = false) {
 
 elements.form?.addEventListener('submit', event => {
     event.preventDefault();
-    const orderId = elements.input.value.trim();
+    const orderId = elements.input.value.trim().toUpperCase();
     if (!orderId) {
         showError('Informe o número do pedido.');
         return;
@@ -201,16 +201,17 @@ elements.shareButton?.addEventListener('click', async () => {
     if (!url) return;
     try {
         await navigator.clipboard.writeText(url);
-        elements.shareMessage.textContent = 'Link copiado. Você pode compartilhá-lo com o influenciador.';
+        elements.shareMessage.textContent = 'Link privado copiado. Compartilhe apenas com quem pode acompanhar seu pedido.';
     } catch {
         elements.shareMessage.textContent = url;
     }
 });
 
 const params = new URLSearchParams(window.location.search);
-const token = params.get('token');
+const token = new URLSearchParams(window.location.hash.slice(1)).get('token') || params.get('token');
+if (params.has('token')) { params.delete('token'); history.replaceState(null, '', window.location.pathname + (params.size ? '?' + params : '') + '#token=' + encodeURIComponent(token)); }
 const initialOrder = params.get('pedido');
-if (initialOrder) {
+if (initialOrder && !token) {
     elements.input.value = initialOrder;
     loadTracking(initialOrder);
 }

@@ -35,6 +35,9 @@ async function transitionOrder(
     );
   }
 
+  if (nextState === 'paid') {
+    throw new AppError('Pagamento requer confirmação confiável do backend.', { status: 409, code: 'PAYMENT_VERIFICATION_REQUIRED' });
+  }
   const currentState =
     order.status ||
     ORDER_STATES.AWAITING_PAYMENT;

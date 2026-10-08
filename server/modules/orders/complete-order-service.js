@@ -32,7 +32,7 @@ const { sendOrderWhatsApp } = require('../communication/whatsapp-order-service')
 async function createCompleteOrder(payload, requestId) {
   const draft = await buildCompleteOrder(payload);
 
-  const order = await createOrder({
+  const order = await require('./order-repository').create({
     ...draft,
     status: 'pending',
     publicTrackingToken: randomBytes(32).toString('hex')
@@ -44,7 +44,7 @@ async function createCompleteOrder(payload, requestId) {
     requestId,
     data: {
       total: order.totals.total,
-      deliveryMethod: order.shipping.method
+      deliveryMethod: order.deliveryMethod
     }
   });
 
@@ -94,7 +94,7 @@ async function createCompleteOrder(payload, requestId) {
 
         logistics: {
           status: 'pending',
-          method: order.shipping.method
+          method: order.deliveryMethod
         }
       }
     );

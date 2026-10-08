@@ -133,7 +133,12 @@ async function createOrderWithPayment(payload, requestId) {
 }
 
 async function confirmPayment(orderNumber, requestId) {
-  const order = getOrder(orderNumber);
+  // Nenhum provedor bancário verificado está integrado neste projeto.
+  throw new Error('Confirmação bloqueada: integrar verificação bancária no backend antes de habilitar.');
+}
+
+async function confirmPaymentAfterVerifiedProviderIntegration(orderNumber, requestId) {
+  const order = await getOrder(orderNumber);
 
   if (order.payment?.status === 'paid') {
     return order;

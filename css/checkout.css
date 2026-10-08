@@ -1310,3 +1310,5 @@ a {
     margin-top: 3px;
     accent-color: var(--accent, #8b5e58);
 }
+
+#successOrderNumber { font-size: 1.5rem; font-weight: 800; user-select: all; overflow-wrap: anywhere; }
