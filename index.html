@@ -52,6 +52,10 @@
 
 <body>
 
+  <div class="store-announcement" role="note">
+    <span>NEFER</span> &nbsp; Cuidado profissional para o seu ritual de beleza
+  </div>
+
   <header class="topbar">
     <a class="brand" href="#">
       <span>N</span> NEFER
@@ -222,32 +226,49 @@
 
     <section id="colecao" class="collection">
 
-      <div class="section-head">
-
+      <div class="collection-heading">
         <div>
-          <p class="eyebrow">
-            CURADORIA NEFER
-          </p>
-
-          <h2>
-            Escolha seu momento.
-          </h2>
+          <p class="eyebrow">CURADORIA NEFER</p>
+          <h2>Encontre seus favoritos.</h2>
+          <p class="collection-intro">Explore por categoria, marca ou pelo que combina com a sua rotina.</p>
         </div>
-
-        <div id="pagination" class="pagination-container"></div>
-
-        <div
-          class="filters"
-          id="filters"
-          aria-label="Categorias de produtos"
-        ></div>
-
       </div>
 
-      <div
-        class="products"
-        id="products"
-      ></div>
+      <div class="catalog-toolbar" aria-label="Buscar e ordenar produtos">
+        <label class="catalog-search" for="searchInput">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+          <input id="searchInput" type="search" placeholder="Buscar produtos, marcas..." autocomplete="off">
+        </label>
+
+        <div class="catalog-toolbar-controls">
+          <label class="catalog-select-wrap" for="catalogSourceFilter">
+            <span>Marca</span>
+            <select id="catalogSourceFilter" class="catalog-source-select">
+              <option value="todos">Todas as marcas</option>
+            </select>
+          </label>
+          <label class="catalog-select-wrap" for="sortSelect">
+            <span>Ordenar por</span>
+            <select id="sortSelect">
+              <option value="priority">Destaques</option>
+              <option value="price-asc">Menor preço</option>
+              <option value="price-desc">Maior preço</option>
+              <option value="name-asc">Nome: A a Z</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="catalog-category-bar">
+        <div class="catalog-category-heading">
+          <span>Explore por categoria</span>
+          <span id="catalogResultCount" class="catalog-result-count" aria-live="polite"></span>
+        </div>
+        <div class="filters" id="filters" aria-label="Categorias de produtos"></div>
+      </div>
+
+      <div class="products" id="products"></div>
+      <div id="pagination" class="pagination-container"></div>
 
     </section>
 

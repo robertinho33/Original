@@ -6,9 +6,9 @@ import {
 } from './catalog-visibility.js';
 
 import {
-    selectHomeProducts,
-    sortCatalogProducts
+    selectHomeProducts
 } from './catalog-curation.js';
+import { sortCatalogProducts } from './catalog-sorting.js';
 
 const RUNTIME_CATALOG_PATH =
     '/data/catalog/catalog-runtime.json';
@@ -272,7 +272,8 @@ export async function searchProducts(
         category = '',
         sourceId = '',
         page = 1,
-        pageSize = 24
+        pageSize = 24,
+        sort = 'priority'
     } = {}
 ) {
     const products =
@@ -337,9 +338,10 @@ export async function searchProducts(
         });
 
     const sorted =
-        sortCatalogProducts(
-            filtered
-        );
+        sortCatalogProducts(filtered, {
+            sort,
+            query: normalizedQuery
+        });
 
     const safePage =
         Math.max(

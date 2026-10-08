@@ -52,6 +52,8 @@ const filtersEl = document.querySelector('#filters');
 // (criados via JS se nÃ£o existirem no HTML)
 const searchInputEl = document.querySelector('#searchInput');
 const sortSelectEl = document.querySelector('#sortSelect');
+const sourceSelectEl = document.querySelector('#catalogSourceFilter');
+const catalogResultCountEl = document.querySelector('#catalogResultCount');
 const paginationEl = document.querySelector('#pagination');
 
 const cartItemsEl = document.querySelector('#cartItems');
@@ -329,9 +331,6 @@ function renderFilters() {
     const categories =
         getCatalogCategories();
 
-    const sources =
-        getCatalogSources();
-
     filtersEl.innerHTML = `
         <div class="catalog-filter-group">
             <button
@@ -351,56 +350,20 @@ function renderFilters() {
                 </button>
             `).join('')}
         </div>
-
-        ${
-            sources.length
-                ? `
-                    <div class="catalog-source-filter">
-                        <label for="catalogSourceFilter">
-                            Fornecedor
-                        </label>
-
-                        <select
-                            id="catalogSourceFilter"
-                            class="catalog-source-select"
-                        >
-                            <option value="todos">
-                                Todos os fornecedores
-                            </option>
-
-                            ${sources.map(source => `
-                                <option
-                                    value="${escapeAttribute(source.id)}"
-                                >
-                                    ${escapeHTML(
-                                        source.name ||
-                                        source.id
-                                    )}
-                                </option>
-                            `).join('')}
-                        </select>
-                    </div>
-                `
-                : ''
-        }
     `;
 
-    const sourceSelect =
-        filtersEl.querySelector(
-            '#catalogSourceFilter'
-        );
-
-    sourceSelect?.addEventListener(
-        'change',
-        event => {
-            catalogSourceId =
-                event.target.value || 'todos';
-
-            catalogPage = 1;
-
-            renderCatalog();
-        }
-    );
+    if (sourceSelectEl) {
+        const selectedSource = sourceSelectEl.value || 'todos';
+        sourceSelectEl.innerHTML = `
+            <option value="todos">Todas as marcas</option>
+            ${getCatalogSources().map(source => `
+                <option value="${escapeAttribute(source.id)}">
+                    ${escapeHTML(source.name || source.id)}
+                </option>
+            `).join('')}
+        `;
+        sourceSelectEl.value = selectedSource;
+    }
 
     filtersEl
         .querySelectorAll(
@@ -582,12 +545,20 @@ async function renderCatalog() {
                 ? result.total
                 : items.length;
 
+        if (catalogResultCountEl) {
+            catalogResultCountEl.textContent =
+                `${total} ${total === 1 ? 'produto' : 'produtos'}`;
+        }
+
         products =
             items.length
                 ? items
                 : products;
 
         if (!items.length) {
+            if (catalogResultCountEl) {
+                catalogResultCountEl.textContent = '0 produtos';
+            }
             productsEl.innerHTML = `
                 <div class="catalog-empty">
                     <p>
@@ -724,7 +695,7 @@ async function renderCatalog() {
                                         product.name
                                     )} Ã  sacola"
                                 >
-                                    +
+                                    Adicionar <span aria-hidden="true">→</span>
                                 </button>
                             </div>
                         </div>
@@ -1312,6 +1283,29 @@ function addModalProductToCart() {
 /* =========================================================
    EVENTOS
    ========================================================= */
+
+let catalogSearchTimer = 0;
+
+searchInputEl?.addEventListener('input', event => {
+    window.clearTimeout(catalogSearchTimer);
+    catalogSearchTimer = window.setTimeout(() => {
+        catalogSearch = event.target.value.trim();
+        catalogPage = 1;
+        renderCatalog();
+    }, 220);
+});
+
+sortSelectEl?.addEventListener('change', event => {
+    catalogSort = event.target.value || 'priority';
+    catalogPage = 1;
+    renderCatalog();
+});
+
+sourceSelectEl?.addEventListener('change', event => {
+    catalogSourceId = event.target.value || 'todos';
+    catalogPage = 1;
+    renderCatalog();
+});
 
 // Evento de clique nas categorias
 filtersEl?.addEventListener(
