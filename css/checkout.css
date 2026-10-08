@@ -1295,3 +1295,18 @@ a {
     font-weight: 600;
     line-height: 1.2;
 }
+.whatsapp-opt-in {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 18px;
+    color: var(--muted, #6b625d);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.whatsapp-opt-in input {
+    flex: 0 0 auto;
+    margin-top: 3px;
+    accent-color: var(--accent, #8b5e58);
+}

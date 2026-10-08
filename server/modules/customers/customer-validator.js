@@ -53,7 +53,8 @@ function normalizeCustomer(customer = {}) {
   return {
     name,
     email,
-    phone
+    phone,
+    whatsappOptIn: customer.whatsappOptIn === true
   };
 }
 

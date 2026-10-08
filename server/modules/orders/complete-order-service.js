@@ -27,6 +27,7 @@ const {
 const {
   recordEvent
 } = require('../../infrastructure/audit');
+const { sendOrderWhatsApp } = require('../communication/whatsapp-order-service');
 
 async function createCompleteOrder(payload, requestId) {
   const draft = await buildCompleteOrder(payload);
@@ -106,6 +107,17 @@ async function createCompleteOrder(payload, requestId) {
       total: finalOrder.totals.total
     }
   });
+
+  try {
+    const whatsapp = await sendOrderWhatsApp(finalOrder);
+    finalOrder.whatsappDelivery = whatsapp;
+    if (!whatsapp.sent) {
+      console.warn('[WHATSAPP] Confirmação do pedido não enviada:', finalOrder.orderNumber, whatsapp.reason);
+    }
+  } catch (error) {
+    console.error('[WHATSAPP] Erro ao enviar confirmação:', finalOrder.orderNumber, error.message);
+    finalOrder.whatsappDelivery = { sent: false, reason: 'provider_error' };
+  }
 
   return finalOrder;
 }

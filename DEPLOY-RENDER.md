@@ -49,6 +49,19 @@ Mount:
 Size:
 10 GB
 
+## 4.1 WhatsApp de pedidos
+
+Para enviar automaticamente a confirmação ao WhatsApp do cliente, configure no
+serviço Render as variáveis `NEFER_WHATSAPP_ACCESS_TOKEN`,
+`NEFER_WHATSAPP_PHONE_NUMBER_ID`, `NEFER_WHATSAPP_ORDER_TEMPLATE`,
+`NEFER_WHATSAPP_TEMPLATE_LANGUAGE` (por exemplo, `pt_BR`) e
+`NEFER_WHATSAPP_GRAPH_API_VERSION` com valores da WhatsApp Business Cloud API.
+
+Crie e aprove na Meta um modelo da categoria Utility, em português, com duas
+variáveis no corpo: nome do cliente (`{{1}}`) e detalhes do pedido (`{{2}}`).
+Sem as credenciais, o modelo aprovado ou o aceite do cliente no checkout, o
+pedido é salvo normalmente e nenhuma mensagem é enviada.
+
 ## 5. Deploy
 
 Build:

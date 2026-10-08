@@ -5,7 +5,6 @@ import { loadProducts as loadCatalogProducts } from '../catalog/catalog-service.
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
 import { fetchAddressByCep } from './address-service.js';
-import { createWhatsAppUrl } from '../communication/whatsapp-service.js';
 /* =========================================================
    CONFIGURAÇÃO
    ========================================================= */
@@ -59,6 +58,9 @@ const elements = {
 
     customerPhone:
         document.getElementById('customerPhone'),
+
+    whatsappOptIn:
+        document.getElementById('whatsappOptIn'),
 
     deliveryMethod:
         document.querySelectorAll(
@@ -1333,7 +1335,10 @@ function getCustomerData() {
         phone:
             normalizePhoneDigits(
                 elements.customerPhone.value
-            )
+            ),
+
+        whatsappOptIn:
+            elements.whatsappOptIn?.checked === true
     };
 }
 
@@ -1700,56 +1705,23 @@ function showSuccess(order) {
             order.orderId;
     }
 
-    const trackingPage = new URL('../pages/rastrear-pedido.html', window.location.href);
-    trackingPage.searchParams.set('pedido', String(order.orderNumber || order.orderId || ''));
-    const trackingUrl = trackingPage.toString();
-    const itemSummary = (Array.isArray(order.items) ? order.items : [])
-        .map(item => `${Number(item.quantity) || 1} × ${item.name || item.sku || 'Produto'}`)
-        .join('\n');
-    const customerName = String(order.customer?.name || '').trim();
-    const whatsappMessage = [
-        'Olá, NEFER COSMETICS! Acabei de fazer um pedido.',
-        `Pedido: ${order.orderId}`,
-        customerName ? `Cliente: ${customerName}` : '',
-        itemSummary ? `Itens:\n${itemSummary}` : '',
-        `Total: ${formatCurrency(order.total)}`,
-        order.coupon?.code ? `Cupom: ${order.coupon.code}` : '',
-        trackingUrl ? `Acompanhamento: ${trackingUrl}` : ''
-    ].filter(Boolean).join('\n');
-    const whatsappButton = document.getElementById('orderWhatsAppButton');
-    if (whatsappButton) {
-        try {
-            whatsappButton.href = createWhatsAppUrl({
-                phone: '11986215473',
-                message: whatsappMessage
-            });
-            whatsappButton.hidden = false;
-        } catch (error) {
-            console.warn('[WHATSAPP] Não foi possível preparar o resumo do pedido:', error);
-            whatsappButton.hidden = true;
-        }
-    }
-
-    const paymentMethod =
-        order.payment.method;
+    const paymentMethod = order.payment.method;
 
     if (paymentMethod === 'pix') {
-
         if (elements.successMessage) {
-
-            elements.successMessage.textContent =
-                'Seu pedido foi registrado. Gere o pagamento PIX abaixo para concluir a compra.';
+            elements.successMessage.textContent = order.whatsappDelivery?.sent
+                ? 'Pedido registrado. Enviamos os detalhes pelo WhatsApp. Gere o pagamento PIX abaixo para concluir a compra.'
+                : order.customer?.whatsappOptIn
+                    ? 'Pedido registrado. O WhatsApp nao esta disponivel agora; gere o PIX abaixo e consulte os detalhes nesta tela.'
+                    : 'Pedido registrado. Gere o pagamento PIX abaixo para concluir a compra.';
         }
-
-    } else {
-
-        if (elements.successMessage) {
-
-            elements.successMessage.textContent =
-                'Seu pedido foi registrado com sucesso. Em breve entraremos em contato para confirmar os próximos passos.';
-        }
+    } else if (elements.successMessage) {
+        elements.successMessage.textContent = order.whatsappDelivery?.sent
+            ? 'Pedido registrado e detalhes enviados pelo WhatsApp informado.'
+            : order.customer?.whatsappOptIn
+                ? 'Pedido registrado. Nao foi possivel enviar a confirmacao pelo WhatsApp agora; entraremos em contato em breve.'
+                : 'Seu pedido foi registrado com sucesso.';
     }
-
     elements.checkoutSuccess?.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
@@ -1785,6 +1757,7 @@ async function registerNonPixOrder(order) {
     order.trackingToken = saved.publicTrackingToken || '';
     order.status = saved.status || 'pending';
     order.payment = { ...order.payment, ...(saved.payment || {}) };
+    order.whatsappDelivery = saved.whatsappDelivery || null;
     order.total = Number(saved.totals?.total ?? order.total);
     order.subtotal = Number(saved.totals?.subtotal ?? order.subtotal);
     order.shipping = Number(saved.totals?.shipping ?? order.shipping);
@@ -1935,6 +1908,7 @@ async function handleSubmit(event) {
                 }
                 order.trackingToken =
                     pixResult.order?.publicTrackingToken || '';
+                order.whatsappDelivery = pixResult.whatsappDelivery || null;
 
                 order.payment.status =
                     pixResult.status || 'pending';

@@ -44,6 +44,7 @@ async function buildCompleteOrder(payload = {}) {
   return {
     ...order,
     address,
+    deliveryMethod: customerShipping.shipping.method,
     customer: customerShipping.customer,
     totals: {
       ...order.totals,

@@ -476,6 +476,8 @@ app.post(
                 await orderRepository.create(
                     {
                         ...authoritativeOrder,
+                        deliveryMethod,
+                        address: order.delivery?.address || null,
                         publicTrackingToken,
                         coupon: coupon
                             ? { ...coupon }
@@ -494,6 +496,18 @@ app.post(
                         }
                     }
                 );
+
+            let whatsappDelivery = { sent: false, reason: 'provider_error' };
+            try {
+                const { sendOrderWhatsApp } = require('./server/modules/communication/whatsapp-order-service');
+                const whatsapp = await sendOrderWhatsApp(persistedOrder);
+                whatsappDelivery = whatsapp;
+                if (!whatsapp.sent) {
+                    console.warn('[WHATSAPP] Confirmação do pedido não enviada:', persistedOrder.orderNumber, whatsapp.reason);
+                }
+            } catch (error) {
+                console.error('[WHATSAPP] Erro ao enviar confirmação:', persistedOrder.orderNumber, error.message);
+            }
 
             console.log(
                 '[NEFER ORDER] pedido salvo no Firestore:',
@@ -517,6 +531,7 @@ app.post(
 
             return res.json({
                 ...payment,
+                whatsappDelivery,
                 order: {
                     orderNumber:
                         persistedOrder.orderNumber,
