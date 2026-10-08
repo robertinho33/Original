@@ -279,10 +279,14 @@ export async function searchProducts(
     const products =
         await loadProducts();
 
-    const normalizedQuery =
-        String(query)
+    const normalizeSearchText = value =>
+        String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
             .trim()
-            .toLowerCase();
+            .toLocaleLowerCase('pt-BR');
+
+    const normalizedQuery = normalizeSearchText(query);
 
     const normalizedCategory =
         String(category)
@@ -296,15 +300,13 @@ export async function searchProducts(
 
     const filtered =
         products.filter(product => {
-            const text = [
+            const text = normalizeSearchText([
                 product.name,
                 product.sku,
                 product.category,
                 product.description,
                 product.sourceName
-            ]
-                .join(' ')
-                .toLowerCase();
+            ].join(' '));
 
             const matchesQuery =
                 !normalizedQuery ||

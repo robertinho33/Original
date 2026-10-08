@@ -24,7 +24,7 @@ let catalogPage = 1;
 let catalogCategory = 'todos';
 let catalogSourceId = 'todos';
 let catalogSearch = '';
-let catalogSort = 'relevance';
+let catalogSort = 'priority';
 
 const CART_STORAGE_KEY = 'aurea-cart';
 
@@ -35,21 +35,10 @@ let selectedProductSku = null;
 let modalQuantity = 1;
 let lastProductTriggerEl = null;
 
-/* =========================================================
-   ESTADO DOS FILTROS E PAGINAÃ‡ÃƒO
-   ========================================================= */
-
-const ITEMS_PER_PAGE = 8;
-let currentPage = 1;
-let currentCategory = 'todos';
-let currentSearchQuery = '';
-let currentSortOption = 'default';
-
 const productsEl = document.querySelector('#products');
 const filtersEl = document.querySelector('#filters');
 
-// Elementos de busca, ordenaÃ§Ã£o e paginaÃ§Ã£o
-// (criados via JS se nÃ£o existirem no HTML)
+// Controles visuais da vitrine
 const searchInputEl = document.querySelector('#searchInput');
 const sortSelectEl = document.querySelector('#sortSelect');
 const sourceSelectEl = document.querySelector('#catalogSourceFilter');
@@ -711,6 +700,10 @@ async function renderCatalog() {
             error
         );
 
+        if (catalogResultCountEl) {
+            catalogResultCountEl.textContent = 'Catálogo indisponível';
+        }
+
         productsEl.innerHTML = `
             <div class="catalog-empty">
                 <p>
@@ -1306,70 +1299,6 @@ sourceSelectEl?.addEventListener('change', event => {
     catalogPage = 1;
     renderCatalog();
 });
-
-// Evento de clique nas categorias
-filtersEl?.addEventListener(
-    'click',
-    event => {
-        const button =
-            event.target.closest(
-                'button[data-category]'
-            );
-
-        if (!button) {
-            return;
-        }
-
-        filtersEl
-            .querySelectorAll('button')
-            .forEach(item =>
-                item.classList.remove(
-                    'active'
-                )
-            );
-
-        button.classList.add('active');
-
-        currentCategory =
-            button.dataset.category ||
-            'todos';
-
-        currentPage = 1;
-
-        renderCatalog();
-    }
-);
-
-// Evento de clique na paginaÃ§Ã£o
-paginationEl?.addEventListener(
-    'click',
-    event => {
-        const button =
-            event.target.closest(
-                'button[data-page]'
-            );
-
-        if (
-            !button ||
-            button.disabled
-        ) {
-            return;
-        }
-
-        currentPage =
-            Number(
-                button.dataset.page
-            );
-
-        renderCatalog();
-
-        window.scrollTo({
-            top:
-                productsEl.offsetTop - 80,
-            behavior: 'smooth'
-        });
-    }
-);
 
 productsEl?.addEventListener(
     'click',
