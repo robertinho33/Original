@@ -5,10 +5,13 @@ const { AppError } = require('../../core/app-error');
 
 function configuration(env = process.env) {
   const mode = env.MP_MODE;
+  const production = mode === 'production';
+  const token = production ? env.MP_PRODUCTION_ACCESS_TOKEN : env.MP_ACCESS_TOKEN;
+  const secret = production ? env.MP_PRODUCTION_WEBHOOK_SECRET : env.MP_WEBHOOK_SECRET;
+  const collectorId = production ? env.MP_PRODUCTION_COLLECTOR_ID : env.MP_COLLECTOR_ID;
   const configured = env.MP_CHECKOUT_ENABLED === 'true' &&
     (mode !== 'production' || env.MP_PRODUCTION_VALIDATED === 'true') &&
-    ['test', 'production'].includes(mode) && env.MP_ACCESS_TOKEN &&
-    env.MP_WEBHOOK_SECRET && env.MP_COLLECTOR_ID;
+    ['test', 'production'].includes(mode) && token && secret && collectorId;
   let storeUrl, notificationUrl;
   try {
     storeUrl = new URL(env.PUBLIC_STORE_URL);
@@ -16,8 +19,8 @@ function configuration(env = process.env) {
     if (storeUrl.protocol !== 'https:' || notificationUrl.protocol !== 'https:') throw new Error();
   } catch { return { enabled: false }; }
   return { enabled: Boolean(configured), mode, storeUrl: storeUrl.origin,
-    notificationUrl: notificationUrl.href, token: env.MP_ACCESS_TOKEN,
-    webhookSecret: env.MP_WEBHOOK_SECRET, collectorId: String(env.MP_COLLECTOR_ID || '') };
+    notificationUrl: notificationUrl.href, token,
+    webhookSecret: secret, collectorId: String(collectorId || '') };
 }
 
 function checkoutUrl(value) {

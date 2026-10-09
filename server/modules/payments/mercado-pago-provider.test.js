@@ -18,6 +18,12 @@ test('sem configuração completa ou sem validação de produção, cartões fic
   assert.equal(p.configuration(env).enabled, true);
   assert.equal(p.configuration({ ...env, MP_MODE: 'production' }).enabled, false);
   assert.equal(p.configuration({ ...env, MP_NOTIFICATION_URL: 'http://example.test' }).enabled, false);
+  assert.equal(p.configuration({ ...env, MP_MODE: 'production', MP_PRODUCTION_VALIDATED: 'true' }).enabled, false);
+  const realEnv = { ...env, MP_MODE: 'production', MP_PRODUCTION_VALIDATED: 'true',
+    MP_PRODUCTION_ACCESS_TOKEN: 'real-token-mock', MP_PRODUCTION_WEBHOOK_SECRET: 'real-secret-mock', MP_PRODUCTION_COLLECTOR_ID: '456' };
+  assert.equal(p.configuration(realEnv).enabled, true);
+  assert.equal(p.configuration(realEnv).collectorId, '456');
+  assert.equal(p.configuration(realEnv).token, 'real-token-mock');
 });
 test('preferência usa somente total autorizado e mantém retorno de teste separado', () => {
   const body = p.preferenceBody(order, config);

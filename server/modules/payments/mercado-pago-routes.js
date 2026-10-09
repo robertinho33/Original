@@ -12,6 +12,28 @@ const collections = config => config.mode === 'test'
   ? { orders: 'mpTestOrders', tracking: 'mpTestTracking', attempts: 'mpTestAttempts' }
   : { orders: 'orders', tracking: 'orderTracking', attempts: 'mpCheckoutAttempts' };
 
+let productionReadiness = null;
+router.get('/production-readiness', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const token = process.env.MP_PRODUCTION_ACCESS_TOKEN;
+  if (!token) return res.json({ success: true, configured: false, productionEnabled: false });
+  try {
+    if (!productionReadiness || productionReadiness.token !== token || productionReadiness.until < Date.now()) {
+      const account = await provider.request({ token }, '/users/me');
+      const methods = await provider.request({ token }, '/v1/payment_methods');
+      const isRealAccount = !account.tags?.includes('test_user') && account.site_id === 'MLB';
+      const active = Array.isArray(methods) ? methods.filter(method => method.status === 'active') : [];
+      productionReadiness = { token, until: Date.now() + 60000, data: {
+        success: true, configured: true, accountVerified: isRealAccount,
+        merchantId: String(account.id || ''),
+        creditAvailable: active.some(method => method.payment_type_id === 'credit_card'),
+        debitAvailable: active.some(method => method.payment_type_id === 'debit_card')
+      } };
+    }
+    res.json({ ...productionReadiness.data, productionEnabled: provider.configuration().mode === 'production' && provider.configuration().enabled });
+  } catch { res.status(503).json({ success: false, configured: true, message: 'Não foi possível verificar as credenciais de produção.' }); }
+});
+
 router.get('/configuration', (req, res) => {
   const config = provider.configuration();
   res.set('Cache-Control', 'no-store').json({ success: true,
