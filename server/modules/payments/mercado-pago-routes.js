@@ -91,29 +91,24 @@ router.post('/checkout', async (req, res) => {
   }
 });
 
-router.post('/webhook', async (req, res) => {
-  const config = provider.configuration();
-  if (!config.enabled) return res.sendStatus(503);
-  if (!provider.verifySignature(req, config.webhookSecret)) return res.sendStatus(401);
-  if (req.body?.type !== 'payment' && req.query.type !== 'payment') return res.sendStatus(200);
-  try {
-    const payment = await provider.request(config, `/v1/payments/${req.query['data.id']}`);
+async function applyVerifiedPayment(config, payment, expectedToken = null) {
     const names = collections(config), db = getFirestore();
-    if (!/^AUR-[A-F0-9]{16}$/.test(payment.external_reference || '')) return res.sendStatus(200);
+    if (!/^AUR-[A-F0-9]{16}$/.test(payment.external_reference || '')) throw new Error('Referência inválida.');
     const ref = db.collection(names.orders).doc(payment.external_reference);
-    await db.runTransaction(async tx => {
+    return db.runTransaction(async tx => {
       const snapshot = await tx.get(ref);
-      if (!snapshot.exists) return;
+      if (!snapshot.exists) throw new Error('Pedido não encontrado.');
       const order = snapshot.data();
+      if (expectedToken && order.publicTrackingToken !== expectedToken) throw new Error('Pedido incompatível.');
       if (!provider.paymentMatches(payment, order, config)) throw new Error('Pagamento incompatível.');
       const updatedAt = Date.parse(payment.date_last_updated || payment.date_created);
       if (!Number.isFinite(updatedAt)) throw new Error('Data inválida.');
       if (order.payment.paymentId && String(order.payment.paymentId) !== String(payment.id)) {
         // Uma segunda cobrança nunca substitui a primeira; requer revisão no painel do provedor.
         tx.update(ref, { 'payment.reviewRequired': true });
-        return;
+        return order.payment.status;
       }
-      if (Number(order.payment.providerUpdatedAt || 0) >= updatedAt) return;
+      if (Number(order.payment.providerUpdatedAt || 0) >= updatedAt) return order.payment.status;
       const status = provider.paymentStatus(payment);
       const changes = { 'payment.status': status, 'payment.providerStatus': payment.status,
         'payment.paymentId': String(payment.id), 'payment.providerUpdatedAt': updatedAt,
@@ -124,9 +119,47 @@ router.post('/webhook', async (req, res) => {
         paymentStatus: status, paymentConfirmedAt: changes['payment.confirmedAt'] || null,
         updatedAt: changes.updatedAt
       }, { merge: true });
+      return status;
     });
+}
+
+router.post('/webhook', async (req, res) => {
+  const config = provider.configuration();
+  if (!config.enabled) return res.sendStatus(503);
+  if (!provider.verifySignature(req, config.webhookSecret)) {
+    console.warn('[MP_WEBHOOK] Assinatura inválida', JSON.stringify({
+      hasSignature: Boolean(req.get('x-signature')), hasRequestId: Boolean(req.get('x-request-id')),
+      hasDataId: Boolean(req.query['data.id']), mode: config.mode
+    }));
+    return res.sendStatus(401);
+  }
+  if (req.body?.type !== 'payment' && req.query.type !== 'payment') return res.sendStatus(200);
+  try {
+    const payment = await provider.request(config, `/v1/payments/${req.query['data.id']}`);
+    await applyVerifiedPayment(config, payment);
     res.sendStatus(200);
   } catch { res.sendStatus(503); }
+});
+
+const reconciliationLimits = new Map();
+router.post('/reconcile', async (req, res) => {
+  const config = provider.configuration();
+  if (!config.enabled) return res.sendStatus(503);
+  const token = String(req.body?.token || ''), paymentId = String(req.body?.paymentId || '');
+  if (!/^[a-f0-9]{64}$/i.test(token) || !/^\d{1,24}$/.test(paymentId)) return res.sendStatus(400);
+  const now = Date.now(), key = `${req.ip}:${token}`;
+  for (const [entry, value] of reconciliationLimits) if (value.until < now) reconciliationLimits.delete(entry);
+  const limit = reconciliationLimits.get(key) || { count: 0, until: now + 60000 };
+  if (++limit.count > 6 || reconciliationLimits.size > 5000) return res.sendStatus(429);
+  reconciliationLimits.set(key, limit);
+  try {
+    const tracking = await getFirestore().collection(collections(config).tracking).doc(token).get();
+    if (!tracking.exists) return res.sendStatus(404);
+    // O ID enviado pelo navegador nunca é prova de aprovação: consultar o provedor autenticado.
+    const payment = await provider.request(config, `/v1/payments/${paymentId}`);
+    const status = await applyVerifiedPayment(config, payment, token);
+    res.set('Cache-Control', 'no-store').json({ success: true, paymentStatus: status });
+  } catch { res.status(503).json({ success: false, message: 'Não foi possível conferir o pagamento agora.' }); }
 });
 
 router.get('/test-tracking/:token', async (req, res) => {

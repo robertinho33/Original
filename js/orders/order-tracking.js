@@ -1,3 +1,4 @@
+import { reconcileReturnedPayment } from './mercado-pago-reconcile.js';
 'use strict';
 
 import {
@@ -172,6 +173,7 @@ async function loadTracking(orderIdOrToken, isToken = false) {
     elements.error.classList.remove('visible');
     elements.result.classList.remove('visible');
     try {
+        if (isToken) await reconcileReturnedPayment(orderIdOrToken).catch(() => {});
         const order = isToken
             ? await findTrackingByToken(orderIdOrToken)
             : await findTrackingById(orderIdOrToken);

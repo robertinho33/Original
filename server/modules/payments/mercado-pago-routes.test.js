@@ -77,7 +77,13 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
     assert.equal((await post('/webhook?data.id=99&type=payment', { type: 'payment', status: 'rejected' }, headers)).status, 200);
     const orderKey = `mpTestOrders/${first.data.orderNumber}`;
     assert.equal(records.get(orderKey).payment.status, 'paid');
-    payment = { ...payment, status: 'pending', date_last_updated: '2026-10-09T11:00:00Z' };
+    payment = { ...payment, status: 'approved', transaction_amount: 79.90, date_last_updated: '2026-10-09T14:00:00Z' };
+    assert.equal((await post('/reconcile', { token: 'a'.repeat(64), paymentId: '99', status: 'approved' })).status, 404);
+    const reconciled = await (await post('/reconcile', { token: first.data.trackingToken, paymentId: '99', status: 'rejected' })).json();
+    assert.equal(reconciled.paymentStatus, 'paid');
+    payment = { ...payment, external_reference: 'AUR-0000000000000000' };
+    assert.equal((await post('/reconcile', { token: first.data.trackingToken, paymentId: '99' })).status, 503);
+    payment = { ...payment, external_reference: first.data.orderNumber, status: 'pending', date_last_updated: '2026-10-09T11:00:00Z' };
     assert.equal((await post('/webhook?data.id=99&type=payment', { type: 'payment' }, headers)).status, 200);
     assert.equal(records.get(orderKey).payment.status, 'paid');
     payment = { ...payment, status: 'refunded', transaction_amount: 1, date_last_updated: '2026-10-09T13:00:00Z' };
