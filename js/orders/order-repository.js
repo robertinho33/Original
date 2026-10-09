@@ -327,7 +327,7 @@ export async function findTrackingByToken(token) {
     if (!/^[a-f0-9]{64}$/i.test(safeToken)) return null;
     try {
         const response = await fetch(
-            `/api/storefront/tracking/${encodeURIComponent(safeToken)}`,
+            (new URLSearchParams(window.location.search).get('mp_test') === '1' ? `${['localhost', '127.0.0.1'].includes(window.location.hostname) ? '' : 'https://aurea-pix-api.onrender.com'}/api/payments/mercado-pago/test-tracking/${encodeURIComponent(safeToken)}` : `/api/storefront/tracking/${encodeURIComponent(safeToken)}`),
             { cache: 'no-store' }
         );
         if (response.status === 404) return null;

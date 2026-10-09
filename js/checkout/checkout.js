@@ -1,3 +1,4 @@
+import { configureCardCheckout, startCardCheckout } from './mercado-pago-checkout.js';
 import { ORDER_STATUS } from '../orders/order-status.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
 import { db } from '../firebase-config.js';
@@ -2073,6 +2074,9 @@ async function handleSubmit(event) {
                     pixError.message
                 );
             }
+        } else if (order.payment.method === 'card') {
+            await startCardCheckout(order);
+            return;
         } else {
             await registerNonPixOrder(order);
         }
@@ -2286,6 +2290,7 @@ function setupEvents() {
    ========================================================= */
 
 async function init() {
+    await configureCardCheckout();
     // Recuperar acesso ao pedido sem guardar nome, endereço ou código PIX.
     try {
         const receipt = JSON.parse(sessionStorage.getItem('nefer-last-confirmed-order') || 'null');
