@@ -92,6 +92,10 @@ router.post('/checkout', async (req, res) => {
 });
 
 async function applyVerifiedPayment(config, payment, expectedToken = null) {
+    const account = await provider.request(config, '/users/me');
+    const isTestAccount = Array.isArray(account.tags) && account.tags.includes('test_user');
+    if (String(account.id) !== config.collectorId || isTestAccount !== (config.mode === 'test')) throw new Error('Conta incompatível.');
+    const verifiedConfig = { ...config, testAccountVerified: isTestAccount };
     const names = collections(config), db = getFirestore();
     if (!/^AUR-[A-F0-9]{16}$/.test(payment.external_reference || '')) throw new Error('Referência inválida.');
     const ref = db.collection(names.orders).doc(payment.external_reference);
@@ -100,7 +104,15 @@ async function applyVerifiedPayment(config, payment, expectedToken = null) {
       if (!snapshot.exists) throw new Error('Pedido não encontrado.');
       const order = snapshot.data();
       if (expectedToken && order.publicTrackingToken !== expectedToken) throw new Error('Pedido incompatível.');
-      if (!provider.paymentMatches(payment, order, config)) throw new Error('Pagamento incompatível.');
+      if (!provider.paymentMatches(payment, order, verifiedConfig)) {
+        console.warn('[MP_PAYMENT_MISMATCH]', JSON.stringify({
+          referenceMatches: String(payment.external_reference) === order.orderNumber,
+          collectorMatches: String(payment.collector_id) === config.collectorId,
+          currency: payment.currency_id, liveMode: payment.live_mode, mode: config.mode,
+          amountMatches: Math.round(Number(payment.transaction_amount) * 100) === Math.round(Number(order.totals.total) * 100)
+        }));
+        throw new Error('Pagamento incompatível.');
+      }
       const updatedAt = Date.parse(payment.date_last_updated || payment.date_created);
       if (!Number.isFinite(updatedAt)) throw new Error('Data inválida.');
       if (order.payment.paymentId && String(order.payment.paymentId) !== String(payment.id)) {

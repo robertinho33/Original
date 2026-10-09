@@ -64,7 +64,8 @@ function paymentMatches(payment, order, config) {
     String(payment.collector_id) === config.collectorId &&
     payment.currency_id === 'BRL' &&
     typeof payment.live_mode === 'boolean' &&
-    payment.live_mode === (config.mode === 'production') &&
+    (config.mode === 'production' ? payment.live_mode === true :
+      payment.live_mode === false || config.testAccountVerified === true) &&
     Math.round(Number(payment.transaction_amount) * 100) === Math.round(Number(order.totals.total) * 100);
 }
 

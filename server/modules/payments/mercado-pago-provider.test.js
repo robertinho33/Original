@@ -47,6 +47,9 @@ test('aprovação só vale com referência, recebedor, moeda, ambiente e valor c
   assert.equal(p.paymentStatus(payment), 'paid');
   assert.equal(p.paymentStatus({ status: 'in_process' }), 'pending');
   assert.equal(p.paymentStatus({ status: 'refunded' }), 'refunded');
+  // APP_USR de uma conta de teste pode usar recursos live; a conta autenticada deve ser test_user.
+  assert.equal(p.paymentMatches({ ...payment, live_mode: true }, order, { ...config, testAccountVerified: true }), true);
+  assert.equal(p.paymentMatches({ ...payment, live_mode: true }, order, config), false);
 });
 test('erro da API não revela credenciais nem payload do provedor', async () => {
   await assert.rejects(p.request({ token: 'private-token' }, '/checkout/preferences', {}, async () => ({ ok: false, json: async () => ({ message: 'private-token' }) })), error => !error.message.includes('private-token'));
