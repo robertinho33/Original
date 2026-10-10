@@ -1,4 +1,4 @@
-import { configureCardCheckout, startCardCheckout } from './mercado-pago-checkout.js';
+import { configureCardCheckout, startCardCheckout, showPendingCardOrder } from './mercado-pago-checkout.js';
 import { ORDER_STATUS } from '../orders/order-status.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
 import { db } from '../firebase-config.js';
@@ -2290,7 +2290,8 @@ function setupEvents() {
    ========================================================= */
 
 async function init() {
-    await configureCardCheckout();
+    showPendingCardOrder();
+    void configureCardCheckout();
     // Recuperar acesso ao pedido sem guardar nome, endereço ou código PIX.
     try {
         const receipt = JSON.parse(sessionStorage.getItem('nefer-last-confirmed-order') || 'null');

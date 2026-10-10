@@ -2,14 +2,45 @@ const API_ROOT = ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? '' : 'https://aurea-pix-api.onrender.com';
 const API = `${API_ROOT}/api/payments/mercado-pago`;
 
+export function showPendingCardOrder() {
+    const heading = document.querySelector('.checkout-heading');
+    if (!heading || document.getElementById('pendingCardOrder')) return;
+    let pending;
+    try { pending = JSON.parse(sessionStorage.getItem('nefer-mp-pending-order') || 'null'); } catch { return; }
+    if (!pending || !/^AUR-[A-F0-9]{16}$/.test(pending.orderNumber || '') ||
+        !/^[a-f0-9]{64}$/i.test(pending.trackingToken || '') ||
+        !Number.isFinite(pending.savedAt) || Date.now() - pending.savedAt > 7 * 86400000) return;
+    const notice = document.createElement('p');
+    notice.id = 'pendingCardOrder';
+    notice.setAttribute('role', 'status');
+    notice.textContent = 'Você já iniciou um pagamento. Confira o pedido antes de tentar novamente. ';
+    const link = document.createElement('a');
+    link.href = `rastrear-pedido.html${pending.testMode ? '?mp_test=1' : ''}#token=${pending.trackingToken}`;
+    link.textContent = 'Consultar meu pedido';
+    notice.append(link);
+    heading.append(notice);
+}
+
 export async function configureCardCheckout() {
     const card = document.querySelector('input[name="paymentMethod"][value="card"]');
     if (!card) return;
     card.disabled = true;
     const content = card.closest('label')?.querySelector('.choice-content');
+    let retry = document.getElementById('retryCardConfiguration');
+    if (!retry) {
+        retry = document.createElement('button');
+        retry.id = 'retryCardConfiguration';
+        retry.type = 'button';
+        retry.textContent = 'Verificar cartão novamente';
+        retry.hidden = true;
+        retry.addEventListener('click', () => configureCardCheckout());
+        card.closest('label')?.after(retry);
+    }
+    retry.hidden = true;
+    if (content) content.querySelector('small').textContent = 'Verificando pagamento com cartão…';
     try {
         const response = await fetch(`${API}/configuration`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(8000)
+            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(60000)
         });
         const result = await response.json();
         const testPreview = new URLSearchParams(window.location.search).get('mp_test') === '1';
@@ -21,7 +52,8 @@ export async function configureCardCheckout() {
             ? 'Simulação no Mercado Pago. Use somente uma conta compradora e cartões de teste.'
             : 'Pague no Mercado Pago. Débito virtual Caixa quando disponível. Confira as condições antes de pagar.';
     } catch {
-        if (content) content.querySelector('small').textContent = 'Pagamento com cartão temporariamente indisponível.';
+        if (content) content.querySelector('small').textContent = 'Não foi possível verificar o cartão agora. Tente novamente.';
+        retry.hidden = false;
         if (card.checked) document.querySelector('input[name="paymentMethod"][value="pix"]')?.click();
     }
 }
