@@ -10,7 +10,7 @@ function configuration(env = process.env) {
   const secret = production ? env.MP_PRODUCTION_WEBHOOK_SECRET : env.MP_WEBHOOK_SECRET;
   const collectorId = production ? env.MP_PRODUCTION_COLLECTOR_ID : env.MP_COLLECTOR_ID;
   const configured = env.MP_CHECKOUT_ENABLED === 'true' &&
-    (mode !== 'production' || env.MP_PRODUCTION_VALIDATED === 'true') &&
+    (mode !== 'production' || (env.MP_PRODUCTION_VALIDATED === 'true' && env.MP_REAL_SALE_TEST_ONLY === 'true' && env.MP_REAL_SALE_TEST_SKU && Number(env.MP_REAL_SALE_TEST_MAX_TOTAL) > 0)) &&
     ['test', 'production'].includes(mode) && token && secret && collectorId;
   let storeUrl, notificationUrl;
   try {

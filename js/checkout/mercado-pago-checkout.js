@@ -13,7 +13,8 @@ export async function configureCardCheckout() {
         });
         const result = await response.json();
         const testPreview = new URLSearchParams(window.location.search).get('mp_test') === '1';
-        if (!response.ok || !result.enabled || (result.testMode && !testPreview)) throw new Error();
+        const livePreview = new URLSearchParams(window.location.search).get('mp_live_test') === '1';
+        if (!response.ok || !result.enabled || (result.testMode && !testPreview) || (result.previewOnly && !livePreview)) throw new Error();
         card.disabled = false;
         content.querySelector('strong').textContent = result.testMode ? 'Cartão — ambiente de teste' : 'Cartão de crédito';
         content.querySelector('small').textContent = result.testMode

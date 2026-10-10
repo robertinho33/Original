@@ -12,7 +12,7 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
     MP_COLLECTOR_ID: '123', MP_WEBHOOK_SECRET: 'mock-secret', PUBLIC_STORE_URL: 'https://www.fiosperfeitos.com.br',
     MP_NOTIFICATION_URL: 'https://example.test/api/payments/mercado-pago/webhook' });
   const records = new Map();
-  const reference = key => ({ key, get: async () => snapshot(key) });
+  const reference = key => ({ key, get: async () => snapshot(key), update: async value => update({ key }, value) });
   const snapshot = key => ({ exists: records.has(key), data: () => structuredClone(records.get(key)) });
   const set = (ref, value, options = {}) => records.set(ref.key,
     options.merge ? { ...records.get(ref.key), ...structuredClone(value) } : structuredClone(value));
@@ -32,7 +32,7 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
     if (parent?.filename.endsWith('mercado-pago-routes.js')) {
       if (name.endsWith('firebase-admin')) return { getFirestore: () => db };
       if (name.endsWith('complete-order-builder')) return { buildCompleteOrder: async () => ({
-        totals: { total: 79.90 }, customer: {}, items: [{ sku: 'REAL', quantity: 1 }],
+        totals: { total: 79.90 }, customer: {}, items: [{ sku: 'REAL', quantity: 1, unitPrice: 79.90 }],
         createdAt: new Date().toISOString(), logistics: { status: 'pending' }
       }) };
     }
@@ -43,7 +43,7 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
   let calls = 0, payment;
   const originalRequest = provider.request;
   provider.request = async (config, path, body) => {
-    if (path === '/users/me') return { id: 123, tags: ['test_user'] };
+    if (path === '/users/me') return { id: 123, tags: config.mode === 'production' ? [] : ['test_user'] };
     calls++;
     if (path === '/checkout/preferences') {
       assert.equal(body.items[0].unit_price, 79.90);
@@ -92,6 +92,7 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
     assert.equal((await post('/webhook?data.id=99&type=payment', { type: 'payment', status: 'rejected' }, headers)).status, 200);
     const orderKey = `mpTestOrders/${first.data.orderNumber}`;
     assert.equal(records.get(orderKey).payment.status, 'paid');
+    assert.equal((await post('/checkout', payload)).status, 409);
     payment = { ...payment, status: 'approved', transaction_amount: 79.90, date_last_updated: '2026-10-09T14:00:00Z' };
     assert.equal((await post('/reconcile', { token: 'a'.repeat(64), paymentId: '99', status: 'approved' })).status, 404);
     const reconciled = await (await post('/reconcile', { token: first.data.trackingToken, paymentId: '99', status: 'rejected' })).json();
@@ -101,6 +102,18 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
     payment = { ...payment, external_reference: first.data.orderNumber, status: 'pending', date_last_updated: '2026-10-09T11:00:00Z' };
     assert.equal((await post('/webhook?data.id=99&type=payment', { type: 'payment' }, headers)).status, 200);
     assert.equal(records.get(orderKey).payment.status, 'paid');
+    const retryOrder = await (await post('/checkout', { ...payload, checkoutAttemptId: 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb' })).json();
+    const signedHeaders = id => ({ 'x-request-id': reqId, 'x-signature': `ts=${ts},v1=${createHmac('sha256', 'mock-secret').update(`id:${id};request-id:${reqId};ts:${ts};`).digest('hex')}` });
+    payment = { ...payment, id: 100, external_reference: retryOrder.data.orderNumber,
+      status: 'rejected', transaction_amount: 79.90, date_last_updated: '2026-10-09T16:00:00Z' };
+    assert.equal((await post('/webhook?data.id=100&type=payment', { type: 'payment' }, signedHeaders('100'))).status, 200);
+    assert.equal(records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).payment.status, 'failed');
+    payment = { ...payment, id: 101, status: 'approved', date_last_updated: '2026-10-09T17:00:00Z' };
+    assert.equal((await post('/webhook?data.id=101&type=payment', { type: 'payment' }, signedHeaders('101'))).status, 200);
+    assert.equal(records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).payment.status, 'paid');
+    payment = { ...payment, id: 102, status: 'rejected', date_last_updated: '2026-10-09T18:00:00Z' };
+    assert.equal((await post('/webhook?data.id=102&type=payment', { type: 'payment' }, signedHeaders('102'))).status, 200);
+    assert.equal(records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).payment.status, 'paid');
     payment = { ...payment, status: 'refunded', transaction_amount: 1, date_last_updated: '2026-10-09T13:00:00Z' };
     assert.equal((await post('/webhook?data.id=99&type=payment', { type: 'payment' }, headers)).status, 503);
     assert.equal(records.get(orderKey).payment.status, 'paid');

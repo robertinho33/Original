@@ -6,6 +6,7 @@ const { getFirestore } = require('../../infrastructure/firebase/firebase-admin')
 const { validateOrderPayload } = require('../../core/payload-validator');
 const { buildCompleteOrder } = require('../orders/complete-order-builder');
 const provider = require('./mercado-pago-provider');
+const stock = require('./mercado-pago-stock');
 const router = express.Router();
 
 const collections = config => config.mode === 'test'
@@ -13,11 +14,9 @@ const collections = config => config.mode === 'test'
   : { orders: 'orders', tracking: 'orderTracking', attempts: 'mpCheckoutAttempts' };
 
 let productionReadiness = null;
-router.get('/production-readiness', async (req, res) => {
-  res.set('Cache-Control', 'no-store');
+async function inspectProductionAccount() {
   const token = process.env.MP_PRODUCTION_ACCESS_TOKEN;
-  if (!token) return res.json({ success: true, configured: false, productionEnabled: false });
-  try {
+  if (!token) return { success: true, configured: false, productionEnabled: false };
     if (!productionReadiness || productionReadiness.token !== token || productionReadiness.until < Date.now()) {
       const account = await provider.request({ token }, '/users/me');
       const methods = await provider.request({ token }, '/v1/payment_methods');
@@ -30,14 +29,26 @@ router.get('/production-readiness', async (req, res) => {
         debitAvailable: active.some(method => method.payment_type_id === 'debit_card')
       } };
     }
-    res.json({ ...productionReadiness.data, productionEnabled: provider.configuration().mode === 'production' && provider.configuration().enabled });
+  return { ...productionReadiness.data, productionEnabled: provider.configuration().mode === 'production' && provider.configuration().enabled };
+}
+router.get('/production-readiness', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    res.json(await inspectProductionAccount());
   } catch { res.status(503).json({ success: false, configured: true, message: 'Não foi possível verificar as credenciais de produção.' }); }
 });
+
+// Apenas leitura da conta e dos meios aceitos; não cria cobrança e não registra chaves.
+if (process.env.MP_PRODUCTION_ACCESS_TOKEN) setTimeout(async () => {
+  try { console.info('[MP_PRODUCTION_READY]', JSON.stringify(await inspectProductionAccount())); }
+  catch { console.warn('[MP_PRODUCTION_READY] Verificação indisponível.'); }
+}, 2000).unref();
 
 router.get('/configuration', (req, res) => {
   const config = provider.configuration();
   res.set('Cache-Control', 'no-store').json({ success: true,
-    enabled: config.enabled, testMode: config.mode === 'test' });
+    enabled: config.enabled, testMode: config.mode === 'test',
+    previewOnly: config.mode === 'production' && process.env.MP_REAL_SALE_TEST_ONLY === 'true' });
 });
 
 router.post('/checkout', async (req, res) => {
@@ -51,6 +62,7 @@ router.post('/checkout', async (req, res) => {
       return res.status(503).json({ success: false, message: 'A conta de pagamento não corresponde ao ambiente configurado.' });
     }
     const payload = validateOrderPayload(req.body);
+    payload.items = stock.aggregateItems(payload.items);
     if (!/^[a-f0-9-]{36}$/i.test(payload.checkoutAttemptId || '')) return res.status(400).json({ success: false, message: 'Identificador de tentativa inválido.' });
     const fingerprint = createHash('sha256').update(JSON.stringify({
       items: payload.items, customer: payload.customer, address: payload.address,
@@ -63,7 +75,11 @@ router.post('/checkout', async (req, res) => {
       const snapshot = await tx.get(attemptRef);
       const existing = snapshot.exists ? snapshot.data() : null;
       if (existing && existing.fingerprint !== fingerprint) return { conflict: true };
-      if (existing?.response && existing.expiresAt > Date.now()) return { response: existing.response };
+      if (existing?.response && existing.expiresAt > Date.now()) {
+        const stored = await tx.get(db.collection(names.orders).doc(existing.orderNumber));
+        if (stored.exists && ['paid', 'refunded', 'chargeback'].includes(stored.data().payment?.status)) return { settled: true };
+        return { response: existing.response };
+      }
       if (existing?.expiresAt && existing.expiresAt <= Date.now()) return { expired: true };
       if (existing?.lockedUntil > Date.now()) return { busy: true };
       const orderNumber = existing?.orderNumber || `AUR-${randomBytes(8).toString('hex').toUpperCase()}`;
@@ -71,6 +87,7 @@ router.post('/checkout', async (req, res) => {
       return { orderNumber };
     });
     if (claim.response) return res.json(claim.response);
+    if (claim.settled) return res.status(409).json({ success: false, message: 'Este pagamento já foi registrado. Consulte seu link de acompanhamento.' });
     if (claim.conflict || claim.expired || claim.busy) return res.status(409).json({ success: false,
       message: claim.expired ? 'Esta tentativa expirou. Atualize a sacola para iniciar outra.' : 'A tentativa está em processamento ou seus dados mudaram. Aguarde e tente novamente.' });
     const orderRef = db.collection(names.orders).doc(claim.orderNumber);
@@ -82,18 +99,40 @@ router.post('/checkout', async (req, res) => {
         publicTrackingToken: randomBytes(32).toString('hex'),
         payment: { method: 'card', provider: 'mercado-pago', status: 'pending', mode: config.mode },
         status: 'pending' };
+      if (config.mode === 'production') stock.validatePilot(order);
+      const reservationPlan = await stock.prepareReservation(db, order, config.mode);
+      const pilotRef = config.mode === 'production' ? db.collection('mpRealSalePilot').doc('first-sale') : null;
       await db.runTransaction(async tx => {
         const attempt = (await tx.get(attemptRef)).data();
         if (attempt.lease !== lease) throw new Error('Tentativa concorrente.');
+        if (pilotRef && (await tx.get(pilotRef)).exists) {
+          const { AppError } = require('../../core/app-error');
+          throw new AppError('Uma compra já está em andamento. Consulte o pedido antes de tentar novamente.', { status: 409 });
+        }
+        order.stock = await stock.reserveInTransaction(tx, reservationPlan);
         tx.create(orderRef, order);
+        if (pilotRef) tx.create(pilotRef, { orderNumber: order.orderNumber, createdAt: order.createdAt });
         tx.set(db.collection(names.tracking).doc(order.publicTrackingToken), {
           id: order.orderNumber, orderNumber: order.orderNumber, createdAt: order.createdAt,
           status: 'pending', paymentStatus: 'pending', total: order.totals.total,
           logisticsStatus: 'pending', history: []
         });
       });
+      if (config.mode === 'production') require('../catalog/catalog-storefront-service').invalidate();
     }
-    if (order.payment.status !== 'pending') return res.status(409).json({ success: false, message: 'Este pedido já possui uma atualização de pagamento. Consulte o acompanhamento.' });
+    if (!['pending', 'failed', 'cancelled'].includes(order.payment.status)) return res.status(409).json({ success: false, message: 'Este pedido já possui uma atualização de pagamento. Consulte o acompanhamento.' });
+    // Em caso de falha após iniciar a chamada, não criar uma segunda preferência às cegas.
+    if (order.payment.preferenceCreationStartedAt && !order.payment.preferenceId) return res.status(409).json({ success: false, message: 'A preparação deste pedido precisa ser conferida antes de uma nova tentativa.' });
+    await db.runTransaction(async tx => {
+      const attempt = (await tx.get(attemptRef)).data();
+      const current = (await tx.get(orderRef)).data();
+      if (attempt.lease !== lease) throw new Error('Tentativa concorrente.');
+      if (current.payment.preferenceCreationStartedAt) {
+        const { AppError } = require('../../core/app-error');
+        throw new AppError('A preparação deste pedido precisa ser conferida antes de uma nova tentativa.', { status: 409 });
+      }
+      tx.update(orderRef, { 'payment.preferenceCreationStartedAt': new Date().toISOString() });
+    });
     const preference = await provider.request(config, '/checkout/preferences', provider.preferenceBody(order, config));
     // Credenciais de vendedor de teste usam init_point; a conta controla o ambiente.
     const url = provider.checkoutUrl(preference.init_point);
@@ -137,9 +176,10 @@ async function applyVerifiedPayment(config, payment, expectedToken = null) {
       }
       const updatedAt = Date.parse(payment.date_last_updated || payment.date_created);
       if (!Number.isFinite(updatedAt)) throw new Error('Data inválida.');
-      if (order.payment.paymentId && String(order.payment.paymentId) !== String(payment.id)) {
+      if (order.payment.paymentId && String(order.payment.paymentId) !== String(payment.id) &&
+          ['paid', 'refunded', 'chargeback'].includes(order.payment.status)) {
         // Uma segunda cobrança nunca substitui a primeira; requer revisão no painel do provedor.
-        tx.update(ref, { 'payment.reviewRequired': true });
+        if (provider.paymentStatus(payment) === 'paid') tx.update(ref, { 'payment.reviewRequired': true });
         return order.payment.status;
       }
       if (Number(order.payment.providerUpdatedAt || 0) >= updatedAt) return order.payment.status;
@@ -148,6 +188,7 @@ async function applyVerifiedPayment(config, payment, expectedToken = null) {
         'payment.paymentId': String(payment.id), 'payment.providerUpdatedAt': updatedAt,
         updatedAt: new Date().toISOString() };
       if (status === 'paid') changes['payment.confirmedAt'] = payment.date_approved || new Date(updatedAt).toISOString();
+      if (status === 'paid' && order.stock?.status === 'reserved') changes['stock.status'] = 'committed';
       tx.update(ref, changes);
       tx.set(db.collection(names.tracking).doc(order.publicTrackingToken), {
         paymentStatus: status, paymentConfirmedAt: changes['payment.confirmedAt'] || null,

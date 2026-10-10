@@ -20,7 +20,8 @@ test('sem configuração completa ou sem validação de produção, cartões fic
   assert.equal(p.configuration({ ...env, MP_NOTIFICATION_URL: 'http://example.test' }).enabled, false);
   assert.equal(p.configuration({ ...env, MP_MODE: 'production', MP_PRODUCTION_VALIDATED: 'true' }).enabled, false);
   const realEnv = { ...env, MP_MODE: 'production', MP_PRODUCTION_VALIDATED: 'true',
-    MP_PRODUCTION_ACCESS_TOKEN: 'real-token-mock', MP_PRODUCTION_WEBHOOK_SECRET: 'real-secret-mock', MP_PRODUCTION_COLLECTOR_ID: '456' };
+    MP_PRODUCTION_ACCESS_TOKEN: 'real-token-mock', MP_PRODUCTION_WEBHOOK_SECRET: 'real-secret-mock', MP_PRODUCTION_COLLECTOR_ID: '456',
+    MP_REAL_SALE_TEST_ONLY: 'true', MP_REAL_SALE_TEST_SKU: 'test-sku', MP_REAL_SALE_TEST_MAX_TOTAL: '100' };
   assert.equal(p.configuration(realEnv).enabled, true);
   assert.equal(p.configuration(realEnv).collectorId, '456');
   assert.equal(p.configuration(realEnv).token, 'real-token-mock');
