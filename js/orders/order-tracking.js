@@ -1,3 +1,4 @@
+import './mercado-pago-resume.js';
 import { reconcileReturnedPayment } from './mercado-pago-reconcile.js';
 'use strict';
 

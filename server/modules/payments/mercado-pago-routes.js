@@ -216,6 +216,31 @@ router.post('/webhook', async (req, res) => {
   } catch { res.sendStatus(503); }
 });
 
+const resumeLimits = new Map();
+router.post('/resume', async (req, res) => {
+  const config = provider.configuration();
+  if (!config.enabled) return res.sendStatus(503);
+  const token = String(req.body?.token || '');
+  if (!/^[a-f0-9]{64}$/i.test(token)) return res.sendStatus(400);
+  const now = Date.now();
+  for (const [key, until] of resumeLimits) if (until < now) resumeLimits.delete(key);
+  if (resumeLimits.has(token) || resumeLimits.size > 5000) return res.status(429).json({ success: false, message: 'Aguarde um minuto antes de conferir novamente.' });
+  resumeLimits.set(token, now + 60000);
+  try {
+    const db = getFirestore(), names = collections(config);
+    const tracking = await db.collection(names.tracking).doc(token).get();
+    if (!tracking.exists) return res.sendStatus(404);
+    const orderSnapshot = await db.collection(names.orders).doc(tracking.data().orderNumber).get();
+    if (!orderSnapshot.exists || orderSnapshot.data().publicTrackingToken !== token) return res.sendStatus(404);
+    const { resumeOrder } = require('./mercado-pago-resume');
+    const data = await resumeOrder(config, orderSnapshot.data(), payment => applyVerifiedPayment(config, payment, token));
+    res.set('Cache-Control', 'no-store').json({ success: true, data });
+  } catch (error) {
+    res.status(error.status || 503).json({ success: false, message: error.status && error.status < 500
+      ? error.message : 'Não foi possível conferir este pagamento agora. Tente novamente em um minuto.' });
+  }
+});
+
 const reconciliationLimits = new Map();
 router.post('/reconcile', async (req, res) => {
   const config = provider.configuration();
