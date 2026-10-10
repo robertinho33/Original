@@ -189,6 +189,7 @@ async function applyVerifiedPayment(config, payment, expectedToken = null) {
         updatedAt: new Date().toISOString() };
       if (status === 'paid') changes['payment.confirmedAt'] = payment.date_approved || new Date(updatedAt).toISOString();
       if (status === 'paid' && order.stock?.status === 'reserved') changes['stock.status'] = 'committed';
+      if (status === 'paid' && order.stock?.status === 'released') changes['payment.reviewRequired'] = true;
       tx.update(ref, changes);
       tx.set(db.collection(names.tracking).doc(order.publicTrackingToken), {
         paymentStatus: status, paymentConfirmedAt: changes['payment.confirmedAt'] || null,
@@ -216,6 +217,66 @@ router.post('/webhook', async (req, res) => {
   } catch { res.sendStatus(503); }
 });
 
+async function claimCheckoutMaintenance(db, orderRef, action) {
+  const owner = randomUUID();
+  await db.runTransaction(async tx => {
+    const snapshot = await tx.get(orderRef);
+    if (!snapshot.exists || snapshot.data().payment.checkoutMaintenance) {
+      const { AppError } = require('../../core/app-error');
+      throw new AppError('O pedido está sendo conferido ou precisa de revisão. Aguarde antes de tentar novamente.', { status: 409 });
+    }
+    tx.update(orderRef, { 'payment.checkoutMaintenance': { owner, action, startedAt: new Date().toISOString() } });
+  });
+  return async () => db.runTransaction(async tx => {
+    const current = (await tx.get(orderRef)).data();
+    if (current.payment.checkoutMaintenance?.owner === owner) tx.update(orderRef, { 'payment.checkoutMaintenance': null });
+  });
+}
+
+const expiryLimits = new Map();
+router.post('/expire', async (req, res) => {
+  const config = provider.configuration();
+  if (!config.enabled) return res.sendStatus(503);
+  const token = String(req.body?.token || '');
+  if (!/^[a-f0-9]{64}$/i.test(token)) return res.sendStatus(400);
+  const now = Date.now();
+  for (const [key, until] of expiryLimits) if (until < now) expiryLimits.delete(key);
+  if (expiryLimits.has(token) || expiryLimits.size > 5000) return res.sendStatus(429);
+  expiryLimits.set(token, now + 60000);
+  let unlock;
+  try {
+    const db = getFirestore(), names = collections(config);
+    const trackingRef = db.collection(names.tracking).doc(token);
+    const tracking = await trackingRef.get();
+    if (!tracking.exists) return res.sendStatus(404);
+    const orderRef = db.collection(names.orders).doc(tracking.data().orderNumber);
+    const snapshot = await orderRef.get();
+    if (!snapshot.exists || snapshot.data().publicTrackingToken !== token) return res.sendStatus(404);
+    if (snapshot.data().payment.status === 'expired') return res.json({ success: true, paymentStatus: 'expired' });
+    unlock = await claimCheckoutMaintenance(db, orderRef, 'expire');
+    const result = await require('./mercado-pago-expiry').verifyExpiredOrder(config, snapshot.data(),
+      payment => applyVerifiedPayment(config, payment, token));
+    if (!result.release) { await unlock(); return res.json({ success: true, paymentStatus: result.paymentStatus }); }
+    const paymentStatus = await db.runTransaction(async tx => {
+      const current = (await tx.get(orderRef)).data();
+      if (!['pending', 'failed', 'cancelled'].includes(current.payment.status)) return current.payment.status;
+      await stock.releaseInTransaction(tx, db, current.stock);
+      tx.update(orderRef, { 'payment.status': 'expired', status: 'cancelled',
+        'stock.status': current.stock?.status === 'reserved' ? 'released' : current.stock?.status || 'not_reserved',
+        'stock.releasedAt': new Date().toISOString(), updatedAt: new Date().toISOString() });
+      tx.set(trackingRef, { paymentStatus: 'expired', status: 'cancelled', updatedAt: new Date().toISOString() }, { merge: true });
+      return 'expired';
+    });
+    require('../catalog/catalog-storefront-service').invalidate();
+    await unlock();
+    res.set('Cache-Control', 'no-store').json({ success: true, paymentStatus });
+  } catch (error) {
+    if (unlock && error.status && error.status < 500) await unlock();
+    res.status(error.status || 503).json({ success: false, message: error.status && error.status < 500
+      ? error.message : 'Não foi possível concluir a conferência. O pedido precisa de revisão e o estoque permanece reservado.' });
+  }
+});
+
 const resumeLimits = new Map();
 router.post('/resume', async (req, res) => {
   const config = provider.configuration();
@@ -226,18 +287,23 @@ router.post('/resume', async (req, res) => {
   for (const [key, until] of resumeLimits) if (until < now) resumeLimits.delete(key);
   if (resumeLimits.has(token) || resumeLimits.size > 5000) return res.status(429).json({ success: false, message: 'Aguarde um minuto antes de conferir novamente.' });
   resumeLimits.set(token, now + 60000);
+  let unlock;
   try {
     const db = getFirestore(), names = collections(config);
     const tracking = await db.collection(names.tracking).doc(token).get();
     if (!tracking.exists) return res.sendStatus(404);
-    const orderSnapshot = await db.collection(names.orders).doc(tracking.data().orderNumber).get();
+    const orderRef = db.collection(names.orders).doc(tracking.data().orderNumber);
+    const orderSnapshot = await orderRef.get();
     if (!orderSnapshot.exists || orderSnapshot.data().publicTrackingToken !== token) return res.sendStatus(404);
+    unlock = await claimCheckoutMaintenance(db, orderRef, 'resume');
     const { resumeOrder } = require('./mercado-pago-resume');
     const data = await resumeOrder(config, orderSnapshot.data(), payment => applyVerifiedPayment(config, payment, token));
+    await unlock();
     res.set('Cache-Control', 'no-store').json({ success: true, data });
   } catch (error) {
+    if (unlock && error.status && error.status < 500) await unlock();
     res.status(error.status || 503).json({ success: false, message: error.status && error.status < 500
-      ? error.message : 'Não foi possível conferir este pagamento agora. Tente novamente em um minuto.' });
+      ? error.message : 'Não foi possível concluir a conferência. Este pedido precisa de revisão antes de outra tentativa.' });
   }
 });
 

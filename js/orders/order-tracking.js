@@ -152,7 +152,9 @@ function renderOrder(order) {
                 : FLOW[current].label;
     elements.payment.textContent = !paymentPending
         ? 'Pagamento confirmado'
-        : 'Aguardando pagamento';
+        : normalize(order.paymentStatus) === 'expired'
+            ? 'Prazo de pagamento encerrado'
+            : 'Aguardando pagamento';
 
     const shippingDetails = [];
     if (order.carrier) shippingDetails.push('Transportadora: ' + order.carrier);

@@ -48,3 +48,26 @@ test('primeira venda real exige SKU, uma unidade e teto de total explícitos', (
   assert.throws(() => validatePilot({ ...order, items: [{ sku: 'A', quantity: 2 }] }, env));
   assert.throws(() => validatePilot(order, {}));
 });
+
+const { releaseInTransaction } = require('./mercado-pago-stock');
+test('devolução soma ao estoque atual e não devolve reserva já encerrada', async () => {
+  let quantity = 4;
+  const db = { collection: () => ({ doc: id => id }) };
+  const tx = { get: async () => ({ exists: true, data: () => ({ sku: 'A', stock: quantity }) }),
+    update: (ref, patch) => { quantity = patch.stock; } };
+  const reservation = { status: 'reserved', reservations: [{ documentId: 'a', sku: 'A', field: 'stock', quantity: 2 }] };
+  assert.equal(await releaseInTransaction(tx, db, reservation), true);
+  assert.equal(quantity, 6);
+  assert.equal(await releaseInTransaction(tx, db, { ...reservation, status: 'released' }), false);
+  assert.equal(quantity, 6);
+});
+test('produto removido ou SKU alterado impede devolução parcial', async () => {
+  const db = { collection: () => ({ doc: id => id }) }, writes = [];
+  const tx = { get: async id => ({ exists: id !== 'b', data: () => ({ sku: 'A', stock: 1 }) }),
+    update: (...args) => writes.push(args) };
+  await assert.rejects(releaseInTransaction(tx, db, { status: 'reserved', reservations: [
+    { documentId: 'a', sku: 'A', field: 'stock', quantity: 1 },
+    { documentId: 'b', sku: 'B', field: 'stock', quantity: 1 }
+  ] }));
+  assert.equal(writes.length, 0);
+});

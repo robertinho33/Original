@@ -73,4 +73,23 @@ function validatePilot(order, env = process.env) {
   }
 }
 
-module.exports = { aggregateItems, prepareReservation, reserveInTransaction, validatePilot };
+async function releaseInTransaction(tx, db, reservation) {
+  if (reservation?.status !== 'reserved') return false;
+  const items = reservation.reservations;
+  if (!Array.isArray(items) || !items.length) throw new Error('Reserva inválida.');
+  const refs = items.map(item => db.collection('products').doc(item.documentId));
+  const snapshots = await Promise.all(refs.map(ref => tx.get(ref)));
+  const patches = items.map((item, index) => {
+    const snapshot = snapshots[index];
+    const product = snapshot.exists ? { id: item.documentId, ...snapshot.data() } : null;
+    if (!product || String(getProductSku(product)) !== item.sku ||
+        !['Estoque', 'estoque', 'stock', 'Stock'].includes(item.field) ||
+        !Number.isInteger(item.quantity) || item.quantity < 1) throw new Error('Reserva incompatível.');
+    const current = normalizeStock(getProductStock(product));
+    if (!Number.isFinite(current) || current < 0 || product[item.field] === undefined) throw new Error('Estoque inválido.');
+    return { [item.field]: current + item.quantity };
+  });
+  refs.forEach((ref, index) => tx.update(ref, patches[index]));
+  return true;
+}
+module.exports = { aggregateItems, prepareReservation, reserveInTransaction, validatePilot, releaseInTransaction };

@@ -108,9 +108,12 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
       status: 'rejected', transaction_amount: 79.90, date_last_updated: '2026-10-09T16:00:00Z' };
     assert.equal((await post('/webhook?data.id=100&type=payment', { type: 'payment' }, signedHeaders('100'))).status, 200);
     assert.equal(records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).payment.status, 'failed');
+    records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).stock = { status: 'released' };
     payment = { ...payment, id: 101, status: 'approved', date_last_updated: '2026-10-09T17:00:00Z' };
     assert.equal((await post('/webhook?data.id=101&type=payment', { type: 'payment' }, signedHeaders('101'))).status, 200);
     assert.equal(records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).payment.status, 'paid');
+    assert.equal(records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).payment.reviewRequired, true);
+    assert.equal(records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).stock.status, 'released');
     payment = { ...payment, id: 102, status: 'rejected', date_last_updated: '2026-10-09T18:00:00Z' };
     assert.equal((await post('/webhook?data.id=102&type=payment', { type: 'payment' }, signedHeaders('102'))).status, 200);
     assert.equal(records.get(`mpTestOrders/${retryOrder.data.orderNumber}`).payment.status, 'paid');

@@ -31,6 +31,32 @@ if (params.get('mp_resume') === '1' && /^[a-f0-9]{64}$/i.test(token || '')) {
             location.assign(url.href);
         } catch (error) { message.textContent = error.message; button.disabled = false; }
     });
-    section.append(message, button);
+    const expire = document.createElement('button');
+    expire.type = 'button';
+    expire.textContent = 'Encerrar pedido expirado';
+    expire.addEventListener('click', async () => {
+        expire.disabled = true;
+        button.disabled = true;
+        message.textContent = 'Conferindo o prazo e os pagamentos antes de encerrar o pedido…';
+        try {
+            const root = ['localhost', '127.0.0.1'].includes(location.hostname) ? '' : 'https://aurea-pix-api.onrender.com';
+            const response = await fetch(`${root}/api/payments/mercado-pago/expire`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token }), signal: AbortSignal.timeout(90000)
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || !result.success) throw new Error(result.message || 'Não foi possível conferir o pedido agora.');
+            message.textContent = result.paymentStatus === 'expired'
+                ? 'Pedido expirado encerrado. O estoque reservado foi devolvido. Atualize o acompanhamento.'
+                : 'O pedido possui uma atualização de pagamento. Consulte o acompanhamento.';
+            button.hidden = true;
+            expire.hidden = true;
+        } catch (error) {
+            message.textContent = error.message;
+            expire.disabled = false;
+            button.disabled = false;
+        }
+    });
+    section.append(message, button, expire);
     document.querySelector('main')?.append(section);
 }
