@@ -9,7 +9,7 @@ async function resumeOrder(config, order, confirmPayment) {
     throw new AppError('Consulte o status do pedido. Este pagamento não pode ser retomado.', { status: 409 });
   }
   if (config.mode === 'production') {
-    stock.validatePilot(order);
+    if (process.env.MP_REAL_SALE_TEST_ONLY === 'true') stock.validatePilot(order);
     if (order.stock?.status !== 'reserved') throw new AppError('O estoque deste pedido precisa ser conferido.', { status: 409 });
   }
   const account = await provider.request(config, '/users/me');

@@ -1750,7 +1750,7 @@ async function registerNonPixOrder(order) {
             address: order.delivery?.address || null,
             deliveryMethod: order.delivery?.method || 'delivery',
             discount: Number(order.discount || 0),
-            paymentMethod: order.payment?.method || 'cash',
+            paymentMethod: order.payment?.method || 'pix',
             coupon: order.coupon || null
         })
     });

@@ -25,6 +25,9 @@ test('sem configuração completa ou sem validação de produção, cartões fic
   assert.equal(p.configuration(realEnv).enabled, true);
   assert.equal(p.configuration(realEnv).collectorId, '456');
   assert.equal(p.configuration(realEnv).token, 'real-token-mock');
+  assert.equal(p.configuration({ ...realEnv, MP_REAL_SALE_TEST_ONLY: 'false' }).enabled, false);
+  assert.equal(p.configuration({ ...realEnv, MP_REAL_SALE_TEST_ONLY: 'false', MP_CATALOG_CARD_ENABLED: 'true' }).enabled, true);
+  assert.equal(p.configuration({ ...realEnv, MP_REAL_SALE_TEST_ONLY: 'false', MP_CATALOG_CARD_ENABLED: 'true', MP_PRODUCTION_ACCESS_TOKEN: '' }).enabled, false);
 });
 test('preferência usa somente total autorizado e mantém retorno de teste separado', () => {
   const body = p.preferenceBody(order, config);

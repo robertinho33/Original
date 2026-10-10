@@ -99,9 +99,9 @@ router.post('/checkout', async (req, res) => {
         publicTrackingToken: randomBytes(32).toString('hex'),
         payment: { method: 'card', provider: 'mercado-pago', status: 'pending', mode: config.mode },
         status: 'pending' };
-      if (config.mode === 'production') stock.validatePilot(order);
+      if (config.mode === 'production' && process.env.MP_REAL_SALE_TEST_ONLY === 'true') stock.validatePilot(order);
       const reservationPlan = await stock.prepareReservation(db, order, config.mode);
-      const pilotRef = config.mode === 'production' ? db.collection('mpRealSalePilot').doc('first-sale') : null;
+      const pilotRef = config.mode === 'production' && process.env.MP_REAL_SALE_TEST_ONLY === 'true' ? db.collection('mpRealSalePilot').doc('first-sale') : null;
       await db.runTransaction(async tx => {
         const attempt = (await tx.get(attemptRef)).data();
         if (attempt.lease !== lease) throw new Error('Tentativa concorrente.');
