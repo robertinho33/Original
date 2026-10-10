@@ -1,9 +1,10 @@
 'use strict';
 
-function getConfiguration() {
+function getConfiguration(role = 'customer') {
+  if (process.env.NEFER_WHATSAPP_ENABLED !== 'true') return null;
   const accessToken = String(process.env.NEFER_WHATSAPP_ACCESS_TOKEN || '').trim();
   const phoneNumberId = String(process.env.NEFER_WHATSAPP_PHONE_NUMBER_ID || '').trim();
-  const templateName = String(process.env.NEFER_WHATSAPP_ORDER_TEMPLATE || '').trim();
+  const templateName = String(process.env[role === 'admin' ? 'NEFER_WHATSAPP_ADMIN_TEMPLATE' : role === 'influencer' ? 'NEFER_WHATSAPP_INFLUENCER_TEMPLATE' : 'NEFER_WHATSAPP_ORDER_TEMPLATE'] || '').trim();
   const language = String(process.env.NEFER_WHATSAPP_TEMPLATE_LANGUAGE || 'pt_BR').trim();
   const apiVersion = String(process.env.NEFER_WHATSAPP_GRAPH_API_VERSION || '').trim();
   if (!accessToken || !/^\d+$/.test(phoneNumberId) || !/^[a-z0-9_]+$/.test(templateName) || !/^v\d+\.\d+$/.test(apiVersion)) return null;
@@ -26,11 +27,12 @@ function singleLine(value, max = 256) {
   return String(value || '').replace(/[\x00-\x1f\x7f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
-async function sendOrderWhatsApp(order) {
-  if (order?.customer?.whatsappOptIn !== true) return { sent: false, reason: 'customer_opt_out' };
-  const configuration = getConfiguration();
+async function sendOrderWhatsApp(order, options = {}) {
+  const role = options.role || 'customer';
+  if (role === 'customer' && order?.customer?.whatsappOptIn !== true) return { sent: false, reason: 'customer_opt_out' };
+  const configuration = getConfiguration(role);
   if (!configuration) return { sent: false, reason: 'not_configured' };
-  const recipient = normalizePhone(order.customer.phone || order.customer.whatsapp);
+  const recipient = normalizePhone(options.phone || order.customer.phone || order.customer.whatsapp);
   if (!recipient) return { sent: false, reason: 'invalid_customer_phone' };
   // Nunca utilizar número temporário do navegador nem enviar um link sem segredo válido.
   const orderNumber = String(order.orderNumber || '');
@@ -39,7 +41,7 @@ async function sendOrderWhatsApp(order) {
   }
   const trackingUrl = new URL('/pages/rastrear-pedido.html', configuration.storeUrl);
   trackingUrl.hash = 'token=' + order.publicTrackingToken;
-  const details = `Recebemos seu pedido *${orderNumber}*. Aguardando confirmação de pagamento. Acompanhe pelo seu link privado: ${trackingUrl.href}`;
+  const details = options.details || `Recebemos seu pedido *${orderNumber}*. Aguardando confirmação de pagamento. Acompanhe pelo seu link privado: ${trackingUrl.href}`;
   // Não truncar a confirmação: isso poderia inutilizar o link privado.
   if (details.length > 1024) return { sent: false, reason: 'invalid_message_length' };
   try {
@@ -52,7 +54,7 @@ async function sendOrderWhatsApp(order) {
         template: {
           name: configuration.templateName, language: { code: configuration.language },
           components: [{ type: 'body', parameters: [
-            { type: 'text', text: singleLine(order.customer.name) || 'cliente' },
+            { type: 'text', text: singleLine(options.name || order.customer.name) || 'cliente' },
             { type: 'text', text: details }
           ] }]
         }
@@ -74,4 +76,4 @@ async function sendOrderWhatsApp(order) {
   }
 }
 
-module.exports = { sendOrderWhatsApp };
+module.exports = { sendOrderWhatsApp, getConfiguration, singleLine, normalizePhone };

@@ -144,6 +144,11 @@ router.post('/checkout', async (req, res) => {
       tx.update(orderRef, { 'payment.preferenceId': preference.id, updatedAt: new Date().toISOString() });
       tx.set(attemptRef, { response, expiresAt: Date.now() + 30 * 60 * 1000, lockedUntil: 0 }, { merge: true });
     });
+    // Mensagens não invalidam a compra se o provedor estiver indisponível.
+    if (config.mode === 'production') {
+      try { await require('../communication/order-notifications').notifyOrder(order); }
+      catch { console.warn('[WHATSAPP] Notificações precisam ser conferidas:', order.orderNumber); }
+    }
     res.json(response);
   } catch (error) {
     // Não registrar payload, credenciais ou resposta bruta do provedor.

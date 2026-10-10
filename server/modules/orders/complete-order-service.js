@@ -27,7 +27,7 @@ const {
 const {
   recordEvent
 } = require('../../infrastructure/audit');
-const { sendOrderWhatsApp } = require('../communication/whatsapp-order-service');
+const { notifyOrder } = require('../communication/order-notifications');
 
 async function createCompleteOrder(payload, requestId) {
   const draft = await buildCompleteOrder(payload);
@@ -109,11 +109,8 @@ async function createCompleteOrder(payload, requestId) {
   });
 
   try {
-    const whatsapp = await sendOrderWhatsApp(finalOrder);
+    const whatsapp = await notifyOrder(finalOrder);
     finalOrder.whatsappDelivery = whatsapp;
-    if (!whatsapp.sent) {
-      console.warn('[WHATSAPP] Confirmação do pedido não enviada:', finalOrder.orderNumber, whatsapp.reason);
-    }
   } catch (error) {
     console.error('[WHATSAPP] Erro ao enviar confirmação:', finalOrder.orderNumber, error.message);
     finalOrder.whatsappDelivery = { sent: false, reason: 'provider_error' };
