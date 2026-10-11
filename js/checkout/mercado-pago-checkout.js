@@ -15,7 +15,7 @@ export function showPendingCardOrder() {
     notice.setAttribute('role', 'status');
     notice.textContent = 'Você já iniciou um pagamento. Confira o pedido antes de tentar novamente. ';
     const link = document.createElement('a');
-    link.href = `rastrear-pedido.html${pending.testMode ? '?mp_test=1' : ''}#token=${pending.trackingToken}`;
+    link.href = `rastrear-pedido.html?mp_resume=1${pending.testMode ? '&mp_test=1' : ''}#token=${pending.trackingToken}`;
     link.textContent = 'Consultar meu pedido';
     notice.append(link);
     heading.append(notice);

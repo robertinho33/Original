@@ -2,9 +2,6 @@
 
 const { AppError } = require('./app-error');
 
-const idempotency =
-  require('../infrastructure/idempotency-store');
-
 function idempotencyMiddleware(req, res, next) {
   if (req.method === 'GET') {
     return next();
@@ -30,24 +27,8 @@ function idempotencyMiddleware(req, res, next) {
     );
   }
 
-  const existing = idempotency.get(key);
-
-  if (existing) {
-    res.status(existing.status);
-    return res.json(existing.body);
-  }
-
-  const originalJson = res.json.bind(res);
-
-  res.json = body => {
-    idempotency.set(key, {
-      status: res.statusCode,
-      body
-    });
-
-    return originalJson(body);
-  };
-
+  // Reutilização de respostas deve ocorrer dentro da rota, após autorização,
+  // usando tentativa persistida e comparação do corpo. Nunca no cache global.
   req.idempotencyKey = key;
 
   next();

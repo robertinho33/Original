@@ -20,11 +20,14 @@ const QRCode = require('qrcode');
 const app = express();
 
 const path = require('path');
+applyHttpFoundation(app);
 
 // Não servir código do backend, credenciais ou cópias de segurança.
 app.use((req, res, next) => {
-    const pathname = decodeURIComponent(req.path);
+    let pathname;
+    try { pathname = decodeURIComponent(req.path); } catch { return res.sendStatus(400); }
     if (/^\/(?:server(?:\/|\.)|node_modules|\.git|\.env|package(?:-lock)?\.json)/i.test(pathname) || /\.bak|(?:^|\/)backup/i.test(pathname)) return res.sendStatus(404);
+    if (!pathname.startsWith('/api/') && !require('./server/infrastructure/public-files').isPublicFile(pathname)) return res.sendStatus(404);
     next();
 });
 app.use(express.static(__dirname, { dotfiles: 'deny' }));
@@ -33,7 +36,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-applyHttpFoundation(app);
 const PORT = process.env.PORT || 3000;
 
 /*
