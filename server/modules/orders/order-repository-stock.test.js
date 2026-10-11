@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-let products, records, invalidations;
+let products, records, invalidations, transactionQueue = Promise.resolve();
 const db = {
   collection(name) {
     const snapshot = (id, data) => ({ id, ref: { name, id }, exists: Boolean(data), data: () => data });
@@ -12,14 +12,20 @@ const db = {
     };
   },
   async runTransaction(action) {
+    const previous = transactionQueue;
+    let release;
+    transactionQueue = new Promise(resolve => { release = resolve; });
+    await previous;
+    try {
     const writes = [];
     await action({
-      async get(ref) { const data = products.get(ref.id); return { exists: Boolean(data), data: () => data }; },
+      async get(ref) { const data = ref.name === 'products' ? products.get(ref.id) : records.find(item => item.ref.name === ref.name && item.ref.id === ref.id)?.data; return { exists: Boolean(data), data: () => data }; },
       update(ref, patch) { writes.push(() => products.set(ref.id, { ...products.get(ref.id), ...patch })); },
       create(ref, data) { writes.push(() => records.push({ ref, data })); },
       set(ref, data) { writes.push(() => records.push({ ref, data })); }
     });
     writes.forEach(write => write());
+    } finally { release(); }
   }
 };
 const firebasePath = require.resolve('../../infrastructure/firebase/firebase-admin');
@@ -48,4 +54,20 @@ test('estoque insuficiente não salva pedido nem faz baixa parcial', async () =>
 test('duas compras não consomem a mesma última unidade', async () => {
   reset(1); await repository.create(order); await assert.rejects(repository.create(order), /Estoque insuficiente/);
   assert.equal(products.get('a').stock, 0); assert.equal(records.filter(item => item.ref.name === 'orders').length, 1);
+});
+test('duas solicitações simultâneas da mesma tentativa salvam um pedido e uma baixa', async () => {
+  reset(1);
+  const attempt = { documentId: 'pix-attempt', fingerprint: 'original' };
+  const [first, repeated] = await Promise.all([repository.create(order, attempt), repository.create({ ...order, orderNumber: 'AUR-OTHER123' }, attempt)]);
+  assert.equal(first.orderNumber, repeated.orderNumber);
+  assert.equal(first.publicTrackingToken, repeated.publicTrackingToken);
+  assert.equal(products.get('a').stock, 0);
+  assert.equal(records.filter(item => item.ref.name === 'orders').length, 1);
+});
+test('mesma tentativa com dados diferentes não altera estoque nem pedido', async () => {
+  reset();
+  await repository.create(order, { documentId: 'pix-attempt', fingerprint: 'original' });
+  await assert.rejects(repository.create(order, { documentId: 'pix-attempt', fingerprint: 'changed' }), /dados desta tentativa mudaram/);
+  assert.equal(products.get('a').stock, 2);
+  assert.equal(records.filter(item => item.ref.name === 'orders').length, 1);
 });

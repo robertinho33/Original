@@ -873,6 +873,17 @@ function openCart() {
     );
 }
 
+document.getElementById('heroCampaignButton')?.addEventListener('click', event => {
+    const href = event.currentTarget.getAttribute('href');
+    if (href === '#cartItems') {
+        event.preventDefault();
+        openCart();
+    } else if (href?.startsWith('#') && !document.getElementById(href.slice(1))) {
+        event.preventDefault();
+        document.getElementById('colecao')?.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+
 function closeCart() {
     cartDrawerEl?.classList.remove('open');
     backdropEl?.classList.remove('show');

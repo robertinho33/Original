@@ -18,6 +18,7 @@ const DELIVERY_COST = 19.90;
 const CHECKOUT_DRAFT_STORAGE_KEY = 'nefer-checkout-draft';
 const CHECKOUT_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CHECKOUT_DRAFT_FIELD_IDS = [
+    'pickupSalon', 'pickupPhone', 'pickupRecipient',
     'customerName',
     'customerEmail',
     'customerPhone',
@@ -970,9 +971,12 @@ function updateDeliveryFields() {
 
     if (elements.addressFields) {
 
-        elements.addressFields.hidden =
-            !isDelivery;
+        elements.addressFields.hidden = false;
     }
+    document.getElementById('pickupFields').hidden = isDelivery;
+    ['pickupSalon', 'pickupPhone', 'pickupRecipient'].forEach(id => {
+        document.getElementById(id).disabled = isDelivery;
+    });
 
     if (!isDelivery) {
 
@@ -1215,7 +1219,14 @@ if (
     valid = false;
 }
 
-if (delivery === 'delivery') {
+if (delivery === 'pickup') {
+    ['pickupSalon', 'pickupPhone', 'pickupRecipient'].forEach(id => {
+        if (!validateRequired(document.getElementById(id))) valid = false;
+    });
+    const phone = document.getElementById('pickupPhone');
+    if (!validatePhone(phone.value)) { markInvalid(phone); valid = false; }
+}
+if (delivery === 'delivery' || delivery === 'pickup') {
 
     const requiredAddress = [
 
@@ -1346,14 +1357,12 @@ function getCustomerData() {
 
 function getAddressData() {
 
-    if (
-        getDeliveryMethod() !==
-        'delivery'
-    ) {
-        return null;
-    }
-
     return {
+        ...(getDeliveryMethod() === 'pickup' ? {
+            salonName: document.getElementById('pickupSalon').value.trim(),
+            phone: document.getElementById('pickupPhone').value.trim(),
+            recipient: document.getElementById('pickupRecipient').value.trim()
+        } : {}),
 
         cep:
             formatCep(
@@ -1560,6 +1569,20 @@ function createOrder() {
    ========================================================= */
 
 async function createPixPayment(order) {
+    const signatureData = {
+        items: order.items.map(item => ({ sku: item.sku, quantity: item.quantity })).sort((a, b) => a.sku.localeCompare(b.sku)),
+        customer: order.customer, delivery: order.delivery, coupon: order.coupon?.code || '', notes: order.notes || ''
+    };
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(signatureData)));
+    const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    let attempt;
+    try { attempt = JSON.parse(localStorage.getItem('nefer-pix-attempt') || 'null'); } catch {}
+    if (!attempt || attempt.fingerprint !== fingerprint) {
+        attempt = { fingerprint, id: crypto.randomUUID() };
+        try { localStorage.setItem('nefer-pix-attempt', JSON.stringify(attempt)); }
+        catch { throw new Error('Permita o armazenamento neste navegador para proteger seu pedido contra repetição.'); }
+    }
+    order.checkoutAttemptId = attempt.id;
 
     console.log(
         '[PIX] Criando pagamento:',
@@ -1578,7 +1601,8 @@ async function createPixPayment(order) {
                 },
 
                 body:
-                    JSON.stringify(order)
+                    JSON.stringify(order),
+                signal: AbortSignal.timeout(60000)
             }
         );
 

@@ -23,7 +23,7 @@ function normalizeOrder(doc) {
     };
 }
 
-async function create(order) {
+async function create(order, attempt = null) {
     const now = new Date().toISOString();
 
     const storedOrder = {
@@ -32,7 +32,8 @@ async function create(order) {
         updatedAt: now
     };
 
-    const docRef = ordersCollection().doc();
+    const docRef = attempt ? ordersCollection().doc(attempt.documentId) : ordersCollection().doc();
+    if (attempt) storedOrder.pixAttemptFingerprint = attempt.fingerprint;
     const db = getDb();
     const inventory = require('../payments/mercado-pago-stock');
     const grouped = inventory.aggregateItems(storedOrder.items);
@@ -40,7 +41,16 @@ async function create(order) {
         ...item, unitPrice: storedOrder.items.find(original => original.sku === item.sku).unitPrice
     })) };
     const plans = await inventory.prepareReservation(db, reservationOrder, 'production');
+    let reused = null;
     await db.runTransaction(async tx => {
+    if (attempt) {
+        const existing = await tx.get(docRef);
+        if (existing.exists) {
+            reused = { id: docRef.id, ...existing.data() };
+            require('./pix-attempt').checkAttempt(reused, attempt);
+            return;
+        }
+    }
     storedOrder.stock = await inventory.reserveInTransaction(tx, plans);
     tx.create(docRef, storedOrder);
 
@@ -67,6 +77,7 @@ async function create(order) {
     }
 
     });
+    if (reused) return reused;
     require('../catalog/catalog-storefront-service').invalidate();
     return {
         id: docRef.id,

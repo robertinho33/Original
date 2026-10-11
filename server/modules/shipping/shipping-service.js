@@ -12,7 +12,7 @@ function calculateShipping({
     return {
       method: 'pickup',
       cost: 0,
-      address: null
+      address
     };
   }
 

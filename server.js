@@ -314,6 +314,14 @@ app.post(
     async (req, res) => {
         try {
             const order = req.body || {};
+            const pixAttempts = require('./server/modules/orders/pix-attempt');
+            const attempt = pixAttempts.attemptFor(order);
+            const existingPix = await require('./server/infrastructure/firebase/firebase-admin').getFirestore().collection('orders').doc(attempt.documentId).get();
+            if (existingPix.exists) {
+                const saved = existingPix.data();
+                pixAttempts.checkAttempt(saved, attempt);
+                return res.json(pixAttempts.responseFor(saved));
+            }
 
             const orderId = String(
                 order.id || ''
@@ -487,10 +495,14 @@ app.post(
                             pixCity: payment.pix_city || '',
                             merchantName: payment.pix_merchant_name || '',
                             pixCode: payment.pix_code || '',
-                            pixGeneratedAt
+                            pixGeneratedAt,
+                            pixResponse: payment
                         }
-                    }
+                    }, attempt
                 );
+
+            // A resposta sempre usa o pedido vencedor da transação, inclusive
+            // quando duas solicitações prepararam QR Codes simultaneamente.
 
             let whatsappDelivery = { sent: false, reason: 'provider_error' };
             try {
@@ -501,60 +513,7 @@ app.post(
                 console.error('[WHATSAPP] Erro ao enviar confirmação:', persistedOrder.orderNumber, error.message);
             }
 
-            console.log(
-                '[NEFER ORDER] pedido salvo no Firestore:',
-                persistedOrder.id,
-                '|',
-                persistedOrder.orderNumber
-            );
-
-            console.log(
-                '[NEFER PIX] cobrança criada:',
-                orderId,
-                '| R$',
-                amount.toFixed(2),
-                '| cupom:',
-                coupon
-                    ? coupon.code
-                    : 'nenhum',
-                '|',
-                payment.txid
-            );
-
-            return res.json({
-                ...payment,
-                whatsappDelivery,
-                order: {
-                    orderNumber:
-                        persistedOrder.orderNumber,
-                    publicTrackingToken:
-                        persistedOrder.publicTrackingToken,
-                    subtotal:
-                        persistedOrder.totals.subtotal,
-                    discount:
-                        persistedOrder.totals.discount,
-                    shipping:
-                        persistedOrder.totals.shipping,
-                    total:
-                        persistedOrder.totals.total,
-                    coupon: coupon
-                        ? {
-                            id: coupon.id,
-                            code: coupon.code,
-                            discount:
-                                coupon.discount,
-                            discountType:
-                                coupon.discountType,
-                            affiliateName:
-                                coupon.affiliateName,
-                            influencerId:
-                                coupon.influencerId || '',
-                            commission:
-                                coupon.commission
-                        }
-                        : null
-                }
-            });
+            return res.json({ ...pixAttempts.responseFor(persistedOrder), whatsappDelivery });
 
         } catch (error) {
             console.error(
