@@ -33,13 +33,21 @@ async function create(order) {
     };
 
     const docRef = ordersCollection().doc();
-    const batch = getDb().batch();
-    batch.create(docRef, storedOrder);
+    const db = getDb();
+    const inventory = require('../payments/mercado-pago-stock');
+    const grouped = inventory.aggregateItems(storedOrder.items);
+    const reservationOrder = { ...storedOrder, items: grouped.map(item => ({
+        ...item, unitPrice: storedOrder.items.find(original => original.sku === item.sku).unitPrice
+    })) };
+    const plans = await inventory.prepareReservation(db, reservationOrder, 'production');
+    await db.runTransaction(async tx => {
+    storedOrder.stock = await inventory.reserveInTransaction(tx, plans);
+    tx.create(docRef, storedOrder);
 
     if (storedOrder.publicTrackingToken) {
         const logistics = storedOrder.logistics || {};
         const payment = storedOrder.payment || {};
-        batch.set(getDb().collection('orderTracking').doc(storedOrder.publicTrackingToken), {
+        tx.set(db.collection('orderTracking').doc(storedOrder.publicTrackingToken), {
                 id: storedOrder.orderNumber || docRef.id,
                 orderNumber: storedOrder.orderNumber || docRef.id,
                 createdAt: storedOrder.createdAt,
@@ -58,7 +66,8 @@ async function create(order) {
             });
     }
 
-    await batch.commit();
+    });
+    require('../catalog/catalog-storefront-service').invalidate();
     return {
         id: docRef.id,
         ...storedOrder

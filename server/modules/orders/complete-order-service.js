@@ -13,10 +13,6 @@ const {
 } = require('./order-persistence');
 
 const {
-  reserveOrderStock
-} = require('./order-orchestrator');
-
-const {
   createPaymentIntent
 } = require('../payments/payment-service');
 
@@ -48,8 +44,7 @@ async function createCompleteOrder(payload, requestId) {
     }
   });
 
-  const reservations =
-    await reserveOrderStock(order);
+  const reservations = order.stock.reservations;
 
   recordEvent({
     type: 'STOCK_RESERVED',
@@ -81,10 +76,7 @@ async function createCompleteOrder(payload, requestId) {
       {
         status: 'pending',
 
-        stock: {
-          status: 'reserved',
-          reservations
-        },
+        stock: order.stock,
 
         payment: {
           ...order.payment,

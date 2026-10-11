@@ -492,12 +492,9 @@ app.post(
 
             let whatsappDelivery = { sent: false, reason: 'provider_error' };
             try {
-                const { sendOrderWhatsApp } = require('./server/modules/communication/whatsapp-order-service');
-                const whatsapp = await sendOrderWhatsApp(persistedOrder);
+                const { notifyOrder } = require('./server/modules/communication/order-notifications');
+                const whatsapp = await notifyOrder(persistedOrder);
                 whatsappDelivery = whatsapp;
-                if (!whatsapp.sent) {
-                    console.warn('[WHATSAPP] Confirmação do pedido não enviada:', persistedOrder.orderNumber, whatsapp.reason);
-                }
             } catch (error) {
                 console.error('[WHATSAPP] Erro ao enviar confirmação:', persistedOrder.orderNumber, error.message);
             }
