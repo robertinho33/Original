@@ -317,8 +317,26 @@ export async function updateOrder(order) {
 }
 
 export async function findTrackingById(orderId) {
+    const number = String(orderId || '').trim().toUpperCase();
     let token = '';
-    try { token = localStorage.getItem('nefer-tracking-' + String(orderId || '').trim()) || ''; } catch {}
+    try { token = localStorage.getItem('nefer-tracking-' + number) || ''; } catch {}
+    if (!/^[a-f0-9]{64}$/i.test(token)) {
+        // Recover access for Mercado Pago checkouts created before local mapping was saved.
+        for (const getStore of [() => sessionStorage, () => localStorage]) {
+            try {
+                const store = getStore();
+                for (const key of ['nefer-mp-pending-order', 'nefer-last-confirmed-order']) {
+                    const saved = JSON.parse(store.getItem(key) || 'null');
+                    if (String(saved?.orderNumber || '').toUpperCase() === number && /^[a-f0-9]{64}$/i.test(saved?.trackingToken || '')) {
+                        token = saved.trackingToken;
+                        break;
+                    }
+                }
+            } catch {}
+            if (token) break;
+        }
+        if (token) { try { localStorage.setItem('nefer-tracking-' + number, token); } catch {} }
+    }
     return findTrackingByToken(token);
 }
 

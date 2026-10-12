@@ -84,6 +84,7 @@ export async function startCardCheckout(order) {
     sessionStorage.setItem('nefer-mp-pending-order', JSON.stringify({
         orderNumber: data.orderNumber, trackingToken: data.trackingToken, testMode: data.testMode, savedAt: Date.now()
     }));
+    try { localStorage.setItem('nefer-tracking-' + data.orderNumber, data.trackingToken); } catch {}
     // Conservar sacola e rascunho: redirecionamento não comprova pagamento.
     window.location.assign(url.href);
 }
