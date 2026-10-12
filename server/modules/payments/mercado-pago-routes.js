@@ -198,6 +198,7 @@ async function applyVerifiedPayment(config, payment, expectedToken = null) {
       // Datas de cobranças diferentes não representam a mesma sequência de eventos.
       if (!differentPayment && Number(order.payment.providerUpdatedAt || 0) >= updatedAt) return order.payment.status;
       const changes = { 'payment.status': status, 'payment.providerStatus': payment.status,
+        'payment.providerStatusDetail': String(payment.status_detail || '').slice(0, 120),
         'payment.paymentId': String(payment.id), 'payment.providerUpdatedAt': updatedAt,
         'payment.providerMethod': payment.payment_method_id || null, 'payment.providerType': payment.payment_type_id || null,
         updatedAt: new Date().toISOString() };
@@ -351,6 +352,38 @@ router.post('/reconcile', async (req, res) => {
     const status = await applyVerifiedPayment(config, payment, token);
     res.set('Cache-Control', 'no-store').json({ success: true, paymentStatus: status });
   } catch { res.status(503).json({ success: false, message: 'Não foi possível conferir o pagamento agora.' }); }
+});
+
+const diagnosticLimits = new Map();
+router.post('/payment-diagnostic', async (req, res) => {
+  const config = provider.configuration();
+  if (!config.enabled) return res.sendStatus(503);
+  const token = String(req.body?.token || ''), paymentId = String(req.body?.paymentId || '');
+  if (!/^[a-f0-9]{64}$/i.test(token) || !/^\d{1,24}$/.test(paymentId)) return res.sendStatus(400);
+  const now = Date.now(), key = `${req.ip}:${token}`;
+  for (const [entry, value] of diagnosticLimits) if (value.until < now) diagnosticLimits.delete(entry);
+  const limit = diagnosticLimits.get(key) || { count: 0, until: now + 60000 };
+  if (++limit.count > 10 || diagnosticLimits.size > 5000) return res.sendStatus(429);
+  diagnosticLimits.set(key, limit);
+  try {
+    const db = getFirestore(), names = collections(config);
+    const tracking = await db.collection(names.tracking).doc(token).get();
+    if (!tracking.exists) return res.sendStatus(404);
+    const snapshot = await db.collection(names.orders).doc(tracking.data().orderNumber).get();
+    if (!snapshot.exists || snapshot.data().publicTrackingToken !== token) return res.sendStatus(404);
+    const order = snapshot.data();
+    const account = await provider.request(config, '/users/me');
+    const testAccount = account.tags?.includes('test_user') === true;
+    if (String(account.id) !== config.collectorId || testAccount !== (config.mode === 'test')) throw new Error('Account mismatch');
+    const payment = await provider.request(config, `/v1/payments/${paymentId}`);
+    if (String(payment.id) !== paymentId || !provider.paymentMatches(payment, order, { ...config, testAccountVerified: testAccount })) return res.sendStatus(404);
+    // Read only: no preference, payment or stock mutation, and no payer/card fields returned.
+    res.set('Cache-Control', 'no-store').json({ success: true, data: {
+      paymentId: String(payment.id), orderNumber: order.orderNumber,
+      status: provider.paymentStatus(payment), statusDetail: String(payment.status_detail || '').slice(0, 120),
+      method: String(payment.payment_method_id || ''), type: String(payment.payment_type_id || '')
+    } });
+  } catch { res.status(503).json({ success: false, message: 'Não foi possível verificar o motivo no Mercado Pago agora.' }); }
 });
 
 router.get('/test-tracking/:token', async (req, res) => {

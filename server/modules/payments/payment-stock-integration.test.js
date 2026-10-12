@@ -16,7 +16,7 @@ test('production PIX approval deducts once; retries, pending and insufficient st
     ['orders/' + number, { orderNumber: number, publicTrackingToken: token, totals: { total: 20 },
       items: [{ sku: 'A', quantity: 2 }], payment: { status: 'pending', method: 'pix' },
       stock: { status: 'reserved', reservations: [{ sku: 'A', quantity: 2, kind: 'inventory' }] } }],
-    ['orderTracking/' + token, {}], ['products/p', { sku: 'A', stock: 10 }],
+    ['orderTracking/' + token, { orderNumber: number }], ['products/p', { sku: 'A', stock: 10 }],
     ['inventory/A', { quantity: 10, reserved: 2, available: 8 }]
   ]);
   let counter = 0;
@@ -64,6 +64,18 @@ test('production PIX approval deducts once; retries, pending and insufficient st
     return response.json();
   };
   try {
+    const diagnostic = async selectedToken => fetch(`http://127.0.0.1:${server.address().port}/payment-diagnostic`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: selectedToken, paymentId: '99' }) });
+    payment.status_detail = 'pending_waiting_payment';
+    payment.payer = { email: 'private@example.test' };
+    const beforeDiagnostic = JSON.stringify([...records]);
+    const details = await (await diagnostic(token)).json();
+    assert.equal(details.data.statusDetail, 'pending_waiting_payment');
+    assert.equal(JSON.stringify(details).includes('private@example.test'), false);
+    assert.equal(JSON.stringify([...records]), beforeDiagnostic);
+    assert.equal((await diagnostic('b'.repeat(64))).status, 404);
+    const reference = payment.external_reference; payment.external_reference = 'AUR-0000000000000002';
+    assert.equal((await diagnostic(token)).status, 404); payment.external_reference = reference;
     await reconcile();
     assert.equal(records.get('products/p').stock, 10);
     payment = { ...payment, status: 'approved', date_last_updated: '2026-10-12T11:00:00Z' };
