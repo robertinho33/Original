@@ -1,5 +1,5 @@
-const params = new URLSearchParams(location.search);
-const token = new URLSearchParams(location.hash.slice(1)).get('token') || params.get('token');
+import { readPaymentReturn } from './payment-return.js';
+const { query: params, token } = readPaymentReturn(location);
 if (/^[a-f0-9]{64}$/i.test(token || '')) {
     const section = document.createElement('section');
     section.className = 'tracking-card';

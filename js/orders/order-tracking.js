@@ -1,3 +1,4 @@
+import { readPaymentReturn } from './payment-return.js';
 import './mercado-pago-resume.js';
 import { reconcileReturnedPayment } from './mercado-pago-reconcile.js';
 'use strict';
@@ -213,8 +214,7 @@ elements.shareButton?.addEventListener('click', async () => {
     }
 });
 
-const params = new URLSearchParams(window.location.search);
-const token = new URLSearchParams(window.location.hash.slice(1)).get('token') || params.get('token');
+const { query: params, token } = readPaymentReturn(window.location);
 if (params.has('token')) { params.delete('token'); history.replaceState(null, '', window.location.pathname + (params.size ? '?' + params : '') + '#token=' + encodeURIComponent(token)); }
 const initialOrder = params.get('pedido');
 if (initialOrder && !token) {
