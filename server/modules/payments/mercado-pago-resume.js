@@ -37,6 +37,7 @@ async function resumeOrder(config, order, confirmPayment) {
       !preference.items?.length || preference.items.some(item => item.currency_id !== 'BRL') ||
       Math.round(total * 100) !== Math.round(Number(order.totals.total) * 100)) throw new Error('Preferência incompatível.');
   const renewed = await provider.request(config, path, {
+    payment_methods: provider.preferenceBody(order, config).payment_methods,
     expires: true, expiration_date_from: new Date(Date.now() - 60000).toISOString(),
     expiration_date_to: new Date(Date.now() + 30 * 60000).toISOString()
   }, undefined, 'PUT');

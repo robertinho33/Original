@@ -86,10 +86,12 @@ test('production PIX approval deducts once; retries, pending and insufficient st
   } finally { await new Promise(resolve => server.close(resolve)); provider.request = originalRequest; process.env = env; }
 });
 
-test('PIX preference enables bank transfers and excludes cards', () => {
+test('preference offers PIX, cards and boleto without excluding their payment types', () => {
   const body = provider.preferenceBody({ orderNumber: 'AUR-1', publicTrackingToken: 'a'.repeat(64),
     payment: { method: 'pix' }, totals: { total: 20 } }, { mode: 'production', storeUrl: 'https://example.test', notificationUrl: 'https://example.test/webhook' });
   const excluded = body.payment_methods.excluded_payment_types.map(type => type.id);
   assert.equal(excluded.includes('bank_transfer'), false);
-  assert.equal(excluded.includes('credit_card'), true);
+  assert.equal(excluded.includes('credit_card'), false);
+  assert.equal(excluded.includes('debit_card'), false);
+  assert.equal(excluded.includes('ticket'), false);
 });

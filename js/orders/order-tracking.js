@@ -163,6 +163,7 @@ function renderOrder(order) {
     elements.shipping.textContent = shippingDetails.join(' · ') ||
         (currentStep(order) >= 3 ? 'Os dados de rastreio ainda não foram informados.' : 'As informações de envio aparecerão após a postagem.');
 
+    document.dispatchEvent(new CustomEvent('nefer:tracking-loaded', { detail: { paymentStatus: order.paymentStatus, paymentProvider: order.paymentProvider } }));
     renderTimeline(order);
     elements.share.hidden = !order.trackingToken;
     if (order.trackingToken) {

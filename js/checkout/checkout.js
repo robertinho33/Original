@@ -1896,7 +1896,7 @@ async function handleSubmit(event) {
         );
 
 
-        if (['pix', 'card'].includes(order.payment.method)) {
+        if (['pix', 'card', 'boleto'].includes(order.payment.method)) {
             await startCardCheckout(order);
             return;
         } else {

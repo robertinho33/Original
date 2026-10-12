@@ -22,7 +22,7 @@ export function showPendingCardOrder() {
 }
 
 export async function configureCardCheckout() {
-    const choices = ['card', 'pix'].map(method => document.querySelector('input[name="paymentMethod"][value="' + method + '"]')).filter(Boolean);
+    const choices = ['card', 'pix', 'boleto'].map(method => document.querySelector('input[name="paymentMethod"][value="' + method + '"]')).filter(Boolean);
     choices.forEach(input => { input.disabled = true; });
     let retry = document.getElementById('retryCardConfiguration');
     if (!retry && choices.length) {
@@ -42,8 +42,8 @@ export async function configureCardCheckout() {
             input.disabled = false;
             const content = input.closest('label')?.querySelector('.choice-content');
             if (content) {
-                content.querySelector('strong').textContent = (input.value === 'pix' ? 'PIX' : 'Cartão') + (result.testMode ? ' — ambiente de teste' : '');
-                content.querySelector('small').textContent = result.testMode ? 'Simulação no Mercado Pago. Nenhum estoque real será descontado.' : 'Finalize no Mercado Pago. O pagamento será confirmado automaticamente após aprovação.';
+                content.querySelector('strong').textContent = ({ pix: 'PIX', card: 'Cartão', boleto: 'Boleto bancário' }[input.value]) + (result.testMode ? ' — ambiente de teste' : '');
+                content.querySelector('small').textContent = result.testMode ? 'Simulação no Mercado Pago. Nenhum estoque real será descontado.' : (input.value === 'card' ? 'Crédito e débito virtual Caixa, quando disponível. Você pode escolher outra forma no Mercado Pago.' : input.value === 'boleto' ? 'Gere o boleto no Mercado Pago. A liberação depende da confirmação do pagamento.' : 'Escolha PIX no Mercado Pago. Você pode trocar a forma antes de pagar.');
             }
         }
     } catch {

@@ -95,11 +95,11 @@ router.post('/checkout', async (req, res) => {
     let snapshot = await orderRef.get();
     let order = snapshot.exists ? snapshot.data() : null;
     if (!order) {
-      const method = payload.paymentMethod === 'pix' ? 'pix' : 'card';
+      const method = ['pix', 'boleto'].includes(payload.paymentMethod) ? payload.paymentMethod : 'card';
       const draft = await buildCompleteOrder({ ...payload, paymentMethod: method });
       order = { ...draft, orderNumber: claim.orderNumber,
         publicTrackingToken: randomBytes(32).toString('hex'),
-        payment: { method: payload.paymentMethod === 'pix' ? 'pix' : 'card', provider: 'mercado-pago', status: 'pending', mode: config.mode },
+        payment: { method, provider: 'mercado-pago', status: 'pending', mode: config.mode },
         status: 'pending' };
       if (config.mode === 'production' && process.env.MP_REAL_SALE_TEST_ONLY === 'true') stock.validatePilot(order);
       const reservationPlan = await stock.prepareReservation(db, order, config.mode === 'production' ? 'production_inventory' : config.mode);
@@ -199,7 +199,11 @@ async function applyVerifiedPayment(config, payment, expectedToken = null) {
       if (!differentPayment && Number(order.payment.providerUpdatedAt || 0) >= updatedAt) return order.payment.status;
       const changes = { 'payment.status': status, 'payment.providerStatus': payment.status,
         'payment.paymentId': String(payment.id), 'payment.providerUpdatedAt': updatedAt,
+        'payment.providerMethod': payment.payment_method_id || null, 'payment.providerType': payment.payment_type_id || null,
         updatedAt: new Date().toISOString() };
+      if (payment.payment_method_id === 'pix') changes['payment.method'] = 'pix';
+      else if (payment.payment_type_id === 'ticket') changes['payment.method'] = 'boleto';
+      else if (['credit_card', 'debit_card', 'prepaid_card'].includes(payment.payment_type_id)) changes['payment.method'] = 'card';
       if (status === 'paid') changes['payment.confirmedAt'] = payment.date_approved || new Date(updatedAt).toISOString();
       if (status === 'paid' && !['paid', 'refunded', 'chargeback'].includes(order.payment.status)) {
         if (order.stock?.status === 'released') {

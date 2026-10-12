@@ -1,15 +1,15 @@
 const params = new URLSearchParams(location.search);
-const token = new URLSearchParams(location.hash.slice(1)).get('token');
-if (params.get('mp_resume') === '1' && /^[a-f0-9]{64}$/i.test(token || '')) {
+const token = new URLSearchParams(location.hash.slice(1)).get('token') || params.get('token');
+if (/^[a-f0-9]{64}$/i.test(token || '')) {
     const section = document.createElement('section');
     section.className = 'tracking-card';
     const message = document.createElement('p');
     message.setAttribute('role', 'status');
-    message.textContent = 'Confira o pagamento anterior e retome este mesmo pedido, se ainda não estiver pago.';
+    message.textContent = 'Você pode retomar este mesmo pedido e escolher cartão, PIX ou boleto no Mercado Pago, após conferir a tentativa anterior.';
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'primary-link';
-    button.textContent = 'Retomar pagamento com cartão';
+    button.textContent = 'Retomar ou trocar pagamento';
     button.addEventListener('click', async () => {
         button.disabled = true;
         message.textContent = 'Conferindo seu pagamento no Mercado Pago…';
@@ -56,6 +56,10 @@ if (params.get('mp_resume') === '1' && /^[a-f0-9]{64}$/i.test(token || '')) {
             expire.disabled = false;
             button.disabled = false;
         }
+    });
+    section.hidden = true;
+    document.addEventListener('nefer:tracking-loaded', event => {
+        section.hidden = event.detail.paymentProvider !== 'mercado-pago' || !['pending', 'failed', 'cancelled', 'awaiting_payment'].includes(event.detail.paymentStatus);
     });
     section.append(message, button, expire);
     document.querySelector('main')?.append(section);

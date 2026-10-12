@@ -22,6 +22,10 @@ test('retomada verifica pagamento existente e renova somente a mesma preferênci
     if (method === 'PUT') {
       putCount++;
       assert.equal(body.expires, true);
+      const excluded = body.payment_methods.excluded_payment_types.map(item => item.id);
+      assert.equal(excluded.includes('bank_transfer'), false);
+      assert.equal(excluded.includes('ticket'), false);
+      assert.equal(excluded.includes('credit_card'), false);
       assert.ok(Date.parse(body.expiration_date_to) > Date.now());
     }
     return modifiedPreference;
@@ -30,12 +34,15 @@ test('retomada verifica pagamento existente e renova somente a mesma preferênci
   try {
     assert.match((await resumeOrder(config, order, confirm)).checkoutUrl, /same-preference/);
     assert.equal(putCount, 1);
+    results = [{ ...basePayment, status: 'rejected' }]; pagingTotal = 1;
+    assert.match((await resumeOrder(config, order, confirm)).checkoutUrl, /same-preference/);
+    assert.equal(putCount, 2);
     results = [{ ...basePayment, status: 'approved' }]; pagingTotal = 1;
     assert.deepEqual(await resumeOrder(config, order, confirm), { checkoutUrl: null, paymentStatus: 'paid' });
-    assert.equal(confirmed, 1); assert.equal(putCount, 1);
+    assert.equal(confirmed, 1); assert.equal(putCount, 2);
     results = [{ ...basePayment, status: 'in_process' }];
     await assert.rejects(resumeOrder(config, order, confirm), /análise/);
-    assert.equal(putCount, 1);
+    assert.equal(putCount, 2);
     results = [{ ...basePayment, status: 'approved', transaction_amount: 0.01 }];
     await assert.rejects(resumeOrder(config, order, confirm), /incompatível/);
     assert.equal(confirmed, 1);
@@ -43,7 +50,7 @@ test('retomada verifica pagamento existente e renova somente a mesma preferênci
     await assert.rejects(resumeOrder(config, order, confirm), /incompleta/);
     pagingTotal = 0; modifiedPreference = { ...preference, collector_id: 999 };
     await assert.rejects(resumeOrder(config, order, confirm), /incompatível/);
-    assert.equal(putCount, 1);
+    assert.equal(putCount, 2);
     await assert.rejects(resumeOrder(config, { ...order, payment: { ...order.payment, status: 'paid' } }, confirm), /não pode/);
   } finally { provider.request = original; }
 });

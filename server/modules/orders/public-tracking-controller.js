@@ -39,6 +39,7 @@ function publicFields(id, data = {}) {
         createdAt: safeDate(data.createdAt),
         status: String(data.status || 'pending'),
         paymentStatus: String(data.paymentStatus || 'pending'),
+        paymentProvider: String(data.paymentProvider || ''),
         paymentConfirmedAt: safeDate(data.paymentConfirmedAt),
         trackingToken: /^[a-f0-9]{64}$/i.test(String(id)) ? String(id) : '',
         logisticsStatus: String(data.logisticsStatus || 'pending'),
@@ -86,6 +87,7 @@ async function getPublicTracking(req, res) {
         const projection = snapshot.data();
         projection.status = order.status || 'pending';
         projection.paymentStatus = order.payment?.status || 'pending';
+        projection.paymentProvider = order.payment?.provider || '';
         projection.paymentConfirmedAt = order.payment?.confirmedAt || order.payment?.paidAt || null;
         res.set('Cache-Control', 'no-store');
         return res.json({ success: true, data: publicFields(snapshot.id, projection) });
