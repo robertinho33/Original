@@ -46,14 +46,6 @@ async function createCompleteOrder(payload, requestId) {
 
   const reservations = order.stock.reservations;
 
-  recordEvent({
-    type: 'STOCK_RESERVED',
-    orderNumber: order.orderNumber,
-    requestId,
-    data: {
-      reservations
-    }
-  });
 
   const payment =
     createPaymentIntent({

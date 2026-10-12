@@ -50,6 +50,25 @@ test('primeira venda real exige SKU, uma unidade e teto de total explícitos', (
 });
 
 const { releaseInTransaction } = require('./mercado-pago-stock');
+test('new inventory reservations keep physical stock and release availability without adding units', async () => {
+  const state = new Map([['product', { sku: 'A', price: 10, stock: 10 }], ['inventory', { sku: 'A', quantity: 10, reserved: 0, available: 10 }]]);
+  let writing = false;
+  const tx = { get: async ref => { assert.equal(writing, false); return { exists: state.has(ref), data: () => ({ ...state.get(ref) }) }; },
+    set: (ref, patch) => { writing = true; state.set(ref, { ...state.get(ref), ...patch }); },
+    update: () => { throw new Error('Physical stock must not change before payment.'); } };
+  const plan = [{ ref: 'product', inventoryRef: 'inventory', publicRef: 'public', documentId: 'a', sku: 'A', quantity: 2, unitPrice: 10 }];
+  const reservation = await reserveInTransaction(tx, plan);
+  assert.equal(state.get('product').stock, 10);
+  assert.equal(state.get('inventory').reserved, 2);
+  assert.equal(state.get('inventory').available, 8);
+  writing = false;
+  await assert.rejects(reserveInTransaction(tx, [{ ...plan[0], quantity: 9 }]), /Estoque insuficiente/);
+  const db = { collection: name => ({ doc: () => name === 'inventory' ? 'inventory' : 'public' }) };
+  assert.equal(await releaseInTransaction(tx, db, reservation), true);
+  assert.equal(state.get('inventory').quantity, 10);
+  assert.equal(state.get('inventory').reserved, 0);
+  assert.equal(state.get('inventory').available, 10);
+});
 test('devolução soma ao estoque atual e não devolve reserva já encerrada', async () => {
   let quantity = 4;
   const db = { collection: () => ({ doc: id => id }) };

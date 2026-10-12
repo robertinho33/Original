@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const ORDER_STATUSES = Object.freeze([
     'new',
@@ -245,6 +245,9 @@ function normalizeOrder(data = {}) {
         orderId: id,
         orderNumber:
             normalizeText(data.orderNumber || data.order_number) || id,
+        stock: data.stock && typeof data.stock === 'object' ? { ...data.stock } : null,
+        stockCommitted: data.stockCommitted === true,
+        stockCommittedAt: normalizeText(data.stockCommittedAt),
         publicTrackingToken:
             normalizeText(data.publicTrackingToken),
 

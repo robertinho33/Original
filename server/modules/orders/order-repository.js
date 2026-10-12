@@ -40,7 +40,7 @@ async function create(order, attempt = null) {
     const reservationOrder = { ...storedOrder, items: grouped.map(item => ({
         ...item, unitPrice: storedOrder.items.find(original => original.sku === item.sku).unitPrice
     })) };
-    const plans = await inventory.prepareReservation(db, reservationOrder, 'production');
+    const plans = await inventory.prepareReservation(db, reservationOrder, 'production_inventory');
     let reused = null;
     await db.runTransaction(async tx => {
     if (attempt) {

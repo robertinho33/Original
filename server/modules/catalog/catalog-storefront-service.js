@@ -15,18 +15,28 @@ function loadRuntime() {
 async function getPublicCatalog() {
     if (cache && Date.now() < cacheUntil) return cache;
     const base = loadRuntime();
+    // A compact stock snapshot keeps catalog browsing to one stock read per cache refresh.
+    let stockAvailability = {};
+    try {
+        const publicStock = await getFirestore().collection('settings').doc('publicStock').get();
+        stockAvailability = publicStock.exists ? (publicStock.data().stockAvailability || {}) : {};
+    } catch { /* The checkout still validates against authoritative inventory. */ }
+    const applyAvailability = products => products.map(product => {
+        const available = stockAvailability[product.sku];
+        return Number.isInteger(available) && available >= 0 ? { ...product, stock: available } : product;
+    });
     let suppliers;
     try {
         suppliers = await getFirestore().collection("catalogSuppliers").get();
     } catch (error) {
         console.warn("[CATALOG] Catálogo dinâmico indisponível; usando catálogo publicado:", error?.message || error);
-        cache = base;
+        cache = applyAvailability(base);
         cacheUntil = Date.now() + 30000;
         return cache;
     }
     const dynamicIds = new Set(suppliers.docs.map(document => document.id.toLowerCase()));
     if (!dynamicIds.size) {
-        cache = base;
+        cache = applyAvailability(base);
         cacheUntil = Date.now() + 30000;
         return cache;
     }
@@ -44,7 +54,7 @@ async function getPublicCatalog() {
         const sku = String(product.sku || "").trim().toLowerCase();
         if (sku) merged.set(sku, { id: document.id, ...product });
     }
-    cache = [...merged.values()];
+    cache = applyAvailability([...merged.values()]);
     cacheUntil = Date.now() + 30000;
     return cache;
 }

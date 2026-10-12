@@ -6,6 +6,7 @@ const { getFirestore } = require('../../infrastructure/firebase/firebase-admin')
 const { validateOrderPayload } = require('../../core/payload-validator');
 const { buildCompleteOrder } = require('../orders/complete-order-builder');
 const provider = require('./mercado-pago-provider');
+const { commitPaidStock } = require('../inventory/payment-stock');
 const stock = require('./mercado-pago-stock');
 const router = express.Router();
 
@@ -65,7 +66,7 @@ router.post('/checkout', async (req, res) => {
     payload.items = stock.aggregateItems(payload.items);
     if (!/^[a-f0-9-]{36}$/i.test(payload.checkoutAttemptId || '')) return res.status(400).json({ success: false, message: 'Identificador de tentativa inválido.' });
     const fingerprint = createHash('sha256').update(JSON.stringify({
-      items: payload.items, customer: payload.customer, address: payload.address,
+      items: payload.items, customer: payload.customer, address: payload.address, paymentMethod: payload.paymentMethod,
       deliveryMethod: payload.deliveryMethod, coupon: payload.coupon
     })).digest('hex');
     const db = getFirestore(), names = collections(config);
@@ -94,13 +95,14 @@ router.post('/checkout', async (req, res) => {
     let snapshot = await orderRef.get();
     let order = snapshot.exists ? snapshot.data() : null;
     if (!order) {
-      const draft = await buildCompleteOrder({ ...payload, paymentMethod: 'card' });
+      const method = payload.paymentMethod === 'pix' ? 'pix' : 'card';
+      const draft = await buildCompleteOrder({ ...payload, paymentMethod: method });
       order = { ...draft, orderNumber: claim.orderNumber,
         publicTrackingToken: randomBytes(32).toString('hex'),
-        payment: { method: 'card', provider: 'mercado-pago', status: 'pending', mode: config.mode },
+        payment: { method: payload.paymentMethod === 'pix' ? 'pix' : 'card', provider: 'mercado-pago', status: 'pending', mode: config.mode },
         status: 'pending' };
       if (config.mode === 'production' && process.env.MP_REAL_SALE_TEST_ONLY === 'true') stock.validatePilot(order);
-      const reservationPlan = await stock.prepareReservation(db, order, config.mode);
+      const reservationPlan = await stock.prepareReservation(db, order, config.mode === 'production' ? 'production_inventory' : config.mode);
       const pilotRef = config.mode === 'production' && process.env.MP_REAL_SALE_TEST_ONLY === 'true' ? db.collection('mpRealSalePilot').doc('first-sale') : null;
       await db.runTransaction(async tx => {
         const attempt = (await tx.get(attemptRef)).data();
@@ -181,27 +183,41 @@ async function applyVerifiedPayment(config, payment, expectedToken = null) {
       }
       const updatedAt = Date.parse(payment.date_last_updated || payment.date_created);
       if (!Number.isFinite(updatedAt)) throw new Error('Data inválida.');
-      if (order.payment.paymentId && String(order.payment.paymentId) !== String(payment.id) &&
-          ['paid', 'refunded', 'chargeback'].includes(order.payment.status)) {
-        // Uma segunda cobrança nunca substitui a primeira; requer revisão no painel do provedor.
-        if (provider.paymentStatus(payment) === 'paid') tx.update(ref, { 'payment.reviewRequired': true });
-        return order.payment.status;
-      }
-      if (Number(order.payment.providerUpdatedAt || 0) >= updatedAt) return order.payment.status;
       const status = provider.paymentStatus(payment);
+      const differentPayment = order.payment.paymentId &&
+        String(order.payment.paymentId) !== String(payment.id);
+      if (differentPayment) {
+        // Uma aprovação pode substituir uma tentativa pendente ou recusada.
+        // Depois da aprovação, preservar a cobrança para acompanhar estornos.
+        const settled = ['paid', 'refunded', 'chargeback'].includes(order.payment.status);
+        if (settled || status !== 'paid') {
+          if (status === 'paid') tx.update(ref, { 'payment.reviewRequired': true });
+          return order.payment.status;
+        }
+      }
+      // Datas de cobranças diferentes não representam a mesma sequência de eventos.
+      if (!differentPayment && Number(order.payment.providerUpdatedAt || 0) >= updatedAt) return order.payment.status;
       const changes = { 'payment.status': status, 'payment.providerStatus': payment.status,
         'payment.paymentId': String(payment.id), 'payment.providerUpdatedAt': updatedAt,
         updatedAt: new Date().toISOString() };
       if (status === 'paid') changes['payment.confirmedAt'] = payment.date_approved || new Date(updatedAt).toISOString();
-      if (status === 'paid' && order.stock?.status === 'reserved') changes['stock.status'] = 'committed';
-      if (status === 'paid' && order.stock?.status === 'released') changes['payment.reviewRequired'] = true;
+      if (status === 'paid' && !['paid', 'refunded', 'chargeback'].includes(order.payment.status)) {
+        if (order.stock?.status === 'released') {
+          changes['payment.reviewRequired'] = true;
+        } else if (order.stock?.status === 'reserved' && !order.stock.reservations?.every(item => item.kind === 'inventory')) {
+          // Legacy reservations already deducted products.stock before payment.
+          Object.assign(changes, { 'stock.status': 'committed', stockCommitted: true, stockCommittedAt: changes.updatedAt });
+        } else {
+          Object.assign(changes, await commitPaidStock(db, tx, order, { testMode: config.mode === 'test' }));
+        }
+      }
       tx.update(ref, changes);
       tx.set(db.collection(names.tracking).doc(order.publicTrackingToken), {
         paymentStatus: status, paymentConfirmedAt: changes['payment.confirmedAt'] || null,
         updatedAt: changes.updatedAt
       }, { merge: true });
       return status;
-    });
+    }).then(status => { if (config.mode === 'production') require('../catalog/catalog-storefront-service').invalidate(); return status; });
 }
 
 router.post('/webhook', async (req, res) => {

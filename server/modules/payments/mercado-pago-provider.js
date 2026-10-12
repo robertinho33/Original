@@ -46,7 +46,9 @@ function preferenceBody(order, config) {
     back_urls: { success: tracking, pending: tracking, failure: tracking },
     auto_return: 'approved',
     payment_methods: { excluded_payment_types: [
-      { id: 'ticket' }, { id: 'bank_transfer' }, { id: 'atm' }
+      ...(order.payment?.method === 'pix'
+        ? [{ id: 'ticket' }, { id: 'atm' }, { id: 'credit_card' }, { id: 'debit_card' }, { id: 'prepaid_card' }]
+        : [{ id: 'ticket' }, { id: 'bank_transfer' }, { id: 'atm' }])
     ], installments: 1 },
     expires: true,
     expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString()

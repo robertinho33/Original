@@ -4420,6 +4420,7 @@ function renderOrders(content, orders) {
 
                         <td>
                             ${renderStatus(paymentStatus)}
+                            ${order.stock?.reviewRequired ? `<small role="alert">Pagamento recebido — estoque requer revisão.</small>` : ""}
                         </td>
 
 

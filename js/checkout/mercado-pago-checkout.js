@@ -22,39 +22,37 @@ export function showPendingCardOrder() {
 }
 
 export async function configureCardCheckout() {
-    const card = document.querySelector('input[name="paymentMethod"][value="card"]');
-    if (!card) return;
-    card.disabled = true;
-    const content = card.closest('label')?.querySelector('.choice-content');
+    const choices = ['card', 'pix'].map(method => document.querySelector('input[name="paymentMethod"][value="' + method + '"]')).filter(Boolean);
+    choices.forEach(input => { input.disabled = true; });
     let retry = document.getElementById('retryCardConfiguration');
-    if (!retry) {
-        retry = document.createElement('button');
-        retry.id = 'retryCardConfiguration';
-        retry.type = 'button';
-        retry.textContent = 'Verificar cartão novamente';
-        retry.hidden = true;
-        retry.addEventListener('click', () => configureCardCheckout());
-        card.closest('label')?.after(retry);
+    if (!retry && choices.length) {
+        retry = document.createElement('button'); retry.id = 'retryCardConfiguration'; retry.type = 'button';
+        retry.textContent = 'Verificar pagamento novamente';
+        retry.addEventListener('click', () => configureCardCheckout()); choices[0].closest('label')?.after(retry);
     }
-    retry.hidden = true;
-    if (content) content.querySelector('small').textContent = 'Verificando pagamento com cartão…';
+    if (retry) retry.hidden = true;
     try {
-        const response = await fetch(`${API}/configuration`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(60000)
-        });
+        const response = await fetch(API + '/configuration', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(60000) });
         const result = await response.json();
-        const testPreview = new URLSearchParams(window.location.search).get('mp_test') === '1';
+        const preview = new URLSearchParams(window.location.search).get('mp_test') === '1';
         const livePreview = new URLSearchParams(window.location.search).get('mp_live_test') === '1';
-        if (!response.ok || !result.enabled || (result.testMode && !testPreview) || (result.previewOnly && !livePreview)) throw new Error();
-        card.disabled = false;
-        content.querySelector('strong').textContent = result.testMode ? 'Cartão — ambiente de teste' : 'Cartão de crédito';
-        content.querySelector('small').textContent = result.testMode
-            ? 'Simulação no Mercado Pago. Use somente uma conta compradora e cartões de teste.'
-            : 'Pague no Mercado Pago. Débito virtual Caixa quando disponível. Confira as condições antes de pagar.';
+        if (result.previewOnly && !livePreview) throw new Error();
+        if (!response.ok || !result.enabled || (result.testMode && !preview)) throw new Error();
+        for (const input of choices) {
+            input.disabled = false;
+            const content = input.closest('label')?.querySelector('.choice-content');
+            if (content) {
+                content.querySelector('strong').textContent = (input.value === 'pix' ? 'PIX' : 'Cartão') + (result.testMode ? ' — ambiente de teste' : '');
+                content.querySelector('small').textContent = result.testMode ? 'Simulação no Mercado Pago. Nenhum estoque real será descontado.' : 'Finalize no Mercado Pago. O pagamento será confirmado automaticamente após aprovação.';
+            }
+        }
     } catch {
-        if (content) content.querySelector('small').textContent = 'Não foi possível verificar o cartão agora. Tente novamente.';
-        retry.hidden = false;
-        if (card.checked) document.querySelector('input[name="paymentMethod"][value="pix"]')?.click();
+        if (retry) retry.hidden = false;
+        choices.forEach(input => {
+            const small = input.closest('label')?.querySelector('small');
+            if (small) small.textContent = 'Pagamento temporariamente indisponível.';
+        });
+        if (choices.some(input => input.checked)) document.querySelector('input[name="paymentMethod"][value="cash"]')?.click();
     }
 }
 
@@ -62,7 +60,7 @@ export async function startCardCheckout(order) {
     const payload = {
         items: order.items.map(item => ({ sku: item.sku, quantity: item.quantity })),
         customer: order.customer, address: order.delivery?.address || null,
-        deliveryMethod: order.delivery?.method || 'delivery', coupon: order.coupon || null
+        paymentMethod: order.payment.method, deliveryMethod: order.delivery?.method || 'delivery', coupon: order.coupon || null
     };
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(payload)));
     const fingerprint = [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('');
@@ -78,7 +76,7 @@ export async function startCardCheckout(order) {
         body: JSON.stringify({ ...payload, checkoutAttemptId: attempt.id })
     });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok || !result.success) throw new Error(result.message || 'Não foi possível abrir o pagamento com cartão.');
+    if (!response.ok || !result.success) throw new Error(result.message || 'Não foi possível abrir o pagamento.');
     const data = result.data;
     const url = new URL(data.checkoutUrl);
     if (url.protocol !== 'https:' || !['www.mercadopago.com.br', 'www.mercadopago.com', 'sandbox.mercadopago.com.br', 'sandbox.mercadopago.com'].includes(url.hostname)) throw new Error('Destino de pagamento inválido.');
