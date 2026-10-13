@@ -42,6 +42,7 @@ function preferenceBody(order, config) {
     items: [{ id: order.orderNumber, title: `Pedido NEFER ${order.orderNumber}`,
       quantity: 1, currency_id: 'BRL', unit_price: total }],
     external_reference: order.orderNumber,
+    statement_descriptor: 'NEFER COSMETICS',
     notification_url: config.notificationUrl,
     back_urls: { success: tracking, pending: tracking, failure: tracking },
     auto_return: 'approved',
