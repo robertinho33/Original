@@ -21,6 +21,9 @@ const app = express();
 
 const path = require('path');
 applyHttpFoundation(app);
+require('./server/infrastructure/admin-page-access').registerAdminPageAccess(app, {
+    express, getAuth: require('./server/infrastructure/firebase/firebase-admin').getAuth
+});
 
 // Não servir código do backend, credenciais ou cópias de segurança.
 app.use((req, res, next) => {

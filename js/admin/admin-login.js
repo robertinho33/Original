@@ -1,6 +1,7 @@
 import {
     loginAdmin,
-    observeAdminAuth
+    observeAdminAuth,
+    establishAdminPageSession
 } from '../auth/admin-auth.js';
 
 const form =
@@ -70,10 +71,12 @@ if (form) {
 
             try {
 
-                await loginAdmin(
+                const user = await loginAdmin(
                     email,
                     password
                 );
+
+                await establishAdminPageSession(user);
 
                 window.location.replace(
                     './admin.html'

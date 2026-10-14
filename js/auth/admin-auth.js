@@ -32,7 +32,17 @@ export async function loginAdmin(email, password) {
 }
 
 export async function logoutAdmin() {
+    const response = await fetch('/api/admin-session/logout', { method: 'POST', credentials: 'same-origin' });
+    if (!response.ok) throw new Error('Não foi possível encerrar a sessão. Tente novamente.');
     await signOut(auth);
+}
+
+export async function establishAdminPageSession(user) {
+    const token = await user.getIdToken();
+    const response = await fetch('/api/admin-session', {
+        method: 'POST', credentials: 'same-origin', headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Não foi possível validar o acesso ao painel. Entre novamente.');
 }
 
 export function observeAdminAuth(callback) {

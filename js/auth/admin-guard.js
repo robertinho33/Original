@@ -28,7 +28,7 @@ export function waitForAuthorizedAdmin() {
                 if (!isAuthorizedAdmin(user)) {
 
                     window.location.replace(
-                        './admin-login.html'
+                        '/index.html'
                     );
 
                     reject(
