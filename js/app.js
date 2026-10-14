@@ -510,9 +510,10 @@ async function renderCatalog() {
         return;
     }
 
+    productsEl.setAttribute("aria-busy", "true");
     productsEl.innerHTML = `
         <div class="catalog-empty">
-            <p>Carregando catÃ¡logo...</p>
+            <p>Carregando catálogo...</p>
         </div>
     `;
 
@@ -544,6 +545,7 @@ async function renderCatalog() {
                 ? items
                 : products;
 
+        productsEl.setAttribute('aria-busy', 'false');
         if (!items.length) {
             if (catalogResultCountEl) {
                 catalogResultCountEl.textContent = '0 produtos';
@@ -551,7 +553,7 @@ async function renderCatalog() {
             productsEl.innerHTML = `
                 <div class="catalog-empty">
                     <p>
-                        Nenhum produto encontrado.
+                        Nenhum produto encontrado. Tente outro termo ou ajuste os filtros.
                     </p>
                 </div>
             `;
@@ -582,7 +584,7 @@ async function renderCatalog() {
                                 role="img"
                                 aria-label="Foto do produto indisponível"
                             >
-                                ${product.sourceId === 'truss' ? 'Imagem indisponível' : 'NEFER'}
+                                ${product.sourceId === 'truss' ? 'Imagem indisponível' : 'Fios Perfeitos'}
                             </div>
                         `;
 
@@ -682,7 +684,7 @@ async function renderCatalog() {
                                     )}"
                                     aria-label="Adicionar ${escapeAttribute(
                                         product.name
-                                    )} Ã  sacola"
+                                    )} à sacola"
                                 >
                                     Adicionar <span aria-hidden="true">→</span>
                                 </button>
@@ -707,11 +709,12 @@ async function renderCatalog() {
         productsEl.innerHTML = `
             <div class="catalog-empty">
                 <p>
-                    NÃ£o foi poss­veíl carregar o catálogo.
+                    Não foi possível carregar o catálogo.
                 </p>
             </div>
         `;
 
+        productsEl.setAttribute('aria-busy', 'false');
         renderPagination(0);
     }
 }
@@ -752,7 +755,7 @@ function renderCart() {
     if (!cart.length) {
         cartItemsEl.innerHTML = `
             <div class="empty">
-                Sua sacola estÃ¡ esperando por vocÃª.
+                Sua sacola está esperando por você.
             </div>
         `;
 
@@ -943,7 +946,7 @@ function updateModalStock(product) {
 
     if (stock <= 0) {
         productModalStockEl.textContent =
-            'Produto indisponÃ­vel';
+            'Produto indisponível';
 
         productModalStockEl.dataset.stockState =
             'out';
@@ -953,8 +956,8 @@ function updateModalStock(product) {
 
     productModalStockEl.textContent =
         stock === 1
-            ? '1 unidade disponÃ­vel'
-            : `${stock} unidades disponÃ­veis`;
+            ? '1 unidade disponível'
+            : `${stock} unidades disponíveis`;
 
     productModalStockEl.dataset.stockState =
         'available';
@@ -1033,13 +1036,13 @@ function renderProductModal(product) {
         String(
             product.description || ''
         ).trim() ||
-        'DescriÃ§Ã£o nÃ£o informada.';
+        'Descrição não informada.';
 
     const weight =
         String(
             product.weight || ''
         ).trim() ||
-        'Peso nÃ£o informado';
+        'Peso não informado';
 
     if (productModalCategoryEl) {
         productModalCategoryEl.textContent =
@@ -1088,8 +1091,8 @@ function renderProductModal(product) {
 
         modalAddToCartButton.textContent =
             unavailable
-                ? 'IndisponÃ­vel'
-                : 'Adicionar Ã  sacola';
+                ? 'Indisponível'
+                : 'Adicionar à sacola';
     }
 }
 
@@ -1114,7 +1117,7 @@ function openProductModal(
 
     if (!product) {
         console.error(
-            'Produto nÃ£o encontrado para o SKU:',
+            'Produto não encontrado para o SKU:',
             normalizedSku
         );
 
@@ -1183,7 +1186,7 @@ function closeProductModal() {
             false;
 
         modalAddToCartButton.textContent =
-            'Adicionar Ã  sacola';
+            'Adicionar à sacola';
     }
 
     const trigger =
@@ -1482,7 +1485,7 @@ async function init() {
 
     } catch (error) {
         console.error(
-            'Erro ao inicializar aplicaÃ§Ã£o:',
+            'Erro ao inicializar aplicação:',
             error
         );
 
@@ -1490,11 +1493,11 @@ async function init() {
             productsEl.innerHTML = `
                 <div class="catalog-error">
                     <h3>
-                        NÃ£o foi possÃ­vel carregar o catÃ¡logo.
+                        Não foi possível carregar o catálogo.
                     </h3>
 
                     <p>
-                        Tente atualizar a pÃ¡gina.
+                        Tente atualizar a página.
                     </p>
                 </div>
             `;

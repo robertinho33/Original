@@ -6,6 +6,7 @@ import { loadProducts as loadCatalogProducts } from '../catalog/catalog-service.
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
 import { fetchAddressByCep } from './address-service.js';
+import { calcularFretePorCEP } from './shipping-service.js';
 /* =========================================================
    CONFIGURAÇÃO
    ========================================================= */
@@ -14,7 +15,9 @@ installProductImageFallbacks();
 
 const CART_STORAGE_KEY = 'aurea-cart';
 const CATALOG_PATH = '../data/produtos.csv';
-const DELIVERY_COST = 19.90;
+let selectedShipping = null;
+let shippingDestination = '';
+let shippingRequest = 0;
 const CHECKOUT_DRAFT_STORAGE_KEY = 'nefer-checkout-draft';
 const CHECKOUT_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CHECKOUT_DRAFT_FIELD_IDS = [
@@ -165,6 +168,10 @@ const elements = {
 
 function saveCheckoutDraft() {
     try {
+        if (!document.getElementById('rememberCheckout')?.checked) {
+            localStorage.removeItem(CHECKOUT_DRAFT_STORAGE_KEY);
+            return;
+        }
         const fields = {};
         CHECKOUT_DRAFT_FIELD_IDS.forEach(id => {
             const input = document.getElementById(id);
@@ -172,6 +179,7 @@ function saveCheckoutDraft() {
         });
 
         const draft = {
+            consented: true,
             expiresAt: Date.now() + CHECKOUT_DRAFT_TTL_MS,
             fields,
             deliveryMethod: getCheckedOption('deliveryMethod', 'delivery'),
@@ -193,11 +201,13 @@ function restoreCheckoutDraft() {
         if (!raw) return false;
 
         const draft = JSON.parse(raw);
-        if (!draft || !Number.isFinite(draft.expiresAt) || draft.expiresAt <= Date.now()) {
+        if (!draft || draft.consented !== true || !Number.isFinite(draft.expiresAt) || draft.expiresAt <= Date.now()) {
             localStorage.removeItem(CHECKOUT_DRAFT_STORAGE_KEY);
             return false;
         }
 
+        const remember = document.getElementById('rememberCheckout');
+        if (remember) remember.checked = true;
         CHECKOUT_DRAFT_FIELD_IDS.forEach(id => {
             const input = document.getElementById(id);
             const value = draft.fields?.[id];
@@ -208,7 +218,7 @@ function restoreCheckoutDraft() {
             const value = draft[name];
             if (typeof value !== 'string') return;
             const option = document.querySelector(`input[name="${name}"][value="${CSS.escape(value)}"]`);
-            if (option) option.checked = true;
+            if (option && !option.disabled) option.checked = true;
         });
 
         return true;
@@ -753,7 +763,48 @@ function getShipping() {
 
     return getDeliveryMethod() === 'pickup'
         ? 0
-        : DELIVERY_COST;
+        : selectedShipping?.cost || 0;
+}
+
+function invalidateShipping() {
+    shippingRequest++;
+    selectedShipping = null;
+    shippingDestination = '';
+    document.getElementById('shippingOptions')?.replaceChildren();
+    const status = document.getElementById('shippingStatus');
+    if (status) status.textContent = 'Informe seu CEP e calcule as opções de entrega.';
+    renderCart();
+}
+
+async function calculateShippingOptions() {
+    invalidateShipping();
+    if (getDeliveryMethod() === 'pickup') return;
+    const cep = onlyDigits(elements.cep.value);
+    const status = document.getElementById('shippingStatus');
+    const container = document.getElementById('shippingOptions');
+    const button = document.getElementById('calculateShipping');
+    if (cep.length !== 8) { status.textContent = 'Informe um CEP com 8 dígitos.'; return; }
+    const requestId = shippingRequest;
+    button.disabled = true;
+    status.textContent = 'Consultando preços e prazos dos Correios…';
+    try {
+        const quote = await calcularFretePorCEP(cep, cart);
+        if (requestId !== shippingRequest || onlyDigits(elements.cep.value) !== cep) return;
+        const options = quote.options.filter(option => typeof option.code === 'string' && Number.isFinite(option.cost) && option.cost > 0 && Number.isInteger(option.transitDays) && Number.isInteger(option.preparationDays));
+        if (!options.length) throw new Error('Nenhuma opção de entrega disponível. Fale com nosso atendimento.');
+        for (const option of options) {
+            const label = document.createElement('label'); label.className = 'choice-card shipping-choice';
+            const input = document.createElement('input'); input.type = 'radio'; input.name = 'shippingService'; input.value = option.code;
+            const content = document.createElement('span'); content.className = 'choice-content';
+            const title = document.createElement('strong'); title.textContent = option.name + ' — ' + formatCurrency(option.cost);
+            const detail = document.createElement('small'); detail.textContent = 'Transporte: ' + option.transitDays + ' dia(s) úteis após postagem. Preparação: até ' + option.preparationDays + ' dia(s) úteis após confirmação do pagamento.' + (option.homeDelivery ? '' : ' Poderá ser necessária retirada em unidade dos Correios.');
+            content.append(title, detail); label.append(input, content); container.append(label);
+            input.addEventListener('change', () => { selectedShipping = option; shippingDestination = cep; renderCart(); });
+        }
+        status.textContent = 'Escolha uma opção. O valor será conferido novamente antes do pagamento.';
+    } catch (error) {
+        if (requestId === shippingRequest) status.textContent = error.message || 'Não foi possível consultar a entrega.';
+    } finally { button.disabled = false; }
 }
 
 
@@ -940,7 +991,7 @@ function renderCart() {
         elements.checkoutShipping.textContent =
             shipping > 0
                 ? formatCurrency(shipping)
-                : 'Grátis';
+                : getDeliveryMethod() === 'pickup' ? 'Grátis' : 'Calcule a entrega';
     }
 
     if (elements.checkoutDiscount) {
@@ -952,7 +1003,7 @@ function renderCart() {
 
     if (elements.checkoutTotal) {
         elements.checkoutTotal.textContent =
-            formatCurrency(total);
+            formatCurrency(total) + (getDeliveryMethod() === 'delivery' && !selectedShipping ? ' + entrega' : '');
     }
 }
 
@@ -962,6 +1013,8 @@ function renderCart() {
    ========================================================= */
 
 function updateDeliveryFields() {
+    const panel = document.querySelector('.shipping-quote-panel');
+    if (panel) panel.hidden = getDeliveryMethod() === 'pickup';
 
     const deliveryMethod =
         getDeliveryMethod();
@@ -1405,6 +1458,9 @@ function getPaymentMethod() {
    ========================================================= */
 
 function createOrder() {
+    if (getDeliveryMethod() === 'delivery' && (!selectedShipping || shippingDestination !== onlyDigits(elements.cep.value))) {
+        throw new Error('Calcule a entrega e selecione uma opção dos Correios antes de confirmar.');
+    }
 
     const items =
         getCartItems();
@@ -1508,6 +1564,7 @@ function createOrder() {
         })),
 
         subtotal,
+        shippingSelection: getDeliveryMethod() === 'delivery' ? { code: selectedShipping.code, cost: selectedShipping.cost } : null,
 
         discount,
 
@@ -1773,6 +1830,7 @@ async function registerNonPixOrder(order) {
             customer: order.customer,
             address: order.delivery?.address || null,
             deliveryMethod: order.delivery?.method || 'delivery',
+            shippingSelection: order.shippingSelection,
             discount: Number(order.discount || 0),
             paymentMethod: order.payment?.method || 'pix',
             coupon: order.coupon || null
@@ -1890,10 +1948,6 @@ async function handleSubmit(event) {
         const order =
             createOrder();
 
-        console.log(
-            '[CHECKOUT] Pedido criado:',
-            order
-        );
 
 
         if (['pix', 'card', 'boleto'].includes(order.payment.method)) {
@@ -1964,6 +2018,9 @@ async function handleSubmit(event) {
    ========================================================= */
 
 function setupEvents() {
+    document.getElementById('calculateShipping')?.addEventListener('click', calculateShippingOptions);
+    elements.cep?.addEventListener('input', invalidateShipping);
+    elements.deliveryMethod.forEach(input => input.addEventListener('change', invalidateShipping));
 
     elements.form?.addEventListener(
         'submit',
@@ -2103,6 +2160,7 @@ function setupEvents() {
    ========================================================= */
 
 async function init() {
+    restoreCheckoutDraft();
     showPendingCardOrder();
     void configureCardCheckout();
     // Recuperar acesso ao pedido sem guardar nome, endereço ou código PIX.
@@ -2179,7 +2237,6 @@ async function init() {
 
         renderCart();
 
-        restoreCheckoutDraft();
         updateDeliveryFields();
         setupEvents();
 
@@ -2211,4 +2268,5 @@ async function init() {
 }
 
 
+document.getElementById("rememberCheckout")?.addEventListener("change", saveCheckoutDraft);
 init();

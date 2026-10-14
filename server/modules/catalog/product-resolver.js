@@ -142,6 +142,7 @@ async function resolveProduct(sku, quantity) {
 }
 
 module.exports = {
+  findProductBySku,
   resolveProduct,
   normalizePrice,
   normalizeStock

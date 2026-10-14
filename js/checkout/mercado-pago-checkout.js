@@ -59,7 +59,7 @@ export async function configureCardCheckout() {
 export async function startCardCheckout(order) {
     const payload = {
         items: order.items.map(item => ({ sku: item.sku, quantity: item.quantity })),
-        customer: order.customer, address: order.delivery?.address || null,
+        customer: order.customer, address: order.delivery?.address || null, shippingSelection: order.shippingSelection,
         paymentMethod: order.payment.method, deliveryMethod: order.delivery?.method || 'delivery', coupon: order.coupon || null
     };
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(payload)));

@@ -67,7 +67,7 @@ router.post('/checkout', async (req, res) => {
     if (!/^[a-f0-9-]{36}$/i.test(payload.checkoutAttemptId || '')) return res.status(400).json({ success: false, message: 'Identificador de tentativa inválido.' });
     const fingerprint = createHash('sha256').update(JSON.stringify({
       items: payload.items, customer: payload.customer, address: payload.address, paymentMethod: payload.paymentMethod,
-      deliveryMethod: payload.deliveryMethod, coupon: payload.coupon
+      deliveryMethod: payload.deliveryMethod, coupon: payload.coupon, shippingSelection: payload.shippingSelection
     })).digest('hex');
     const db = getFirestore(), names = collections(config);
     const attemptRef = db.collection(names.attempts).doc(payload.checkoutAttemptId);

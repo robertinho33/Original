@@ -86,6 +86,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/shipping', require('./server/modules/shipping/shipping-routes'));
 
 app.use('/api/admin', aureaAdminRoutes);
 app.get('/api/storefront/hero', require('./server/modules/admin/controllers/marketing-controller').publicHero);
@@ -362,7 +363,12 @@ app.post(
                 address: order.delivery?.address || order.address || null,
                 deliveryMethod
             });
-            const shipping = customerShipping.shipping.cost;
+            const shippingDetails = deliveryMethod === 'delivery'
+                ? await require('./server/modules/shipping/correios-service').authorizeShipping({
+                    cep: customerShipping.shipping.address.cep,
+                    items: requestedItems, selection: order.shippingSelection
+                  }) : null;
+            const shipping = shippingDetails?.cost ?? customerShipping.shipping.cost;
 
             const { prepareOrder } = require('./server/modules/orders/order-authority');
 
@@ -482,6 +488,7 @@ app.post(
                 await orderRepository.create(
                     {
                         ...authoritativeOrder,
+                        shippingDetails,
                         deliveryMethod,
                         address: customerShipping.shipping.address,
                         publicTrackingToken,

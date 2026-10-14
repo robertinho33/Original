@@ -32,6 +32,14 @@ async function buildCompleteOrder(payload = {}) {
     );
   }
 
+  let shippingDetails = null;
+  if (customerShipping.shipping.method === 'delivery') {
+    shippingDetails = await require('../shipping/correios-service').authorizeShipping({
+      cep: customerShipping.shipping.address.cep, items, selection: payload.shippingSelection
+    });
+    customerShipping.shipping.cost = shippingDetails.cost;
+  }
+
   const order = await prepareOrder({
     items,
     shipping: customerShipping.shipping.cost,
@@ -61,6 +69,7 @@ async function buildCompleteOrder(payload = {}) {
 
   return {
     ...order,
+    shippingDetails,
     address,
     deliveryMethod: customerShipping.shipping.method,
     customer: customerShipping.customer,

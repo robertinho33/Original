@@ -2,6 +2,9 @@ const apiRoot = window.location.protocol === 'file:'
     ? 'http://localhost:3000'
     : '';
 
+function safeCampaignUrl(value) {
+    try { const url = new URL(value, location.origin); return url.protocol === 'https:' || (url.origin === location.origin && url.protocol === location.protocol) ? url.href : ''; } catch { return ''; }
+}
 async function loadCampaignHero() {
     try {
         const response = await fetch(`${apiRoot}/api/storefront/hero`, { headers: { Accept: 'application/json' } });
@@ -25,14 +28,16 @@ async function loadCampaignHero() {
         const button = document.getElementById('heroCampaignButton');
         if (button) {
             if (campaign.buttonLabel) button.firstChild.textContent = campaign.buttonLabel;
-            if (campaign.buttonUrl) button.href = campaign.buttonUrl;
+            const buttonUrl = safeCampaignUrl(campaign.buttonUrl);
+            if (campaign.buttonUrl && buttonUrl) button.href = buttonUrl;
         }
 
         const image = document.getElementById('heroCampaignImage');
         const card = image?.closest('.hero-card');
-        if (image && campaign.imageUrl) {
-            image.src = campaign.imageUrl;
-            image.alt = campaign.imageAlt || campaign.title || 'Banner da campanha NEFER';
+        const imageUrl = safeCampaignUrl(campaign.imageUrl);
+        if (image && campaign.imageUrl && imageUrl) {
+            image.src = imageUrl;
+            image.alt = campaign.imageAlt || campaign.title || 'Banner da campanha Fios Perfeitos';
             image.hidden = false;
             card?.classList.add('has-campaign-image');
         }

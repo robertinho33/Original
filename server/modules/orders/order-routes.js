@@ -16,11 +16,11 @@ const {
 } = require('./order-controller');
 
 const router = express.Router();
-router.post('/', createOrderController);
+router.post('/', requireAdmin, createOrderController);
 
 router.post('/complete', createCompleteOrderController);
 
-router.post('/transaction', createOrderWithPaymentController);
+router.post('/transaction', requireAdmin, createOrderWithPaymentController);
 
 router.get('/', requireAdmin, listOrdersController);
 

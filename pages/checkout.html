@@ -7,12 +7,13 @@
 
     <meta
         name="description"
-        content="Finalize seu pedido na NEFER COSMETICS."
+        content="Finalize seu pedido na Fios Perfeitos."
     >
 
-    <title>Checkout | NEFER COSMETICS</title>
+    <title>Checkout | Fios Perfeitos</title>
 
     <link rel="stylesheet" href="../css/checkout.css">
+    <link rel="stylesheet" href="../css/store-refresh.css">
 </head>
 
 <body>
@@ -20,7 +21,7 @@
     <header class="checkout-header">
         <div class="checkout-header-inner">
             <a href="../index.html" class="brand">
-                <span class="brand-name">NEFER</span>
+                <span class="brand-name">Fios Perfeitos</span>
                 <span class="brand-subtitle">COSMETICS</span>
             </a>
 
@@ -59,7 +60,7 @@
                         <div>
                             <h2>Seus dados</h2>
                             <p>Precisamos dessas informações para registrar seu pedido.</p>
-                            <p class="checkout-draft-note">Se você sair e voltar depois, seus dados ficam salvos neste aparelho por até 7 dias.</p>
+                            <p class="checkout-draft-note">Seus dados de preenchimento só ficam salvos neste aparelho se você escolher essa opção.</p>
                         </div>
                     </div>
 
@@ -112,6 +113,7 @@
 
                     </div>
 
+                    <label class="whatsapp-opt-in" for="rememberCheckout"><input type="checkbox" id="rememberCheckout" name="rememberCheckout"><span>Salvar meu preenchimento neste aparelho por até 7 dias. Evite em aparelhos compartilhados.</span></label>
                     <label class="whatsapp-opt-in" for="whatsappOptIn">
                         <input type="checkbox" id="whatsappOptIn" name="whatsappOptIn">
                         <span>Quero receber a confirmação e os detalhes deste pedido pelo WhatsApp.</span>
@@ -151,7 +153,7 @@
                             </span>
 
                             <span class="choice-price">
-                                R$ 19,90
+                                Por CEP
                             </span>
 
                         </label>
@@ -311,6 +313,14 @@
                 </section>
 
 
+                <section class="checkout-section shipping-quote-panel" aria-labelledby="shippingQuoteTitle">
+                    <h2 id="shippingQuoteTitle">Opções dos Correios</h2>
+                    <p>Informe o CEP acima para consultar preço e prazo. Para retirada, não há frete.</p>
+                    <button type="button" id="calculateShipping" class="primary">Calcular entrega</button>
+                    <p id="shippingStatus" role="status" aria-live="polite">Informe seu CEP e calcule as opções de entrega.</p>
+                    <div id="shippingOptions" class="shipping-options"></div>
+                    <a class="text-link" href="https://wa.me/5511986215473" target="_blank" rel="noopener noreferrer">Precisa de ajuda? Fale com a loja ↗</a>
+                </section>
                 <!-- PAGAMENTO -->
                 <section class="checkout-section">
 
@@ -455,7 +465,7 @@
 
                         <div class="summary-line">
                             <span>Entrega</span>
-                            <strong id="checkoutShipping">R$ 19,90</strong>
+                            <strong id="checkoutShipping">Calcule a entrega</strong>
                         </div>
 
                         <div class="summary-line">
@@ -615,8 +625,9 @@
 
 
     <footer class="checkout-footer">
+        <p><a href="trocas.html">Trocas, devoluções e entrega</a> · <a href="privacidade.html">Privacidade</a> · <a href="https://wa.me/5511986215473" target="_blank" rel="noopener noreferrer">Atendimento</a></p>
         <p>
-            © NEFER COSMETICS — Todos os direitos reservados.
+            © Fios Perfeitos — CNPJ 53.398.872/0001-16.
         </p>
     </footer>
 
