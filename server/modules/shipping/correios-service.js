@@ -11,7 +11,7 @@ function configuration(env = process.env) {
     contract: env.CORREIOS_CONTRACT, dr: env.CORREIOS_DR,
     length: Number(env.CORREIOS_PACKAGE_LENGTH_CM), width: Number(env.CORREIOS_PACKAGE_WIDTH_CM),
     height: Number(env.CORREIOS_PACKAGE_HEIGHT_CM), tare: Number(env.CORREIOS_PACKAGE_TARE_GRAMS),
-    maxItems: Number(env.CORREIOS_PACKAGE_MAX_ITEMS), preparationDays: Number(env.CORREIOS_PREPARATION_DAYS),
+    maxItems: Number(env.CORREIOS_PACKAGE_MAX_ITEMS), preparationDays: Number(String(env.CORREIOS_PREPARATION_DAYS ?? '').trim() || '3'),
     codes: String(env.CORREIOS_SERVICE_CODES || '03298,03220,03158,03140').split(',').map(s=>s.trim())
   };
   if (!/^\d{8}$/.test(config.origin) || !config.user || !config.password || !config.contract || !/^\d{1,2}$/.test(config.dr || '') ||

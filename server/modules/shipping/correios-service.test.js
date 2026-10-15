@@ -1,8 +1,16 @@
 'use strict';
 const test=require('node:test'); const assert=require('node:assert/strict');
-const {quoteShipping,authorizeShipping}=require('./correios-service');
+const {quoteShipping,authorizeShipping,configuration}=require('./correios-service');
 const env={CORREIOS_USERNAME:'test',CORREIOS_ACCESS_CODE:'test',CORREIOS_CONTRACT:'123',CORREIOS_DR:'10',CORREIOS_PACKAGE_LENGTH_CM:'25',CORREIOS_PACKAGE_WIDTH_CM:'20',CORREIOS_PACKAGE_HEIGHT_CM:'15',CORREIOS_PACKAGE_TARE_GRAMS:'100',CORREIOS_PACKAGE_MAX_ITEMS:'4',CORREIOS_PREPARATION_DAYS:'2'};
 const input={cep:'01310-100',items:[{sku:'TEST',quantity:2}]};
+test('preparação usa três dias úteis por padrão e preserva configuração explícita',()=>{
+  for(const value of [undefined,'','   ']) {
+    assert.equal(configuration({...env,CORREIOS_PREPARATION_DAYS:value}).preparationDays,3);
+  }
+  assert.equal(configuration({...env,CORREIOS_PREPARATION_DAYS:'3'}).preparationDays,3);
+  assert.equal(configuration({...env,CORREIOS_PREPARATION_DAYS:'0'}).preparationDays,0);
+  assert.throws(()=>configuration({...env,CORREIOS_PREPARATION_DAYS:'abc'}));
+});
 function dependencies(change={}) {
   return {env,token:'test',lookup:async()=>({active:true,shippingWeightGrams:500}),fetch:async url=>{
     const parsed=new URL(url); const code=parsed.pathname.split('/').pop();
