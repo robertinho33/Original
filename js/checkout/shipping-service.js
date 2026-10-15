@@ -1,3 +1,10 @@
+export async function consultarDisponibilidadeEntrega() {
+    const response = await fetch('/api/shipping/configuration', {cache:'no-store',signal:AbortSignal.timeout(15000)});
+    const result = await response.json().catch(()=>null);
+    if (!response.ok || typeof result?.enabled !== 'boolean') throw new Error('Não foi possível verificar a entrega agora.');
+    return result;
+}
+
 export async function calcularFretePorCEP(cepDestino, itensCarrinho) {
     const response = await fetch('/api/shipping/quote', {
         method:'POST',headers:{'Content-Type':'application/json'},

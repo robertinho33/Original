@@ -18,7 +18,9 @@ function configuration(env = process.env) {
       ![config.length,config.width,config.height].every(n=>Number.isFinite(n)&&n>0&&n<=100) ||
       !Number.isFinite(config.tare) || config.tare<0 || !Number.isInteger(config.maxItems) || config.maxItems<1 ||
       !Number.isInteger(config.preparationDays) || config.preparationDays<0 ||
-      !config.codes.length || config.codes.length>10 || config.codes.some(code=>!SERVICES[code])) throw unavailable();
+      !config.codes.length || config.codes.length>10 || config.codes.some(code=>!SERVICES[code])) {
+    throw new AppError('A entrega pelos Correios ainda não está disponível nesta loja. Consulte as opções pelo nosso atendimento.', {status:503,code:'SHIPPING_NOT_CONFIGURED'});
+  }
   return config;
 }
 

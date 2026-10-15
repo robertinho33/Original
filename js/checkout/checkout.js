@@ -6,7 +6,7 @@ import { loadProducts as loadCatalogProducts } from '../catalog/catalog-service.
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
 import { fetchAddressByCep } from './address-service.js';
-import { calcularFretePorCEP } from './shipping-service.js';
+import { calcularFretePorCEP, consultarDisponibilidadeEntrega } from './shipping-service.js';
 /* =========================================================
    CONFIGURAÇÃO
    ========================================================= */
@@ -18,6 +18,8 @@ const CATALOG_PATH = '../data/produtos.csv';
 let selectedShipping = null;
 let shippingDestination = '';
 let shippingRequest = 0;
+let shippingAvailable = null;
+const shippingUnavailableMessage = 'A entrega pelos Correios ainda não está disponível. Consulte nosso atendimento antes de finalizar.';
 const CHECKOUT_DRAFT_STORAGE_KEY = 'nefer-checkout-draft';
 const CHECKOUT_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CHECKOUT_DRAFT_FIELD_IDS = [
@@ -772,13 +774,13 @@ function invalidateShipping() {
     shippingDestination = '';
     document.getElementById('shippingOptions')?.replaceChildren();
     const status = document.getElementById('shippingStatus');
-    if (status) status.textContent = 'Informe seu CEP e calcule as opções de entrega.';
+    if (status) status.textContent = shippingAvailable === false ? shippingUnavailableMessage : 'Informe seu CEP e calcule as opções de entrega.';
     renderCart();
 }
 
 async function calculateShippingOptions() {
     invalidateShipping();
-    if (getDeliveryMethod() === 'pickup') return;
+    if (getDeliveryMethod() === 'pickup' || shippingAvailable === false) return;
     const cep = onlyDigits(elements.cep.value);
     const status = document.getElementById('shippingStatus');
     const container = document.getElementById('shippingOptions');
@@ -804,7 +806,26 @@ async function calculateShippingOptions() {
         status.textContent = 'Escolha uma opção. O valor será conferido novamente antes do pagamento.';
     } catch (error) {
         if (requestId === shippingRequest) status.textContent = error.message || 'Não foi possível consultar a entrega.';
-    } finally { button.disabled = false; }
+    } finally { button.disabled = shippingAvailable === false; }
+}
+
+async function configureShippingAvailability() {
+    const button = document.getElementById('calculateShipping');
+    const status = document.getElementById('shippingStatus');
+    if (!button || !status) return;
+    button.disabled = true;
+    button.textContent = 'Verificando entrega…';
+    try {
+        const result = await consultarDisponibilidadeEntrega();
+        shippingAvailable = result.enabled;
+        status.textContent = result.enabled ? 'Informe seu CEP e calcule as opções de entrega.' : shippingUnavailableMessage;
+    } catch {
+        shippingAvailable = null;
+        status.textContent = 'Não foi possível verificar a entrega agora. Tente calcular novamente ou fale com nosso atendimento.';
+    } finally {
+        button.disabled = shippingAvailable === false;
+        button.textContent = shippingAvailable === false ? 'Entrega sob consulta' : 'Calcular entrega';
+    }
 }
 
 
@@ -2018,6 +2039,7 @@ async function handleSubmit(event) {
    ========================================================= */
 
 function setupEvents() {
+    void configureShippingAvailability();
     document.getElementById('calculateShipping')?.addEventListener('click', calculateShippingOptions);
     elements.cep?.addEventListener('input', invalidateShipping);
     elements.deliveryMethod.forEach(input => input.addEventListener('change', invalidateShipping));
