@@ -46,6 +46,7 @@ router.use((req, res, next) => {
    ============================================================ */
 
 router.get("/dashboard", adminController.dashboard);
+router.get('/store-visits', require('../storefront-engagement').visitStats);
 router.get("/core/dashboard", adminCoreController.dashboard);
 router.get("/core/orders", adminCoreController.orders);
 router.get("/core/products", adminCoreController.products);

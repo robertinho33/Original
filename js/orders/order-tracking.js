@@ -1,4 +1,5 @@
 import { readPaymentReturn } from './payment-return.js';
+import {mountProductReviews} from './product-reviews.js';
 import './mercado-pago-resume.js';
 import { reconcileReturnedPayment } from './mercado-pago-reconcile.js';
 'use strict';
@@ -166,6 +167,7 @@ function renderOrder(order) {
 
     document.dispatchEvent(new CustomEvent('nefer:tracking-loaded', { detail: { paymentStatus: order.paymentStatus, paymentProvider: order.paymentProvider } }));
     renderTimeline(order);
+    void mountProductReviews(elements.result,order.trackingToken);
     elements.share.hidden = !order.trackingToken;
     if (order.trackingToken) {
         elements.share.dataset.url = window.location.origin + window.location.pathname + '#token=' + encodeURIComponent(order.trackingToken);

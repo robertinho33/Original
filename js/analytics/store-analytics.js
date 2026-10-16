@@ -1,4 +1,5 @@
 import {analyticsPage, readConsent, CONSENT_KEY, CONSENT_TTL, createAnalyticsController} from './analytics-policy.js';
+import {recordStoreVisit} from './visit-counter.js';
 
 const page = analyticsPage(location.href);
 const browserAllows = () => navigator.globalPrivacyControl !== true && navigator.doNotTrack !== '1';
@@ -23,6 +24,10 @@ const controller = createAnalyticsController({page, allowed:browserAllows, load:
         pageView(params) { sdk.logEvent(analytics, 'page_view', params); }
     };
 }});
+function chooseStatistics(value) {
+    void controller.choose(value);
+    if (value === 'granted' && page && browserAllows()) void recordStoreVisit();
+}
 
 function clearAnalyticsCookies() {
     for (const item of document.cookie.split(';')) {
@@ -49,7 +54,7 @@ function showPreferences() {
         button.addEventListener('click',()=>{
             try { localStorage.setItem(CONSENT_KEY, JSON.stringify({value,savedAt:Date.now()})); } catch { /* Apply the choice for this page even when storage is blocked. */ }
             if (value === 'denied') clearAnalyticsCookies();
-            void controller.choose(value);
+            chooseStatistics(value);
             panel.hidden = true;
         });
         actions.append(button);
@@ -61,12 +66,12 @@ if (page) {
     const preferences = document.createElement('button'); preferences.type = 'button'; preferences.className = 'analytics-preferences'; preferences.textContent = 'Preferências de estatísticas';
     preferences.addEventListener('click',showPreferences); (footer || document.body).append(preferences);
     let choice = null; try { choice = readConsent(localStorage.getItem(CONSENT_KEY)); } catch {}
-    if (choice) { if (choice === 'denied') clearAnalyticsCookies(); void controller.choose(choice); }
+    if (choice) { if (choice === 'denied') clearAnalyticsCookies(); chooseStatistics(choice); }
     else showPreferences();
     window.addEventListener('storage',event=>{
         if (event.key !== CONSENT_KEY && event.key !== null) return;
         const value = readConsent(event.newValue);
         if (value !== 'granted') clearAnalyticsCookies();
-        void controller.choose(value);
+        chooseStatistics(value);
     });
 }

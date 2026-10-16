@@ -1,6 +1,7 @@
 'use strict';
 
 import { subscribeCatalog } from './catalog/catalog-service.js';
+import {hydrateRatings} from './catalog/product-ratings.js';
 
 import {
     loadProducts,
@@ -666,6 +667,7 @@ async function renderCatalog() {
                             </p>
 
                             ${source}
+                            <div class="product-rating" data-rating-sku="${escapeAttribute(product.sku)}" aria-live="polite">☆☆☆☆☆ · Carregando avaliações</div>
                             ${weight}
                             ${stock}
 
@@ -695,6 +697,7 @@ async function renderCatalog() {
             }).join('');
 
         renderPagination(total);
+        void hydrateRatings(productsEl);
 
     } catch (error) {
         console.error(

@@ -87,6 +87,7 @@ app.use(cors({
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/shipping', require('./server/modules/shipping/shipping-routes'));
+app.use('/api/storefront/engagement', require('./server/modules/storefront-engagement').router);
 
 app.use('/api/admin', aureaAdminRoutes);
 app.get('/api/storefront/hero', require('./server/modules/admin/controllers/marketing-controller').publicHero);
