@@ -7,6 +7,7 @@ import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';
 import { fetchAddressByCep } from './address-service.js';
 import { calcularFretePorCEP, consultarDisponibilidadeEntrega } from './shipping-service.js';
+import {shippingPrompt,shippingFailureMessage} from './shipping-feedback.js';
 /* =========================================================
    CONFIGURAÇÃO
    ========================================================= */
@@ -19,6 +20,7 @@ let selectedShipping = null;
 let shippingDestination = '';
 let shippingRequest = 0;
 let shippingAvailable = null;
+let shippingQuoteError = '';
 const shippingUnavailableMessage = 'A entrega pelos Correios ainda não está disponível. Consulte nosso atendimento antes de finalizar.';
 const CHECKOUT_DRAFT_STORAGE_KEY = 'nefer-checkout-draft';
 const CHECKOUT_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -769,12 +771,13 @@ function getShipping() {
 }
 
 function invalidateShipping() {
+    shippingQuoteError = '';
     shippingRequest++;
     selectedShipping = null;
     shippingDestination = '';
     document.getElementById('shippingOptions')?.replaceChildren();
     const status = document.getElementById('shippingStatus');
-    if (status) status.textContent = shippingAvailable === false ? shippingUnavailableMessage : 'Informe seu CEP e calcule as opções de entrega.';
+    if (status) status.textContent = shippingPrompt({cep:elements.cep?.value,method:getDeliveryMethod(),available:shippingAvailable,unavailableMessage:shippingUnavailableMessage});
     renderCart();
 }
 
@@ -810,7 +813,10 @@ async function calculateShippingOptions() {
         }
         status.textContent = 'Escolha uma opção. O valor será conferido novamente antes do pagamento.';
     } catch (error) {
-        if (requestId === shippingRequest) status.textContent = error.message || 'Não foi possível consultar a entrega.';
+        if (requestId === shippingRequest) {
+            shippingQuoteError = shippingFailureMessage(error.code,error.message);
+            status.textContent = shippingQuoteError;
+        }
     } finally { button.disabled = shippingAvailable === false; }
 }
 
@@ -823,7 +829,7 @@ async function configureShippingAvailability() {
     try {
         const result = await consultarDisponibilidadeEntrega();
         shippingAvailable = result.enabled;
-        status.textContent = result.enabled ? 'Informe seu CEP e calcule as opções de entrega.' : shippingUnavailableMessage;
+        status.textContent = shippingPrompt({cep:elements.cep?.value,method:getDeliveryMethod(),available:shippingAvailable,unavailableMessage:shippingUnavailableMessage});
     } catch {
         shippingAvailable = null;
         status.textContent = 'Não foi possível verificar a entrega agora. Tente calcular novamente ou fale com nosso atendimento.';
@@ -1485,7 +1491,7 @@ function getPaymentMethod() {
 
 function createOrder() {
     if (getDeliveryMethod() === 'delivery' && (!selectedShipping || shippingDestination !== onlyDigits(elements.cep.value))) {
-        throw new Error('Calcule a entrega e selecione uma opção dos Correios antes de confirmar.');
+        throw new Error(shippingQuoteError || 'Calcule a entrega e selecione uma opção dos Correios antes de confirmar.');
     }
 
     const items =

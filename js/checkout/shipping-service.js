@@ -12,6 +12,10 @@ export async function calcularFretePorCEP(cepDestino, itensCarrinho) {
         signal:AbortSignal.timeout(30000)
     });
     const result = await response.json().catch(()=>({}));
-    if (!response.ok || !result.success || !Array.isArray(result.data?.options)) throw new Error(result.message || result.error?.message || 'Não foi possível calcular a entrega. Tente novamente ou fale com nosso atendimento.');
+    if (!response.ok || !result.success || !Array.isArray(result.data?.options)) {
+        const error = new Error(result.message || result.error?.message || 'Não foi possível calcular a entrega. Tente novamente ou fale com nosso atendimento.');
+        error.code = result.code || '';
+        throw error;
+    }
     return result.data;
 }

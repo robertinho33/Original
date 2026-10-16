@@ -47,6 +47,8 @@ router.use((req, res, next) => {
 
 router.get("/dashboard", adminController.dashboard);
 router.get('/store-visits', require('../storefront-engagement').visitStats);
+router.get('/shipping/melhor-envio/status',require('../shipping/melhor-envio-oauth').status);
+router.post('/shipping/melhor-envio/connect',require('../shipping/melhor-envio-oauth').start);
 router.get("/core/dashboard", adminCoreController.dashboard);
 router.get("/core/orders", adminCoreController.orders);
 router.get("/core/products", adminCoreController.products);

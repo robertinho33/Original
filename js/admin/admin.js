@@ -60,6 +60,7 @@ function showAdminToast(message, type = 'info') {
 
 const adminApi = window.AdminAPI;
 import {renderStoreVisits} from './modules/store-visits.js';
+import {renderFreightConnection} from './modules/freight-connection.js';
 
 import { updateProduct } from './product-repository.js';
 
@@ -516,6 +517,7 @@ async function load(section) {
     if (section === 'dashboard') {
         await renderOperationalEnvironment(root);
         await renderStoreVisits(root);
+        await renderFreightConnection(root);
 
         updateHeader(
             'Dashboard',

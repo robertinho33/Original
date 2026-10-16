@@ -9,6 +9,8 @@ function diagnose(dependencies,details) {
 }
 const unavailable=()=>new AppError('Não foi possível consultar PAC e SEDEX agora. Tente novamente mais tarde.',{status:503,code:'SHIPPING_UNAVAILABLE'});
 function configuration(env=process.env) {
+    const oauth=env.MELHOR_ENVIO_AUTH_MODE==='oauth';
+    if(oauth) require('./melhor-envio-oauth').configuration(env);
     const config={
         token:String(env.MELHOR_ENVIO_TOKEN || '').trim(),
         userAgent:String(env.MELHOR_ENVIO_USER_AGENT || '').trim(),
@@ -19,7 +21,7 @@ function configuration(env=process.env) {
         fixedWeight:env.SHIPPING_WEIGHT_MODE === 'fixed' ? Number(env.SHIPPING_PACKAGE_FIXED_WEIGHT_GRAMS) : null,
         preparationDays:Number(String(env.CORREIOS_PREPARATION_DAYS ?? '').trim() || 3)
     };
-    if(!config.token || /[\r\n]/.test(config.token) || !config.userAgent.includes('@') || /[\r\n]/.test(config.userAgent) ||
+    if((!oauth&&!config.token) || /[\r\n]/.test(config.token) || !config.userAgent.includes('@') || /[\r\n]/.test(config.userAgent) ||
         !/^\d{8}$/.test(config.origin) || ![config.length,config.width,config.height].every(n=>Number.isFinite(n)&&n>0&&n<=100) ||
         String(env.CORREIOS_PACKAGE_TARE_GRAMS ?? '').trim()==='' || !Number.isFinite(config.tare) || config.tare<0 ||
         !Number.isInteger(config.maxItems) || config.maxItems<1 || !Number.isFinite(config.maxWeight) || config.maxWeight<=0 || config.maxWeight>2000 ||
@@ -56,6 +58,7 @@ async function quoteShipping({cep,items},dependencies={}) {
         volumes:[{length:config.length,width:config.width,height:config.height,weight:Math.ceil(weight)/1000,insurance:Number(insurance.toFixed(2))}],
         services:'1,2',options:{receipt:false,own_hand:false}};
     let rows;
+    if((dependencies.env || process.env).MELHOR_ENVIO_AUTH_MODE==='oauth') config.token=await require('./melhor-envio-oauth').service(dependencies).accessToken();
     try {
         const response=await (dependencies.fetch || fetch)('https://www.melhorenvio.com.br/api/v2/me/shipment/calculate',{
             method:'POST',headers:{Authorization:'Bearer '+config.token,'Content-Type':'application/json',Accept:'application/json','User-Agent':config.userAgent},

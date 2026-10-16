@@ -3,6 +3,7 @@ const router=require('express').Router();
 const {AppError}=require('../../core/app-error');
 const {quoteShipping,configuration}=require('./shipping-provider');
 const requests=new Map();
+router.get('/melhor-envio/callback',require('./melhor-envio-oauth').callback);
 router.get('/configuration',(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   try {configuration();res.json({enabled:true});}
