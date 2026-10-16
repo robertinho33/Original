@@ -45,7 +45,7 @@ test('missing shipping weights, overweight and capacity do not call provider',as
     await assert.rejects(quoteShipping({...input,items:[{sku:'A',quantity:4}]},dependencies({fetch:notCalled})),e=>e.code==='PACKAGE_CAPACITY');
 });
 test('only valid single-package PAC and SEDEX with price and deadline are offered',async()=>{
-    const rows=[result(),result({id:99}),result({error:'unavailable'}),result({custom_price:'bad'}),result({custom_delivery_time:null}),result({packages:[{},{}]}),result({company:{id:9}})];
+    const rows=[result(),result({id:99}),result({error:'unavailable'}),result({custom_price:'bad'}),result({custom_delivery_time:null}),result({custom_delivery_time:''}),result({packages:[{},{}]}),result({company:{id:9}})];
     const quote=await quoteShipping(input,dependencies({fetch:async()=>({ok:true,json:async()=>rows})}));
     assert.equal(quote.options.length,1);
 });
@@ -59,4 +59,17 @@ test('checkout requotes server side and rejects altered or stale service selecti
     await assert.rejects(authorizeShipping({...input,selection:{code:'03298',cost:25.9}},dependencies()),e=>e.code==='SHIPPING_QUOTE_CHANGED');
     const shipping=await authorizeShipping({...input,selection:{code:'me:1',cost:25.9}},dependencies());
     assert.equal(shipping.cost,25.9);assert.equal(shipping.provider,'melhor_envio');assert.equal(shipping.carrier,'Correios');
+});
+test('provider authentication errors retain safe diagnostic codes without leaking body or credentials',async()=>{
+    for(const [status,code] of [[401,'SHIPPING_AUTH_FAILED'],[403,'SHIPPING_ACCESS_DENIED'],[422,'SHIPPING_PROVIDER_REQUEST_INVALID']]) {
+        const diagnostics=[];
+        await assert.rejects(quoteShipping(input,dependencies({diagnostic:data=>diagnostics.push(data),fetch:async()=>({ok:false,status,json:async()=>({token:'private-test-token',address:'private'})})})),error=>error.code===code&&!/private|token/i.test(error.message));
+        assert.deepEqual(diagnostics,[{stage:'http',provider:'melhor_envio',httpStatus:status}]);
+    }
+});
+test('invalid service diagnostics contain only safe flags, not upstream error text',async()=>{
+    const diagnostics=[];
+    await assert.rejects(quoteShipping(input,dependencies({diagnostic:data=>diagnostics.push(data),fetch:async()=>({ok:true,json:async()=>[result({error:'private-test-token private address'})]})})),error=>error.code==='SHIPPING_UNAVAILABLE');
+    assert.equal(diagnostics[0].providerError,true);
+    assert.doesNotMatch(JSON.stringify(diagnostics),/private|address|token/i);
 });

@@ -2,6 +2,11 @@
 const {AppError}=require('../../core/app-error');
 const {normalizeItems,priceNumber}=require('./correios-service');
 const services={'1':'PAC','2':'SEDEX'};
+const {logger}=require('../../infrastructure/logger');
+function diagnose(dependencies,details) {
+    // Fixed metadata only: never log provider bodies, tokens, email, CEP or exception text.
+    try { (dependencies.diagnostic || (data=>logger.warn('SHIPPING_PROVIDER_DIAGNOSTIC',data)))(details); } catch {}
+}
 const unavailable=()=>new AppError('Não foi possível consultar PAC e SEDEX agora. Tente novamente mais tarde.',{status:503,code:'SHIPPING_UNAVAILABLE'});
 function configuration(env=process.env) {
     const config={
@@ -56,15 +61,32 @@ async function quoteShipping({cep,items},dependencies={}) {
             method:'POST',headers:{Authorization:'Bearer '+config.token,'Content-Type':'application/json',Accept:'application/json','User-Agent':config.userAgent},
             body:JSON.stringify(payload),signal:AbortSignal.timeout(12000),redirect:'error'
         });
-        if(!response.ok) throw unavailable();
+        if(!response.ok) {
+            const httpStatus=Number(response.status) || 0;
+            diagnose(dependencies,{stage:'http',provider:'melhor_envio',httpStatus});
+            if(httpStatus===401 || httpStatus===403) throw new AppError('A consulta de frete precisa de um ajuste de acesso pela loja. Fale com nosso atendimento.',{status:503,code:httpStatus===401?'SHIPPING_AUTH_FAILED':'SHIPPING_ACCESS_DENIED'});
+            if(httpStatus===422) throw new AppError('Não foi possível cotar este envio. Fale com a loja para conferir os dados do pacote.',{status:503,code:'SHIPPING_PROVIDER_REQUEST_INVALID'});
+            throw unavailable();
+        }
         rows=await response.json();
-    } catch {throw unavailable();}
-    if(!Array.isArray(rows)) throw unavailable();
+    } catch(error) {
+        if(error instanceof AppError) throw error;
+        diagnose(dependencies,{stage:'transport_or_json',provider:'melhor_envio'});
+        throw unavailable();
+    }
+    if(!Array.isArray(rows)) {diagnose(dependencies,{stage:'response_shape',provider:'melhor_envio'});throw unavailable();}
     const options=rows.flatMap(row=>{
         const id=String(row.id), cost=priceNumber(row.custom_price), days=Number(row.custom_delivery_time);
         if(row.error || !services[id] || Number(row.company?.id)!==1 || String(row.name).toUpperCase()!==services[id] ||
-            !Number.isFinite(cost) || cost<=0 || row.custom_delivery_time==null || !Number.isInteger(days) || days<0 ||
-            !Array.isArray(row.packages) || row.packages.length!==1) return [];
+            !Number.isFinite(cost) || cost<=0 || row.custom_delivery_time==null || row.custom_delivery_time==='' || !Number.isInteger(days) || days<0 ||
+            !Array.isArray(row.packages) || row.packages.length!==1) {
+            if(services[id]) diagnose(dependencies,{stage:'service_rejected',provider:'melhor_envio',serviceId:id,
+                providerError:Boolean(row.error),validPrice:Number.isFinite(cost)&&cost>0,
+                validDeadline:row.custom_delivery_time!=null&&row.custom_delivery_time!==''&&Number.isInteger(days)&&days>=0,
+                singlePackage:Array.isArray(row.packages)&&row.packages.length===1,
+                validCarrier:Number(row.company?.id)===1,validName:String(row.name).toUpperCase()===services[id]});
+            return [];
+        }
         return [{code:'me:'+id,name:services[id],cost:Number(cost.toFixed(2)),transitDays:days,preparationDays:config.preparationDays,
             homeDelivery:false,provider:'melhor_envio',serviceId:id,package:payload.volumes[0],
             estimatedWeight:config.fixedWeight!==null,quoteWeightGrams:weight}];
