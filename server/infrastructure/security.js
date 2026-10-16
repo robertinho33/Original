@@ -8,7 +8,7 @@ const structuredDataHashes = [...readFileSync(join(__dirname, '../../index.html'
   .map(match => "'sha256-" + createHash('sha256').update(match[1].replace(/\r\n/g, '\n')).digest('base64') + "'");
 const contentPolicy = [
   "default-src 'self'",
-  "script-src 'self' https://www.gstatic.com " + structuredDataHashes.join(' '),
+  "script-src 'self' https://www.gstatic.com https://www.googletagmanager.com " + structuredDataHashes.join(' '),
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' https: data: blob:",
