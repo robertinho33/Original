@@ -801,6 +801,11 @@ async function calculateShippingOptions() {
             const title = document.createElement('strong'); title.textContent = option.name + ' — ' + formatCurrency(option.cost);
             const detail = document.createElement('small'); detail.textContent = 'Transporte: ' + option.transitDays + ' dia(s) úteis após postagem. Preparação: até ' + option.preparationDays + ' dia(s) úteis após confirmação do pagamento.' + (option.homeDelivery ? '' : ' Poderá ser necessária retirada em unidade dos Correios.');
             content.append(title, detail); label.append(input, content); container.append(label);
+            if (option.estimatedWeight === true) {
+                const estimate = document.createElement('small');
+                estimate.textContent = 'Cotação com peso padrão estimado de 2 kg, incluindo a embalagem, para até 4 produtos. Pode superar o frete de um pacote mais leve.';
+                content.append(estimate);
+            }
             input.addEventListener('change', () => { selectedShipping = option; shippingDestination = cep; renderCart(); });
         }
         status.textContent = 'Escolha uma opção. O valor será conferido novamente antes do pagamento.';

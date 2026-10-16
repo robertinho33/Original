@@ -34,7 +34,7 @@ async function buildCompleteOrder(payload = {}) {
 
   let shippingDetails = null;
   if (customerShipping.shipping.method === 'delivery') {
-    shippingDetails = await require('../shipping/correios-service').authorizeShipping({
+    shippingDetails = await require('../shipping/shipping-provider').authorizeShipping({
       cep: customerShipping.shipping.address.cep, items, selection: payload.shippingSelection
     });
     customerShipping.shipping.cost = shippingDetails.cost;

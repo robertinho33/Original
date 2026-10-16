@@ -1,7 +1,7 @@
 'use strict';
 const router=require('express').Router();
 const {AppError}=require('../../core/app-error');
-const {quoteShipping,configuration}=require('./correios-service');
+const {quoteShipping,configuration}=require('./shipping-provider');
 const requests=new Map();
 router.get('/configuration',(req,res)=>{
   res.setHeader('Cache-Control','no-store');
