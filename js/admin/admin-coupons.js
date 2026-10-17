@@ -576,7 +576,7 @@ function renderTable(
                 </h3>
 
                 <p>
-                    Gerencie os cupons promocionais da NEFER.
+                    Gerencie os cupons promocionais da Fios Perfeitos.
                 </p>
             </div>
 
@@ -1333,7 +1333,7 @@ export async function renderCouponsModule(
 
                 <div>
                     <span class="admin-eyebrow">
-                        NEFER ADMIN
+                        Fios Perfeitos Admin
                     </span>
 
                     <h2>

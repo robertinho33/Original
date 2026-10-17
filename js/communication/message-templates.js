@@ -25,7 +25,7 @@ export function createPurchaseThankYouMessage({
     return [
         `Olá, ${name}!`,
         '',
-        'Agradecemos pela sua compra na NEFER COSMETICS.',
+        'Agradecemos pela sua compra na Fios Perfeitos Cosmetics.',
         '',
         id
             ? `Seu pedido ${id} foi recebido com sucesso.`
@@ -35,7 +35,7 @@ export function createPurchaseThankYouMessage({
             ? `Valor do pedido: ${totalText}.`
             : '',
         '',
-        'Muito obrigado pela confiança e por escolher a NEFER.',
+        'Muito obrigado pela confiança e por escolher a Fios Perfeitos.',
         '',
         'Esperamos que sua experiência seja especial. ✨'
     ]
@@ -52,7 +52,7 @@ export function createPurchaseThankYouEmail({
     return {
         subject: orderId
             ? `Obrigado pela sua compra — pedido ${orderId}`
-            : 'Obrigado pela sua compra — NEFER COSMETICS',
+            : 'Obrigado pela sua compra — Fios Perfeitos Cosmetics',
 
         body: createPurchaseThankYouMessage({
             customerName,

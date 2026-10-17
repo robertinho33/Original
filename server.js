@@ -49,7 +49,7 @@ const PORT = process.env.PORT || 3000;
 
 const PIX_KEY = '+5511986215473';
 const PIX_CITY = 'SAO PAULO';
-const PIX_MERCHANT_NAME = 'NEFER COSMETICS';
+const PIX_MERCHANT_NAME = 'Fios Perfeitos Cosmetics';
 
 /*
 =========================================================
@@ -201,7 +201,7 @@ function createPixPayload({ amount, orderId }) {
         normalizeText(
             PIX_MERCHANT_NAME,
             25
-        ) || 'NEFER COSMETICS';
+        ) || 'Fios Perfeitos Cosmetics';
 
     const city =
         normalizeText(

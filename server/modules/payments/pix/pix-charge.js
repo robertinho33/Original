@@ -10,7 +10,7 @@ const PIX_CITY =
 
 const PIX_MERCHANT_NAME =
     process.env.NEFER_PIX_MERCHANT_NAME ||
-    'NEFER COSMETICS';
+    'Fios Perfeitos Cosmetics';
 
 function normalizeText(value, maxLength) {
     return String(value || '')
@@ -70,7 +70,7 @@ function createPixPayload({ amount, orderId }) {
 
     const merchantName =
         normalizeText(PIX_MERCHANT_NAME, 25) ||
-        'NEFER COSMETICS';
+        'Fios Perfeitos Cosmetics';
 
     const city =
         normalizeText(PIX_CITY, 15) ||

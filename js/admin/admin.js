@@ -345,7 +345,7 @@ function shell(title, subtitle = '') {
                 <div>
 
                     <span class="module-eyebrow">
-                        NEFER ADMIN
+                        Fios Perfeitos Admin
                     </span>
 
                     <h2>
@@ -522,7 +522,7 @@ async function load(section) {
 
         updateHeader(
             'Dashboard',
-            'Visão geral da operação da NEFER'
+            'Visão geral da operação da Fios Perfeitos'
         );
 
         state.ready = true;
@@ -621,7 +621,7 @@ async function load(section) {
 
         settings: [
             'Configurações',
-            'Parâmetros centrais da NEFER.'
+            'Parâmetros centrais da Fios Perfeitos.'
         ]
 
     };
@@ -629,7 +629,7 @@ async function load(section) {
 
     const info =
         labels[section] || [
-            'NEFER ADMIN',
+            'Fios Perfeitos Admin',
             ''
         ];
 
@@ -2571,7 +2571,7 @@ function renderCoupons(content, coupons) {
                     <div>
 
                         <span class="module-eyebrow">
-                            NEFER ADMIN
+                            Fios Perfeitos Admin
                         </span>
 
                         <h3>
@@ -4273,7 +4273,7 @@ function renderSettings(content, settings) {
 
 
             ${table(
-                'Parâmetros da NEFER',
+                'Parâmetros da Fios Perfeitos',
 
                 [
                     {
@@ -4669,7 +4669,7 @@ function createOrderModal() {
                     <div>
 
                         <span class="module-eyebrow">
-                            NEFER ADMIN
+                            Fios Perfeitos Admin
                         </span>
 
                         <h2 id="adminOrderModalTitle">
@@ -4871,7 +4871,7 @@ function renderOrderDetails(content, order) {
         .join('\n');
     const trackingUrl = `${window.location.origin}/pages/rastrear-pedido.html?pedido=${encodeURIComponent(orderNumber)}`;
     const customerMessage = [
-        `Olá, ${customer.name || 'tudo bem'}! Segue a confirmação do seu pedido na NEFER COSMETICS.`,
+        `Olá, ${customer.name || 'tudo bem'}! Segue a confirmação do seu pedido na Fios Perfeitos Cosmetics.`,
         `Pedido: ${orderNumber}`,
         orderItemsSummary ? `Itens:\n${orderItemsSummary}` : '',
         `Total: ${formatCurrency(total)}`,

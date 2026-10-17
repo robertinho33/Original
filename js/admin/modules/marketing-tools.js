@@ -121,12 +121,12 @@ export async function renderIncentiveCampaigns(container) {
 
     const renderAudience = rows => {
         const offer = form.elements.benefit.value.trim();
-        const subject = encodeURIComponent('Um incentivo especial NEFER');
+        const subject = encodeURIComponent('Um incentivo especial Fios Perfeitos');
         lastAudience = rows;
         preview.innerHTML = `<div class="marketing-preview-summary"><p><strong>${rows.length} participante(s)</strong> atendem aos filtros atuais.</p>${rows.length ? '<button type="button" class="admin-button" id="download-audience">Baixar lista completa (CSV)</button>' : ''}</div>${rows.length ? `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nome</th><th>Contato</th><th>Pedidos</th><th>Vendas pagas</th><th>Comissão</th><th>Última atividade</th><th>Contato manual</th></tr></thead><tbody>${rows.slice(0, 15).map(row => {
             const phone = String(row.phone || '').replace(/\D/g, '');
             const whatsappPhone = phone && (phone.startsWith('55') ? phone : `55${phone}`);
-            const message = encodeURIComponent(`Olá ${row.name}, temos um incentivo especial NEFER para você: ${offer}`);
+            const message = encodeURIComponent(`Olá ${row.name}, temos um incentivo especial Fios Perfeitos para você: ${offer}`);
             const contact = row.email ? `<a href="mailto:${encodeURIComponent(row.email)}?subject=${subject}&body=${message}">E-mail</a>` : '';
             const whatsapp = whatsappPhone ? `<a href="https://wa.me/${esc(whatsappPhone)}?text=${message}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : '';
             return `<tr><td>${esc(row.name)}</td><td>${esc(row.email || row.phone || '—')}</td><td>${Number(row.orderCount || 0)}</td><td>${brl(row.spend)}</td><td>${brl(row.commission)}</td><td>${esc(date(row.lastActivityAt))}</td><td>${[contact, whatsapp].filter(Boolean).join(' · ') || '—'}</td></tr>`;
@@ -144,7 +144,7 @@ export async function renderIncentiveCampaigns(container) {
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement('a');
             anchor.href = url;
-            anchor.download = 'publico-campanha-nefer.csv';
+            anchor.download = 'publico-campanha-fios-perfeitos.csv';
             anchor.click();
             URL.revokeObjectURL(url);
         });

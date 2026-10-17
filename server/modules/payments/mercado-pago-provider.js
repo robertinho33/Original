@@ -39,10 +39,10 @@ function preferenceBody(order, config) {
   const tracking = `${config.storeUrl}/pages/rastrear-pedido.html${config.mode === 'test' ? '?mp_test=1' : ''}#token=${order.publicTrackingToken}`;
   // A linha representa o total autorizado, incluindo frete e cupom; não recalcular no navegador.
   return {
-    items: [{ id: order.orderNumber, title: `Pedido NEFER ${order.orderNumber}`,
+    items: [{ id: order.orderNumber, title: `Pedido Fios Perfeitos ${order.orderNumber}`,
       quantity: 1, currency_id: 'BRL', unit_price: total }],
     external_reference: order.orderNumber,
-    statement_descriptor: 'NEFER COSMETICS',
+    statement_descriptor: 'FIOS PERFEITOS',
     notification_url: config.notificationUrl,
     back_urls: { success: tracking, pending: tracking, failure: tracking },
     auto_return: 'approved',
