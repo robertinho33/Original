@@ -112,7 +112,10 @@ async function status(req,res) {
     if(!req.admin?.isMaster) return res.sendStatus(403);
     res.set('Cache-Control','no-store');
     try {res.json({success:true,data:await service().status()});}
-    catch {res.json({success:true,data:{configured:false,connected:false}});}
+    catch (error) {
+        if(error.code==='SHIPPING_NOT_CONFIGURED') return res.json({success:true,data:{configured:false,connected:false}});
+        res.status(503).json({success:false,error:'Não foi possível consultar a conexão de frete. Tente novamente.'});
+    }
 }
 async function callback(req,res) {
     res.set({'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'});

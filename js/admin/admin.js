@@ -61,6 +61,7 @@ function showAdminToast(message, type = 'info') {
 const adminApi = window.AdminAPI;
 import {renderStoreVisits} from './modules/store-visits.js';
 import {renderFreightConnection} from './modules/freight-connection.js';
+import {normalizeSettings} from './modules/settings-format.js';
 
 import { updateProduct } from './product-repository.js';
 
@@ -517,7 +518,7 @@ async function load(section) {
     if (section === 'dashboard') {
         await renderOperationalEnvironment(root);
         await renderStoreVisits(root);
-        await renderFreightConnection(root);
+
 
         updateHeader(
             'Dashboard',
@@ -664,6 +665,8 @@ async function load(section) {
         state.ready = true;
         return;
     }
+    // Mount outside the data placeholder so settings errors cannot hide the connection.
+    if (section === 'settings') void renderFreightConnection(root);
     await loadModuleData(section);
 
     state.ready = true;
@@ -4242,6 +4245,7 @@ function renderAudit(content, logs) {
    ============================================================ */
 
 function renderSettings(content, settings) {
+    settings = normalizeSettings(settings);
 
     const list =
         Array.isArray(settings)
