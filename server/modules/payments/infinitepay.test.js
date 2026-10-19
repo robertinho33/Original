@@ -56,6 +56,10 @@ function fixture() {
 }
 test('provider: disabled by default, HTTPS, cents, secret only in request header', async () => {
   assert.equal(provider.configuration({}).enabled, false);
+  const env = { INFINITEPAY_ENABLED: 'true', INFINITEPAY_HANDLE: 'store', PUBLIC_STORE_URL: 'https://store.test', INFINITEPAY_WEBHOOK_URL: 'https://api.test/webhook' };
+  assert.equal(provider.configuration(env, () => 'file-secret').enabled, true);
+  assert.equal(provider.configuration({ ...env, INFINITEPAY_API_KEY: 'env-secret' }, () => 'file-secret').key, 'env-secret');
+  assert.equal(provider.configuration(env, () => '').enabled, false);
   assert.equal(provider.configuration({ PUBLIC_STORE_URL: 'http://store.test', INFINITEPAY_WEBHOOK_URL: 'https://api.test' }).enabled, false);
   for (const url of ['https://checkout.infinitepay.io.evil.test', 'javascript:alert(1)', 'http://checkout.infinitepay.io', 'https://x:pass@checkout.infinitepay.io']) assert.throws(() => provider.checkoutUrl(url));
   assert.equal(provider.cents(79.9), 7990);

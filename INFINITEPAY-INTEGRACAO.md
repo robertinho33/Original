@@ -8,7 +8,7 @@ A integração adiciona uma opção InfinitePay ao checkout existente, sem remov
 2. Configure as variáveis no ambiente do backend, nunca em arquivos públicos:
    - `INFINITEPAY_ENABLED=false` durante a preparação.
    - `INFINITEPAY_HANDLE`: InfiniteTag sem `$`.
-   - `INFINITEPAY_API_KEY`: chave secreta criada na InfinitePay. Esta implementação exige a chave para usar pagamento único e validade.
+   - `INFINITEPAY_API_KEY`: chave secreta criada na InfinitePay. Também é aceito um arquivo secreto do Render chamado `INFINITEPAY_API_KEY`, montado em `/etc/secrets/INFINITEPAY_API_KEY`. A variável, quando presente, tem precedência. Esta implementação exige a chave para usar pagamento único e validade.
    - `PUBLIC_STORE_URL`: origem HTTPS pública da vitrine.
    - `INFINITEPAY_WEBHOOK_URL`: URL HTTPS pública do backend terminando em `/api/payments/infinitepay/webhook`.
 3. Publique os arquivos do frontend e do backend. O frontend segue a mesma origem de API já usada pela loja (`aurea-pix-api.onrender.com` fora de localhost).

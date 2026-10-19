@@ -1,13 +1,17 @@
 'use strict';
 const { AppError } = require('../../core/app-error');
 const fail = (message, status = 503) => new AppError(message, { status });
-function configuration(env = process.env) {
+function configuration(env = process.env, readSecret = () => {
+  try { return require('node:fs').readFileSync('/etc/secrets/INFINITEPAY_API_KEY', 'utf8').trim(); }
+  catch { return ''; }
+}) {
   try {
+    const key = env.INFINITEPAY_API_KEY || readSecret();
     const store = new URL(env.PUBLIC_STORE_URL);
     const webhook = new URL(env.INFINITEPAY_WEBHOOK_URL);
     if (store.protocol !== 'https:' || webhook.protocol !== 'https:') throw Error();
-    return { enabled: env.INFINITEPAY_ENABLED === 'true' && Boolean(env.INFINITEPAY_API_KEY && env.INFINITEPAY_HANDLE),
-      key: env.INFINITEPAY_API_KEY, handle: env.INFINITEPAY_HANDLE,
+    return { enabled: env.INFINITEPAY_ENABLED === 'true' && Boolean(key && env.INFINITEPAY_HANDLE),
+      key, handle: env.INFINITEPAY_HANDLE,
       store: store.origin, webhook: webhook.href };
   } catch { return { enabled: false }; }
 }
