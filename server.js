@@ -98,6 +98,7 @@ app.get('/api/storefront/tracking/:reference', require('./server/modules/orders/
 app.use('/api/coupons', couponRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments/mercado-pago', require('./server/modules/payments/mercado-pago-routes'));
+app.use('/api/payments/infinitepay', require('./server/modules/payments/infinitepay-routes').createRouter());
 
 // =========================================================
 // FIM DO MIDDLEWARE

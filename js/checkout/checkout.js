@@ -1,3 +1,4 @@
+import { configureInfinitePay, startInfinitePay } from './infinitepay-checkout.js';
 import { configureCardCheckout, startCardCheckout, showPendingCardOrder } from './mercado-pago-checkout.js';
 import { ORDER_STATUS } from '../orders/order-status.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
@@ -1982,6 +1983,10 @@ async function handleSubmit(event) {
 
 
 
+        if (order.payment.method === 'infinitepay') {
+            await startInfinitePay(order);
+            return;
+        }
         if (['pix', 'card', 'boleto'].includes(order.payment.method)) {
             await startCardCheckout(order);
             return;
@@ -2196,6 +2201,7 @@ async function init() {
     restoreCheckoutDraft();
     showPendingCardOrder();
     void configureCardCheckout();
+    void configureInfinitePay();
     // Recuperar acesso ao pedido sem guardar nome, endereço ou código PIX.
     try {
         const receipt = JSON.parse(sessionStorage.getItem('nefer-last-confirmed-order') || 'null');

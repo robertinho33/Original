@@ -165,7 +165,7 @@ function renderOrder(order) {
     elements.shipping.textContent = shippingDetails.join(' · ') ||
         (currentStep(order) >= 3 ? 'Os dados de rastreio ainda não foram informados.' : 'As informações de envio aparecerão após a postagem.');
 
-    document.dispatchEvent(new CustomEvent('nefer:tracking-loaded', { detail: { paymentStatus: order.paymentStatus, paymentProvider: order.paymentProvider, trackingToken: order.trackingToken } }));
+    document.dispatchEvent(new CustomEvent('nefer:tracking-loaded', { detail: { orderNumber: order.orderNumber || order.id, paymentStatus: order.paymentStatus, paymentProvider: order.paymentProvider, trackingToken: order.trackingToken } }));
     renderTimeline(order);
     void mountProductReviews(elements.result,order.trackingToken);
     elements.share.hidden = !order.trackingToken;
