@@ -1,15 +1,18 @@
 import { readPaymentReturn } from './payment-return.js';
-const { query: params, token } = readPaymentReturn(location);
-if (/^[a-f0-9]{64}$/i.test(token || '')) {
+let { token } = readPaymentReturn(location);
+{
     const section = document.createElement('section');
     section.className = 'tracking-card';
+    section.id = 'trackingPaymentActions';
+    const title = document.createElement('h2');
+    title.textContent = 'Pagamento do pedido';
     const message = document.createElement('p');
     message.setAttribute('role', 'status');
     message.textContent = 'Você pode retomar este mesmo pedido e escolher cartão, PIX ou boleto no Mercado Pago, após conferir a tentativa anterior.';
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'primary-link';
-    button.textContent = 'Retomar ou trocar pagamento';
+    button.textContent = 'Voltar às formas de pagamento';
     button.addEventListener('click', async () => {
         button.disabled = true;
         message.textContent = 'Conferindo seu pagamento no Mercado Pago…';
@@ -58,9 +61,20 @@ if (/^[a-f0-9]{64}$/i.test(token || '')) {
         }
     });
     section.hidden = true;
+    document.addEventListener('nefer:tracking-loading', () => { section.hidden = true; });
     document.addEventListener('nefer:tracking-loaded', event => {
-        section.hidden = event.detail.paymentProvider !== 'mercado-pago' || !['pending', 'failed', 'cancelled', 'awaiting_payment'].includes(event.detail.paymentStatus);
+        token = event.detail.trackingToken || '';
+        const eligible = /^[a-f0-9]{64}$/i.test(token) && event.detail.paymentProvider === 'mercado-pago' &&
+            ['pending', 'failed', 'cancelled', 'awaiting_payment'].includes(event.detail.paymentStatus);
+        section.hidden = !eligible;
+        button.hidden = !eligible;
+        expire.hidden = !eligible;
+        button.disabled = false;
+        expire.disabled = false;
+        if (eligible) message.textContent = 'Retome este mesmo pedido para escolher PIX, cartão ou boleto no Mercado Pago. A tentativa anterior será conferida antes de continuar.';
     });
-    section.append(message, button, expire);
-    document.querySelector('main')?.append(section);
+    section.append(title, message, button, expire);
+    const payment = document.getElementById('trackingPayment');
+    if (payment) payment.after(section);
+    else document.querySelector('main')?.append(section);
 }
