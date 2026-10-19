@@ -71,21 +71,6 @@ async function reserveInTransaction(tx, plans) {
   return { status: 'reserved', reservedAt: new Date().toISOString(), reservations };
 }
 
-function validatePilot(order, env = process.env) {
-  if (env.MP_REAL_SALE_TEST_ONLY !== 'true') {
-    throw new AppError('Pagamento real ainda não está disponível.', { status: 503 });
-  }
-  const selectedSku = String(env.MP_REAL_SALE_TEST_SKU || '').trim();
-  const maxTotal = Number(env.MP_REAL_SALE_TEST_MAX_TOTAL);
-  const total = Number(order.totals.total);
-  if (!selectedSku || !Number.isFinite(maxTotal) || maxTotal <= 0 ||
-      !Number.isFinite(total) || total <= 0 ||
-      order.items.length !== 1 || order.items[0].sku !== selectedSku || order.items[0].quantity !== 1 ||
-      total > maxTotal) {
-    throw new AppError('Confira os produtos e o valor autorizado para esta compra.', { status: 409 });
-  }
-}
-
 async function releaseInTransaction(tx, db, reservation) {
   if (reservation?.status !== 'reserved') return false;
   const items = reservation.reservations;
@@ -121,4 +106,4 @@ async function releaseInTransaction(tx, db, reservation) {
   refs.forEach((ref, index) => tx.update(ref, patches[index]));
   return true;
 }
-module.exports = { aggregateItems, prepareReservation, reserveInTransaction, validatePilot, releaseInTransaction };
+module.exports = { aggregateItems, prepareReservation, reserveInTransaction, releaseInTransaction };

@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { aggregateItems, reserveInTransaction, validatePilot } = require('./mercado-pago-stock');
+const { aggregateItems, reserveInTransaction } = require('./stock-reservations');
 
 test('quantidades do mesmo SKU são somadas antes de validar disponibilidade', () => {
   assert.deepEqual(aggregateItems([{ sku: 'A', quantity: 1 }, { sku: 'A', quantity: 2 }]), [{ sku: 'A', quantity: 3 }]);
@@ -40,16 +40,8 @@ test('duas transações serializadas não reservam a mesma última unidade', asy
   assert.equal(remaining, 0);
 });
 
-test('primeira venda real exige SKU, uma unidade e teto de total explícitos', () => {
-  const env = { MP_REAL_SALE_TEST_ONLY: 'true', MP_REAL_SALE_TEST_SKU: 'A', MP_REAL_SALE_TEST_MAX_TOTAL: '110' };
-  const order = { items: [{ sku: 'A', quantity: 1 }], totals: { total: 109.90 } };
-  assert.doesNotThrow(() => validatePilot(order, env));
-  assert.throws(() => validatePilot({ ...order, totals: { total: 111 } }, env));
-  assert.throws(() => validatePilot({ ...order, items: [{ sku: 'A', quantity: 2 }] }, env));
-  assert.throws(() => validatePilot(order, {}));
-});
 
-const { releaseInTransaction } = require('./mercado-pago-stock');
+const { releaseInTransaction } = require('./stock-reservations');
 test('new inventory reservations keep physical stock and release availability without adding units', async () => {
   const state = new Map([['product', { sku: 'A', price: 10, stock: 10 }], ['inventory', { sku: 'A', quantity: 10, reserved: 0, available: 10 }]]);
   let writing = false;

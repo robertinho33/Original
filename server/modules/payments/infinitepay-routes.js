@@ -9,7 +9,7 @@ function createRouter(deps = {}) {
   const router = express.Router();
   const getDb = deps.getDb || (() => require('../../infrastructure/firebase/firebase-admin').getFirestore());
   const buildOrder = deps.buildOrder || (payload => require('../orders/complete-order-builder').buildCompleteOrder(payload));
-  const stock = deps.stock || require('./mercado-pago-stock');
+  const stock = deps.stock || require('../inventory/stock-reservations');
   const commitStock = deps.commitStock || require('../inventory/payment-stock').commitPaidStock;
   const notify = deps.notify || (order => require('../communication/paid-order-notification').notifyPaidOrder(order));
   const invalidate = deps.invalidate || (() => require('../catalog/catalog-storefront-service').invalidate());

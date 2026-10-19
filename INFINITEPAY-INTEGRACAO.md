@@ -1,6 +1,6 @@
 # InfinitePay — Fios Perfeitos
 
-A integração adiciona uma opção InfinitePay ao checkout existente, sem remover o Mercado Pago. Está desativada por padrão. PIX e cartão são escolhidos no checkout hospedado da InfinitePay; boleto continua no Mercado Pago.
+A InfinitePay é o único provedor de pagamento online do checkout. PIX e cartão são escolhidos no ambiente hospedado da InfinitePay; boleto não é oferecido. O código inicia desativado por padrão e depende da configuração do servidor.
 
 ## Configuração no servidor
 

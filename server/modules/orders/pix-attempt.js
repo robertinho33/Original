@@ -9,7 +9,7 @@ function canonical(value) {
 function attemptFor(payload) {
   const id = String(payload.checkoutAttemptId || '');
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(id)) throw new AppError('Atualize a página para iniciar seu pedido Pix.', { status: 400 });
-  const grouped = require('../payments/mercado-pago-stock').aggregateItems(payload.items).sort((a, b) => a.sku.localeCompare(b.sku));
+  const grouped = require('../inventory/stock-reservations').aggregateItems(payload.items).sort((a, b) => a.sku.localeCompare(b.sku));
   const data = { items: grouped, customer: payload.customer || {}, delivery: payload.delivery || { method: payload.deliveryMethod || 'delivery', address: payload.address || null }, coupon: String(payload.coupon?.code || '').trim().toUpperCase(), notes: String(payload.notes || '') };
   return { documentId: 'pix-' + id.toLowerCase(), fingerprint: createHash('sha256').update(JSON.stringify(canonical(data))).digest('hex') };
 }

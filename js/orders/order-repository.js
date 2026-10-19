@@ -321,11 +321,11 @@ export async function findTrackingById(orderId) {
     let token = '';
     try { token = localStorage.getItem('nefer-tracking-' + number) || ''; } catch {}
     if (!/^[a-f0-9]{64}$/i.test(token)) {
-        // Recover access for Mercado Pago checkouts created before local mapping was saved.
+        // Preserve private tracking access for historical orders and current checkout attempts.
         for (const getStore of [() => sessionStorage, () => localStorage]) {
             try {
                 const store = getStore();
-                for (const key of ['nefer-mp-pending-order', 'nefer-last-confirmed-order']) {
+                for (const key of ['fios-infinitepay-pending', 'nefer-last-confirmed-order', 'nefer-mp-pending-order']) {
                     const saved = JSON.parse(store.getItem(key) || 'null');
                     if (String(saved?.orderNumber || '').toUpperCase() === number && /^[a-f0-9]{64}$/i.test(saved?.trackingToken || '')) {
                         token = saved.trackingToken;
@@ -345,7 +345,7 @@ export async function findTrackingByToken(token) {
     if (!/^[a-f0-9]{64}$/i.test(safeToken)) return null;
     try {
         const response = await fetch(
-            (new URLSearchParams(window.location.search).get('mp_test') === '1' ? `${['localhost', '127.0.0.1'].includes(window.location.hostname) ? '' : 'https://aurea-pix-api.onrender.com'}/api/payments/mercado-pago/test-tracking/${encodeURIComponent(safeToken)}` : `/api/storefront/tracking/${encodeURIComponent(safeToken)}`),
+            `/api/storefront/tracking/${encodeURIComponent(safeToken)}`,
             { cache: 'no-store' }
         );
         if (response.status === 404) return null;

@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const {
     getFirestore
@@ -35,7 +35,7 @@ async function create(order, attempt = null) {
     const docRef = attempt ? ordersCollection().doc(attempt.documentId) : ordersCollection().doc();
     if (attempt) storedOrder.pixAttemptFingerprint = attempt.fingerprint;
     const db = getDb();
-    const inventory = require('../payments/mercado-pago-stock');
+    const inventory = require('../inventory/stock-reservations');
     const grouped = inventory.aggregateItems(storedOrder.items);
     const reservationOrder = { ...storedOrder, items: grouped.map(item => ({
         ...item, unitPrice: storedOrder.items.find(original => original.sku === item.sku).unitPrice

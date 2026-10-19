@@ -1,4 +1,4 @@
-// Checkout Pro can append its query inside an existing URL fragment.
+// Preserve private tokens from current and historical return links.
 export function readPaymentReturn(location) {
     const query = new URLSearchParams(location.search || '');
     const fragment = String(location.hash || '').replace(/^#/, '')

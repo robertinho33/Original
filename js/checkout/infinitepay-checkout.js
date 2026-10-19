@@ -11,15 +11,29 @@ export async function configureInfinitePay() {
     showPending();
     const input = document.querySelector('input[name="paymentMethod"][value="infinitepay"]');
     if (!input) return;
+    const label = input.closest('label');
+    const description = label.querySelector('small');
+    let retry = document.getElementById('retryInfinitePay');
+    if (!retry) {
+        retry = document.createElement('button'); retry.id = 'retryInfinitePay'; retry.type = 'button';
+        retry.textContent = 'Verificar pagamento novamente'; retry.addEventListener('click', configureInfinitePay);
+        label.after(retry);
+    }
+    retry.hidden = true;
+    input.disabled = true;
+    if (description) description.textContent = 'Verificando pagamento na InfinitePay…';
     try {
-        const response = await fetch(API + '/configuration', { signal: AbortSignal.timeout(15000) });
+        const response = await fetch(API + '/configuration', { signal: AbortSignal.timeout(60000) });
         const result = await response.json();
-        if (!response.ok || result.enabled !== true) return;
-        input.closest('label').hidden = false;
+        if (!response.ok || result.enabled !== true) throw new Error('Pagamento indisponível.');
         input.disabled = false;
+        if (description) description.textContent = 'Escolha PIX ou cartão no ambiente seguro da InfinitePay.';
         const selected = document.querySelector('input[name="paymentMethod"]:checked');
         if (!selected || selected.disabled) { input.checked = true; input.dispatchEvent(new Event('change', { bubbles: true })); }
-    } catch { /* Other payment providers remain available. */ }
+    } catch {
+        retry.hidden = false;
+        if (description) description.textContent = 'Pagamento temporariamente indisponível. Tente verificar novamente em instantes.';
+    }
 }
 function read(key) { try { return JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { return null; } }
 function showPending() {

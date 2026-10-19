@@ -145,3 +145,23 @@ test('browser redirects only to InfinitePay, preserves cart and stores no custom
   assert.ok(calls[1].url.endsWith('/resume'));
   assert.equal(calls.filter(call => call.url.endsWith('/checkout')).length, 1);
 });
+test('sole payment option stays disabled on configuration failure and can recover on retry', async () => {
+  const vm = require('node:vm'), fs = require('node:fs'), path = require('node:path');
+  let enabled = false, retry;
+  const description = { textContent: '' };
+  const label = { querySelector: () => description, after: element => { retry = element; } };
+  const input = { disabled: true, checked: true, closest: () => label };
+  const context = { location: { hostname: 'localhost' }, sessionStorage: { getItem: () => null }, AbortSignal,
+    document: { querySelector: selector => selector.includes('paymentMethod') ? input : null,
+      getElementById: () => retry, createElement: () => ({ addEventListener: () => {} }) },
+    fetch: async () => ({ ok: true, json: async () => ({ enabled }) }) };
+  const source = fs.readFileSync(path.join(__dirname, '../../../js/checkout/infinitepay-checkout.js'), 'utf8').replace(/export /g, '');
+  vm.runInNewContext(source + '\nglobalThis.configure = configureInfinitePay;', context);
+  await context.configure();
+  assert.equal(input.disabled, true); assert.equal(retry.hidden, false);
+  assert.match(description.textContent, /indisponível/);
+  enabled = true;
+  await context.configure();
+  assert.equal(input.disabled, false); assert.equal(retry.hidden, true);
+  assert.match(description.textContent, /InfinitePay/);
+});

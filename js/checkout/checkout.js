@@ -1,5 +1,4 @@
 import { configureInfinitePay, startInfinitePay } from './infinitepay-checkout.js';
-import { configureCardCheckout, startCardCheckout, showPendingCardOrder } from './mercado-pago-checkout.js';
 import { ORDER_STATUS } from '../orders/order-status.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
 import { db } from '../firebase-config.js';
@@ -1983,48 +1982,9 @@ async function handleSubmit(event) {
 
 
 
-        if (order.payment.method === 'infinitepay') {
-            await startInfinitePay(order);
-            return;
-        }
-        if (['pix', 'card', 'boleto'].includes(order.payment.method)) {
-            await startCardCheckout(order);
-            return;
-        } else {
-            await registerNonPixOrder(order);
-        }
-
-
-        /*
-         * ÚNICA gravação do pedido.
-         *
-         * No caso do PIX, o objeto já contém:
-         *
-         * - pixCode
-         * - pixGeneratedAt
-         * - PIX_GENERATED
-         */
-
-
-        localStorage.removeItem(
-            CART_STORAGE_KEY
-        );
-        localStorage.removeItem(CHECKOUT_DRAFT_STORAGE_KEY);
-
-
-        showSuccess(
-            order
-        );
-
-
-        /*
-         * O pedido foi concluído.
-         * Não deixamos o botão continuar bloqueado
-         * como se ainda estivesse processando.
-         */
-
-        elements.submitOrderText.textContent =
-            'Pedido finalizado.';
+        if (order.payment.method !== 'infinitepay') throw new Error('Selecione o pagamento pela InfinitePay.');
+        await startInfinitePay(order);
+        return;
 
     } catch (error) {
 
@@ -2199,8 +2159,7 @@ function setupEvents() {
 
 async function init() {
     restoreCheckoutDraft();
-    showPendingCardOrder();
-    void configureCardCheckout();
+
     void configureInfinitePay();
     // Recuperar acesso ao pedido sem guardar nome, endereço ou código PIX.
     try {
