@@ -85,3 +85,34 @@ test('only definitive preference rejections allow a safe retry; provider details
       !error.message.includes('private-provider-body'));
   }
 });
+
+test('unavailable preferred method falls back only after an explicit definitive rejection', async () => {
+  const pixOrder = { ...order, payment: { method: 'pix' } };
+  const bodies = [];
+  const result = await p.createPreference(config, pixOrder, async (config, path, body) => {
+    bodies.push(body);
+    if (bodies.length === 1) {
+      const error = Error('unavailable'); error.invalidDefaultPaymentMethod = true; error.preferenceRejected = true; throw error;
+    }
+    return { id: 'accepted' };
+  });
+  assert.equal(result.id, 'accepted'); assert.equal(bodies.length, 2);
+  assert.equal(bodies[0].payment_methods.default_payment_method_id, 'pix');
+  assert.equal(bodies[1].payment_methods.default_payment_method_id, undefined);
+  assert.deepEqual(bodies[1].items, bodies[0].items);
+  assert.deepEqual(bodies[1].back_urls, bodies[0].back_urls);
+  assert.deepEqual(bodies[1].payment_methods.excluded_payment_types, [{ id: 'atm' }]);
+  for (const flags of [{}, { preferenceRejected: true }, { invalidDefaultPaymentMethod: true }]) {
+    let calls = 0;
+    await assert.rejects(p.createPreference(config, pixOrder, async () => {
+      calls++; throw Object.assign(Error('uncertain or unrelated'), flags);
+    }));
+    assert.equal(calls, 1);
+  }
+});
+
+test('provider recognizes only the precise invalid-default response without exposing its body', async () => {
+  await assert.rejects(p.request({ token: 'mock' }, '/checkout/preferences', {}, async () => ({
+    ok: false, status: 400, json: async () => ({ message: 'invalid default_payment_method_id. The default payment method is excluded' })
+  })), error => error.preferenceRejected && error.invalidDefaultPaymentMethod);
+});

@@ -143,7 +143,7 @@ router.post('/checkout', async (req, res) => {
     });
     let preference;
     try {
-      preference = await provider.request(config, '/checkout/preferences', provider.preferenceBody(order, config));
+      preference = await provider.createPreference(config, order, (...args) => provider.request(...args));
     } catch (error) {
       console.warn('[MP_PREFERENCE_FAILED]', JSON.stringify({ upstreamStatus: error.upstreamStatus || 0,
         definitiveRejection: error.preferenceRejected === true }));

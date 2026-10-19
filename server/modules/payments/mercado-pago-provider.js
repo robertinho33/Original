@@ -94,6 +94,8 @@ async function request(config, path, body, fetchImpl = fetch, method = body ? 'P
   if (!response.ok) {
     const error = new AppError('O Mercado Pago não respondeu à solicitação. Tente novamente.', { status: 502, code: 'MP_REQUEST_FAILED' });
     error.upstreamStatus = Number(response.status) || 0;
+    error.invalidDefaultPaymentMethod = error.upstreamStatus === 400 &&
+      result.message === 'invalid default_payment_method_id. The default payment method is excluded';
     // Only a definitive rejection of preference creation permits another POST.
     error.preferenceRejected = path === '/checkout/preferences' && method === 'POST' &&
       [400, 401, 403, 404, 422, 429].includes(error.upstreamStatus);
@@ -102,4 +104,17 @@ async function request(config, path, body, fetchImpl = fetch, method = body ? 'P
   return result;
 }
 
-module.exports = { configuration, checkoutUrl, preferenceBody, verifySignature, paymentMatches, paymentStatus, request };
+async function createPreference(config, order, requestImpl = request) {
+  const body = preferenceBody(order, config);
+  try { return await requestImpl(config, '/checkout/preferences', body); }
+  catch (error) {
+    // The provider explicitly rejected creation. No preference was accepted.
+    // Do not repeat on network failures, generic 400s, or uncertain responses.
+    if (!error.invalidDefaultPaymentMethod || !error.preferenceRejected || !body.payment_methods.default_payment_method_id) throw error;
+    const paymentMethods = { ...body.payment_methods };
+    delete paymentMethods.default_payment_method_id;
+    return requestImpl(config, '/checkout/preferences', { ...body, payment_methods: paymentMethods });
+  }
+}
+
+module.exports = { configuration, checkoutUrl, preferenceBody, verifySignature, paymentMatches, paymentStatus, request, createPreference };
