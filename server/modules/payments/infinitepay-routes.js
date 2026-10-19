@@ -27,6 +27,30 @@ function createRouter(deps = {}) {
       message: err.status && err.status < 500 ? err.message : 'Não foi possível confirmar a operação. Consulte seu pedido antes de tentar novamente.' });
   }
   router.get('/configuration', (req, res) => res.set('Cache-Control', 'no-store').json({ success: true, enabled: configFor().enabled }));
+  router.post('/attempt/recover', async (req, res) => {
+    try {
+      const id = req.body?.checkoutAttemptId;
+      if (!/^[a-f0-9-]{36}$/i.test(id || '')) throw provider.fail('Tentativa inválida.', 400);
+      const db = getDb(), attemptRef = db.collection('infinitepayAttempts').doc(id);
+      const data = await db.runTransaction(async tx => {
+        const snapshot = await tx.get(attemptRef);
+        if (!snapshot.exists) {
+          // Close the old ID atomically: a request delayed in transit cannot create a payment later.
+          tx.create(attemptRef, { closed: true, closedAt: new Date().toISOString() });
+          return { state: 'empty' };
+        }
+        const attempt = snapshot.data();
+        if (attempt.closed) return { state: 'empty' };
+        if (!validOrder(attempt.orderNumber)) throw provider.fail('Tentativa precisa de conferência.', 409);
+        const saved = await tx.get(db.collection('orders').doc(attempt.orderNumber));
+        const order = saved.exists ? saved.data() : null;
+        if (!order || order.payment?.provider !== 'infinitepay') throw provider.fail('Pedido precisa de conferência.', 409);
+        return { state: 'order', orderNumber: order.orderNumber,
+          trackingToken: order.publicTrackingToken, paymentStatus: order.payment.status };
+      });
+      res.set('Cache-Control', 'no-store').json({ success: true, data });
+    } catch (err) { error(res, err); }
+  });
   router.post('/checkout', async (req, res) => {
     let order, persisted = false;
     try {
@@ -70,6 +94,7 @@ function createRouter(deps = {}) {
       return res.json({ success: true, data: { checkoutUrl, orderNumber: order.orderNumber, trackingToken: order.publicTrackingToken } });
 
       async function reuse(attempt) {
+        if (attempt.closed) throw provider.fail('Esta tentativa foi encerrada com segurança. Atualize a página e tente novamente.', 409);
         if (attempt.fingerprint !== fingerprint) throw provider.fail('Os dados desta tentativa mudaram. Consulte o pedido anterior.', 409);
         const saved = (await db.collection('orders').doc(attempt.orderNumber).get()).data();
         if (!saved || saved.payment?.provider !== 'infinitepay') throw provider.fail('Pedido indisponível.', 409);

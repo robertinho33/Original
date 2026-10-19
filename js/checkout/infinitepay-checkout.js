@@ -62,23 +62,41 @@ async function post(path, body) {
     return result.data;
 }
 export async function startInfinitePay(order) {
-    const pending = read(pendingKey);
-    if (pending) {
-        const result = await post('/resume', { orderNumber: pending.orderNumber, token: pending.trackingToken });
-        if (result.paymentStatus === 'pending') {
-            if (result.checkoutUrl) { location.assign(checkoutUrl(result.checkoutUrl)); return; }
-            throw new Error('O pagamento anterior precisa de conferência. Consulte o acompanhamento e fale com a loja.');
-        }
-        sessionStorage.removeItem(pendingKey); sessionStorage.removeItem(attemptKey);
-    }
     const payload = { items: order.items.map(item => ({ sku: item.sku, quantity: item.quantity })), customer: order.customer,
         address: order.delivery?.address || null, deliveryMethod: order.delivery?.method || 'delivery',
         shippingSelection: order.shippingSelection, coupon: order.coupon || null, notes: order.notes || '' };
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(payload)));
     const fingerprint = [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('');
     let attempt = read(attemptKey);
-    // Preserve the attempt after a timeout, including when the customer changes the form.
-    if (attempt && attempt.fingerprint !== fingerprint) throw new Error('Há uma tentativa anterior sem confirmação. Restaure os dados anteriores ou fale com a loja antes de iniciar outro pagamento.');
+    const pending = read(pendingKey);
+    if (pending) {
+        const result = await post('/resume', { orderNumber: pending.orderNumber, token: pending.trackingToken });
+        if (result.paymentStatus === 'pending') {
+            if (!attempt || attempt.fingerprint !== fingerprint) throw new Error('Existe um pedido anterior com outros dados. Use o link Consultar meu pedido acima para conferir o pagamento antes de iniciar outro.');
+            if (result.checkoutUrl) { location.assign(checkoutUrl(result.checkoutUrl)); return; }
+            throw new Error('O pagamento anterior precisa de conferência. Consulte o acompanhamento e fale com a loja.');
+        }
+        sessionStorage.removeItem(pendingKey); sessionStorage.removeItem(attemptKey);
+        attempt = null;
+        if (result.paymentStatus === 'paid') {
+            location.assign(`./rastrear-pedido.html#token=${pending.trackingToken}`);
+            return;
+        }
+    }
+    if (attempt && attempt.fingerprint !== fingerprint) {
+        const previous = await post('/attempt/recover', { checkoutAttemptId: attempt.id });
+        if (previous.state === 'order') {
+            if (previous.paymentStatus === 'paid') {
+                sessionStorage.removeItem(attemptKey); sessionStorage.removeItem(pendingKey);
+                location.assign(`./rastrear-pedido.html#token=${previous.trackingToken}`);
+                return;
+            }
+            throw new Error('Localizamos seu pedido anterior. Use o link Consultar meu pedido acima para conferir o pagamento antes de iniciar outro.');
+        }
+        if (previous.state !== 'empty') throw new Error('Não foi possível conferir a tentativa anterior. Tente novamente em instantes.');
+        sessionStorage.removeItem(attemptKey);
+        attempt = null;
+    }
     if (!attempt) { attempt = { id: crypto.randomUUID(), fingerprint }; sessionStorage.setItem(attemptKey, JSON.stringify(attempt)); }
     const data = await post('/checkout', { ...payload, checkoutAttemptId: attempt.id });
     if (!/^AUR-[A-F0-9]{16}$/.test(data?.orderNumber || '') || !/^[a-f0-9]{64}$/i.test(data?.trackingToken || '')) throw new Error('Resposta de pagamento inválida.');

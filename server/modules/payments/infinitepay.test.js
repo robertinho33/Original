@@ -86,6 +86,25 @@ test('uncertain creation is not retried and retains order for review', async () 
   assert.equal((await f.post('/checkout', f.payload)).status, 409);
   assert.equal(f.stats().links, 1);
 });
+test('recovery closes an unused attempt so a delayed checkout cannot create a duplicate', async () => {
+  const f = fixture();
+  const body = { checkoutAttemptId: f.payload.checkoutAttemptId };
+  assert.equal((await f.post('/attempt/recover', body)).data.data.state, 'empty');
+  assert.equal((await f.post('/attempt/recover', body)).data.data.state, 'empty');
+  assert.equal((await f.post('/checkout', f.payload)).status, 409);
+  assert.deepEqual(f.stats(), { links: 0, commits: 0, reserves: 0 });
+  assert.equal((await f.post('/attempt/recover', { checkoutAttemptId: 'invalid' })).status, 400);
+});
+test('recovery finds an uncertain persisted order without creating or replacing its payment', async () => {
+  const f = fixture(); f.uncertain();
+  const first = await f.post('/checkout', f.payload);
+  const recovered = await f.post('/attempt/recover', { checkoutAttemptId: f.payload.checkoutAttemptId });
+  assert.equal(recovered.status, 200);
+  assert.equal(recovered.data.data.state, 'order');
+  assert.equal(recovered.data.data.orderNumber, first.data.data.orderNumber);
+  assert.equal(recovered.data.data.trackingToken, first.data.data.trackingToken);
+  assert.equal(f.stats().links, 1);
+});
 test('forged webhook cannot mark paid; mismatched amounts and missing tokens are rejected', async () => {
   const f = fixture();
   const order = (await f.post('/checkout', f.payload)).data.data;
@@ -164,4 +183,35 @@ test('sole payment option stays disabled on configuration failure and can recove
   await context.configure();
   assert.equal(input.disabled, false); assert.equal(retry.hidden, true);
   assert.match(description.textContent, /InfinitePay/);
+});
+test('changed form recovers stale attempts, but never rotates an existing or unverified payment', async () => {
+  const vm = require('node:vm'), fs = require('node:fs'), path = require('node:path');
+  const source = fs.readFileSync(path.join(__dirname, '../../../js/checkout/infinitepay-checkout.js'), 'utf8').replace(/export /g, '');
+  for (const state of ['empty', 'order', 'offline']) {
+    const oldId = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa';
+    const values = new Map([['fios-infinitepay-attempt', JSON.stringify({ id: oldId, fingerprint: 'stale' })]]);
+    const calls = [], redirects = [];
+    const data = { orderNumber: 'AUR-AAAAAAAAAAAAAAAA', trackingToken: 'a'.repeat(64), checkoutUrl: 'https://checkout.infinitepay.io/store/test' };
+    const context = { location: { hostname: 'localhost', assign: value => redirects.push(value) },
+      sessionStorage: { getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) },
+      document: { querySelector: () => null }, crypto: require('node:crypto').webcrypto, TextEncoder, Uint8Array, URL, AbortSignal,
+      fetch: async (url, options) => {
+        const body = JSON.parse(options.body); calls.push({ url, body });
+        if (url.endsWith('/attempt/recover')) {
+          assert.equal(body.checkoutAttemptId, oldId);
+          if (state === 'offline') throw Error('offline');
+          return { ok: true, json: async () => ({ success: true, data: state === 'order' ? { ...data, state, paymentStatus: 'pending' } : { state } }) };
+        }
+        assert.ok(url.endsWith('/checkout')); assert.notEqual(body.checkoutAttemptId, oldId);
+        return { ok: true, json: async () => ({ success: true, data }) };
+      } };
+    vm.runInNewContext(source + '\nglobalThis.start = startInfinitePay;', context);
+    const operation = () => context.start({ items: [{ sku: 'REAL', quantity: 1 }], customer: { name: 'Changed' }, delivery: { method: 'pickup' } });
+    if (state === 'empty') {
+      await operation(); assert.equal(redirects[0], data.checkoutUrl); assert.equal(calls.length, 2);
+    } else {
+      await assert.rejects(operation()); assert.equal(calls.length, 1); assert.equal(redirects.length, 0);
+      assert.equal(JSON.parse(values.get('fios-infinitepay-attempt')).id, oldId);
+    }
+  }
 });
