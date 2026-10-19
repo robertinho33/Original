@@ -48,7 +48,7 @@ if (process.env.MP_PRODUCTION_ACCESS_TOKEN) setTimeout(async () => {
 router.get('/configuration', (req, res) => {
   const config = provider.configuration();
   res.set('Cache-Control', 'no-store').json({ success: true,
-    enabled: config.enabled, testMode: config.mode === 'test',
+    enabled: config.enabled, testMode: config.mode === 'test', embeddedPix: process.env.MP_EMBEDDED_PIX_ENABLED === 'true',
     previewOnly: config.mode === 'production' && process.env.MP_REAL_SALE_TEST_ONLY === 'true' });
 });
 
@@ -63,11 +63,15 @@ router.post('/checkout', async (req, res) => {
       return res.status(503).json({ success: false, message: 'A conta de pagamento não corresponde ao ambiente configurado.' });
     }
     const payload = validateOrderPayload(req.body);
+    const embeddedPix = payload.checkoutExperience === 'embedded_pix';
+    if (embeddedPix && (payload.paymentMethod !== 'pix' || process.env.MP_EMBEDDED_PIX_ENABLED !== 'true')) return res.status(400).json({success: false, message: 'Atualize a página para conferir os meios de pagamento disponíveis.'});
+    if (embeddedPix) require('./embedded-pix-service').payerFor(payload.customer, payload.pixIdentification);
     payload.items = stock.aggregateItems(payload.items);
     if (!/^[a-f0-9-]{36}$/i.test(payload.checkoutAttemptId || '')) return res.status(400).json({ success: false, message: 'Identificador de tentativa inválido.' });
     const fingerprint = createHash('sha256').update(JSON.stringify({
       items: payload.items, customer: payload.customer, address: payload.address, paymentMethod: payload.paymentMethod,
-      deliveryMethod: payload.deliveryMethod, coupon: payload.coupon, shippingSelection: payload.shippingSelection
+      deliveryMethod: payload.deliveryMethod, coupon: payload.coupon, shippingSelection: payload.shippingSelection,
+      checkoutExperience: payload.checkoutExperience, pixIdentification: payload.pixIdentification, notes: payload.notes
     })).digest('hex');
     const db = getFirestore(), names = collections(config);
     const attemptRef = db.collection(names.attempts).doc(payload.checkoutAttemptId);
@@ -101,7 +105,9 @@ router.post('/checkout', async (req, res) => {
       const draft = await buildCompleteOrder({ ...payload, paymentMethod: method });
       order = { ...draft, orderNumber: claim.orderNumber,
         publicTrackingToken: randomBytes(32).toString('hex'),
-        payment: { method, provider: 'mercado-pago', status: 'pending', mode: config.mode },
+        payment: { method, provider: 'mercado-pago', status: 'pending', mode: config.mode,
+          ...(embeddedPix ? {experience: 'embedded_pix', ...(payload.pixIdentification ? {payerIdentification: payload.pixIdentification} : {})} : {}) },
+        notes: String(payload.notes || '').trim().slice(0, 1500),
         status: 'pending' };
       if (config.mode === 'production' && process.env.MP_REAL_SALE_TEST_ONLY === 'true') stock.validatePilot(order);
       const reservationPlan = await stock.prepareReservation(db, order, config.mode === 'production' ? 'production_inventory' : config.mode);
@@ -125,6 +131,13 @@ router.post('/checkout', async (req, res) => {
       if (config.mode === 'production') require('../catalog/catalog-storefront-service').invalidate();
     }
     if (!['pending', 'failed', 'cancelled'].includes(order.payment.status)) return res.status(409).json({ success: false, message: 'Este pedido já possui uma atualização de pagamento. Consulte o acompanhamento.' });
+    if (embeddedPix) {
+      const result = await require('./embedded-pix-service').prepareEmbeddedPix({
+        config: {...config, testAccountVerified: isTestAccount}, db, order, orderRef, attemptRef, lease,
+        request: (...args) => provider.request(...args), confirmPayment: payment => applyVerifiedPayment(config, payment, order.publicTrackingToken)
+      });
+      return res.json(result);
+    }
     // Em caso de falha após iniciar a chamada, não criar uma segunda preferência às cegas.
     if (order.payment.preferenceCreationStartedAt && !order.payment.preferenceId) return res.status(409).json({
       success: false, code: 'CHECKOUT_PREFERENCE_REVIEW',
@@ -245,8 +258,23 @@ async function applyVerifiedPayment(config, payment, expectedToken = null) {
         updatedAt: changes.updatedAt
       }, { merge: true });
       return status;
-    }).then(status => { if (config.mode === 'production') require('../catalog/catalog-storefront-service').invalidate(); return status; });
+    }).then(async status => {
+      if (config.mode === 'production') {
+        require('../catalog/catalog-storefront-service').invalidate();
+        if (status === 'paid') {
+          try {
+            const confirmed = (await ref.get()).data();
+            if (confirmed.payment?.status === 'paid' && String(confirmed.payment?.paymentId) === String(payment.id)) {
+              await require('../communication/paid-order-notification').notifyPaidOrder(confirmed);
+            }
+          } catch { console.warn('[PAID_ORDER_NOTIFICATION] Confirmação preservada; aviso para expedição precisa de revisão.'); }
+        }
+      }
+      return status;
+    });
 }
+
+router.post('/pix/status', require('./embedded-pix-status').statusHandler({confirmPayment: applyVerifiedPayment, getDb: getFirestore}));
 
 router.post('/webhook', async (req, res) => {
   const config = provider.configuration();
@@ -345,6 +373,10 @@ router.post('/resume', async (req, res) => {
     const orderSnapshot = await orderRef.get();
     if (!orderSnapshot.exists || orderSnapshot.data().publicTrackingToken !== token) return res.sendStatus(404);
     unlock = await claimCheckoutMaintenance(db, orderRef, 'resume');
+    if (orderSnapshot.data().payment?.experience === 'embedded_pix') {
+      await unlock();
+      return res.set('Cache-Control', 'no-store').json({success: true, data: {kind: 'embedded_pix', paymentStatus: orderSnapshot.data().payment.status}});
+    }
     const { resumeOrder } = require('./mercado-pago-resume');
     const data = await resumeOrder(config, orderSnapshot.data(), payment => applyVerifiedPayment(config, payment, token));
     await unlock();

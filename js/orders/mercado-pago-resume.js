@@ -24,6 +24,10 @@ let { token } = readPaymentReturn(location);
             });
             const result = await response.json().catch(() => ({}));
             if (!response.ok || !result.success) throw new Error(result.message || 'Não foi possível conferir o pagamento. Tente novamente em um minuto.');
+            if (result.data.kind === 'embedded_pix') {
+                location.assign('./pagar-pix.html' + (params.get('mp_test') === '1' ? '?mp_test=1' : '') + '#token=' + encodeURIComponent(token));
+                return;
+            }
             if (!result.data.checkoutUrl) {
                 message.textContent = 'O pagamento já possui uma confirmação. Atualize o acompanhamento para consultar o estado atual.';
                 button.hidden = true;

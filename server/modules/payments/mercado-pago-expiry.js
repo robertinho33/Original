@@ -2,6 +2,7 @@
 const { AppError } = require('../../core/app-error');
 const provider = require('./mercado-pago-provider');
 async function verifyExpiredOrder(config, order, confirmPayment) {
+  if (order.payment?.experience === 'embedded_pix') return require('./embedded-pix-expiry').verifyExpiredPix(config, order, confirmPayment);
   if (order.payment?.provider !== 'mercado-pago' || order.payment.mode !== config.mode ||
       !['pending', 'failed', 'cancelled'].includes(order.payment.status) || !order.payment.preferenceId) {
     throw new AppError('Este pedido não pode ser encerrado por expiração.', { status: 409 });

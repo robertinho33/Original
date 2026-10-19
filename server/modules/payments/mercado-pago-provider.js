@@ -83,10 +83,10 @@ function paymentStatus(payment) {
     refunded: 'refunded', charged_back: 'chargeback' })[payment.status] || 'pending';
 }
 
-async function request(config, path, body, fetchImpl = fetch, method = body ? 'POST' : 'GET') {
+async function request(config, path, body, fetchImpl = fetch, method = body ? 'POST' : 'GET', extraHeaders = {}) {
   const response = await fetchImpl(`https://api.mercadopago.com${path}`, {
     method,
-    headers: { Authorization: `Bearer ${config.token}`, 'Content-Type': 'application/json' },
+    headers: { ...extraHeaders, Authorization: `Bearer ${config.token}`, 'Content-Type': 'application/json' },
     ...(body ? { body: JSON.stringify(body) } : {}),
     signal: AbortSignal.timeout(15000)
   });

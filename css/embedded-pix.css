@@ -1,0 +1,18 @@
+.embedded-pix-page { max-width: 680px; margin: 0 auto; padding: 34px 22px 60px; }
+.pix-back { display: inline-block; margin-bottom: 24px; color: #254633; }
+.pix-brand { font-weight: 700; color: #254633; }
+.embedded-pix-page h1 { font-size: clamp(28px, 6vw, 44px); margin: 16px 0; }
+.embedded-pix-page p { line-height: 1.6; }
+#pixStatus { padding: 16px; border-radius: 10px; background: #eef3ec; color: #254633; }
+#pixDetails { padding: 22px; border: 1px solid #d4ddd1; border-radius: 16px; background: #fff; margin-top: 20px; }
+.pix-total { font-size: 1.6rem; font-weight: 700; }
+#pixImage { display: block; max-width: 100%; height: auto; margin: 20px auto; }
+#pixCodePanel label { display: block; margin-bottom: 8px; font-weight: 600; }
+#pixCode { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #a6b5a1; border-radius: 8px; font: .85rem monospace; overflow-wrap: anywhere; }
+.embedded-pix-page button, .pix-tracking { box-sizing: border-box; display: block; width: 100%; min-height: 48px; margin-top: 14px; padding: 14px; border: 1px solid #254633; border-radius: 9px; text-align: center; background: #254633; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.embedded-pix-page .pix-secondary, .pix-tracking { background: #fff; color: #254633; }
+.embedded-pix-page button:disabled { opacity: .6; cursor: wait; }
+.embedded-pix-page button:focus-visible, .pix-tracking:focus-visible { outline: 3px solid #987028; outline-offset: 3px; }
+#pixCopyFeedback { display: block; margin-top: 8px; }
+.pix-help { color: #5f685e; font-size: .9rem; }
+.embedded-pix-page [hidden] { display: none !important; }

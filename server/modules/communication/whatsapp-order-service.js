@@ -4,7 +4,7 @@ function getConfiguration(role = 'customer') {
   if (process.env.NEFER_WHATSAPP_ENABLED !== 'true') return null;
   const accessToken = String(process.env.NEFER_WHATSAPP_ACCESS_TOKEN || '').trim();
   const phoneNumberId = String(process.env.NEFER_WHATSAPP_PHONE_NUMBER_ID || '').trim();
-  const templateName = String(process.env[role === 'admin' ? 'NEFER_WHATSAPP_ADMIN_TEMPLATE' : role === 'influencer' ? 'NEFER_WHATSAPP_INFLUENCER_TEMPLATE' : 'NEFER_WHATSAPP_ORDER_TEMPLATE'] || '').trim();
+  const templateName = String(process.env[role === 'admin_paid' ? 'NEFER_WHATSAPP_PAID_TEMPLATE' : role === 'admin' ? 'NEFER_WHATSAPP_ADMIN_TEMPLATE' : role === 'influencer' ? 'NEFER_WHATSAPP_INFLUENCER_TEMPLATE' : 'NEFER_WHATSAPP_ORDER_TEMPLATE'] || '').trim();
   const language = String(process.env.NEFER_WHATSAPP_TEMPLATE_LANGUAGE || 'pt_BR').trim();
   const apiVersion = String(process.env.NEFER_WHATSAPP_GRAPH_API_VERSION || '').trim();
   if (!accessToken || !/^\d+$/.test(phoneNumberId) || !/^[a-z0-9_]+$/.test(templateName) || !/^v\d+\.\d+$/.test(apiVersion)) return null;

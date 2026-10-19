@@ -8,7 +8,7 @@ const provider = require('./mercado-pago-provider');
 
 test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora de ordem', async () => {
   const savedEnv = { ...process.env };
-  Object.assign(process.env, { MP_CHECKOUT_ENABLED: 'true', MP_MODE: 'test', MP_ACCESS_TOKEN: 'mock',
+  Object.assign(process.env, { MP_CHECKOUT_ENABLED: 'true', MP_EMBEDDED_PIX_ENABLED: 'true', MP_MODE: 'test', MP_ACCESS_TOKEN: 'mock',
     MP_COLLECTOR_ID: '123', MP_WEBHOOK_SECRET: 'mock-secret', PUBLIC_STORE_URL: 'https://www.fiosperfeitos.com.br',
     MP_NOTIFICATION_URL: 'https://example.test/api/payments/mercado-pago/webhook' });
   const records = new Map();
@@ -31,8 +31,8 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
   Module._load = function(name, parent, main) {
     if (parent?.filename.endsWith('mercado-pago-routes.js')) {
       if (name.endsWith('firebase-admin')) return { getFirestore: () => db };
-      if (name.endsWith('complete-order-builder')) return { buildCompleteOrder: async () => ({
-        totals: { total: 79.90 }, customer: {}, items: [{ sku: 'REAL', quantity: 1, unitPrice: 79.90 }],
+      if (name.endsWith('complete-order-builder')) return { buildCompleteOrder: async payload => ({
+        totals: { total: 79.90 }, customer: payload.customer || {}, items: [{ sku: 'REAL', quantity: 1, unitPrice: 79.90 }],
         createdAt: new Date().toISOString(), logistics: { status: 'pending' }
       }) };
     }
@@ -151,6 +151,41 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
     assert.equal(uncertain.code, 'CHECKOUT_PREFERENCE_REVIEW');
     assert.equal(uncertain.data.orderNumber, uncertainAttempt.orderNumber);
     assert.equal(uncertainCalls, 1);
+    let pixCreates = 0, pixPayment;
+    provider.request = async (config, path, body, fetchImpl, method, headers) => {
+      if (path === '/v1/payments' && method === 'POST') {
+        pixCreates++;
+        assert.match(headers['X-Idempotency-Key'], /^fp-pix-AUR-/);
+        assert.equal(body.transaction_amount, 79.90);
+        pixPayment = {id: 202, external_reference: body.external_reference, collector_id: 123, currency_id: 'BRL',
+          live_mode: false, transaction_amount: 79.90, payment_method_id: 'pix', payment_type_id: 'bank_transfer', status: 'pending',
+          date_last_updated: '2026-10-19T14:00:00Z', date_of_expiration: body.date_of_expiration,
+          point_of_interaction: {transaction_data: {qr_code: '000201-test-pix', qr_code_base64: 'aW1hZ2U='}}};
+        return pixPayment;
+      }
+      if (path === '/v1/payments/202') return pixPayment;
+      return normalRequest(config, path, body, fetchImpl, method, headers);
+    };
+    const pixPayload = { ...payload, checkoutAttemptId: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', paymentMethod: 'pix',
+      checkoutExperience: 'embedded_pix', customer: {name: 'Teste', email: 'buyer@example.test'}, notes: 'Cuidado com a embalagem' };
+    const pixResult = await (await post('/checkout', pixPayload)).json();
+    assert.equal(pixResult.success, true); assert.equal(pixResult.data.kind, 'embedded_pix');
+    assert.equal(pixResult.data.pix.qrCode, '000201-test-pix');
+    assert.deepEqual(await (await post('/checkout', pixPayload)).json(), pixResult);
+    assert.equal(pixCreates, 1);
+    const pixOrder = records.get('mpTestOrders/' + pixResult.data.orderNumber);
+    assert.equal(pixOrder.notes, 'Cuidado com a embalagem');
+    assert.equal(pixOrder.payment.experience, 'embedded_pix');
+    assert.equal((await post('/pix/status', {token: 'invalid'})).status, 400);
+    assert.equal((await post('/pix/status', {token: 'f'.repeat(64)})).status, 404);
+    const waiting = await (await post('/pix/status', {token: pixResult.data.trackingToken})).json();
+    assert.equal(waiting.data.paymentStatus, 'pending'); assert.equal(waiting.data.pix.qrCode, '000201-test-pix');
+    pixPayment = {...pixPayment, status: 'approved', date_last_updated: '2026-10-19T14:01:00Z', date_approved: '2026-10-19T14:01:00Z'};
+    const paidPix = await (await post('/pix/status', {token: pixResult.data.trackingToken})).json();
+    assert.equal(paidPix.data.paymentStatus, 'paid'); assert.equal(paidPix.data.pix, undefined);
+    assert.equal(records.get('mpTestOrders/' + pixResult.data.orderNumber).payment.status, 'paid');
+    assert.equal((await post('/checkout', pixPayload)).status, 409);
+    assert.equal(pixCreates, 1);
   } finally {
     provider.request = originalRequest;
     for (const key of Object.keys(process.env)) if (!(key in savedEnv)) delete process.env[key];
