@@ -46,7 +46,12 @@ function preferenceBody(order, config) {
     notification_url: config.notificationUrl,
     back_urls: { success: tracking, pending: tracking, failure: tracking },
     auto_return: 'approved',
-    payment_methods: { excluded_payment_types: [{ id: 'atm' }], installments: 1 },
+    payment_methods: {
+      excluded_payment_types: [{ id: 'atm' }], installments: 1,
+      // Preserve the choice from the store; the buyer may still change it in Checkout Pro.
+      ...(order.payment?.method === 'pix' ? { default_payment_method_id: 'pix' } :
+        order.payment?.method === 'boleto' ? { default_payment_method_id: 'bolbradesco' } : {})
+    },
     expires: true,
     expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString()
   };

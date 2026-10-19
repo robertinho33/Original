@@ -64,3 +64,14 @@ test('aprovação só vale com referência, recebedor, moeda, ambiente e valor c
 test('erro da API não revela credenciais nem payload do provedor', async () => {
   await assert.rejects(p.request({ token: 'private-token' }, '/checkout/preferences', {}, async () => ({ ok: false, json: async () => ({ message: 'private-token' }) })), error => !error.message.includes('private-token'));
 });
+
+test('checkout preserves PIX and boleto as the preferred method without inventing a card brand', () => {
+  for (const [method, expected] of [['pix', 'pix'], ['boleto', 'bolbradesco'], ['card', undefined]]) {
+    const body = p.preferenceBody({ ...order, payment: { method } }, config);
+    assert.equal(body.payment_methods.default_payment_method_id, expected);
+    assert.equal(body.items[0].unit_price, order.totals.total);
+    assert.deepEqual(body.payment_methods.excluded_payment_types, [{ id: 'atm' }]);
+    assert.equal(body.statement_descriptor, 'FIOS PERFEITOS');
+    assert.doesNotMatch(body.items[0].title, /NEFER/);
+  }
+});
