@@ -41,3 +41,6 @@ serviceAccountKey.json
 *.log
 backup-*/
 _LIXO_DIAGNOSTICOS/
+
+# Cópias de segurança preservadas somente neste computador
+/backups/
