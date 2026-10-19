@@ -91,7 +91,14 @@ async function request(config, path, body, fetchImpl = fetch, method = body ? 'P
     signal: AbortSignal.timeout(15000)
   });
   const result = await response.json();
-  if (!response.ok) throw new AppError('O Mercado Pago não respondeu à solicitação. Tente novamente.', { status: 502, code: 'MP_REQUEST_FAILED' });
+  if (!response.ok) {
+    const error = new AppError('O Mercado Pago não respondeu à solicitação. Tente novamente.', { status: 502, code: 'MP_REQUEST_FAILED' });
+    error.upstreamStatus = Number(response.status) || 0;
+    // Only a definitive rejection of preference creation permits another POST.
+    error.preferenceRejected = path === '/checkout/preferences' && method === 'POST' &&
+      [400, 401, 403, 404, 422, 429].includes(error.upstreamStatus);
+    throw error;
+  }
   return result;
 }
 

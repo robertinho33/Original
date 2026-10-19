@@ -120,6 +120,37 @@ test('fluxo HTTP: tentativa repetida, falha, webhook adulterado e eventos fora d
     payment = { ...payment, status: 'refunded', transaction_amount: 1, date_last_updated: '2026-10-09T13:00:00Z' };
     assert.equal((await post('/webhook?data.id=99&type=payment', { type: 'payment' }, headers)).status, 503);
     assert.equal(records.get(orderKey).payment.status, 'paid');
+    const normalRequest = provider.request;
+    let rejectOnce = true;
+    provider.request = async (...args) => {
+      if (args[1] === '/checkout/preferences' && rejectOnce) {
+        rejectOnce = false;
+        const error = new Error('mock definitive rejection'); error.status = 502;
+        error.preferenceRejected = true; error.upstreamStatus = 400; throw error;
+      }
+      return normalRequest(...args);
+    };
+    const recoveryPayload = { ...payload, checkoutAttemptId: 'cccccccc-cccc-4ccc-cccc-cccccccccccc' };
+    assert.equal((await post('/checkout', recoveryPayload)).status, 502);
+    const recoveryAttempt = records.get('mpTestAttempts/' + recoveryPayload.checkoutAttemptId);
+    const recoveryNumber = recoveryAttempt.orderNumber;
+    assert.equal(recoveryAttempt.lockedUntil, 0);
+    assert.equal(records.get('mpTestOrders/' + recoveryNumber).payment.preferenceCreationStartedAt, null);
+    const recovered = await (await post('/checkout', recoveryPayload)).json();
+    assert.equal(recovered.success, true); assert.equal(recovered.data.orderNumber, recoveryNumber);
+    let uncertainCalls = 0;
+    provider.request = async (...args) => {
+      if (args[1] === '/checkout/preferences') { uncertainCalls++; throw Error('mock network timeout'); }
+      return normalRequest(...args);
+    };
+    const uncertainPayload = { ...payload, checkoutAttemptId: 'dddddddd-dddd-4ddd-dddd-dddddddddddd' };
+    assert.equal((await post('/checkout', uncertainPayload)).status, 503);
+    const uncertainAttempt = records.get('mpTestAttempts/' + uncertainPayload.checkoutAttemptId);
+    uncertainAttempt.lockedUntil = 0;
+    const uncertain = await (await post('/checkout', uncertainPayload)).json();
+    assert.equal(uncertain.code, 'CHECKOUT_PREFERENCE_REVIEW');
+    assert.equal(uncertain.data.orderNumber, uncertainAttempt.orderNumber);
+    assert.equal(uncertainCalls, 1);
   } finally {
     provider.request = originalRequest;
     for (const key of Object.keys(process.env)) if (!(key in savedEnv)) delete process.env[key];

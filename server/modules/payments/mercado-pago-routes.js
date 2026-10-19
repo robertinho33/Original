@@ -90,7 +90,9 @@ router.post('/checkout', async (req, res) => {
     if (claim.response) return res.json(claim.response);
     if (claim.settled) return res.status(409).json({ success: false, message: 'Este pagamento já foi registrado. Consulte seu link de acompanhamento.' });
     if (claim.conflict || claim.expired || claim.busy) return res.status(409).json({ success: false,
-      message: claim.expired ? 'Esta tentativa expirou. Atualize a sacola para iniciar outra.' : 'A tentativa está em processamento ou seus dados mudaram. Aguarde e tente novamente.' });
+      code: claim.conflict ? 'CHECKOUT_ATTEMPT_CONFLICT' : claim.expired ? 'CHECKOUT_ATTEMPT_EXPIRED' : 'CHECKOUT_ATTEMPT_BUSY',
+      message: claim.conflict ? 'Os dados desta tentativa mudaram. Consulte o pedido antes de iniciar outro pagamento.' :
+        claim.expired ? 'Esta tentativa expirou. Consulte o pedido para retomar o pagamento.' : 'Este pagamento está sendo preparado. Aguarde um minuto antes de tentar novamente.' });
     const orderRef = db.collection(names.orders).doc(claim.orderNumber);
     let snapshot = await orderRef.get();
     let order = snapshot.exists ? snapshot.data() : null;
@@ -124,7 +126,11 @@ router.post('/checkout', async (req, res) => {
     }
     if (!['pending', 'failed', 'cancelled'].includes(order.payment.status)) return res.status(409).json({ success: false, message: 'Este pedido já possui uma atualização de pagamento. Consulte o acompanhamento.' });
     // Em caso de falha após iniciar a chamada, não criar uma segunda preferência às cegas.
-    if (order.payment.preferenceCreationStartedAt && !order.payment.preferenceId) return res.status(409).json({ success: false, message: 'A preparação deste pedido precisa ser conferida antes de uma nova tentativa.' });
+    if (order.payment.preferenceCreationStartedAt && !order.payment.preferenceId) return res.status(409).json({
+      success: false, code: 'CHECKOUT_PREFERENCE_REVIEW',
+      message: 'A abertura do pagamento não foi confirmada. Este pedido precisa de revisão antes de tentar novamente.',
+      data: { orderNumber: order.orderNumber, trackingToken: order.publicTrackingToken, testMode: config.mode === 'test' }
+    });
     await db.runTransaction(async tx => {
       const attempt = (await tx.get(attemptRef)).data();
       const current = (await tx.get(orderRef)).data();
@@ -135,7 +141,24 @@ router.post('/checkout', async (req, res) => {
       }
       tx.update(orderRef, { 'payment.preferenceCreationStartedAt': new Date().toISOString() });
     });
-    const preference = await provider.request(config, '/checkout/preferences', provider.preferenceBody(order, config));
+    let preference;
+    try {
+      preference = await provider.request(config, '/checkout/preferences', provider.preferenceBody(order, config));
+    } catch (error) {
+      console.warn('[MP_PREFERENCE_FAILED]', JSON.stringify({ upstreamStatus: error.upstreamStatus || 0,
+        definitiveRejection: error.preferenceRejected === true }));
+      if (error.preferenceRejected === true) {
+        await db.runTransaction(async tx => {
+          const attempt = (await tx.get(attemptRef)).data();
+          const current = (await tx.get(orderRef)).data();
+          if (attempt?.lease !== lease || current?.payment?.preferenceId) return;
+          tx.update(orderRef, { 'payment.preferenceCreationStartedAt': null });
+          tx.update(attemptRef, { lockedUntil: 0 });
+        });
+      }
+      // Network failures and server errors remain locked for review: creation may have succeeded.
+      throw error;
+    }
     // Credenciais de vendedor de teste usam init_point; a conta controla o ambiente.
     const url = provider.checkoutUrl(preference.init_point);
     const response = { success: true, data: { checkoutUrl: url, orderNumber: order.orderNumber,

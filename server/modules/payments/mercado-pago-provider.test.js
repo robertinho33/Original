@@ -75,3 +75,13 @@ test('checkout preserves PIX and boleto as the preferred method without inventin
     assert.doesNotMatch(body.items[0].title, /NEFER/);
   }
 });
+
+test('only definitive preference rejections allow a safe retry; provider details stay private', async () => {
+  for (const status of [400, 401, 403, 404, 422, 429, 500, 502, 503]) {
+    await assert.rejects(p.request({ token: 'private-token' }, '/checkout/preferences', {}, async () => ({
+      ok: false, status, json: async () => ({ message: 'private-provider-body' })
+    })), error => error.upstreamStatus === status &&
+      error.preferenceRejected === [400, 401, 403, 404, 422, 429].includes(status) &&
+      !error.message.includes('private-provider-body'));
+  }
+});

@@ -4,7 +4,8 @@ const API = `${API_ROOT}/api/payments/mercado-pago`;
 
 export function showPendingCardOrder() {
     const heading = document.querySelector('.checkout-heading');
-    if (!heading || document.getElementById('pendingCardOrder')) return;
+    if (!heading) return;
+    document.getElementById('pendingCardOrder')?.remove();
     let pending;
     try { pending = JSON.parse(sessionStorage.getItem('nefer-mp-pending-order') || 'null'); } catch { return; }
     if (!pending || !/^AUR-[A-F0-9]{16}$/.test(pending.orderNumber || '') ||
@@ -76,7 +77,19 @@ export async function startCardCheckout(order) {
         body: JSON.stringify({ ...payload, checkoutAttemptId: attempt.id })
     });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok || !result.success) throw new Error(result.message || 'Não foi possível abrir o pagamento.');
+    if (!response.ok || !result.success) {
+        // A failed preparation can belong to a newer order than the previous banner.
+        const current = result.code === 'CHECKOUT_PREFERENCE_REVIEW' ? result.data : null;
+        if (current && /^AUR-[A-F0-9]{16}$/.test(current.orderNumber || '') && /^[a-f0-9]{64}$/i.test(current.trackingToken || '')) {
+            sessionStorage.setItem('nefer-mp-pending-order', JSON.stringify({
+                orderNumber: current.orderNumber, trackingToken: current.trackingToken,
+                testMode: current.testMode === true, savedAt: Date.now()
+            }));
+            showPendingCardOrder();
+        }
+        // Never rotate the attempt automatically after an uncertain payment result.
+        throw new Error(result.message || 'Não foi possível abrir o pagamento.');
+    }
     const data = result.data;
     const url = new URL(data.checkoutUrl);
     if (url.protocol !== 'https:' || !['www.mercadopago.com.br', 'www.mercadopago.com', 'sandbox.mercadopago.com.br', 'sandbox.mercadopago.com'].includes(url.hostname)) throw new Error('Destino de pagamento inválido.');
