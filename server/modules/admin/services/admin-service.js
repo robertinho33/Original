@@ -477,7 +477,8 @@ async function getReports() {
 }
 
 async function getAudit() {
-    return getCollection("audit");
+    const groups = await Promise.all([getCollection("audit"), getCollection("auditLogs")]);
+    return groups.flat().map(row => ({ ...row, createdAt: normalizeDate(row.createdAt || row.created_at || row.timestamp) }));
 }
 
 async function getSettings() {

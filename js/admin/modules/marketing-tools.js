@@ -1,3 +1,4 @@
+import { renderStorefrontWorkspace } from './storefront-workspace.js';
 import { renderRitualTools } from './discovery-tools.js';
 import { renderInfluencerCampaign } from './influencer-campaign.js';
 const api = window.AdminAPI;
@@ -22,67 +23,7 @@ function filtersFrom(form) {
     };
 }
 
-export async function renderStorefront(container) {
-    container.innerHTML = '<section class="module-panel"><p>Carregando configurações do banner...</p></section>';
-    const [heroResult, accessResult] = await Promise.all([
-        api.get('/marketing/hero'), api.get('/access')
-    ]);
-    const draft = heroResult.data?.draft || {};
-    const active = heroResult.data?.active || {};
-    const canPublish = accessResult.data?.role === 'admin';
-    const value = (key, fallback = '') => esc(draft[key] ?? fallback);
-    container.innerHTML = `
-      <section class="module-panel">
-        <div class="module-panel-header"><div><span class="module-eyebrow">VITRINE</span><h2>Banner principal</h2><p>Prepare uma chamada para promoções e campanhas temporárias.</p></div></div>
-        <p class="admin-help-text">${active.title ? `Banner publicado: <strong>${esc(active.title)}</strong>${active.endsAt ? ` · termina em ${esc(date(active.endsAt))}` : ''}.` : 'Ainda não há uma campanha publicada; a vitrine usa o banner padrão.'} Salve primeiro como rascunho e publique quando estiver pronto.</p>
-        <form id="storefront-hero-form" class="admin-form">
-          <label>Chamada curta<input name="eyebrow" maxlength="80" value="${value('eyebrow', 'BELEZA • CUIDADO • OFERTAS')}"></label>
-          <label>Texto principal<input name="title" maxlength="90" required value="${value('title', 'Beleza que')}"></label>
-          <label>Palavra em destaque<input name="emphasis" maxlength="60" value="${value('emphasis', 'começa')}"></label>
-          <label>Complemento do título<input name="ending" maxlength="90" value="${value('ending', ' no ritual.')}"></label>
-          <label class="admin-form-full">Texto da promoção<textarea name="description" maxlength="320" rows="3" required>${value('description', 'Uma experiência especial para o seu ritual de beleza.')}</textarea></label>
-          <label>Texto do botão<input name="buttonLabel" maxlength="40" required value="${value('buttonLabel', 'Ver promoção')}"></label>
-          <label>Destino do botão<input name="buttonUrl" maxlength="1200" required placeholder="#colecao ou https://..." value="${value('buttonUrl', '#colecao')}"></label>
-          <label class="admin-form-full">URL da imagem do banner<input name="imageUrl" maxlength="1200" type="url" placeholder="https://..." value="${value('imageUrl')}"></label>
-          <label>Descrição acessível da imagem<input name="imageAlt" maxlength="160" value="${value('imageAlt')}"></label>
-          <label>Início da campanha<input name="startsAt" type="datetime-local" value="${dateInput(draft.startsAt)}"></label>
-          <label>Fim da campanha<input name="endsAt" type="datetime-local" value="${dateInput(draft.endsAt)}"></label>
-          <div class="admin-form-full marketing-form-actions"><button class="admin-button admin-button-primary" type="submit">Salvar rascunho</button><button class="admin-button hero-publish" type="button" ${canPublish ? '' : 'disabled'}>Publicar banner</button><span id="hero-message" role="status"></span></div>
-        </form>
-      </section>
-      <section class="module-panel"><h3>Como aparece na vitrine</h3><div class="marketing-preview"><strong id="hero-preview-title"></strong><p id="hero-preview-description"></p><span id="hero-preview-button" class="admin-status-badge"></span></div></section>`;
-
-    const campaignPanel=document.createElement('section');container.append(campaignPanel);await renderInfluencerCampaign(campaignPanel);
-    const ritualPanel=document.createElement('section');container.append(ritualPanel);await renderRitualTools(ritualPanel);
-    const form = container.querySelector('#storefront-hero-form');
-    const message = container.querySelector('#hero-message');
-    const syncPreview = () => {
-        const values = Object.fromEntries(new FormData(form));
-        container.querySelector('#hero-preview-title').textContent = `${values.title || ''} ${values.emphasis || ''}${values.ending || ''}`;
-        container.querySelector('#hero-preview-description').textContent = values.description || '';
-        container.querySelector('#hero-preview-button').textContent = values.buttonLabel || '';
-    };
-    form.addEventListener('input', syncPreview);
-    syncPreview();
-    form.addEventListener('submit', async event => {
-        event.preventDefault();
-        const body = Object.fromEntries(new FormData(form));
-        body.startsAt = body.startsAt ? new Date(body.startsAt).toISOString() : '';
-        body.endsAt = body.endsAt ? new Date(body.endsAt).toISOString() : '';
-        try {
-            await api.put('/marketing/hero', body);
-            message.textContent = 'Rascunho salvo.';
-        } catch (error) { message.textContent = error.message; }
-    });
-    container.querySelector('.hero-publish').addEventListener('click', async () => {
-        if (!canPublish) return;
-        try {
-            await api.put('/marketing/hero/activate', {});
-            message.textContent = 'Banner publicado na vitrine.';
-            await renderStorefront(container);
-        } catch (error) { message.textContent = error.message; }
-    });
-}
+export async function renderStorefront(container) { return renderStorefrontWorkspace(container); }
 
 export async function renderIncentiveCampaigns(container) {
     container.innerHTML = '<section class="module-panel"><p>Carregando públicos e campanhas...</p></section>';

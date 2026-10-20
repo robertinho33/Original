@@ -1,3 +1,5 @@
+import { renderCatalogWorkspace } from './modules/catalog-workspace.js';
+import { renderOrderWorkspace, renderHistoryWorkspace } from './modules/order-workspace.js';
 import './modules/discovery-tools.js';
 import './modules/influencer-access.js';
 import './modules/order-modal-close.js';
@@ -500,7 +502,9 @@ function table(title, columns, rows) {
    LOAD PRINCIPAL
    ============================================================ */
 
+let catalogRequestedTab = '';
 async function load(section) {
+    if (section === 'categories' || section === 'inventory') { catalogRequestedTab = section === 'categories' ? 'categories' : 'products'; section='products'; }
     window.loadAdminSection = load;
     if (!root) {
         console.error(
@@ -541,8 +545,8 @@ async function load(section) {
         ],
 
         products: [
-            'Produtos',
-            'Catálogo, SKU, preços e disponibilidade.'
+            'Produtos e estoque',
+            'Busque produtos, edite o cadastro e controle o estoque no mesmo lugar.'
         ],
 
         suppliers: [
@@ -566,7 +570,7 @@ async function load(section) {
         ],
 
         finance: [
-            'Financeiro',
+            'Vendas e resultados',
             'Receitas, pagamentos e indicadores.'
         ],
 
@@ -598,8 +602,8 @@ async function load(section) {
         ],
 
         storefront: [
-            'Banner da vitrine',
-            'Crie e programe campanhas promocionais para a página inicial.'
+            'Vitrine e campanhas',
+            'Atualize o banner, as ofertas dos influenciadores e os rituais.'
         ],
 
         campaigns: [
@@ -608,7 +612,7 @@ async function load(section) {
         ],
 
         logistics: [
-            'Logística',
+            'Entregas',
             'Expedição, envio e rastreamento.'
         ],
 
@@ -618,7 +622,7 @@ async function load(section) {
         ],
 
         audit: [
-            'Auditoria',
+            'Histórico de alterações',
             'Histórico das operações administrativas.'
         ],
 
@@ -728,15 +732,17 @@ async function loadModuleData(section) {
 
             case 'products':
                 {
-                    const [productsResponse, visibilityResponse] = await Promise.all([
+                    const [productsResponse, visibilityResponse, inventoryResponse] = await Promise.all([
                         adminApi.products(),
-                        adminApi.catalogVisibility()
+                        adminApi.catalogVisibility(),
+                        adminApi.inventory()
                     ]);
                     response = {
                         success: true,
                         data: {
                             products: productsResponse?.data ?? productsResponse ?? [],
-                            visibility: visibilityResponse?.data ?? visibilityResponse ?? {}
+                            visibility: visibilityResponse?.data ?? visibilityResponse ?? {},
+                            inventory: inventoryResponse?.data ?? inventoryResponse ?? []
                         }
                     };
                 }
@@ -759,7 +765,7 @@ async function loadModuleData(section) {
 
             case 'finance':
                 response =
-                    await adminApi.finance();
+                    await adminApi.orders();
                 break;
 
 
@@ -776,12 +782,12 @@ async function loadModuleData(section) {
 
             case 'logistics':
                 response =
-                    await adminApi.logistics();
+                    await adminApi.orders();
                 break;
 
             case 'reports':
                 response =
-                    await adminApi.reports();
+                    await adminApi.orders();
                 break;
 
             case 'audit':
@@ -830,7 +836,8 @@ async function loadModuleData(section) {
                     : Array.isArray(data?.products)
                         ? data.products
                         : [],
-                data?.visibility || {}
+                data?.visibility || {},
+                data?.inventory || []
             );
             return;
         }
@@ -967,286 +974,10 @@ async function loadModuleData(section) {
    PRODUTOS
    ============================================================ */
 
-function renderProducts(content, products, visibility = {}) {
-
-    const list =
-        Array.isArray(products)
-            ? products
-            : [];
-
-    window.__aureaAdminProducts = list;
-
-    const total =
-        list.length;
-
-    const available =
-        list.filter(product =>
-            Number(
-                pick(
-                    product,
-                    ['stock', 'inventory', 'quantity'],
-                    0
-                )
-            ) > 0
-        ).length;
-
-    const withoutStock =
-        list.filter(product =>
-            Number(
-                pick(
-                    product,
-                    ['stock', 'inventory', 'quantity'],
-                    0
-                )
-            ) <= 0
-        ).length;
-
-    const sources = Array.isArray(visibility.sources)
-        ? visibility.sources
-        : [];
-
-    const sourceControls = sources.length
-        ? sources.map(source => `
-            <article class="admin-catalog-source-control">
-                <div>
-                    <strong>${escapeHtml(source.name || source.id)}</strong>
-                    <small>${source.visible ? 'Visível na vitrine' : 'Oculto na vitrine'}</small>
-                </div>
-                <button
-                    type="button"
-                    class="admin-catalog-source-toggle"
-                    data-source-id="${escapeHtml(source.id)}"
-                    data-visible="${source.visible ? 'true' : 'false'}"
-                    aria-pressed="${source.visible ? 'true' : 'false'}"
-                >${source.visible ? 'Desativar fornecedor' : 'Ativar fornecedor'}</button>
-            </article>
-        `).join('')
-        : '<p>Não há fornecedores configurados no catálogo.</p>';
-
-
-    const html = `
-
-        <div class="admin-module-data" id="admin-products-module">
-
-            <div class="admin-metrics-grid">
-
-                ${metricCard(
-                    'Produtos cadastrados',
-                    formatNumber(total)
-                )}
-
-                ${metricCard(
-                    'Disponíveis',
-                    formatNumber(available)
-                )}
-
-                ${metricCard(
-                    'Sem estoque',
-                    formatNumber(withoutStock)
-                )}
-
-                ${metricCard(
-                    'Fonte',
-                    'Firebase / Firestore'
-                )}
-
-            </div>
-
-            <section class="admin-catalog-visibility" aria-labelledby="admin-catalog-visibility-title">
-                <div class="admin-catalog-visibility-heading">
-                    <div>
-                        <h3 id="admin-catalog-visibility-title">Visibilidade na vitrine</h3>
-                        <p>Ative ou oculte fornecedores inteiros; os itens também podem ser controlados individualmente na lista.</p>
-                    </div>
-                </div>
-                <div class="admin-catalog-source-controls">${sourceControls}</div>
-            </section>
-
-
-            ${table(
-                'Catálogo de produtos',
-
-                [
-                    {
-                        label: 'Produto',
-                        render: row => `
-                            <strong>
-                                ${escapeHtml(
-                                    pick(
-                                        row,
-                                        [
-                                            'name',
-                                            'product_name',
-                                            'title'
-                                        ],
-                                        'Produto'
-                                    )
-                                )}
-                            </strong>
-                        `
-                    },
-
-                    {
-                        label: 'SKU',
-                        keys: [
-                            'sku',
-                            'code',
-                            'product_code'
-                        ]
-                    },
-
-                    {
-                        label: 'Fornecedor',
-                        render: row => escapeHtml(
-                            row.sourceName || row.source_name || row.supplierName || row.supplier || row.sourceId || '—'
-                        )
-                    },
-
-                    {
-                        label: 'Categoria',
-                        render: row =>
-                            escapeHtml(
-                                pick(
-                                    row,
-                                    [
-                                        'category_name',
-                                        'categoryName',
-                                        'category'
-                                    ],
-                                    'Sem categoria'
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Preço',
-                        render: row =>
-                            formatCurrency(
-                                pick(
-                                    row,
-                                    [
-                                        'price',
-                                        'sale_price',
-                                        'amount'
-                                    ],
-                                    0
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Estoque',
-                        render: row =>
-                            formatNumber(
-                                pick(
-                                    row,
-                                    [
-                                        'stock',
-                                        'inventory',
-                                        'quantity'
-                                    ],
-                                    0
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Situação',
-                        render: row =>
-                            stockStatus(
-                                pick(
-                                    row,
-                                    [
-                                        'stock',
-                                        'inventory',
-                                        'quantity'
-                                    ],
-                                    0
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Vitrine',
-                        render: row => {
-                            const visible = row.active !== false;
-                            return `
-                                <button
-                                    type="button"
-                                    class="admin-catalog-product-toggle"
-                                    data-product-id="${escapeHtml(String(row.id || row.productId || row.docId || ''))}"
-                                    data-visible="${visible ? 'true' : 'false'}"
-                                    aria-pressed="${visible ? 'true' : 'false'}"
-                                >${visible ? 'Visível · ocultar' : 'Oculto · exibir'}</button>
-                            `;
-                        }
-                    },
-
-                    {
-                        label: 'Ações',
-                        render: row => `
-                            <button
-                                type="button"
-                                class="admin-product-edit"
-                                data-product-id="${escapeHtml(
-                                    String(
-                                        row.id ||
-                                        row.productId ||
-                                        row.docId ||
-                                        ''
-                                    )
-                                )}"
-                            >
-                                Editar
-                            </button>
-                        `
-                    }
-                ],
-
-                list
-            )}
-
-        </div>
-    `;
-
-
-    content.outerHTML =
-        html;
-
-    const module = document.getElementById('admin-products-module');
-    module?.addEventListener('click', async event => {
-        const sourceButton = event.target.closest('.admin-catalog-source-toggle');
-        const productButton = event.target.closest('.admin-catalog-product-toggle');
-        const button = sourceButton || productButton;
-        if (!button || button.disabled) return;
-
-        const visible = button.dataset.visible !== 'true';
-        button.disabled = true;
-        try {
-            if (sourceButton) {
-                await adminApi.setCatalogSourceVisibility(button.dataset.sourceId, visible);
-                button.textContent = visible ? 'Desativar fornecedor' : 'Ativar fornecedor';
-            } else {
-                await adminApi.setCatalogProductVisibility(button.dataset.productId, visible);
-                button.textContent = visible ? 'Visível · ocultar' : 'Oculto · exibir';
-            }
-
-            button.dataset.visible = String(visible);
-            button.setAttribute('aria-pressed', String(visible));
-            const status = sourceButton ? button.previousElementSibling?.querySelector('small') : null;
-            if (status) status.textContent = visible ? 'Visível na vitrine' : 'Oculto na vitrine';
-            showAdminToast?.(
-                sourceButton
-                    ? `Fornecedor ${visible ? 'ativado' : 'ocultado'} na vitrine.`
-                    : `Produto ${visible ? 'ativado' : 'ocultado'} na vitrine.`,
-                'success'
-            );
-        } catch (error) {
-            showAdminToast?.(error?.message || 'Não foi possível atualizar a vitrine.', 'error');
-        } finally {
-            button.disabled = false;
-        }
-    });
+function renderProducts(content, products, visibility = {}, inventory = []) {
+    window.__aureaAdminProducts = products;
+    renderCatalogWorkspace(content, products, visibility, inventory, { api:adminApi,notify:showAdminToast,onEdit:openProductEditor,onRefresh:()=>load('products'),initialTab:catalogRequestedTab });
+    catalogRequestedTab='';
 }
 
 
@@ -1326,7 +1057,7 @@ function openProductEditor(product) {
                     </h2>
 
                     <p>
-                        Alterações salvas no Firebase / Firestore.
+                        Edite os dados do produto. Para ajustar unidades, use Movimentar estoque na lista.
                     </p>
 
                 </div>
@@ -1438,7 +1169,7 @@ function openProductEditor(product) {
                         Estoque
 
                         <input
-                            name="stock"
+                            name="stock" readonly aria-description="Para alterar, use Movimentar estoque na lista de produtos."
                             type="number"
                             min="0"
                             step="1"
@@ -1672,6 +1403,7 @@ function openProductEditor(product) {
             };
 
 
+            delete updatedProduct.stock;
             if (!updatedProduct.name) {
                 showAdminToast?.(
                     'Informe o nome do produto.',
@@ -2235,281 +1967,8 @@ function renderCustomers(content, customers) {
    ============================================================ */
 
 function renderFinance(content, finance) {
-
-    const data =
-        finance &&
-        typeof finance === 'object' &&
-        !Array.isArray(finance)
-            ? finance
-            : {};
-
-
-    const revenue =
-        pick(
-            data,
-            [
-                'grossRevenue',
-                'revenue',
-                'totalRevenue',
-                'sales'
-            ],
-            0
-        );
-
-
-    const orders =
-        pick(
-            data,
-            [
-                'confirmedOrders',
-                'orders',
-                'totalOrders'
-            ],
-            0
-        );
-
-
-    const average =
-        pick(
-            data,
-            [
-                'averageTicket',
-                'average_ticket',
-                'ticket'
-            ],
-            Number(orders) > 0
-                ? Number(revenue) / Number(orders)
-                : 0
-        );
-
-
-    content.outerHTML = `
-
-        <div class="admin-module-data">
-
-            <div class="admin-metrics-grid">
-
-                ${metricCard(
-                    'Faturamento',
-                    formatCurrency(revenue)
-                )}
-
-                ${metricCard(
-                    'Pedidos',
-                    formatNumber(orders)
-                )}
-
-                ${metricCard(
-                    'Ticket médio',
-                    formatCurrency(average)
-                )}
-
-                ${metricCard(
-                    'Fonte',
-                    'Firebase / Firestore'
-                )}
-
-            </div>
-
-
-            <section class="module-panel">
-
-                <div class="module-panel-header">
-
-                    <div>
-
-                        <span class="module-eyebrow">
-                            VISÃO FINANCEIRA
-                        </span>
-
-                        <h3>
-                            Resumo financeiro
-                        </h3>
-
-                    </div>
-
-                </div>
-
-
-                <div class="admin-operation-grid">
-
-                    <article class="admin-operation-card">
-
-                        <span>
-                            Receita total
-                        </span>
-
-                        <strong>
-                            ${formatCurrency(revenue)}
-                        </strong>
-
-                    </article>
-
-
-                    <article class="admin-operation-card">
-
-                        <span>
-                            Pedidos registrados
-                        </span>
-
-                        <strong>
-                            ${formatNumber(orders)}
-                        </strong>
-
-                    </article>
-
-
-                    <article class="admin-operation-card">
-
-                        <span>
-                            Ticket médio
-                        </span>
-
-                        <strong>
-                            ${formatCurrency(average)}
-                        </strong>
-
-                    </article>
-
-
-                    <article class="admin-operation-card">
-
-                        <span>
-                            Origem
-                        </span>
-
-                        <strong>
-                            Firebase / Firestore
-                        </strong>
-
-                    </article>
-
-                </div>
-
-            </section>
-
-        </div>
-    `;
+    return renderOrderWorkspace(content, Array.isArray(finance) ? finance : [], 'finance');
 }
-
-
-/* ============================================================
-   CUPONS
-   ============================================================ */
-
-function couponId(coupon) {
-    return String(
-        coupon?.id ??
-        coupon?.couponId ??
-        coupon?.docId ??
-        ''
-    );
-}
-
-
-function couponIsActive(coupon) {
-    if (
-        typeof coupon?.active === 'boolean'
-    ) {
-        return coupon.active;
-    }
-
-    const status =
-        String(
-            pick(
-                coupon,
-                [
-                    'status',
-                    'state'
-                ],
-                'active'
-            )
-        )
-            .trim()
-            .toLowerCase();
-
-    return (
-        status === 'active' ||
-        status === 'ativo'
-    );
-}
-
-
-function couponType(coupon) {
-    const type =
-        String(
-            pick(
-                coupon,
-                [
-                    'type',
-                    'discountType',
-                    'discount_type'
-                ],
-                'percentage'
-            )
-        )
-            .trim()
-            .toLowerCase();
-
-    return (
-        type === 'fixed' ||
-        type === 'valor_fixo' ||
-        type === 'fixed_amount'
-    )
-        ? 'fixed'
-        : 'percentage';
-}
-
-
-function couponValue(coupon) {
-    return Number(
-        pick(
-            coupon,
-            [
-                'value',
-                'discount',
-                'discount_value',
-                'percentage'
-            ],
-            0
-        )
-    ) || 0;
-}
-
-
-function couponUsageCount(coupon) {
-    return Number(
-        pick(
-            coupon,
-            [
-                'usageCount',
-                'usage_count',
-                'uses',
-                'used',
-                'uses_count'
-            ],
-            0
-        )
-    ) || 0;
-}
-
-
-function couponUsageLimit(coupon) {
-    const value =
-        pick(
-            coupon,
-            [
-                'usageLimit',
-                'usage_limit',
-                'max_uses',
-                'limit'
-            ],
-            0
-        );
-
-    return Number(value) || 0;
-}
-
 
 function renderCoupons(content, coupons) {
 
@@ -3797,455 +3256,16 @@ function openCouponEditor(coupon = null) {
    ============================================================ */
 
 function renderLogistics(content, shipments) {
-
-    const list =
-        Array.isArray(shipments)
-            ? shipments
-            : [];
-
-
-    content.outerHTML = `
-
-        <div class="admin-module-data">
-
-            <div class="admin-metrics-grid">
-
-                ${metricCard(
-                    'Envios registrados',
-                    formatNumber(list.length)
-                )}
-
-                ${metricCard(
-                    'Pendentes',
-                    formatNumber(
-                        list.filter(row =>
-                            [
-                                'pending',
-                                'processing',
-                                'ready',
-                                'awaiting_shipment',
-                                'to_ship'
-                            ].includes(
-                                String(
-                                    pick(
-                                        row,
-                                        [
-                                            'status',
-                                            'state'
-                                        ],
-                                        ''
-                                    )
-                                ).toLowerCase()
-                            )
-                        ).length
-                    )
-                )}
-
-                ${metricCard(
-                    'Fonte',
-                    'Firebase / Firestore'
-                )}
-
-            </div>
-
-
-            ${table(
-                'Expedição e rastreamento',
-
-                [
-                    {
-                        label: 'ID',
-                        keys: ['id']
-                    },
-
-                    {
-                        label: 'Pedido',
-                        keys: [
-                            'order_id',
-                            'order_number'
-                        ]
-                    },
-
-                    {
-                        label: 'Transportadora',
-                        keys: [
-                            'carrier',
-                            'shipping_carrier'
-                        ]
-                    },
-
-                    {
-                        label: 'Rastreamento',
-                        keys: [
-                            'tracking_code',
-                            'tracking_number'
-                        ]
-                    },
-
-                    {
-                        label: 'Status',
-                        render: row =>
-                            renderStatus(
-                                pick(
-                                    row,
-                                    [
-                                        'status',
-                                        'state'
-                                    ],
-                                    'pending'
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Atualização',
-                        render: row =>
-                            formatDate(
-                                pick(
-                                    row,
-                                    [
-                                        'updated_at',
-                                        'updatedAt',
-                                        'created_at',
-                                        'createdAt'
-                                    ],
-                                    null
-                                )
-                            )
-                    }
-                ],
-
-                list
-            )}
-
-        </div>
-    `;
+    return renderOrderWorkspace(content, shipments, 'logistics');
 }
-
-
-/* ============================================================
-   RELATÓRIOS
-   ============================================================ */
 
 function renderReports(content, reports) {
-
-    const data =
-        reports &&
-        typeof reports === 'object' &&
-        !Array.isArray(reports)
-            ? reports
-            : {};
-
-
-    const metrics =
-        data.metrics || {};
-
-
-    const sales =
-        Array.isArray(data.sales)
-            ? data.sales
-            : [];
-
-
-    const recentOrders =
-        Array.isArray(data.recentOrders)
-            ? data.recentOrders
-            : [];
-
-
-    content.outerHTML = `
-
-        <div class="admin-module-data">
-
-            <div class="admin-metrics-grid">
-
-                ${metricCard(
-                    'Faturamento',
-                    formatCurrency(
-                        pick(
-                            metrics,
-                            ['revenue'],
-                            0
-                        )
-                    )
-                )}
-
-                ${metricCard(
-                    'Pedidos',
-                    formatNumber(
-                        pick(
-                            metrics,
-                            ['orders'],
-                            0
-                        )
-                    )
-                )}
-
-                ${metricCard(
-                    'Ticket médio',
-                    formatCurrency(
-                        pick(
-                            metrics,
-                            ['averageTicket'],
-                            0
-                        )
-                    )
-                )}
-
-                ${metricCard(
-                    'Dias registrados',
-                    formatNumber(sales.length)
-                )}
-
-            </div>
-
-
-            ${table(
-                'Evolução das vendas',
-
-                [
-                    {
-                        label: 'Data',
-                        render: row =>
-                            formatDate(
-                                pick(
-                                    row,
-                                    [
-                                        'day',
-                                        'date'
-                                    ],
-                                    null
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Pedidos',
-                        render: row =>
-                            formatNumber(
-                                pick(
-                                    row,
-                                    [
-                                        'orders',
-                                        'count'
-                                    ],
-                                    0
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Faturamento',
-                        render: row =>
-                            formatCurrency(
-                                pick(
-                                    row,
-                                    [
-                                        'revenue',
-                                        'total'
-                                    ],
-                                    0
-                                )
-                            )
-                    }
-                ],
-
-                sales
-            )}
-
-
-            ${table(
-                'Pedidos recentes',
-
-                [
-                    {
-                        label: 'Pedido',
-                        render: row => `
-                            <strong>
-                                ${escapeHtml(
-                                    pick(
-                                        row,
-                                        [
-                                            'order_number',
-                                            'number',
-                                            'id'
-                                        ],
-                                        '—'
-                                    )
-                                )}
-                            </strong>
-                        `
-                    },
-
-                    {
-                        label: 'Data',
-                        render: row =>
-                            formatDate(
-                                pick(
-                                    row,
-                                    [
-                                        'created_at',
-                                        'createdAt'
-                                    ],
-                                    null
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Total',
-                        render: row =>
-                            formatCurrency(
-                                pick(
-                                    row,
-                                    [
-                                        'total',
-                                        'total_amount'
-                                    ],
-                                    0
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Status',
-                        render: row =>
-                            renderStatus(
-                                pick(
-                                    row,
-                                    ['status'],
-                                    'pending'
-                                )
-                            )
-                    }
-                ],
-
-                recentOrders
-            )}
-
-        </div>
-    `;
+    return renderOrderWorkspace(content, Array.isArray(reports) ? reports : [], 'reports');
 }
-
-
-/* ============================================================
-   AUDITORIA
-   ============================================================ */
 
 function renderAudit(content, logs) {
-
-    const list =
-        Array.isArray(logs)
-            ? logs
-            : [];
-
-
-    content.outerHTML = `
-
-        <div class="admin-module-data">
-
-            <div class="admin-metrics-grid">
-
-                ${metricCard(
-                    'Registros de auditoria',
-                    formatNumber(list.length)
-                )}
-
-                ${metricCard(
-                    'Fonte',
-                    'Firebase / Firestore'
-                )}
-
-            </div>
-
-
-            ${table(
-                'Histórico administrativo',
-
-                [
-                    {
-                        label: 'Data',
-                        render: row =>
-                            formatDate(
-                                pick(
-                                    row,
-                                    [
-                                        'created_at',
-                                        'createdAt',
-                                        'timestamp'
-                                    ],
-                                    null
-                                )
-                            )
-                    },
-
-                    {
-                        label: 'Ação',
-                        render: row => `
-                            <strong>
-                                ${escapeHtml(
-                                    labelize(
-                                        pick(
-                                            row,
-                                            [
-                                                'action',
-                                                'event',
-                                                'operation'
-                                            ],
-                                            '—'
-                                        )
-                                    )
-                                )}
-                            </strong>
-                        `
-                    },
-
-                    {
-                        label: 'Usuário',
-                        keys: [
-                            'user_name',
-                            'admin_name',
-                            'email',
-                            'user_id'
-                        ]
-                    },
-
-                    {
-                        label: 'Entidade',
-                        keys: [
-                            'entity',
-                            'resource',
-                            'table_name'
-                        ]
-                    },
-
-                    {
-                        label: 'Status',
-                        render: row =>
-                            renderStatus(
-                                pick(
-                                    row,
-                                    [
-                                        'status',
-                                        'result'
-                                    ],
-                                    'completed'
-                                )
-                            )
-                    }
-                ],
-
-                list
-            )}
-
-        </div>
-    `;
+    return renderHistoryWorkspace(content, logs);
 }
-
-
-/* ============================================================
-   CONFIGURAÇÕES
-   ============================================================ */
 
 function renderSettings(content, settings) {
     settings = normalizeSettings(settings);

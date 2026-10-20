@@ -152,7 +152,8 @@ async function createMovement(data) {
             0
         );
 
-        const nextStock = previousStock + quantity;
+        const balance = require('../services/inventory-adjustment').planAdjustment(previousStock, reservedStock, quantity);
+        const nextStock = balance.physical;
 
         if (nextStock < 0) {
             throw new Error("Estoque insuficiente.");
@@ -200,10 +201,12 @@ async function createMovement(data) {
             createdAt: now
         };
 
-        transaction.set(movementRef, movement);
+        transaction.set(db.collection('settings').doc('publicStock'), { stockAvailability: { [productData.sku || product.id]: balance.available } }, { merge: true });
+        transaction.set(movementRef, { ...movement, actor: String(data.actor || 'Não registrado').slice(0,254) });
 
         transaction.set(auditRef, {
             id: auditRef.id,
+            actor: String(data.actor || "Não registrado").slice(0,254),
             action: "inventory_movement",
             entityType: "product",
             entity_type: "product",

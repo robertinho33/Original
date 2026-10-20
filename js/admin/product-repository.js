@@ -235,6 +235,9 @@ export async function updateProduct(
             new Date().toISOString()
     };
 
+    // Metadata edits must not overwrite stock changed by reservations or payment.
+    if (!Object.prototype.hasOwnProperty.call(input, 'stock')) delete payload.stock;
+
     await updateDoc(
         doc(
             db,

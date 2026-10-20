@@ -48,7 +48,7 @@ async function createInventoryMovement(req, res) {
     try {
         return success(
             res,
-            await service.createInventoryMovement(req.body)
+            await service.createInventoryMovement({ ...req.body, actor: req.admin?.email || req.admin?.uid || "Administrador" })
         );
     } catch (error) {
         return failure(res, error);
