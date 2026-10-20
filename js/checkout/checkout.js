@@ -2238,6 +2238,8 @@ async function init() {
         updateDeliveryFields();
         setupEvents();
 
+        const partnerCoupon = new URLSearchParams(location.search).get('cupom');
+        if (partnerCoupon && elements.couponCode && !elements.couponCode.value.trim()) elements.couponCode.value = partnerCoupon.slice(0,60);
         if (elements.couponCode?.value.trim()) {
             await applyCouponCode();
         }

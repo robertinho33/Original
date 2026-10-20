@@ -1,3 +1,6 @@
+import './modules/discovery-tools.js';
+import './modules/influencer-access.js';
+import './modules/order-modal-close.js';
 'use strict';
 
 /* ============================================================
@@ -6247,7 +6250,7 @@ initializeAdminAccess();
                                         <td>${escapeHtml(item.pixKey || "Não informada")}</td>
                                         <td>${Number(item.commissionDefault || 0).toFixed(2)}%</td>
                                         <td>${item.active !== false ? "Ativo" : "Inativo"}</td>
-                                        <td><button type="button" class="btn nefer-edit-influencer" data-influencer-id="${escapeHtml(item.id)}">Editar</button></td>
+                                        <td><button type="button" class="btn nefer-edit-influencer" data-influencer-id="${escapeHtml(item.id)}">Editar</button> <button type="button" class="btn" data-influencer-access="${escapeHtml(item.id)}" data-name="${escapeHtml(item.name)}" data-email="${escapeHtml(item.email || '')}" data-enabled="${item.portalEnabled === true}">${item.portalEnabled ? "Gerenciar acesso" : "Liberar acesso"}</button> <button type="button" class="btn" data-influencer-store="${escapeHtml(item.id)}" data-name="${escapeHtml(item.name)}">Vitrine pública</button></td>
                                     </tr>
                                 `).join("")
                                 : `

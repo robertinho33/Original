@@ -118,6 +118,7 @@ async function getOverview() {
             influencerName: influencer.name,
             contractId: contract?.id || null,
             couponCode: coupon.code || coupon.couponCode || coupon.coupon_code || orderCoupon.code || "—",
+            products: (Array.isArray(order.items) ? order.items : []).map(item => ({ sku: String(item.sku || ''), name: String(item.name || item.title || ''), image: String(item.image || ''), quantity: Number(item.quantity) || 0 })),
             paymentStatus: paid ? "Pago" : (cancelled ? "Cancelado/estornado" : "Pendente"),
             orderTotal: number(order.total ?? order.totals?.total) ?? 0,
             commissionBase: base,

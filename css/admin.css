@@ -2736,3 +2736,7 @@ button {
 
 
 .admin-navigation .admin-nav-item[hidden] { display: none !important; }
+
+#adminOrderModal:not(.is-open),#adminOrderModal[aria-hidden="true"],#orderDetails[hidden]{display:none!important}
+.influencer-access-dialog{width:min(540px,calc(100vw - 32px));border:1px solid #ddd7cd;border-radius:12px;padding:28px;color:#1c1b19}
+.influencer-access-dialog::backdrop{background:#0008}.influencer-access-dialog h2{margin-top:0}.influencer-access-dialog p,.influencer-access-dialog small{font-size:13px;line-height:1.7}.influencer-access-dialog label{display:block;font-size:13px;font-weight:600}.influencer-access-dialog input{display:block;width:100%;padding:12px;margin:8px 0;border:1px solid #ddd7cd;border-radius:6px}.access-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.access-actions button{padding:10px;cursor:pointer}

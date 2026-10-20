@@ -44,7 +44,7 @@ function showPending() {
     document.getElementById('infinitepayPending')?.remove();
     const notice = document.createElement('p'); notice.id = 'infinitepayPending'; notice.setAttribute('role', 'status');
     notice.textContent = 'Você iniciou um pagamento pela InfinitePay. ';
-    const link = document.createElement('a'); link.textContent = 'Consultar meu pedido';
+    const link = document.createElement('a'); link.textContent = 'Consultar meu pedido'; link.className = 'pending-order-button';
     link.href = `rastrear-pedido.html#token=${pending.trackingToken}`;
     notice.append(link); heading.append(notice);
 }

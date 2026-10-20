@@ -1312,3 +1312,5 @@ a {
 }
 
 #successOrderNumber { font-size: 1.5rem; font-weight: 800; user-select: all; overflow-wrap: anywhere; }
+
+.pending-order-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;margin:10px 0 10px 8px;border-radius:6px;background:#254633;color:#fff!important;font-weight:600;font-size:13px;text-decoration:none!important}.pending-order-button:hover{background:#183323}.pending-order-button:focus-visible{outline:3px solid #9b6b4b;outline-offset:3px}

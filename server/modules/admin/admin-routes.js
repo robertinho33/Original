@@ -45,6 +45,14 @@ router.use((req, res, next) => {
    PRINCIPAIS MÓDULOS
    ============================================================ */
 
+const discovery = require('../influencers/discovery');
+router.get('/marketing/ritual',discovery.admin('ritual'));
+router.put('/marketing/ritual',discovery.admin('ritual',true));
+router.get('/influencers/:id/store',discovery.admin('store'));
+router.put('/influencers/:id/store',discovery.admin('store',true));
+const promotions = require('../influencers/promotions');
+router.get('/marketing/influencer-campaign', promotions.read);
+router.put('/marketing/influencer-campaign', promotions.save);
 router.get("/dashboard", adminController.dashboard);
 router.get('/store-visits', require('../storefront-engagement').visitStats);
 router.get('/shipping/melhor-envio/status',require('../shipping/melhor-envio-oauth').status);
@@ -74,6 +82,7 @@ router.get("/contracts", contractController.list);
 router.post("/contracts", contractController.create);
 router.put("/contracts/:id/activate", contractController.activate);
 router.put("/contracts/:id/end", contractController.end);
+router.put("/influencers/:id/access", require("../influencers/portal").createAccessHandler());
 router.get("/influencers", influencerController.list);
 router.get("/influencers/:id", influencerController.get);
 router.post("/influencers", influencerController.create);

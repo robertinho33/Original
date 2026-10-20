@@ -1,3 +1,5 @@
+import { renderRitualTools } from './discovery-tools.js';
+import { renderInfluencerCampaign } from './influencer-campaign.js';
 const api = window.AdminAPI;
 const esc = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 const brl = value => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -50,6 +52,8 @@ export async function renderStorefront(container) {
       </section>
       <section class="module-panel"><h3>Como aparece na vitrine</h3><div class="marketing-preview"><strong id="hero-preview-title"></strong><p id="hero-preview-description"></p><span id="hero-preview-button" class="admin-status-badge"></span></div></section>`;
 
+    const campaignPanel=document.createElement('section');container.append(campaignPanel);await renderInfluencerCampaign(campaignPanel);
+    const ritualPanel=document.createElement('section');container.append(ritualPanel);await renderRitualTools(ritualPanel);
     const form = container.querySelector('#storefront-hero-form');
     const message = container.querySelector('#hero-message');
     const syncPreview = () => {

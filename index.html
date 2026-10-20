@@ -72,7 +72,7 @@
 
       <a href="#colecao">Produtos</a>
       <a href="#sobre">Nossa loja</a>
-      <a href="#duvidas">Dúvidas</a>
+      <a href="#duvidas">Dúvidas</a><a href="/pages/monte-seu-ritual.html">Monte meu ritual ↗</a><a class="influencer-portal-button" href="/pages/influenciadores.html">Portal dos influenciadores ↗</a>
           <a class="order-lookup-link" href="pages/rastrear-pedido.html">
         Consultar pedido
       </a>    </nav>
@@ -143,12 +143,7 @@
         <div class="catalog-title"><h2>Produtos</h2><span id="catalogResultCount" class="catalog-result-count" aria-live="polite"></span></div>
 
         <div class="catalog-toolbar-controls">
-          <label class="catalog-select-wrap" for="catalogSourceFilter">
-            <span>Marca</span>
-            <select id="catalogSourceFilter" class="catalog-source-select">
-              <option value="todos">Todas as marcas</option>
-            </select>
-          </label>
+          <select id="catalogSourceFilter" hidden aria-hidden="true" tabindex="-1"><option value="todos">Todas as marcas</option></select>
           <label class="catalog-select-wrap" for="sortSelect">
             <span>Ordenar por</span>
             <select id="sortSelect">
@@ -161,7 +156,7 @@
         </div>
       </div>
 
-      <div class="catalog-category-bar">
+      <div id="catalogBrandButtons" class="catalog-brand-buttons" role="group" aria-label="Filtrar por marca"></div><div class="catalog-category-bar">
         <div class="filters" id="filters" aria-label="Categorias de produtos"></div>
       </div>
 

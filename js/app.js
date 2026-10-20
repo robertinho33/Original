@@ -16,6 +16,8 @@ import { installProductImageFallbacks } from './catalog/image-fallback.js';
 installProductImageFallbacks();
 
 
+const partnerCode = (new URLSearchParams(location.search).get('cupom') || '').slice(0,60);
+if (partnerCode) for (const link of document.querySelectorAll('a[href="/pages/monte-seu-ritual.html"]')) link.href='/pages/monte-seu-ritual.html?cupom='+encodeURIComponent(partnerCode);
 const CATALOG_PAGE_SIZE = 24;
 
 let catalogProducts = [];
@@ -24,7 +26,8 @@ let catalogSources = [];
 let catalogPage = 1;
 let catalogCategory = 'todos';
 let catalogSourceId = 'todos';
-let catalogSearch = '';
+let catalogSearch = new URLSearchParams(location.search).get('search') || '';
+
 let catalogSort = 'priority';
 
 const CART_STORAGE_KEY = 'aurea-cart';
@@ -41,8 +44,10 @@ const filtersEl = document.querySelector('#filters');
 
 // Controles visuais da vitrine
 const searchInputEl = document.querySelector('#searchInput');
+if (searchInputEl) searchInputEl.value=catalogSearch;
 const sortSelectEl = document.querySelector('#sortSelect');
 const sourceSelectEl = document.querySelector('#catalogSourceFilter');
+const brandButtonsEl = document.querySelector('#catalogBrandButtons');
 const catalogResultCountEl = document.querySelector('#catalogResultCount');
 const paginationEl = document.querySelector('#pagination');
 
@@ -355,6 +360,13 @@ function renderFilters() {
         sourceSelectEl.value = selectedSource;
     }
 
+    if (brandButtonsEl) {
+        const logos = {ecobelle:'/assets/brands/ecobelle.png',inovax:'/assets/brands/inovax.jpg',brae:'/assets/brands/brae.png'};
+        brandButtonsEl.innerHTML = `<button type="button" class="catalog-brand-button ${catalogSourceId === 'todos' ? 'is-selected' : ''}" data-brand-source="todos" aria-pressed="${catalogSourceId === 'todos'}"><span class="all-brand-symbol" aria-hidden="true">✳</span><span>Todas as marcas</span></button>` + getCatalogSources().map(source => `<button type="button" class="catalog-brand-button brand-filter-${escapeAttribute(source.id)} ${catalogSourceId === source.id ? 'is-selected' : ''}" data-brand-source="${escapeAttribute(source.id)}" aria-pressed="${catalogSourceId === source.id}" aria-label="Filtrar por ${escapeAttribute(source.name || source.id)}">${logos[source.id] ? `<img src="${logos[source.id]}" alt="${escapeAttribute(source.name || source.id)}" loading="lazy">` : `<span class="brand-wordmark">${escapeHTML(source.name || source.id)}</span>`}<span>${escapeHTML(source.name || source.id)}</span></button>`).join('');
+        brandButtonsEl.querySelectorAll('[data-brand-source]').forEach(button => button.addEventListener('click', () => {
+            catalogSourceId = button.dataset.brandSource || 'todos'; sourceSelectEl.value = catalogSourceId; catalogPage = 1; renderFilters(); renderCatalog();
+        }));
+    }
     filtersEl
         .querySelectorAll(
             'button[data-category]'
@@ -1466,7 +1478,7 @@ document
             }
 
             window.location.href =
-                'pages/checkout.html';
+                'pages/checkout.html' + (new URLSearchParams(location.search).get('cupom') ? '?cupom=' + encodeURIComponent(new URLSearchParams(location.search).get('cupom').slice(0,60)) : '');
         }
     );
 

@@ -33,11 +33,8 @@ app.use((req, res, next) => {
     if (!pathname.startsWith('/api/') && !require('./server/infrastructure/public-files').isPublicFile(pathname)) return res.sendStatus(404);
     next();
 });
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'pages/boas-vindas.html')));
 app.use(express.static(__dirname, { dotfiles: 'deny' }));
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
 
 const PORT = process.env.PORT || 3000;
 
@@ -90,6 +87,8 @@ app.use('/api/shipping', require('./server/modules/shipping/shipping-routes'));
 app.use('/api/storefront/engagement', require('./server/modules/storefront-engagement').router);
 
 app.use('/api/admin', aureaAdminRoutes);
+app.use('/api/influencer', require('./server/modules/influencers/portal').createRouter());
+app.use('/api/discovery',require('./server/modules/influencers/discovery').createRouter());
 app.get('/api/storefront/hero', require('./server/modules/admin/controllers/marketing-controller').publicHero);
 app.get('/api/storefront/catalog-visibility', require('./server/modules/catalog/catalog-visibility-controller').storefront);
 app.get('/api/storefront/catalog-sources', require('./server/modules/catalog/catalog-visibility-controller').storefrontSources);
