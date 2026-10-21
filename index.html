@@ -14,6 +14,7 @@
 
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/store-refresh.css">
+  <link rel="stylesheet" href="css/store-blend.css">
   <link rel="canonical" href="https://www.fiosperfeitos.com.br/">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta property="og:type" content="website">
@@ -60,32 +61,10 @@
   </div>
 
   <header class="topbar">
-    <a class="brand" href="/" aria-label="Fios Perfeitos — início">
-      <span aria-hidden="true">fp</span> Fios Perfeitos
-    </a>
-
-    <nav>
-      <label class="catalog-search" for="searchInput">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
-      <input id="searchInput" type="search" aria-label="Buscar produtos e marcas" placeholder="Buscar produtos, marcas..." autocomplete="off">
-    </label>
-
-      <a href="#colecao">Produtos</a>
-      <a href="#sobre">Nossa loja</a>
-      <a href="#duvidas">Dúvidas</a><a href="/pages/monte-seu-ritual.html">Monte meu ritual ↗</a><a class="influencer-portal-button" href="/pages/influenciadores.html">Portal dos influenciadores ↗</a>
-          <a class="order-lookup-link" href="pages/rastrear-pedido.html">
-        Consultar pedido
-      </a>    </nav>
-
-    <button
-      class="cart-button"
-      id="openCart"
-      type="button"
-      aria-label="Abrir sacola"
-    >
-      Sacola
-      <b id="cartCount">0</b>
-    </button>
+    <a class="brand" href="/" aria-label="Fios Perfeitos — início"><span aria-hidden="true">fp</span><span class="brand-wordmark">Fios Perfeitos<small>COSMETICS</small></span></a>
+    <label class="catalog-search" for="searchInput"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg><input id="searchInput" type="search" aria-label="Buscar produtos e marcas" placeholder="Qual cuidado você procura hoje?" autocomplete="off" enterkeyhint="search"></label>
+    <div class="store-header-actions"><a class="order-lookup-link" href="pages/rastrear-pedido.html">Meus pedidos</a><button class="cart-button" id="openCart" type="button" aria-label="Abrir sacola">Sacola <b id="cartCount">0</b></button></div>
+    <nav aria-label="Explore a loja"><a href="#colecao">Todos os produtos</a><button type="button" data-store-query="shampoo">Shampoos</button><button type="button" data-store-query="máscara">Máscaras</button><button type="button" data-store-query="leave">Finalizadores</button><button type="button" data-store-query="kit">Kits e rotinas</button><a href="#marcas">Marcas</a><a href="/pages/monte-seu-ritual.html">Monte meu ritual ↗</a><a class="influencer-portal-button" href="/pages/influenciadores.html">Sou parceiro</a></nav>
   </header>
 
   <main>
@@ -95,12 +74,12 @@
       <div class="hero-copy">
 
         <p class="eyebrow" id="heroCampaignEyebrow">
-          SEU CABELO. SEU MOMENTO.
+          BELEZA QUE COMBINA COM VOCÊ
         </p>
 
         <h1>
           <span id="heroCampaignTitle">Seu próximo</span><br>
-          <em id="heroCampaignEmphasis">cuidado</em><span id="heroCampaignEnding"> começa aqui.</span>
+          <em id="heroCampaignEmphasis">ritual de beleza</em><span id="heroCampaignEnding"> começa aqui.</span>
         </h1>
 
         <p class="hero-text" id="heroCampaignDescription">
@@ -109,11 +88,11 @@
         </p>
 
         <a class="primary" id="heroCampaignButton" href="#colecao">
-          Encontrar meu cuidado
+          Explorar os produtos
           <span>→</span>
         </a>
         <a class="hero-secondary" href="#como-comprar">Como comprar ↗</a>
-        <p class="hero-caption">Escolha com calma. Acompanhe cada etapa do pedido.</p>
+        <p class="hero-caption">Seu cuidado favorito, em poucos cliques.</p>
       </div>
 
       <div class="hero-card">
@@ -131,6 +110,10 @@
     </section>
 
 
+    <section class="store-shortcuts" aria-label="Encontre seu próximo cuidado"><button data-store-query="shampoo"><span aria-hidden="true">01</span><strong>Limpar</strong><small>Shampoos</small></button><button data-store-query="máscara"><span aria-hidden="true">02</span><strong>Tratar</strong><small>Máscaras e cuidados</small></button><button data-store-query="leave"><span aria-hidden="true">03</span><strong>Finalizar</strong><small>Leave-ins e proteção</small></button><a href="/pages/monte-seu-ritual.html"><span aria-hidden="true">↗</span><strong>Meu ritual</strong><small>Escolhas para você</small></a></section>
+    <section class="store-brands" id="marcas"><div class="store-section-heading"><div><p class="eyebrow">SUAS MARCAS, SEU ESTILO</p><h2>As marcas do seu ritual.</h2></div><a href="#colecao">Explorar catálogo ↗</a></div><div id="catalogBrandButtons" class="catalog-brand-buttons" role="group" aria-label="Filtrar por marca"></div></section>
+    <section class="store-highlights" aria-labelledby="storeHighlightsTitle"><div class="store-section-heading"><div><p class="eyebrow">UM NOVO FAVORITO TE ESPERA</p><h2 id="storeHighlightsTitle">Destaques do catálogo.</h2></div><a href="#colecao">Ver todos ↗</a></div><div id="storeHighlights" class="store-highlight-grid" aria-busy="true"></div></section>
+    <section class="store-editorial-grid" aria-label="Mais formas de escolher"><a href="/pages/monte-seu-ritual.html"><small>MENOS DÚVIDA, MAIS CUIDADO</small><h2>Um ritual para<br>chamar de seu.</h2><p>Conte seu objetivo e encontre uma seleção dentro do seu orçamento.</p><span>Montar meu ritual ↗</span></a><button type="button" data-store-query="kit"><small>ESCOLHAS QUE SE COMPLETAM</small><h2>Seu cuidado<br>em boa companhia.</h2><p>Conheça os kits e encontre os próximos passos da sua rotina.</p><span>Explorar kits ↗</span></button></section>
     <section class="store-benefits" aria-label="Sua experiência de compra">
       <article><span aria-hidden="true">01</span><div><h2>Encontre seu cuidado</h2><p>Busque por produto, marca ou categoria.</p></div></article>
       <article><span aria-hidden="true">02</span><div><h2>Confira antes de comprar</h2><p>Veja os detalhes e o resumo do pedido.</p></div></article>
@@ -156,7 +139,7 @@
         </div>
       </div>
 
-      <div id="catalogBrandButtons" class="catalog-brand-buttons" role="group" aria-label="Filtrar por marca"></div><div class="catalog-category-bar">
+      <div class="catalog-category-bar">
         <div class="filters" id="filters" aria-label="Categorias de produtos"></div>
       </div>
 

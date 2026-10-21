@@ -129,9 +129,7 @@ function saveCart() {
 }
 
 function getProductBySku(sku) {
-    return products.find(
-        product => product.sku === sku
-    );
+    return catalogProducts.find(product => product.sku === sku) || products.find(product => product.sku === sku);
 }
 
 function getCartTotalQuantity() {
@@ -289,6 +287,7 @@ async function refreshCatalog() {
         : [];
 
     products = catalogProducts;
+    renderStoreHighlights();
 
     return catalogProducts;
 }
@@ -364,7 +363,7 @@ function renderFilters() {
         const logos = {ecobelle:'/assets/brands/ecobelle.png',inovax:'/assets/brands/inovax.jpg',brae:'/assets/brands/brae.png'};
         brandButtonsEl.innerHTML = `<button type="button" class="catalog-brand-button ${catalogSourceId === 'todos' ? 'is-selected' : ''}" data-brand-source="todos" aria-pressed="${catalogSourceId === 'todos'}"><span class="all-brand-symbol" aria-hidden="true">✳</span><span>Todas as marcas</span></button>` + getCatalogSources().map(source => `<button type="button" class="catalog-brand-button brand-filter-${escapeAttribute(source.id)} ${catalogSourceId === source.id ? 'is-selected' : ''}" data-brand-source="${escapeAttribute(source.id)}" aria-pressed="${catalogSourceId === source.id}" aria-label="Filtrar por ${escapeAttribute(source.name || source.id)}">${logos[source.id] ? `<img src="${logos[source.id]}" alt="${escapeAttribute(source.name || source.id)}" loading="lazy">` : `<span class="brand-wordmark">${escapeHTML(source.name || source.id)}</span>`}<span>${escapeHTML(source.name || source.id)}</span></button>`).join('');
         brandButtonsEl.querySelectorAll('[data-brand-source]').forEach(button => button.addEventListener('click', () => {
-            catalogSourceId = button.dataset.brandSource || 'todos'; sourceSelectEl.value = catalogSourceId; catalogPage = 1; renderFilters(); renderCatalog();
+            catalogSourceId = button.dataset.brandSource || 'todos'; sourceSelectEl.value = catalogSourceId; catalogPage = 1; renderFilters(); renderCatalog(); document.getElementById('colecao')?.scrollIntoView({block:'start'});
         }));
     }
     filtersEl
@@ -581,7 +580,7 @@ async function renderCatalog() {
                     product.image
                         ? `
                             <img
-                                class="product-image"
+                                class="product-image" decoding="async" width="300" height="300"
                                 src="${escapeAttribute(
                                     product.image
                                 )}"
@@ -1610,3 +1609,18 @@ activateCatalogRealtime();
     );
 })();
 
+
+function renderStoreHighlights(){
+  const target=document.getElementById('storeHighlights');if(!target)return;
+  const eligible=catalogProducts.filter(p=>p.active!==false&&!/^INATIVO\b/i.test(p.name||'')&&p.image&&Number(p.stock)>0&&Number(p.price)>0).sort((a,b)=>Number(b.featured)-Number(a.featured)||(Number(b.priority)||0)-(Number(a.priority)||0));
+  const brands=[...new Set(eligible.map(p=>p.sourceId||''))],picks=[];
+  for(let index=0;picks.length<8&&index<eligible.length;index++){for(const brand of brands){const product=eligible.filter(p=>(p.sourceId||'')===brand)[index];if(product)picks.push(product);if(picks.length===8)break;}}
+  target.innerHTML=picks.map(p=>`<article class="store-highlight-card"><button type="button" class="store-highlight-visual" data-featured-detail="${escapeAttribute(p.sku)}" aria-label="Ver detalhes de ${escapeAttribute(p.name)}"><img src="${escapeAttribute(p.image)}" alt="${escapeAttribute(p.name)}" class="product-image" width="240" height="240" loading="lazy" decoding="async"></button><div><small>${escapeHTML(p.sourceName||'Fios Perfeitos')}</small><h3>${escapeHTML(p.name)}</h3><strong>${formatCurrency(p.price)}</strong><button type="button" data-featured-add="${escapeAttribute(p.sku)}" aria-label="Adicionar ${escapeAttribute(p.name)} à sacola">Adicionar à sacola</button></div></article>`).join('')||'<p>Explore todos os produtos abaixo.</p>';target.setAttribute('aria-busy','false');
+}
+document.addEventListener('click',event=>{
+  const query=event.target.closest('[data-store-query]');
+  if(query){catalogSearch=query.dataset.storeQuery;catalogCategory='todos';catalogSourceId='todos';catalogPage=1;if(searchInputEl)searchInputEl.value=catalogSearch;if(sourceSelectEl)sourceSelectEl.value='todos';renderFilters();void renderCatalog();document.getElementById('colecao')?.scrollIntoView({block:'start'});}
+  const add=event.target.closest('[data-featured-add]');if(add){addToCart(add.dataset.featuredAdd);return;}
+  const detail=event.target.closest('[data-featured-detail]');if(detail)openProductModal(detail.dataset.featuredDetail,detail);
+});
+searchInputEl?.addEventListener('keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();clearTimeout(catalogSearchTimer);catalogSearch=searchInputEl.value.trim();catalogPage=1;void renderCatalog();document.getElementById('colecao')?.scrollIntoView({block:'start'});});

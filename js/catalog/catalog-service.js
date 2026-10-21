@@ -86,22 +86,16 @@ function normalizeProduct(product, documentId = '') {
     };
 }
 
+const pendingRequests = new Map();
 async function fetchJson(path) {
-    const response =
-        await fetch(
-            path,
-            {
-                cache: 'no-cache'
-            }
-        );
-
-    if (!response.ok) {
-        throw new Error(
-            `Não foi possível carregar ${path}. HTTP ${response.status}`
-        );
-    }
-
-    return response.json();
+    if (pendingRequests.has(path)) return pendingRequests.get(path);
+    const request = (async () => {
+        const response = await fetch(path, { cache: 'no-cache' });
+        if (!response.ok) throw new Error(`Não foi possível carregar ${path}. HTTP ${response.status}`);
+        return response.json();
+    })();
+    pendingRequests.set(path, request);
+    try { return await request; } finally { pendingRequests.delete(path); }
 }
 
 async function loadVisibilityOverrides() {
@@ -110,9 +104,7 @@ async function loadVisibilityOverrides() {
     }
 
     try {
-        const response = await fetch(VISIBILITY_PATH, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
+        const payload = await fetchJson(VISIBILITY_PATH);
         visibilityCache = payload?.data || {};
     } catch (error) {
         console.warn('[CATALOG] Não foi possível carregar as preferências de visibilidade:', error?.message || error);

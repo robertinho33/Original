@@ -1,3 +1,5 @@
+import { installAdminUX } from './modules/admin-ux.js';
+installAdminUX();
 import { renderCatalogWorkspace } from './modules/catalog-workspace.js';
 import { renderOrderWorkspace, renderHistoryWorkspace } from './modules/order-workspace.js';
 import './modules/discovery-tools.js';

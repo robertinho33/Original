@@ -14,7 +14,7 @@ async function loadCampaignHero() {
         if (!result?.success || !campaign) return;
 
         const setText = (id, value) => {
-            if (value) {
+            if (value !== undefined && value !== null) {
                 const element = document.getElementById(id);
                 if (element) element.textContent = value;
             }

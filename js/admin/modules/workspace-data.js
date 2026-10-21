@@ -22,13 +22,21 @@ export function rankSales(rows){
   const grouped=new Map();for(const order of rows.filter(o=>o._payment==='paid'))for(const item of order.items||[]){const sku=String(item.sku||'');const quantity=number(item.quantity);if(!sku||quantity<=0)continue;const row=grouped.get(sku)||{sku,name:String(item.name||item.title||sku),quantity:0};row.quantity+=quantity;grouped.set(sku,row);}
   return [...grouped.values()].sort((a,b)=>b.quantity-a.quantity||a.sku.localeCompare(b.sku));
 }
-export function catalogRows(products,inventory=[]){
+export function catalogRows(products,inventory=[],sources=[]){
   const bySku=new Map(inventory.filter(i=>i.sku||i.id).map(i=>[String(i.sku||i.id),i]));
   const byId=new Map(inventory.filter(i=>i.productId||i.product_id).map(i=>[String(i.productId||i.product_id),i]));
-  return products.map(p=>{const i=bySku.get(String(p.sku))||byId.get(String(p.id||p.productId));const stock=number(i?.quantity??p.stock??p.inventory??p.quantity),reserved=number(i?.reserved??0);return {...p,_physical:stock,_reserved:reserved,_available:Math.max(0,stock-reserved),_brand:String(p.sourceName||p.source_name||p.supplierName||p.sourceId||'Sem marca'),_category:String(p.categoryName||p.category_name||p.category||'Sem categoria')};});
+  const sourceNames=new Map(sources.map(source=>[normalized(source.id),source.name]));
+  return products.map(raw=>{
+    const p={...raw,sku:String(raw.sku||raw.SKU||raw.Sku||''),name:String(raw.name||raw.Nome||raw.nome||raw.title||'Produto')};
+    const i=bySku.get(p.sku)||byId.get(String(p.id||p.productId));
+    const stock=number(i?.quantity??p.stock??p.Estoque??p.inventory??p.quantity),reserved=number(i?.reserved??0);
+    const brand=String(p.sourceName||p.source_name||p.brand||p.marca||p.Marca||p.supplierName||sourceNames.get(normalized(p.sourceId))||p.sourceId||'Sem marca');
+    const category=String(p.categoryName||p.category_name||p.category||'Sem categoria');
+    return {...p,_physical:stock,_reserved:reserved,_available:Math.max(0,stock-reserved),_brand:brand,_category:category,_search:normalized([p.name,p.sku,brand,category].join(' '))};
+  });
 }
 export function filterCatalog(rows,{query='',brand='',category='',stock='all'}={}){
   const words=normalized(query).split(/\s+/).filter(Boolean);
-  return rows.filter(p=>words.every(word=>normalized([p.name,p.title,p.sku,p._brand,p._category].join(' ')).includes(word))&&(!brand||p._brand===brand)&&(!category||p._category===category)&&(stock==='all'||stock==='empty'&&p._available<=0||stock==='low'&&p._available>0&&p._available<=5||stock==='available'&&p._available>0||stock==='hidden'&&p.active===false));
+  return rows.filter(p=>words.every(word=>(p._search||normalized([p.name,p.title,p.sku,p._brand,p._category].join(' '))).includes(word))&&(!brand||p._brand===brand)&&(!category||p._category===category)&&(stock==='all'||stock==='empty'&&p._available<=0||stock==='low'&&p._available>0&&p._available<=5||stock==='available'&&p._available>0||stock==='hidden'&&p.active===false));
 }
 export function csvCell(value){const text=String(value??'');return '"'+(/^[\s]*[=+\-@]/.test(text)?"'":'')+text.replaceAll('"','""')+'"';}

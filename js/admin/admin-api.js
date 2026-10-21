@@ -103,8 +103,7 @@ const adminApi = {
         () => request("/dashboard"),
 
     orders:
-        () =>
-            window.AdminFirebaseOrders.list(),
+        () => request("/orders"),
 
     orderDetails:
         orderId =>

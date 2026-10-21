@@ -1,7 +1,7 @@
 # Painel simplificado — Fios Perfeitos
 
 ## Produtos e estoque
-Busque por nome, SKU ou marca. Combine filtros de marca, categoria, disponibilidade e visibilidade. A lista exibe até 25 itens por página e mantém os filtros ao editar.
+Busque por nome, SKU ou marca. Combine filtros de marca, categoria, disponibilidade e visibilidade. A lista exibe até 25 itens por página (10 no celular) e mantém os filtros ao editar.
 
 Use **Editar** para nome, preço, descrição e categoria. Use **Movimentar estoque** para registrar entrada ou saída, com quantidade e motivo. Físico é o saldo total; reservado está comprometido com pedidos; disponível é a diferença. Uma saída não pode consumir unidades reservadas. A movimentação atualiza o saldo público da vitrine e registra uma atividade com o responsável autenticado.
 
@@ -20,4 +20,9 @@ Mostra somente pedidos pagos em três filas: a separar/preparar, em transporte e
 Consulta os eventos disponíveis nas coleções administrativas audit e auditLogs. Filtre por período e busque ação, responsável ou referência. Dados antigos sem responsável permanecem identificados como não registrados. A tela não é uma garantia de auditoria completa de todas as ações históricas.
 
 ## Prévia local
-Acesse http://127.0.0.1:3000/admin-preview. São 300 produtos de demonstração, pedidos fictícios e alterações temporárias. O editor de produto e os detalhes de pedido nessa prévia são demonstrativos; no painel real, os botões abrem os editores já existentes. A prévia não deve ser publicada nem substituir a autenticação do painel.
+Acesse http://127.0.0.1:3000/admin-preview. São 746 produtos de demonstração, pedidos fictícios e alterações temporárias. O editor de produto e os detalhes de pedido nessa prévia são demonstrativos; no painel real, os botões abrem os editores já existentes. A prévia não deve ser publicada nem substituir a autenticação do painel.
+
+## Revisão de busca e uso no celular
+A busca aceita nome, SKU e marca, ignora acentos e oferece o botão Buscar. As marcas ausentes nos registros antigos são recuperadas pelo SKU a partir do catálogo, sem regravar o banco. Produtos e vitrine compartilham os preços atuais do cadastro. A consulta administrativa de pedidos usa a API protegida, sem o limite anterior de 100 pedidos da ponte do navegador.
+
+A camada visual comum oferece menu recolhível no celular, tabelas em cartões com rótulos, botões legíveis e formulários em uma coluna. Produtos, estoque/categorias, banner, ofertas, ritual, financeiro, entregas e histórico receberam conferência local dos fluxos principais. A prévia usa dados demonstrativos; ela não valida gravações reais nem substitui testes autenticados em produção.

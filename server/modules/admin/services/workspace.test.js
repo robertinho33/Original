@@ -27,3 +27,9 @@ test('inventory movements never consume reserved stock or accept fractional quan
   for(const delta of [-8,-11,0,0.5,NaN,Infinity])assert.throws(()=>planAdjustment(10,3,delta));
 });
 
+
+test('admin search accepts legacy SKU names and recovers brand labels provided by source metadata',async()=>{
+  const {catalogRows,filterCatalog}=await model();
+  const rows=catalogRows([{id:'legacy',SKU:'00000258',Nome:'Máscara reparadora',sourceId:'brae',stock:5},{id:'other',sku:'TR1',name:'Shampoo',brand:'TRUSS',stock:1}],[],[{id:'brae',name:'Braé'}]);
+  assert.equal(filterCatalog(rows,{query:'brae mascara'})[0].id,'legacy');assert.equal(filterCatalog(rows,{query:'00000258'})[0].name,'Máscara reparadora');assert.equal(filterCatalog(rows,{brand:'TRUSS'}).length,1);
+});

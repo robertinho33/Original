@@ -80,7 +80,11 @@ async function getOrders() {
 }
 
 async function getProducts() {
-    return getCollection(PRODUCTS);
+    const fs = require('node:fs'), path = require('node:path');
+    const products = await getCollection(PRODUCTS);
+    const raw = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'data/catalog/catalog-runtime.json'), 'utf8').replace(/^\uFEFF/, ''));
+    const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'data/catalog/manifests/catalog-sources.json'), 'utf8').replace(/^\uFEFF/, ''));
+    return require('../../catalog/catalog-view').enrichProducts(products, Array.isArray(raw) ? raw : raw.products || [], Array.isArray(manifest) ? manifest : manifest.sources || []);
 }
 
 async function getCategories() {
