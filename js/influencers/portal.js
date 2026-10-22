@@ -67,3 +67,9 @@ $('portalPasswordForm').addEventListener('submit',async event=>{
   catch(error){if(error.status===401){showLogin();$('portalLoginMessage').textContent=error.message;}else message.textContent=error.message;}
   finally{button.disabled=false;}
 });
+
+$('portalChangePassword').addEventListener('click',()=>{
+  const panel=$('portalPasswordPanel');panel.open=true;
+  panel.scrollIntoView({block:'start'});panel.querySelector('input').focus({preventScroll:true});
+});
+$('portalPasswordPanel').addEventListener('toggle',()=>{$('portalChangePassword').setAttribute('aria-expanded',String($('portalPasswordPanel').open));});

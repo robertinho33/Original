@@ -20,3 +20,5 @@
 .policy-page{max-width:900px;margin:auto;padding:60px 24px;line-height:1.85}.policy-page h1{font-size:42px;line-height:1.2}.policy-page h2{font-size:24px;margin-top:36px}.policy-page a{color:#52664e;text-decoration:underline}.policy-source{font-size:12px}.shipping-options{display:grid;gap:12px}.shipping-quote-panel p{font-size:14px;line-height:1.7}.shipping-choice{width:100%}.shipping-quote-panel button:disabled{opacity:.6;cursor:wait}
 
 .product-rating{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0;color:#555;font-size:12px}.product-rating-stars{color:#84620a;font-size:17px;letter-spacing:1px}
+
+.store-portal-access{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid #254633;border-radius:5px;color:#254633;font-size:12px;font-weight:600;text-align:center;white-space:normal;line-height:1.3}.store-header-actions{flex-wrap:wrap}@media(max-width:850px){.store-header-actions{width:100%;justify-content:space-between;gap:10px}.store-portal-access{flex:1;min-width:145px}}
