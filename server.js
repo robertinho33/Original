@@ -92,6 +92,7 @@ app.use('/api/shipping', require('./server/modules/shipping/shipping-routes'));
 app.use('/api/storefront/engagement', require('./server/modules/storefront-engagement').router);
 
 app.use('/api/admin', aureaAdminRoutes);
+app.use('/api/business-partners', require('./server/modules/partners/portal').createRouter());
 app.use('/api/influencer', require('./server/modules/influencers/portal').createRouter());
 app.use('/api/discovery',require('./server/modules/influencers/discovery').createRouter());
 app.get('/api/storefront/hero', require('./server/modules/admin/controllers/marketing-controller').publicHero);

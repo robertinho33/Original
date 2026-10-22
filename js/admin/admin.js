@@ -1,3 +1,5 @@
+import { renderBusinessPartners } from './modules/business-partners.js';
+import { privateTrackingUrl } from '../orders/tracking-link.js';
 import { installAdminUX } from './modules/admin-ux.js';
 installAdminUX();
 import { renderCatalogWorkspace } from './modules/catalog-workspace.js';
@@ -593,6 +595,7 @@ async function load(section) {
             'Conciliação e pagamento das comissões de influenciadores.'
         ],
 
+        'business-partners': ['Salões e perfumarias', 'Aprove parceiros e defina condições comerciais individuais.'],
         partnerships: [
             'Relacionamentos',
             'Relacionamentos e atribuição de vendas.'
@@ -656,10 +659,11 @@ async function load(section) {
         );
 
 
-    if (section === 'partnerships' || section === 'contracts' || section === 'commissions' || section === 'storefront' || section === 'campaigns') {
+    if (section === 'business-partners' || section === 'partnerships' || section === 'contracts' || section === 'commissions' || section === 'storefront' || section === 'campaigns') {
         try {
             const content = root.querySelector('.admin-loading');
-            if (section === 'partnerships') await renderRelationships(content);
+            if (section === 'business-partners') await renderBusinessPartners(content);
+            else if (section === 'partnerships') await renderRelationships(content);
             else if (section === 'contracts') await renderContracts(content);
             else if (section === 'commissions') await renderCommissionLedger(content);
             else if (section === 'storefront') await renderStorefront(content);
@@ -4008,14 +4012,14 @@ function renderOrderDetails(content, order) {
     const orderItemsSummary = items
         .map(item => `${Number(item.quantity) || 1} × ${item.name || item.product_name || 'Produto'}`)
         .join('\n');
-    const trackingUrl = `${window.location.origin}/pages/rastrear-pedido.html?pedido=${encodeURIComponent(orderNumber)}`;
+    const trackingUrl = privateTrackingUrl(order, window.location.origin);
     const customerMessage = [
         `Olá, ${customer.name || 'tudo bem'}! Segue a confirmação do seu pedido na Fios Perfeitos Cosmetics.`,
         `Pedido: ${orderNumber}`,
         orderItemsSummary ? `Itens:\n${orderItemsSummary}` : '',
         `Total: ${formatCurrency(total)}`,
         `Pagamento: ${String(paymentStatus)}`,
-        `Acompanhe o pedido: ${trackingUrl}`
+        trackingUrl ? `Acompanhe o pedido: ${trackingUrl}` : ''
     ].filter(Boolean).join('\n');
     let customerWhatsAppUrl = '';
     try {
@@ -4396,7 +4400,7 @@ function renderOrderDetails(content, order) {
                 orderItemsSummary ? `Itens:\n${orderItemsSummary}` : '',
                 `Total do pedido: ${formatCurrency(total)}`,
                 `Pagamento: ${String(paymentStatus)}`,
-                `Acompanhe: ${trackingUrl}`
+                trackingUrl ? `Acompanhe: ${trackingUrl}` : ''
             ].filter(Boolean).join('\n');
             try {
                 influencerLink.href = createWhatsAppUrl({ phone: influencer.phone, message: influencerMessage });

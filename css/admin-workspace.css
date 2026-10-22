@@ -3,3 +3,5 @@
 .admin-navigation [hidden],.admin-module-data [hidden]{display:none!important}
 
 details.module-panel:not([open]){min-height:0!important;height:auto!important}.admin-module-data .admin-table{font-size:13px}.admin-module-data .admin-table th,.admin-module-data .admin-table td{padding:14px 12px}.workspace-preview{min-height:0!important}
+
+.workspace-dialog textarea{width:100%;font:inherit;padding:12px;border:1px solid #d5d5cc;border-radius:5px}.workspace-dialog input[type=checkbox]{width:auto}

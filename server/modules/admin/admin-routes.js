@@ -45,6 +45,9 @@ router.use((req, res, next) => {
    PRINCIPAIS MÓDULOS
    ============================================================ */
 
+const businessPartners = require('../partners/portal').adminHandlers();
+router.get('/business-partners', businessPartners.list);
+router.put('/business-partners/:id', businessPartners.save);
 const discovery = require('../influencers/discovery');
 router.get('/marketing/ritual',discovery.admin('ritual'));
 router.put('/marketing/ritual',discovery.admin('ritual',true));

@@ -12,3 +12,5 @@
 
 .portal-account-actions{display:flex;flex-wrap:wrap;gap:10px}.password-panel{scroll-margin-top:24px}@media(max-width:600px){.portal-account-actions{width:100%}.portal-account-actions button{flex:1;min-height:48px;padding:12px}}
 .password-form textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:4px;font:inherit;font-size:16px;resize:vertical}#portalFirstAccess{max-width:600px;margin-inline:auto}#portalFirstAccess h1{font-size:clamp(32px,6vw,48px)}#portalFirstLogout{margin-top:20px}
+
+.business-page .portal-login{align-items:start;gap:24px;margin-top:32px}.business-page select{width:100%;min-height:46px;padding:12px;border:1px solid var(--line);border-radius:3px;font:inherit;background:white}.business-page input[type=checkbox]{width:18px;min-height:18px;margin-right:8px;vertical-align:middle}.business-page .portal-feature{border:1px solid var(--line);background:white;padding:24px;margin:24px 0}.business-page .password-form{max-width:500px}.business-page .password-form label{display:block;margin:16px 0}.business-page [data-message]{font-size:13px;overflow-wrap:anywhere}.business-page #businessLogout{margin-top:24px}

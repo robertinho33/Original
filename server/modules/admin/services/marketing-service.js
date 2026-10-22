@@ -166,8 +166,10 @@ async function previewAudience(targetType, rawFilters = {}) {
                 lastActivityAt: null
             };
             profile.name = profile.name === "Cliente" ? customerLabel(order) : profile.name;
-            profile.orderCount += 1;
-            if (paid(order)) profile.spend += money(order.total ?? order.totals?.total);
+            if (paid(order)) {
+                profile.orderCount += 1;
+                profile.spend += money(order.totals?.total ?? order.total);
+            }
             const orderDate = iso(order.updatedAt || order.createdAt);
             if (orderDate && (!profile.lastActivityAt || orderDate > profile.lastActivityAt)) profile.lastActivityAt = orderDate;
             profiles.set(key, profile);
