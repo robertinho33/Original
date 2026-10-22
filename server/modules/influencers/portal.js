@@ -83,6 +83,9 @@ function createRouter(deps = {}) {
     try { if (token) await getDb().collection('influencerPortalSessions').doc(credentials.hash(token)).delete(); } catch {}
     res.clearCookie(credentials.cookieName, credentials.cookieOptions); res.json({ success: true });
   });
+  const storeHandlers=require('./portal-store').createHandlers({getDb,getCatalog:deps.getStoreCatalog});
+  router.post('/store',storeHandlers.read);
+  router.put('/store',storeHandlers.write);
   router.post('/dashboard', async (req, res) => {
     let identity;
     try { identity = await credentials.identity(getDb(), req); } catch {}

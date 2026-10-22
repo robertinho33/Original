@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),express=require('express');
-const {normalizeRules,recommend,normalizeStore,projectStore,createRouter,admin}=require('./discovery');
+const {normalizeRules,recommend,normalizeStore,projectStore,storePublication,createRouter,admin}=require('./discovery');
 const catalog=[{sku:'SH',name:'Shampoo',price:30,stock:2,active:true},{sku:'MA',name:'Máscara',price:50,stock:2,active:true},{sku:'LE',name:'Finalizador',price:20,stock:2,active:true}];
 const rules=normalizeRules({enabled:true,rules:['wash','treat','finish'].map((step,i)=>({sku:catalog[i].sku,step,goal:'hydration',hair:'all',chemistry:'all',reason:'Indicação revisada pela loja.'}))});
 const input={goal:'hydration',hair:'curly',chemistry:'treated',budget:100};
@@ -24,6 +24,14 @@ test('curation rejects duplicates and store excludes private data and unsafe vid
   const view=projectStore(store,catalog,'PARCEIRO');assert.equal(view.products.length,1);
   assert.ok(!JSON.stringify(view).includes('PRIVATE'));assert.ok(!JSON.stringify(view).includes('SECRET'));
 });
+
+test('store publication diagnosis never presents drafts or broken links as published',()=>{
+  const config={enabled:true,name:'Vitrine',skus:['SH'],coupon:'PARCEIRO'},person={active:true};
+  assert.equal(storePublication(config,person,'PARCEIRO').published,true);
+  for(const state of [storePublication({},person,'',false),storePublication({...config,enabled:false},person,'PARCEIRO'),storePublication(config,{active:false},'PARCEIRO'),storePublication(config,undefined,'PARCEIRO'),storePublication(config,person,''),storePublication({...config,skus:[]},person,'PARCEIRO')]){
+    assert.equal(state.published,false);assert.ok(state.issues.length>0);
+  }
+});
 test('public HTTP store checks activation and only returns public fields; ritual uses current rules',async()=>{
   const records={'influencers/demo':{active:true,email:'PRIVATE',phone:'SECRET'},'influencerPublicStores/demo':{enabled:true,name:'Nome público',coupon:'PARCEIRO',skus:['SH'],passwordHash:'PRIVATE'},'storeRitualRules/current':rules};
   const db={collection:name=>({doc:id=>({get:async()=>({exists:!!records[name+'/'+id],data:()=>records[name+'/'+id]})}),get:async()=>({docs:[{data:()=>({code:'PARCEIRO',influencerId:'demo',active:true})}]})})};
@@ -40,4 +48,44 @@ test('only administrators can configure storefronts and ritual recommendations',
   for(const kind of ['store','ritual'])for(const write of [false,true])for(const role of ['collaborator','influencer',undefined]){
     let status;await admin(kind,write)({admin:role?{role}:null},{status(code){status=code;return this;},json(){}});assert.equal(status,403);
   }
+});
+
+test('ritual prioritizes specific reviewed profiles over cheaper generic products for the same stages',()=>{
+  const extra={sku:'SPECIFIC',name:'Tratamento específico',price:60,stock:1,active:true};
+  const config={enabled:true,rules:[...rules.rules,{sku:extra.sku,step:'treat',goal:'hydration',hair:'curly',chemistry:'treated',reason:'Motivo aprovado para este perfil.'}]};
+  const result=recommend(config,[...catalog,extra],{...input,budget:110});
+  assert.equal(result.total,110);assert.equal(result.products.length,3);
+  const treatment=result.products.find(p=>p.step==='treat');
+  assert.equal(treatment.sku,'SPECIFIC');assert.equal(treatment.reason,'Motivo aprovado para este perfil.');
+  assert.ok(treatment.matchReasons.some(reason=>reason.includes('cacheados')));
+  assert.ok(treatment.matchReasons.some(reason=>reason.includes('química ou coloração')));
+  assert.equal(recommend(config,[...catalog,extra],input).products.find(p=>p.step==='treat').sku,'MA');
+});
+
+test('ritual evaluates combinations instead of letting the first cheap selection block other stages',()=>{
+  const items=[{sku:'BOTH',name:'Multi',price:20,stock:1},{sku:'TREAT',name:'Tratamento',price:25,stock:1},{sku:'FIN',name:'Finalizador',price:10,stock:1}];
+  const row=(sku,step)=>({sku,step,goal:'hydration',hair:'all',chemistry:'all',reason:'Revisado.'});
+  const config={enabled:true,rules:[row('BOTH','treat'),row('BOTH','wash'),row('TREAT','treat'),row('FIN','finish')]};
+  const result=recommend(config,items,{...input,budget:55});
+  assert.equal(result.products.length,3);assert.equal(result.total,55);
+  assert.equal(result.products.find(p=>p.step==='treat').sku,'TREAT');
+  assert.equal(new Set(result.products.map(p=>p.sku)).size,3);
+});
+
+test('ritual uses cheapest total as a tie-breaker, preserves treatment priority and is stable across row order',()=>{
+  const alt={sku:'OTHER',name:'Outra máscara',price:55,stock:1};
+  const config={enabled:true,rules:[...rules.rules,{...rules.rules[1],sku:'OTHER'}]};
+  const first=recommend(config,[...catalog,alt],{...input,budget:150});
+  assert.equal(first.total,100);assert.equal(first.products.find(p=>p.step==='treat').sku,'MA');
+  assert.deepEqual(recommend({...config,rules:[...config.rules].reverse()},[alt,...catalog],{...input,budget:150}),first);
+  assert.equal(recommend(config,[...catalog,alt],{...input,budget:50}).products[0].sku,'MA');
+});
+
+test('ritual rejects malformed input, unavailable stock and unreviewed products; amounts stay within cents',()=>{
+  for(const value of [null,[],{...input,goal:['hydration']},{...input,budget:true},{...input,budget:.5}])assert.throws(()=>recommend(rules,catalog,value));
+  const noStock=catalog.map(p=>({...p,stock:Infinity}));assert.equal(recommend(rules,noStock,input).products.length,0);
+  const precise=catalog.map((p,i)=>({...p,price:[10,20,10.01][i]}));
+  const result=recommend(rules,[...precise,{sku:'UNREVIEWED',price:1,stock:100}],{...input,budget:40.01});
+  assert.equal(result.total,40.01);assert.equal(result.products.length,3);assert.ok(!result.products.some(p=>p.sku==='UNREVIEWED'));
+  assert.ok(result.products.every(p=>!('stock' in p)&&!('specificity' in p)));
 });

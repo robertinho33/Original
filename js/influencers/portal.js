@@ -1,4 +1,5 @@
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
+import { mountStoreEditor } from './store-editor.js';
 installProductImageFallbacks();
 const $ = id => document.getElementById(id);
 const money = value => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -22,7 +23,8 @@ async function request(path, body = {}) {
   if (!response.ok || !result.success) { const error = new Error(result.error || 'Não foi possível consultar o portal.'); error.status=response.status; throw error; }
   return result.data;
 }
-function showLogin() { $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+function showLogin() { storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+const storeEditor=mountStoreEditor($('portalStoreEditor'),{onUnauthorized:showLogin});
 async function refresh(silent = false) {
   $('portalDashboardMessage').textContent='Consultando suas vendas…';
   try { const data = await request('dashboard',{from:$('portalFrom').value,to:$('portalTo').value}); render(data); $('portalDashboardMessage').textContent='Dados atualizados agora.'; }

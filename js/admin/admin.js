@@ -1972,6 +1972,120 @@ function renderFinance(content, finance) {
     return renderOrderWorkspace(content, Array.isArray(finance) ? finance : [], 'finance');
 }
 
+function couponId(coupon) {
+    return String(
+        coupon?.id ??
+        coupon?.couponId ??
+        coupon?.docId ??
+        ''
+    );
+}
+
+
+function couponIsActive(coupon) {
+    if (
+        typeof coupon?.active === 'boolean'
+    ) {
+        return coupon.active;
+    }
+
+    const status =
+        String(
+            pick(
+                coupon,
+                [
+                    'status',
+                    'state'
+                ],
+                'active'
+            )
+        )
+            .trim()
+            .toLowerCase();
+
+    return (
+        status === 'active' ||
+        status === 'ativo'
+    );
+}
+
+
+function couponType(coupon) {
+    const type =
+        String(
+            pick(
+                coupon,
+                [
+                    'type',
+                    'discountType',
+                    'discount_type'
+                ],
+                'percentage'
+            )
+        )
+            .trim()
+            .toLowerCase();
+
+    return (
+        type === 'fixed' ||
+        type === 'valor_fixo' ||
+        type === 'fixed_amount'
+    )
+        ? 'fixed'
+        : 'percentage';
+}
+
+
+function couponValue(coupon) {
+    return Number(
+        pick(
+            coupon,
+            [
+                'value',
+                'discount',
+                'discount_value',
+                'percentage'
+            ],
+            0
+        )
+    ) || 0;
+}
+
+
+function couponUsageCount(coupon) {
+    return Number(
+        pick(
+            coupon,
+            [
+                'usageCount',
+                'usage_count',
+                'uses',
+                'used',
+                'uses_count'
+            ],
+            0
+        )
+    ) || 0;
+}
+
+
+function couponUsageLimit(coupon) {
+    const value =
+        pick(
+            coupon,
+            [
+                'usageLimit',
+                'usage_limit',
+                'max_uses',
+                'limit'
+            ],
+            0
+        );
+
+    return Number(value) || 0;
+}
+
+
 function renderCoupons(content, coupons) {
 
     const list =

@@ -1,6 +1,7 @@
 import { installProductImageFallbacks } from './catalog/image-fallback.js';
 installProductImageFallbacks();
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('storePhoto')?.addEventListener('error',()=>{$('storePhoto').hidden=true;});
 const money=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const params=new URLSearchParams(location.search), coupon=(params.get('cupom')||'').slice(0,60);
 const steps={wash:'01 · Limpar',treat:'02 · Tratar',finish:'03 · Finalizar'};
@@ -10,11 +11,11 @@ function updatePartnerLinks(){
 }
 updatePartnerLinks();
 const image=v=>{try{const u=new URL(v);return u.protocol==='https:'?u.href:'';}catch{return '';}};
-function cards(products){return products.map(p=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${esc(steps[p.step])}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p><strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Ver detalhes na loja ↗</a></p></div></article>`).join('');}
+function cards(products){return products.map(p=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${esc(steps[p.step])}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p>${Array.isArray(p.matchReasons)&&p.matchReasons.length?`<details class="ritual-match"><summary>Por que entrou no seu ritual?</summary><ul>${p.matchReasons.map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></details>`:''}<strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Ver detalhes na loja ↗</a></p></div></article>`).join('');}
 async function api(path,body){const res=await fetch('/api/discovery/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(60000)});const result=await res.json();if(!res.ok||!result.success)throw Error(result.error||'Não foi possível consultar agora.');return result.data;}
 $('ritualForm')?.addEventListener('submit',async event=>{
   event.preventDefault();const button=event.currentTarget.querySelector('button');button.disabled=true;$('discoveryMessage').textContent='Montando seu ritual…';$('ritualResult').hidden=true;
-  try{const data=await api('ritual',Object.fromEntries(new FormData(event.currentTarget)));selected=data.products;$('discoveryMessage').textContent=data.message;$('discoveryProducts').innerHTML=cards(selected);$('ritualTotal').textContent=money(data.total)+' em produtos · frete calculado no checkout';$('ritualResult').hidden=!selected.length;}
+  try{const data=await api('ritual',Object.fromEntries(new FormData(event.currentTarget)));selected=data.products;$('discoveryMessage').textContent=data.message;$('discoveryProducts').innerHTML=cards(selected);if($('ritualExplanation'))$('ritualExplanation').textContent=data.explanation||'';$('ritualTotal').textContent=money(data.total)+' em produtos · frete calculado no checkout';$('ritualResult').hidden=!selected.length;}
   catch(error){$('discoveryMessage').textContent=error.message;}finally{button.disabled=false;}
 });
 function cart(items){

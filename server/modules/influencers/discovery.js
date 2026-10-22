@@ -22,22 +22,7 @@ function normalizeRules(body={}){
   });
   return {enabled:body.enabled===true,rules};
 }
-function recommend(config,catalog,input={}){
-  if(!goals.includes(input.goal)||!['straight','wavy','curly','coily'].includes(input.hair)||!['treated','natural'].includes(input.chemistry))throw Error('Confira as respostas do seu ritual.');
-  const budget=Number(input.budget);if(!Number.isFinite(budget)||budget<=0||budget>10000)throw Error('Informe um orçamento entre R$ 1 e R$ 10.000.');
-  if(!config?.enabled)return {products:[],total:0,message:'A loja está preparando as recomendações. Fale conosco para montar seu ritual.'};
-  const matches=(config.rules||[]).filter(r=>r.goal===input.goal&&(r.hair==='all'||r.hair===input.hair)&&(r.chemistry==='all'||r.chemistry===input.chemistry));
-  const result=[];let cents=0;
-  // Treatment is the first priority; choose one affordable product per step, without duplicate SKUs.
-  for(const step of ['treat','wash','finish']){
-    const candidates=matches.filter(r=>r.step===step).map(r=>({r,p:catalog.find(p=>key(p.sku)===key(r.sku))})).filter(({p})=>p&&p.active!==false&&Number(p.stock)>0&&Number(p.price)>0&&Number.isFinite(Number(p.price))&&!result.some(row=>key(row.sku)===key(p.sku)))
-      .sort((a,b)=>Number(a.p.price)-Number(b.p.price)||key(a.p.sku).localeCompare(key(b.p.sku)));
-    const choice=candidates.find(({p})=>cents+Math.round(Number(p.price)*100)<=Math.floor(budget*100));
-    if(choice){cents+=Math.round(Number(choice.p.price)*100);result.push({...productView(choice.p),step,reason:choice.r.reason});}
-  }
-  result.sort((a,b)=>steps.indexOf(a.step)-steps.indexOf(b.step));
-  return {products:result,total:cents/100,message:result.length===3?'Seu ritual reúne três etapas dentro do orçamento.':result.length?'Montamos uma seleção parcial dentro do orçamento e das indicações disponíveis.':'Não encontramos uma indicação disponível dentro desse orçamento. Você pode ajustar o valor ou falar com a loja.'};
-}
+const {recommend}=require('./ritual-recommender');
 function normalizeStore(body={}){
   const skus=Array.isArray(body.skus)?body.skus.map(s=>text(s,100)).filter(Boolean):[];
   if(skus.length>6||new Set(skus.map(key)).size!==skus.length)throw Error('Escolha até seis produtos diferentes.');
@@ -54,6 +39,16 @@ async function validCoupon(db,code,id){
 }
 function projectStore(config,catalog,coupon){
   return {name:config.name,bio:config.bio,image:config.image,videoUrl:config.videoUrl,coupon,products:config.skus.map(sku=>catalog.find(p=>key(p.sku)===key(sku))).filter(Boolean).map(productView)};
+}
+function storePublication(config={},person,coupon,exists=true){
+  const issues=[];
+  if(!exists)issues.push('Esta vitrine ainda não foi salva.');
+  if(config.enabled!==true)issues.push('Marque Ativar vitrine pública e salve para publicar.');
+  if(!person||person.active===false)issues.push('O influenciador precisa estar ativo.');
+  if(!text(config.name,100))issues.push('Preencha o nome público.');
+  if(!Array.isArray(config.skus)||!config.skus.length||config.skus.length>6)issues.push('Selecione de um a seis produtos.');
+  if(!coupon)issues.push('Informe um cupom ativo vinculado a este influenciador.');
+  return {published:issues.length===0,issues};
 }
 function createRouter(deps={}){
   const router=express.Router(),db=deps.getDb||getFirestore,getCatalog=deps.getCatalog||publicCatalog;
@@ -82,13 +77,21 @@ function admin(kind,write=false){return async(req,res)=>{
   try{
     const db=getFirestore(),id=kind==='store'?text(req.params.id,100):'current',ref=db.collection(kind==='store'?'influencerPublicStores':'storeRitualRules').doc(id);
     const catalog=await publicCatalog();
-    if(!write){const snap=await ref.get();return res.json({success:true,data:snap.exists?snap.data():{},catalog:catalog.map(productView)});}
-    let data;
+    if(!write){
+      const snap=await ref.get(),data=snap.exists?snap.data():{};
+      let publication;
+      if(kind==='store'){
+        const person=await db.collection('influencers').doc(id).get(),coupon=await validCoupon(db,data.coupon,id);
+        publication=storePublication(data,person.exists?person.data():null,coupon,snap.exists);
+      }
+      return res.json({success:true,data,catalog:catalog.map(productView),...(publication?{publication}:{})});
+    }
+    let data,personData,verifiedCoupon;
     try{data=kind==='store'?normalizeStore(req.body):normalizeRules(req.body);
       const skus=kind==='store'?data.skus:data.rules.map(r=>r.sku);if(data.enabled&&skus.some(sku=>!catalog.some(p=>key(p.sku)===key(sku))))throw Error('Escolha produtos visíveis e disponíveis no catálogo.');
-      if(kind==='store'){const person=await db.collection('influencers').doc(id).get();if(!person.exists||(data.enabled&&person.data().active===false))throw Error('O influenciador precisa estar ativo.');if(data.enabled&&!await validCoupon(db,data.coupon,id))throw Error('O cupom precisa estar ativo e vinculado a este influenciador.');}
+      if(kind==='store'){const person=await db.collection('influencers').doc(id).get();if(!person.exists||(data.enabled&&person.data().active===false))throw Error('O influenciador precisa estar ativo.');personData=person.data();verifiedCoupon=await validCoupon(db,data.coupon,id);if(data.enabled&&!verifiedCoupon)throw Error('O cupom precisa estar ativo e vinculado a este influenciador.');}
     }catch(error){return res.status(400).json({success:false,error:error.message});}
-    await ref.set({...data,updatedAt:new Date().toISOString(),updatedBy:req.admin.uid||req.admin.email||'admin'});res.json({success:true,data});
+    await ref.set({...data,...(kind==='store'?{selectionRevision:require('node:crypto').randomBytes(16).toString('hex')} : {}),updatedAt:new Date().toISOString(),updatedBy:req.admin.uid||req.admin.email||'admin'});res.json({success:true,data,...(kind==='store'?{publication:storePublication(data,personData,verifiedCoupon)}:{})});
   }catch{res.status(503).json({success:false,error:'Não foi possível acessar a configuração.'});}
 };}
-module.exports={createRouter,admin,normalizeRules,recommend,normalizeStore,projectStore,publicCatalog};
+module.exports={createRouter,admin,normalizeRules,recommend,normalizeStore,projectStore,storePublication,publicCatalog,validCoupon,productView};
