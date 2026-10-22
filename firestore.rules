@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // MASTER ÚNICO DO SISTEMA
+    function isMaster() {
+      return isAuthenticated()
+        && request.auth.token.email == "robertinho33@gmail.com";
+    }
+
+    function userRole() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : null;
+    }
+
+    function isAdmin() {
+      return isMaster() || userRole() == "admin";
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    // =========================================================
+    // COLEÇÕES ADMINISTRATIVAS (Gerais)
+    // =========================================================
+    match /products/{productId} {
+      allow read: if isAdmin(); // Catálogo público usa a API com projeção segura
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true; // Loja consulta categorias
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /customers/{customerId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /clients/{clientId} {
+      allow create, read: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    match /finance/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /logistics/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /reports/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /audit_logs/{auditId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /inventory/{sku} {
+      allow read, write: if isMaster();
+    }
+
+    // =========================================================
+    // PEDIDOS
+    // =========================================================
+    match /orders/{orderId} {
+      allow create: if isAdmin();
+      allow read: if isAdmin()
+        || (isAuthenticated() && resource.data.clientUid == request.auth.uid);
+      allow update: if isAdmin();
+      allow delete: if isMaster();
+    }
+
+    match /orderAudit/{auditId} {
+      allow read, write: if isAdmin();
+    }
+
+    // =========================================================
+    // CUPONS E COMISSÕES
+    // =========================================================
+    match /coupons/{couponId} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /commissions/{commissionId} {
+      allow create: if isAdmin();
+      allow read: if isAdmin()
+        || (isAuthenticated() && request.auth.token.email == resource.data.email);
+      allow update, delete: if isAdmin();
+    }
+
+    match /counters/{counterId} {
+      allow read, write: if isAdmin();
+    }
+
+    // =========================================================
+    // USUÁRIOS
+    // =========================================================
+    match /users/{userId} {
+      allow read: if isAdmin()
+        || isOwner(userId)
+        ;
+      allow create: if isAdmin();
+      allow update: if isAdmin()
+        || (isOwner(userId) && request.resource.data.role == resource.data.role);
+      allow delete: if isMaster();
+    }
+
+    match /orderTracking/{orderId} {
+      allow get: if isAdmin();
+      allow list: if false;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && request.resource.data.id == orderId;
+      allow delete: if isMaster();
+    }
+
+    match /userProfiles/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update, delete: if isMaster();
+    }
+
+    // REGRA DE SEGURANÇA FINAL PARA O MASTER
+    match /{document=**} {
+      allow read, write: if isMaster();
+    }
+  }
+}

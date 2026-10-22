@@ -1,7 +1,6 @@
 import { configureInfinitePay, startInfinitePay } from './infinitepay-checkout.js';
 import { ORDER_STATUS } from '../orders/order-status.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
-import { db } from '../firebase-config.js';
 import { loadProducts as loadCatalogProducts } from '../catalog/catalog-service.js';
 import { LOGISTICS_STATUS } from '../orders/logistics-status.js';
 import { appendOrderEvent, ORDER_EVENT } from '../orders/order-history.js';

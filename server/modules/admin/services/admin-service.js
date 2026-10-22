@@ -12,6 +12,10 @@ const ORDERS = "orders";
 const TRACKING = "orderTracking";
 const USERS = "users";
 const PRODUCTS = "products";
+const { resolve } = require('node:path');
+const { createPublishedJsonReader } = require('../../../infrastructure/published-json');
+const readCatalog = createPublishedJsonReader(resolve(process.cwd(), 'data/catalog/catalog-runtime.json'));
+const readManifest = createPublishedJsonReader(resolve(process.cwd(), 'data/catalog/manifests/catalog-sources.json'));
 
 function db() {
     return getFirestore();
@@ -80,10 +84,7 @@ async function getOrders() {
 }
 
 async function getProducts() {
-    const fs = require('node:fs'), path = require('node:path');
-    const products = await getCollection(PRODUCTS);
-    const raw = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'data/catalog/catalog-runtime.json'), 'utf8').replace(/^\uFEFF/, ''));
-    const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'data/catalog/manifests/catalog-sources.json'), 'utf8').replace(/^\uFEFF/, ''));
+    const [products, raw, manifest] = await Promise.all([getCollection(PRODUCTS), readCatalog(), readManifest()]);
     return require('../../catalog/catalog-view').enrichProducts(products, Array.isArray(raw) ? raw : raw.products || [], Array.isArray(manifest) ? manifest : manifest.sources || []);
 }
 

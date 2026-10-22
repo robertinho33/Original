@@ -1,20 +1,20 @@
 "use strict";
 
-const fs = require("node:fs");
 const path = require("node:path");
 const { getFirestore } = require("../../infrastructure/firebase/firebase-admin");
 const RUNTIME_CATALOG = path.resolve(process.cwd(), "data/catalog/catalog-runtime.json");
+const readRuntime = require('../../infrastructure/published-json').createPublishedJsonReader(RUNTIME_CATALOG);
 let cache = null;
 let cacheUntil = 0;
 
-function loadRuntime() {
-    const parsed = JSON.parse(fs.readFileSync(RUNTIME_CATALOG, "utf8").replace(/^\uFEFF/, ""));
+async function loadRuntime() {
+    const parsed = await readRuntime();
     return Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.products) ? parsed.products : []);
 }
 
 async function refreshPublicCatalog() {
     if (cache && Date.now() < cacheUntil) return cache;
-    const base = loadRuntime();
+    const base = await loadRuntime();
     // A compact stock snapshot keeps catalog browsing to one stock read per cache refresh.
     let stockAvailability = {};
     try {

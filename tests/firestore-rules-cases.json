@@ -1,0 +1,2324 @@
+{
+  "testCases": [
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/clients/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/clients/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/clients/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/clients/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/commissions/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/commissions/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/commissions/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/commissions/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/counters/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/counters/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/counters/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/counters/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/influencerPortalAccess/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/influencerPortalAccess/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/influencerPortalAccess/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/influencerPortalAccess/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/influencerPortalSessions/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/influencerPortalSessions/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/influencerPortalSessions/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/influencerPortalSessions/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/products/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/products/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/products/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/products/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/coupons/audit-test",
+        "method": "get",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/coupons/audit-test",
+        "method": "create",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/coupons/audit-test",
+        "method": "update",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/coupons/audit-test",
+        "method": "delete",
+        "auth": null,
+        "resource": {
+          "data": {
+            "id": "audit-test",
+            "status": "paid",
+            "role": "influencer"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test",
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "get",
+        "auth": {
+          "uid": "master-test",
+          "token": {
+            "email": "robertinho33@gmail.com"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "master-test",
+          "token": {
+            "email": "robertinho33@gmail.com"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "master-test",
+          "token": {
+            "email": "robertinho33@gmail.com"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "delete",
+        "auth": {
+          "uid": "master-test",
+          "token": {
+            "email": "robertinho33@gmail.com"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/categories/audit-test",
+        "method": "get",
+        "auth": null
+      },
+      "resource": {
+        "data": {
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/users/audit-test",
+        "method": "get",
+        "auth": null
+      },
+      "resource": {
+        "data": {
+          "role": "influencer"
+        }
+      }
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/clients/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "nonadmin-audit-test",
+          "token": {
+            "email": "nonadmin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "nonadmin-audit-test",
+          "token": {
+            "email": "nonadmin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/commissions/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "nonadmin-audit-test",
+          "token": {
+            "email": "nonadmin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/counters/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "nonadmin-audit-test",
+          "token": {
+            "email": "nonadmin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "nonadmin-audit-test",
+          "token": {
+            "email": "nonadmin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/products/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "nonadmin-audit-test",
+          "token": {
+            "email": "nonadmin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/coupons/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "nonadmin-audit-test",
+          "token": {
+            "email": "nonadmin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/users/owner-audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "owner-audit-test",
+          "token": {
+            "email": "owner@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "role": "admin"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "role": "customer"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orders/owned",
+        "method": "get",
+        "auth": {
+          "uid": "owner-audit-test",
+          "token": {
+            "email": "owner@example.test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "clientUid": "owner-audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/clients/audit-test",
+        "method": "get",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/clients/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/clients/audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/clients",
+        "method": "list",
+        "auth": null
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "get",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orders/audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orders",
+        "method": "list",
+        "auth": null
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/commissions/audit-test",
+        "method": "get",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/commissions/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/commissions/audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/commissions",
+        "method": "list",
+        "auth": null
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/counters/audit-test",
+        "method": "get",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/counters/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/counters/audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/counters",
+        "method": "list",
+        "auth": null
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking/audit-test",
+        "method": "get",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking/audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/orderTracking",
+        "method": "list",
+        "auth": null
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/products/audit-test",
+        "method": "get",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/products/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/products/audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/products",
+        "method": "list",
+        "auth": null
+      }
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/coupons/audit-test",
+        "method": "get",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/coupons/audit-test",
+        "method": "create",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "ALLOW",
+      "request": {
+        "path": "/databases/(default)/documents/coupons/audit-test",
+        "method": "update",
+        "auth": {
+          "uid": "admin-audit-test",
+          "token": {
+            "email": "admin@example.test"
+          }
+        },
+        "resource": {
+          "data": {
+            "id": "audit-test"
+          }
+        }
+      },
+      "resource": {
+        "data": {
+          "id": "audit-test"
+        }
+      },
+      "functionMocks": [
+        {
+          "function": "exists",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "function": "get",
+          "args": [
+            {
+              "anyValue": {}
+            }
+          ],
+          "result": {
+            "value": {
+              "data": {
+                "role": "admin"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "expectation": "DENY",
+      "request": {
+        "path": "/databases/(default)/documents/coupons",
+        "method": "list",
+        "auth": null
+      }
+    }
+  ]
+}

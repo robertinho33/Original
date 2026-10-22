@@ -1,6 +1,5 @@
 "use strict";
 
-const fs = require("node:fs");
 const path = require("node:path");
 const { getFirestore } = require("../../infrastructure/firebase/firebase-admin");
 
@@ -10,6 +9,8 @@ const SOURCES_MANIFEST = path.resolve(
 );
 const SETTINGS_COLLECTION = "settings";
 const SETTINGS_DOCUMENT = "catalogVisibility";
+const readManifest = require('../../infrastructure/published-json').createPublishedJsonReader(SOURCES_MANIFEST);
+const stateCache = require('../../infrastructure/cached-read').createCachedRead(readState, 30000);
 
 function normalizeId(value) {
     return String(value ?? "").trim().toLowerCase();
@@ -20,9 +21,8 @@ async function loadManagedSources() {
     return snapshot.docs.map(document => ({ id: document.id, ...document.data(), managed: true }));
 }
 
-function loadSources() {
-    const raw = fs.readFileSync(SOURCES_MANIFEST, "utf8").replace(/^\uFEFF/, "");
-    const parsed = JSON.parse(raw);
+async function loadSources() {
+    const parsed = await readManifest();
     const sources = Array.isArray(parsed) ? parsed : parsed?.sources;
     return Array.isArray(sources) ? sources : [];
 }
@@ -38,7 +38,7 @@ async function readState() {
     const settings = settingsSnapshot.exists ? settingsSnapshot.data() || {} : {};
     const sourceOverrides = settings.sources || {};
     const sourceMap = new Map();
-    [...loadSources(), ...managedSources].forEach(source => {
+    [...await loadSources(), ...managedSources].forEach(source => {
         const id = normalizeId(source.id);
         if (id) sourceMap.set(id, { ...source, id });
     });
@@ -67,7 +67,7 @@ async function setSourceVisibility(id, visible, actor = "") {
         throw new Error("Informe se o fornecedor deve ficar visível.");
     }
     const normalizedId = normalizeId(id);
-    const sources = [...loadSources(), ...await loadManagedSources()];
+    const sources = [...await loadSources(), ...await loadManagedSources()];
     if (!sources.some(source => normalizeId(source.id) === normalizedId)) {
         throw new Error("Fornecedor não encontrado no catálogo.");
     }
@@ -81,6 +81,7 @@ async function setSourceVisibility(id, visible, actor = "") {
             updatedBy: String(actor || "Administrador").slice(0, 160)
         }, { merge: true });
 
+    stateCache.invalidate();
     return { id: normalizedId, visible: Boolean(visible) };
 }
 
@@ -105,6 +106,7 @@ async function setProductVisibility(id, visible, actor = "") {
         visibilityUpdatedBy: String(actor || "Administrador").slice(0, 160)
     });
 
+    stateCache.invalidate();
     return {
         id: productId,
         sku: String(snapshot.data()?.sku || ""),
@@ -113,7 +115,7 @@ async function setProductVisibility(id, visible, actor = "") {
 }
 
 module.exports = {
-    getVisibility: readState,
+    getVisibility: stateCache.get,
     setSourceVisibility,
     setProductVisibility
 };

@@ -21,6 +21,8 @@ const app = express();
 
 const path = require('path');
 applyHttpFoundation(app);
+const webDelivery = require('./server/infrastructure/web-delivery');
+app.use(webDelivery.deliveryHeaders);
 require('./server/infrastructure/admin-page-access').registerAdminPageAccess(app, {
     express, getAuth: require('./server/infrastructure/firebase/firebase-admin').getAuth
 });
@@ -34,7 +36,10 @@ app.use((req, res, next) => {
     next();
 });
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'pages/boas-vindas.html')));
-app.use(express.static(__dirname, { dotfiles: 'deny' }));
+const productPages = require('./server/modules/catalog/product-pages');
+webDelivery.registerSearchFiles(app, { getProducts: productPages.getIndexableProducts });
+productPages.registerProductPages(app);
+app.use(express.static(__dirname, { dotfiles: 'deny', setHeaders: webDelivery.staticHeaders }));
 
 const PORT = process.env.PORT || 3000;
 

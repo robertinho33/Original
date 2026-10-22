@@ -1,0 +1,54 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),express=require('express');
+const {createHash}=require('node:crypto');
+const {securityHeaders}=require('../../infrastructure/security');
+const {isPublicFile}=require('../../infrastructure/public-files');
+const {registerSearchFiles}=require('../../infrastructure/web-delivery');
+const {selectIndexable,renderProduct,registerProductPages}=require('./product-pages');
+const product={sku:'SKU-1',name:'Máscara & cuidado',sourceId:'brae',sourceName:'Braé',price:39.95,stock:3,active:true,image:'https://example.com/item.jpg',description:'Cuidado diário.'};
+const state={sources:[{id:'brae',visible:true},{id:'truss',visible:false}],inactiveProductSkus:['hidden']};
+test('only visible, active, priced products appear in pages and sitemap',()=>{
+ const rows=[product,{...product,sku:'hidden'},{...product,sku:'inactive',active:false},{...product,sku:'brand',sourceId:'truss'},{...product,sku:'draft',name:'INATIVO Produto'},{...product,sku:'invalid',price:NaN}];
+ assert.deepEqual(selectIndexable(rows,state),[product]);
+});
+test('product HTML escapes markup and JSON-LD cannot break out of its script',()=>{
+ const value={...product,name:'<img src=x onerror=alert(1)>',description:'</script><script>alert(1)</script>',image:'javascript:alert(1)',stock:0};
+ const page=renderProduct(value),schema=JSON.parse(page.json);
+ assert.doesNotMatch(page.html,/<img src=x|<script>alert/);
+ assert.match(page.html,/&lt;img src=x/);assert.doesNotMatch(page.json,/<\/script>/);
+ assert.equal(schema.offers.price,'39.95');assert.equal(schema.offers.availability,'https://schema.org/OutOfStock');
+ assert.equal(schema.image,undefined);assert.match(page.html,/type="submit" disabled/);
+});
+test('real route pipeline serves crawlable pages, product sitemap and true 404s with matching CSP',async t=>{
+ const app=express();app.use(securityHeaders);
+ app.use((req,res,next)=>isPublicFile(decodeURIComponent(req.path))?next():res.sendStatus(404));
+ const products=Array.from({length:38},(_,i)=>({...product,sku:'SKU-'+i}));
+ const getProducts=async()=>products;
+ registerSearchFiles(app,{getProducts});registerProductPages(app,{getProducts});
+ const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+ t.after(()=>new Promise(r=>{server.close(r);server.closeAllConnections();}));
+ const base='http://127.0.0.1:'+server.address().port;
+ const response=await fetch(base+'/produto/SKU-1'),html=await response.text();
+ assert.equal(response.status,200);assert.match(html,/<h1>Máscara &amp; cuidado<\/h1>/);
+ assert.match(html,/rel="canonical" href="https:\/\/www.fiosperfeitos.com.br\/produto\/SKU-1"/);
+ const json=/type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)[1];
+ const hash=createHash('sha256').update(json).digest('base64');
+ assert.ok(response.headers.get('content-security-policy').includes("'sha256-"+hash+"'"));
+ assert.doesNotMatch(response.headers.get('content-security-policy').split(';').find(s=>s.includes('script-src')),/unsafe-inline/);
+ assert.equal((await fetch(base+'/produto/unknown')).status,404);
+ assert.equal((await fetch(base+'/produtos?pagina=0')).status,404);
+ assert.equal((await fetch(base+'/produtos?pagina=999')).status,404);
+ const directory=await (await fetch(base+'/produtos?pagina=2')).text();
+ assert.equal((directory.match(/<li>/g)||[]).length,2);assert.match(directory,/SKU-37/);
+ const xml=await (await fetch(base+'/sitemap.xml')).text();
+ assert.match(xml,/<loc>https:\/\/www.fiosperfeitos.com.br\/produto\/SKU-1<\/loc>/);
+ assert.equal((xml.match(/<loc>/g)||[]).length,44);
+});
+test('catalog failures never publish fallback hidden products',async t=>{
+ const app=express();registerProductPages(app,{getProducts:async()=>{throw Error('offline');}});
+ app.use((error,req,res,next)=>res.status(503).send('Indisponível'));
+ const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+ t.after(()=>new Promise(r=>{server.close(r);server.closeAllConnections();}));
+ const response=await fetch('http://127.0.0.1:'+server.address().port+'/produto/SKU-1');
+ assert.equal(response.status,503);assert.doesNotMatch(await response.text(),/Product/);
+});

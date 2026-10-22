@@ -664,10 +664,10 @@ async function renderCatalog() {
                         </div>
 
                         <div class="product-info">
-                            <h3>
+                            <h3><a href="/produto/${escapeAttribute(encodeURIComponent(String(product.sku)))}">
                                 ${escapeHTML(
                                     product.name
-                                )}
+                                )}</a>
                             </h3>
 
                             <p>
@@ -1351,6 +1351,7 @@ productsEl?.addEventListener(
                 '[data-product-sku]'
             );
 
+        if (event.target.closest('a[href]')) return;
         if (productCard) {
             openProductModal(
                 productCard.dataset.productSku,
