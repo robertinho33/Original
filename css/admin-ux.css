@@ -60,3 +60,5 @@
 }
 @media(max-width:780px){.admin-page :is(.admin-metric-card,.metric-card,.workspace-metrics article){grid-template-columns:minmax(0,1fr);gap:3px}.admin-page :is(.admin-metric-card,.metric-card,.workspace-metrics article)>:is(strong,.metric-value,.admin-metric-value){justify-self:start}}
 .admin-page :is(.admin-table-wrap,.admin-table-wrapper,.table-scroll)>table{min-width:100%!important}.admin-page :is(.admin-table-wrap,.admin-table-wrapper,.table-scroll)>table:has(thead th:nth-child(5)){min-width:720px!important}.admin-page .influencer-table-scroll>table{min-width:1100px!important}
+.admin-page .admin-operation-grid:has(>.module-panel){grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.admin-page .admin-operation-grid>.module-panel{min-height:0!important;padding:18px!important}.admin-page .module-panel-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.admin-page .module-panel-header :is(h2,h3){margin:0}.admin-page .module-panel-header p{margin:5px 0 0}
+@media(max-width:780px){.admin-page .admin-operation-grid:has(>.module-panel){grid-template-columns:minmax(0,1fr)}}
