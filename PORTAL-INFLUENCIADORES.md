@@ -47,3 +47,5 @@ A experiência agora se chama Cuidado do seu jeito, com Encontrar meu cuidado no
 Ao liberar um novo acesso, deixar a senha em branco gera uma senha inicial individual, exibida somente na resposta ao administrador. O administrador deve compartilhá-la por um canal privado. A senha não é enviada automaticamente. Acessos existentes mantêm a senha atual quando o campo fica vazio. No portal, Alterar minha senha exige a senha atual, grava somente o hash com salt e invalida as sessões anteriores. O usuário precisa entrar novamente.
 
 A tela inicial foi simplificada em quatro botões, e a vitrine pública do influenciador também oferece acesso ao portal.
+
+Novas senhas do portal aceitam de 8 a 16 caracteres, somente letras e números, incluindo ambos. O login preserva compatibilidade com senhas antigas mais longas. O botão Alterar minha senha aparece também antes do login e encaminha à troca após autenticação, exigindo a senha atual.

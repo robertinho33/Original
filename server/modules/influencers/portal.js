@@ -89,7 +89,7 @@ function createRouter(deps = {}) {
       const db=getDb(),user=await credentials.identity(db,req);
       if(!user)return res.status(401).json({success:false,error:'Entre novamente para alterar sua senha.'});
       const {currentPassword,newPassword}=req.body||{};
-      if(!passwordValid(newPassword)||newPassword===currentPassword)return res.status(400).json({success:false,error:'Escolha uma nova senha de 10 a 128 caracteres com letras e números.'});
+      if(!passwordValid(newPassword)||newPassword===currentPassword)return res.status(400).json({success:false,error:'Escolha uma nova senha de 8 a 16 caracteres com letras e números.'});
       const ref=db.collection('influencerPortalAccess').doc(user.id),snapshot=await ref.get(),access=snapshot.data();
       if(!await credentials.passwordMatches(currentPassword,access))return res.status(400).json({success:false,error:'A senha atual não confere.'});
       const secret=await credentials.passwordRecord(newPassword);

@@ -18,7 +18,9 @@ function database() {
 }
 test('password policy, salted hashes and constant-time verification never store clear passwords', async () => {
   assert.equal(credentials.passwordValid('OnlyLetters'), false); assert.equal(credentials.passwordValid('1234567890'), false);
-  assert.equal(credentials.passwordValid('Short1'), false); assert.equal(credentials.passwordValid('StrongPass12'), true);
+  assert.equal(credentials.passwordValid('Short1'), false);
+  for(const password of ['Abc12345','Abcdef1234567890'])assert.equal(credentials.passwordValid(password),true);
+  for(const password of ['Ab12345','Abcdef12345678901','Abc1234!','Abc 1234','ábc12345'])assert.equal(credentials.passwordValid(password),false); assert.equal(credentials.passwordValid('StrongPass12'), true);
   const first = await credentials.passwordRecord('StrongPass12'), second = await credentials.passwordRecord('StrongPass12');
   assert.notEqual(first.passwordHash, second.passwordHash); assert.ok(!JSON.stringify(first).includes('StrongPass12'));
   assert.equal(await credentials.passwordMatches('StrongPass12', first), true); assert.equal(await credentials.passwordMatches('WrongPass12', first), false);
@@ -125,19 +127,19 @@ test('initial passwords are individual and owner password change revokes every o
   async function call(path,body,cookie='',origin='https://www.fiosperfeitos.com.br') {return fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json',Origin:origin,Cookie:cookie},body:JSON.stringify(body)});}
   const login=password=>call('/login',{email:'one@example.test',phone:'11999999999',password});
   try{
-    assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'NewSecret123'})).status,401);
+    assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'NewPass1'})).status,401);
     const logged=await login(first.initialPassword),cookie=logged.headers.get('set-cookie').split(';')[0];
     const again=await login(first.initialPassword),otherCookie=again.headers.get('set-cookie').split(';')[0];
-    assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'NewSecret123'},cookie,'https://evil.test')).status,403);
-    assert.equal((await call('/password',{currentPassword:'Wrong123456',newPassword:'NewSecret123'},cookie)).status,400);
+    assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'NewPass1'},cookie,'https://evil.test')).status,403);
+    assert.equal((await call('/password',{currentPassword:'Wrong123456',newPassword:'NewPass1'},cookie)).status,400);
     assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'weak'},cookie)).status,400);
     assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:first.initialPassword},cookie)).status,400);
     const otherHash=records.get('influencerPortalAccess/two').passwordHash;
-    const saved=await call('/password',{currentPassword:first.initialPassword,newPassword:'NewSecret123',influencerId:'two'},cookie);
+    const saved=await call('/password',{currentPassword:first.initialPassword,newPassword:'NewPass1',influencerId:'two'},cookie);
     assert.equal(saved.status,200);assert.match(saved.headers.get('cache-control'),/no-store/);
     assert.equal(records.get('influencerPortalAccess/two').passwordHash,otherHash);
-    assert.equal((await call('/password',{currentPassword:'NewSecret123',newPassword:'NextSecret123'},otherCookie)).status,401);
-    assert.equal((await login(first.initialPassword)).status,401);assert.equal((await login('NewSecret123')).status,200);
-    assert.ok(!JSON.stringify([...records]).includes('NewSecret123'));
+    assert.equal((await call('/password',{currentPassword:'NewPass1',newPassword:'NextSecret123'},otherCookie)).status,401);
+    assert.equal((await login(first.initialPassword)).status,401);assert.equal((await login('NewPass1')).status,200);
+    assert.ok(!JSON.stringify([...records]).includes('NewPass1'));
   }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });

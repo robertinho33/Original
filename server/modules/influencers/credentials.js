@@ -7,7 +7,7 @@ const cookieOptions = { httpOnly: true, secure: true, sameSite: 'strict', path: 
 const hash = value => createHash('sha256').update(value).digest('hex');
 const email = value => String(value || '').trim().toLowerCase();
 const phone = value => { const digits = String(value || '').replace(/\D/g, ''); return /^55\d{10,11}$/.test(digits) ? digits.slice(2) : digits; };
-const passwordValid = value => typeof value === 'string' && /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{10,128}$/.test(value);
+const passwordValid = value => typeof value === 'string' && /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/.test(value);
 async function passwordRecord(password) {
   const salt = randomBytes(16).toString('hex');
   return { passwordSalt: salt, passwordHash: (await scrypt(password, salt, 64)).toString('hex') };
@@ -44,10 +44,10 @@ async function provision(db, id, input, actor) {
     return { enabled: false };
   }
   const address = email(person.email), number = phone(person.phone);
-  const initialPassword = !previous?.passwordHash && !input.password ? 'Fp' + randomBytes(12).toString('hex') : null;
+  const initialPassword = !previous?.passwordHash && !input.password ? 'Fp' + randomBytes(7).toString('hex') : null;
   const password = input.password || initialPassword;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address) || !/^\d{10,11}$/.test(number) || person.active === false) throw Error('Salve um e-mail e telefone válidos e ative o cadastro antes de liberar o portal.');
-  if ((!previous?.passwordHash || password) && !passwordValid(password)) throw Error('Use uma senha de 10 a 128 caracteres, somente letras e números, incluindo ambos.');
+  if ((!previous?.passwordHash || password) && !passwordValid(password)) throw Error('Use uma senha de 8 a 16 caracteres, somente letras e números, incluindo ambos.');
   const secret = password ? await passwordRecord(password) : { passwordHash: previous.passwordHash, passwordSalt: previous.passwordSalt };
   const lookup = db.collection('influencerPortalEmails').doc(hash(address));
   await db.runTransaction(async tx => {

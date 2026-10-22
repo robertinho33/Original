@@ -7,11 +7,13 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;
 const statuses = { pending:'Aguardando processamento',new:'Pedido recebido',paid:'Pagamento confirmado',preparing:'Em preparação',processing:'Em preparação',packed:'Embalado',shipped:'Enviado',in_transit:'Em transporte',out_for_delivery:'Saiu para entrega',delivered:'Entregue',cancelled:'Cancelado',posted:'Postado' };
 const commissionLabels = { paid:'Repassada',pending:'Aguardando repasse',estimated:'Estimada · a conciliar',not_eligible:'Ainda não elegível' };
 const dateLabel = value => value ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? value + 'T12:00:00-03:00' : value).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '';
+let passwordChangeRequested=false;
 function render(data) {
   $('portalLogin').hidden = true; $('portalDashboard').hidden = false;
   $('portalGreeting').textContent = 'Olá, ' + data.profile.name.split(' ')[0] + '.';
   const storeLink=$('portalStoreLink'); storeLink.hidden=!data.storeUrl; if(data.storeUrl?.startsWith('/pages/vitrine-influenciador.html?loja=')) storeLink.href=data.storeUrl;
   renderPromotions(data);
+  if(passwordChangeRequested){passwordChangeRequested=false;openPasswordPanel();}
   const summary = data.summary;
   $('portalMetrics').innerHTML = [ ['Vendas no período',summary.sales],['Vendas pagas',summary.paidSales],['Valor das vendas pagas',money(summary.revenue)],['Comissões estimadas',money(summary.commissionEstimated)],['Aguardando repasse',money(summary.commissionPending)],['Comissões repassadas',money(summary.commissionPaid)] ].map(([label,value])=>`<article class="metric"><p>${esc(label)}</p><strong>${esc(value)}</strong></article>`).join('');
   $('portalSalesBody').innerHTML = data.orders.length ? data.orders.map(row=>`<tr><td><strong>${esc(row.orderNumber)}</strong><small>${esc(dateLabel(row.createdAt))}</small></td><td>${esc(row.couponCode)}</td><td>${esc(money(row.total))}</td><td><span class="status-pill ${row.paymentStatus==='Pago'?'paid':''}">${esc(row.paymentStatus)}</span></td><td>${esc(money(row.commission))}<small>${esc(commissionLabels[row.commissionStatus] || 'A conferir')}${row.commissionRate ? ' · '+esc(row.commissionRate)+'%' : ''}</small></td><td>${esc(statuses[row.logisticsStatus] || 'Em acompanhamento')}<small>${esc(row.carrier)} ${esc(row.trackingCode)}</small></td></tr>`).join('') : '<tr><td class="empty-row" colspan="6">Nenhuma venda vinculada a você neste período.</td></tr>';
@@ -19,6 +21,7 @@ function render(data) {
 }
 async function request(path, body = {}) {
   const response = await fetch('/api/influencer/' + path, { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body), signal:AbortSignal.timeout(60000) });
+  if(!response.headers.get('content-type')?.includes('application/json'))throw new Error('O portal está indisponível neste endereço. Acesse o site da loja ou tente novamente.');
   const result = await response.json();
   if (!response.ok || !result.success) { const error = new Error(result.error || 'Não foi possível consultar o portal.'); error.status=response.status; throw error; }
   return result.data;
@@ -73,3 +76,6 @@ $('portalChangePassword').addEventListener('click',()=>{
   panel.scrollIntoView({block:'start'});panel.querySelector('input').focus({preventScroll:true});
 });
 $('portalPasswordPanel').addEventListener('toggle',()=>{$('portalChangePassword').setAttribute('aria-expanded',String($('portalPasswordPanel').open));});
+
+function openPasswordPanel(){const panel=$('portalPasswordPanel');panel.open=true;panel.scrollIntoView({block:'start'});panel.querySelector('input').focus({preventScroll:true});}
+$('portalLoginChangePassword').addEventListener('click',()=>{passwordChangeRequested=true;$('portalLoginMessage').textContent='Entre com seu e-mail, telefone e senha atual. Após o acesso, abriremos a troca de senha. Se esqueceu a senha, solicite a recuperação pelo atendimento abaixo.';$('portalEmail').focus();});
