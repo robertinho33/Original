@@ -5345,6 +5345,7 @@ initializeAdminAccess();
     function renderInfluencers(container, influencers) {
 
         container.innerHTML = `
+            <div class="admin-influencers-module">
             <div class="admin-module-header">
                 <div>
                     <h2>Influenciadores</h2>
@@ -5361,7 +5362,7 @@ initializeAdminAccess();
 
             <div id="nefer-influencer-form-container"></div>
 
-            <div class="admin-table-wrapper">
+            <p class="admin-help-text">Em telas menores, deslize a tabela para consultar as demais colunas e ações.</p><div class="admin-table-wrapper influencer-table-scroll" tabindex="0" aria-label="Influenciadores cadastrados — deslize para consultar todas as colunas">
                 <table class="admin-table">
                     <thead>
                         <tr>
@@ -5386,7 +5387,7 @@ initializeAdminAccess();
                                         <td>${escapeHtml(item.pixKey || "Não informada")}</td>
                                         <td>${Number(item.commissionDefault || 0).toFixed(2)}%</td>
                                         <td>${item.active !== false ? "Ativo" : "Inativo"}</td>
-                                        <td><button type="button" class="btn nefer-edit-influencer" data-influencer-id="${escapeHtml(item.id)}">Editar</button> <button type="button" class="btn" data-influencer-access="${escapeHtml(item.id)}" data-name="${escapeHtml(item.name)}" data-email="${escapeHtml(item.email || '')}" data-enabled="${item.portalEnabled === true}">${item.portalEnabled ? "Gerenciar acesso" : "Liberar acesso"}</button> <button type="button" class="btn" data-influencer-store="${escapeHtml(item.id)}" data-name="${escapeHtml(item.name)}">Vitrine pública</button></td>
+                                        <td><div class="table-actions"><button type="button" class="btn nefer-edit-influencer" data-influencer-id="${escapeHtml(item.id)}">Editar</button> <button type="button" class="btn" data-influencer-access="${escapeHtml(item.id)}" data-name="${escapeHtml(item.name)}" data-email="${escapeHtml(item.email || '')}" data-enabled="${item.portalEnabled === true}">${item.portalEnabled ? "Gerenciar acesso" : "Liberar acesso"}</button> <button type="button" class="btn" data-influencer-store="${escapeHtml(item.id)}" data-name="${escapeHtml(item.name)}">Vitrine pública</button></div></td>
                                     </tr>
                                 `).join("")
                                 : `
@@ -5399,6 +5400,7 @@ initializeAdminAccess();
                         }
                     </tbody>
                 </table>
+            </div>
             </div>
         `;
 

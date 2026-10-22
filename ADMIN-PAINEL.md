@@ -36,3 +36,7 @@ O dashboard consulta createdAt tanto como Timestamp quanto como texto ISO; une o
 Envios pendentes considera pedidos pagos com logística ainda aberta, excluindo entregues e cancelados. Usa a logística do pedido, em vez de contar documentos de rastreamento antigos ou tentativas não pagas. Nenhum documento de pedido, pagamento, rastreamento ou cupom é alterado por esses cálculos.
 
 Validação: testes cobrem strings ISO, offsets, Timestamp, fronteira de meia-noite em São Paulo, soma exata, totais legados, pagamentos não confirmados, duplicação entre consultas e entregas concluídas. Conferir a leitura do dashboard autenticado e as ações dos cupons após a publicação.
+
+## Padrão compacto compartilhado
+
+As telas administrativas usam indicadores menores e tabelas em linhas, inclusive no celular. Tabelas com muitas colunas possuem rolagem horizontal no próprio contêiner; tabelas menores podem ocupar a largura disponível. Formulários e permissões mantêm o comportamento anterior. A lista de influenciadores mantém os controles de editar, gerenciar/liberar acesso e vitrine pública. O estilo comum cobre as listagens de produtos/estoque, pedidos, clientes, cupons, influenciadores, contratos, comissões, relatórios e auditoria.
