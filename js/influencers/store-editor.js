@@ -3,7 +3,7 @@ const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036
 const money=value=>Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 export function mountStoreEditor(container,{onUnauthorized=()=>{}}={}){
   if(!container)return {reset(){}};
-  container.innerHTML='<h2>Produtos da minha vitrine</h2><p>Escolha até seis produtos. Você pode trocar a seleção quando quiser, mantendo o mesmo link. Nome, cupom e ativação são administrados pela loja.</p><button type="button" class="outline-button" data-load-store>Escolher ou trocar produtos</button><div data-store-content hidden></div>';
+  container.innerHTML='<p class="eyebrow">ESCOLHA SEUS PRODUTOS · 3 DE 3</p><h2>Produtos da minha vitrine</h2><p>Escolha até seis produtos. Você pode trocar a seleção quando quiser, mantendo o mesmo link. Nome, cupom e ativação são administrados pela loja.</p><button type="button" class="outline-button" data-load-store>Escolher ou trocar produtos</button><div data-store-content hidden></div>';
   const loadButton=container.querySelector('[data-load-store]'),content=container.querySelector('[data-store-content]');let generation=0;
   async function request(method,body){
     const response=await fetch('/api/influencer/store',{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});

@@ -27,9 +27,10 @@ async function identity(db, req) {
   const [accessDoc, influencerDoc] = await Promise.all([db.collection('influencerPortalAccess').doc(id).get(), db.collection('influencers').doc(id).get()]);
   if (!accessDoc.exists || !influencerDoc.exists) return null;
   const access = accessDoc.data(), influencer = influencerDoc.data();
+  if (access.mustChangePassword && (!Number.isSafeInteger(access.temporaryExpiresAt) || access.temporaryExpiresAt<=Date.now())) return null;
   if (!access.enabled || access.version !== saved.version || influencer.active === false || influencer.portalEnabled !== true ||
     email(influencer.email) !== access.email || phone(influencer.phone) !== access.phone) return null;
-  return { id, name: String(influencer.name || ''), email: access.email };
+  return { id, name: String(influencer.name || ''), email: access.email, mustChangePassword:access.mustChangePassword===true };
 }
 async function provision(db, id, input, actor) {
   const ref = db.collection('influencers').doc(id), snapshot = await ref.get();
@@ -44,7 +45,7 @@ async function provision(db, id, input, actor) {
     return { enabled: false };
   }
   const address = email(person.email), number = phone(person.phone);
-  const initialPassword = !previous?.passwordHash && !input.password ? 'Fp' + randomBytes(7).toString('hex') : null;
+  const initialPassword = (!previous?.passwordHash || input.reset===true) && !input.password ? 'Fp' + randomBytes(7).toString('hex') : null;
   const password = input.password || initialPassword;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address) || !/^\d{10,11}$/.test(number) || person.active === false) throw Error('Salve um e-mail e telefone válidos e ative o cadastro antes de liberar o portal.');
   if ((!previous?.passwordHash || password) && !passwordValid(password)) throw Error('Use uma senha de 8 a 16 caracteres, somente letras e números, incluindo ambos.');
@@ -55,9 +56,11 @@ async function provision(db, id, input, actor) {
     if (duplicate.exists && duplicate.data().influencerId !== id) throw Error('Este e-mail já está liberado para outro influenciador.');
     if (previous?.email && previous.email !== address) tx.delete(db.collection('influencerPortalEmails').doc(hash(previous.email)));
     tx.set(lookup, { influencerId: id });
-    tx.set(accessRef, { ...secret, email: address, phone: number, enabled: true, version: randomBytes(16).toString('hex'), updatedAt: new Date().toISOString(), updatedBy: actor });
+    tx.set(accessRef, { ...secret, mustChangePassword:password?true:previous?.mustChangePassword===true, temporaryExpiresAt:password?Date.now()+48*3600000:previous?.temporaryExpiresAt||null, email: address, phone: number, enabled: true, version: randomBytes(16).toString('hex'), updatedAt: new Date().toISOString(), updatedBy: actor });
     tx.update(ref, { portalEnabled: true, portalUpdatedAt: new Date().toISOString() });
   });
-  return { enabled: true, ...(initialPassword ? { initialPassword } : {}) };
+  const temporary=password||null;
+  const invitation=temporary ? 'Olá, '+String(person.name||'').slice(0,100)+'! Seu acesso à Fios Perfeitos está pronto.\nPortal: https://www.fiosperfeitos.com.br/pages/influenciadores.html\nE-mail: '+address+'\nTelefone cadastrado: '+number+'\nSenha temporária: '+temporary+'\nVálida por 48 horas. Entre, crie sua senha pessoal de 8 a 16 caracteres com letras e números e complete sua foto e os produtos da sua vitrine. Não compartilhe este acesso.' : null;
+  return { enabled: true, ...(temporary ? {initialPassword:temporary,whatsappUrl:'https://wa.me/55'+number+'?text='+encodeURIComponent(invitation)} : {}) };
 }
 module.exports = { cookieName, cookieOptions, hash, email, phone, passwordValid, passwordRecord, passwordMatches, token, identity, provision, randomBytes };

@@ -1,4 +1,5 @@
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
+import { mountProfileEditor } from './profile-editor.js';
 import { mountStoreEditor } from './store-editor.js';
 installProductImageFallbacks();
 const $ = id => document.getElementById(id);
@@ -26,11 +27,16 @@ async function request(path, body = {}) {
   if (!response.ok || !result.success) { const error = new Error(result.error || 'Não foi possível consultar o portal.'); error.status=response.status; throw error; }
   return result.data;
 }
-function showLogin() { $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+function showLogin() { $('portalCampaign').replaceChildren();$('portalBestSellers').replaceChildren();$('portalStoreLink').hidden=true;$('portalStoreLink').removeAttribute('href'); $('portalFirstAccess').hidden=true;$('portalFirstPasswordForm').reset();profileEditor.reset(); $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+const profileEditor=mountProfileEditor($('portalProfileEditor'),{onUnauthorized:showLogin});
 const storeEditor=mountStoreEditor($('portalStoreEditor'),{onUnauthorized:showLogin});
 async function refresh(silent = false) {
   $('portalDashboardMessage').textContent='Consultando suas vendas…';
-  try { const data = await request('dashboard',{from:$('portalFrom').value,to:$('portalTo').value}); render(data); $('portalDashboardMessage').textContent='Dados atualizados agora.'; }
+  try {
+    const session=await request('session');
+    if(session.mustChangePassword){$('portalLogin').hidden=true;$('portalDashboard').hidden=true;$('portalFirstAccess').hidden=false;return;}
+    $('portalFirstAccess').hidden=true;$('portalLogin').hidden=true;$('portalDashboard').hidden=false;$('portalGreeting').textContent='Olá, '+session.profile.name.split(' ')[0]+'.';
+    const data = await request('dashboard',{from:$('portalFrom').value,to:$('portalTo').value}); render(data); $('portalDashboardMessage').textContent='Dados atualizados agora.'; }
   catch(error) {
     if(error.status===401) showLogin();
     if(!(silent && error.status===401)) { $('portalLoginMessage').textContent=error.message; $('portalDashboardMessage').textContent=error.message; }
@@ -79,3 +85,12 @@ $('portalPasswordPanel').addEventListener('toggle',()=>{$('portalChangePassword'
 
 function openPasswordPanel(){const panel=$('portalPasswordPanel');panel.open=true;panel.scrollIntoView({block:'start'});panel.querySelector('input').focus({preventScroll:true});}
 $('portalLoginChangePassword').addEventListener('click',()=>{passwordChangeRequested=true;$('portalLoginMessage').textContent='Entre com seu e-mail, telefone e senha atual. Após o acesso, abriremos a troca de senha. Se esqueceu a senha, solicite a recuperação pelo atendimento abaixo.';$('portalEmail').focus();});
+
+$('portalFirstPasswordForm').addEventListener('submit',async event=>{
+  event.preventDefault();const form=event.currentTarget,message=$('portalFirstPasswordMessage'),button=form.querySelector('button');
+  if(form.elements.newPassword.value!==form.elements.confirmPassword.value){message.textContent='As novas senhas precisam ser iguais.';return;}
+  button.disabled=true;message.textContent='Salvando…';
+  try{await request('password',{currentPassword:form.elements.currentPassword.value,newPassword:form.elements.newPassword.value});showLogin();$('portalLoginMessage').textContent='Senha criada. Entre com sua nova senha para completar sua foto e escolher seus produtos.';}
+  catch(error){message.textContent=error.message;}finally{button.disabled=false;}
+});
+$('portalFirstLogout').addEventListener('click',async()=>{try{await request('logout');showLogin();}catch(error){$('portalFirstPasswordMessage').textContent=error.message;}});

@@ -38,7 +38,7 @@ Em Vitrine, a seção “Curadoria · Cuidado do seu jeito” cadastra até 30 i
 
 A adição do cuidado personalizado preserva a sacola anterior e acrescenta uma unidade por produto, mediante clique do cliente. O checkout continua validando preço, estoque, frete e cupom. Os dados demonstrativos e preços da prévia não representam uma oferta publicada.
 
-Configurações: `storeRitualRules/current` e `influencerPublicStores/{influencerId}`. Os endpoints públicos retornam somente os campos necessários à experiência de compra. Apenas o administrador configura ambas as funcionalidades. No teste local, use `/ritual-editor`; suas alterações são temporárias e desaparecem ao reiniciar a prévia.
+Configurações: `storeRitualRules/current` e `influencerPublicStores/{influencerId}`. Os endpoints públicos retornam somente os campos necessários à experiência de compra. O administrador controla a curadoria, cupons e publicação. O influenciador pode editar somente foto, apresentação e produtos da própria vitrine após criar sua senha pessoal. No teste local, use `/ritual-editor`; suas alterações são temporárias e desaparecem ao reiniciar a prévia.
 
 ## Acesso e cuidado personalizado
 
@@ -49,3 +49,13 @@ Ao liberar um novo acesso, deixar a senha em branco gera uma senha inicial indiv
 A tela inicial foi simplificada em quatro botões, e a vitrine pública do influenciador também oferece acesso ao portal.
 
 Novas senhas do portal aceitam de 8 a 16 caracteres, somente letras e números, incluindo ambos. O login preserva compatibilidade com senhas antigas mais longas. O botão Alterar minha senha aparece também antes do login e encaminha à troca após autenticação, exigindo a senha atual.
+
+## Convite e conclusão do primeiro acesso
+
+No cadastro do influenciador, Gerenciar acesso → Gerar convite / redefinir senha gera uma senha temporária individual de 16 caracteres, válida por 48 horas. O convite anterior e as sessões antigas deixam de funcionar. Abrir convite no WhatsApp prepara a mensagem para revisão e envio manual ao telefone salvo. Não há disparo automático nem envio em lote. A mensagem contém apenas portal, e-mail, telefone e senha temporária do destinatário; não inclui URLs ou credenciais administrativas. Não registrar nem persistir essa resposta no cliente.
+
+O primeiro login permite somente conferir a sessão, sair ou criar a senha pessoal. Dashboard, perfil e seleção de produtos são bloqueados no servidor enquanto a troca estiver pendente. Após a troca, todas as sessões anteriores são invalidadas e o usuário entra com a senha pessoal. Acessos antigos continuam funcionando até uma redefinição explícita pelo administrador.
+
+No início do painel: Minha foto e apresentação aceita foto por URL HTTPS e texto de até 500 caracteres; Produtos da minha vitrine aceita de um a seis produtos disponíveis. Uma vitrine inexistente passa a ser rascunho ao salvar o perfil. Nenhuma dessas ações permite editar identidade, cupom, comissão, ativação, permissões ou outra pessoa. O mesmo endereço de vitrine é preservado. Novas vitrines precisam de revisão e ativação do administrador.
+
+A porta 3004 é uma prévia visual e não oferece login real. Para teste com contas reais, usar o servidor completo ou o domínio publicado. Testes automatizados cobrem senha obrigatória, expiração, sessões antigas, propriedade dos dados, campos administrativos indevidos e revisão concorrente. Contas reais não foram redefinidas na validação.

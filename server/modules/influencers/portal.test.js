@@ -94,7 +94,11 @@ test('HTTP access requires email+phone+password, scopes sessions, rejects forged
     assert.equal((await call('/portal/login',{email:'one@example.test',phone:'11999999999',password:'WrongPass12'})).status,401);
     const logged=await call('/portal/login',{email:'ONE@example.test',phone:'+55 (11) 99999-9999',password:'StrongPass12'});
     assert.equal(logged.status,200);assert.match(logged.cookie,/HttpOnly/i);assert.match(logged.cookie,/Secure/i);assert.match(logged.cookie,/SameSite=Strict/i);
-    const cookie=logged.cookie.split(';')[0];
+    const temporaryCookie=logged.cookie.split(';')[0];
+    assert.equal((await call('/portal/dashboard',{}, {Cookie:temporaryCookie})).status,403);
+    assert.equal((await call('/portal/password',{currentPassword:'StrongPass12',newPassword:'StrongPass13'},{Cookie:temporaryCookie,Origin:'https://www.fiosperfeitos.com.br'})).status,200);
+    const personal=await call('/portal/login',{email:'one@example.test',phone:'11999999999',password:'StrongPass13'});
+    const cookie=personal.cookie.split(';')[0];
     const dashboard=await call('/portal/dashboard',{influencerId:'two'},{Cookie:cookie});
     assert.equal(dashboard.data.data.bestSellers[0].sku,'OWN-SKU');assert.equal(dashboard.data.data.bestSellers[0].quantity,2);
     assert.equal(dashboard.status,200);assert.equal(dashboard.data.data.orders[0].orderNumber,'OWN-SALE');
@@ -121,14 +125,17 @@ test('initial passwords are individual and owner password change revokes every o
   assert.ok(credentials.passwordValid(first.initialPassword));assert.notEqual(first.initialPassword,second.initialPassword);
   assert.ok(!JSON.stringify([...records]).includes(first.initialPassword));
   assert.equal((await credentials.provision(db,'one',{},'admin')).initialPassword,undefined);
-  const app=express();app.use(express.json());app.use(createRouter({getDb:()=>db}));
+  const app=express();app.use(express.json());app.use(createRouter({getDb:()=>db,getStoreCatalog:async()=>[{sku:'A',name:'A',price:10}]}));
   const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
   const base='http://127.0.0.1:'+server.address().port;
-  async function call(path,body,cookie='',origin='https://www.fiosperfeitos.com.br') {return fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json',Origin:origin,Cookie:cookie},body:JSON.stringify(body)});}
+  async function call(path,body,cookie='',origin='https://www.fiosperfeitos.com.br',method='POST') {return fetch(base+path,{method,headers:{'Content-Type':'application/json',Origin:origin,Cookie:cookie},body:JSON.stringify(body)});}
   const login=password=>call('/login',{email:'one@example.test',phone:'11999999999',password});
   try{
     assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'NewPass1'})).status,401);
     const logged=await login(first.initialPassword),cookie=logged.headers.get('set-cookie').split(';')[0];
+    const session=await call('/session',{},cookie);assert.equal((await session.json()).data.mustChangePassword,true);
+    for(const path of ['/dashboard','/store','/profile'])assert.equal((await call(path,{},cookie)).status,403);
+    assert.equal((await call('/profile',{image:'https://example.test/photo.jpg',bio:'Oi',revision:''},cookie,undefined,'PUT')).status,403);
     const again=await login(first.initialPassword),otherCookie=again.headers.get('set-cookie').split(';')[0];
     assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'NewPass1'},cookie,'https://evil.test')).status,403);
     assert.equal((await call('/password',{currentPassword:'Wrong123456',newPassword:'NewPass1'},cookie)).status,400);
@@ -141,5 +148,40 @@ test('initial passwords are individual and owner password change revokes every o
     assert.equal((await call('/password',{currentPassword:'NewPass1',newPassword:'NextSecret123'},otherCookie)).status,401);
     assert.equal((await login(first.initialPassword)).status,401);assert.equal((await login('NewPass1')).status,200);
     assert.ok(!JSON.stringify([...records]).includes('NewPass1'));
+    const personal=await login('NewPass1'),personalCookie=personal.headers.get('set-cookie').split(';')[0];
+    assert.equal((await (await call('/session',{},personalCookie)).json()).data.mustChangePassword,false);
+    let response=await call('/profile',{},personalCookie),data=(await response.json()).data;
+    assert.equal(data.name,'one');assert.equal(data.revision,'');assert.ok(!JSON.stringify(data).includes('password'));
+    const input={image:'https://example.test/me.jpg',bio:'Minha apresentação',revision:''};
+    for(const extra of [{enabled:true},{commission:99},{coupon:'MINE'},{influencerId:'two'},{role:'admin'}])assert.equal((await call('/profile',{...input,...extra},personalCookie,undefined,'PUT')).status,400);
+    assert.equal((await call('/profile',{...input,image:'javascript:alert(1)'},personalCookie,undefined,'PUT')).status,400);
+    assert.equal((await call('/profile',input,personalCookie,'https://evil.test','PUT')).status,403);
+    response=await call('/profile',input,personalCookie,undefined,'PUT');assert.equal(response.status,200);
+    const owned=records.get('influencerPublicStores/one');assert.equal(owned.enabled,false);assert.equal(owned.image,input.image);assert.equal(owned.coupon,'');assert.deepEqual(owned.skus,[]);assert.equal(records.has('influencerPublicStores/two'),false);
+    assert.equal((await call('/profile',input,personalCookie,undefined,'PUT')).status,409);
+    records.get('influencerPublicStores/one').enabled=true;records.get('influencerPublicStores/one').coupon='STORE';
+    const fresh=(await (await call('/profile',{},personalCookie)).json()).data;
+    assert.equal((await call('/profile',{...input,revision:fresh.revision,bio:'Atualizada'},personalCookie,undefined,'PUT')).status,200);
+    assert.equal(records.get('influencerPublicStores/one').enabled,true);assert.equal(records.get('influencerPublicStores/one').coupon,'STORE');
+    const reset=await credentials.provision(db,'one',{reset:true},'admin');assert.notEqual(reset.initialPassword,first.initialPassword);
+    assert.ok(reset.whatsappUrl.startsWith('https://wa.me/5511999999999?text='));assert.ok(decodeURIComponent(reset.whatsappUrl).includes('48 horas'));assert.ok(!decodeURIComponent(reset.whatsappUrl).includes('/admin'));
+    assert.equal((await call('/session',{},personalCookie)).status,401);assert.equal((await login('NewPass1')).status,401);
+    const tempLogin=await login(reset.initialPassword),tempCookie=tempLogin.headers.get('set-cookie').split(';')[0];
+    records.get('influencerPortalAccess/one').temporaryExpiresAt=Date.now()-1;
+    assert.equal((await login(reset.initialPassword)).status,401);assert.equal((await call('/session',{},tempCookie)).status,401);
+    assert.ok(!JSON.stringify([...records]).includes(reset.initialPassword));
+  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
+
+test('influencer cookies and forged role headers cannot authorize administrator APIs',async()=>{
+  const app=express();app.use(express.json());
+  app.use('/admin',require('../admin/admin-auth'));
+  app.all('/admin/access',(_req,res)=>res.json({administrative:true}));
+  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+  try{
+    for(const method of ['GET','POST','PUT']){
+      const response=await fetch('http://127.0.0.1:'+server.address().port+'/admin/access',{method,headers:{Cookie:credentials.cookieName+'='+'a'.repeat(64),'x-role':'admin'}});
+      assert.equal(response.status,401);assert.ok(!(await response.text()).includes('administrative'));
+    }
   }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });

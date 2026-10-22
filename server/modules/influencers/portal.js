@@ -71,7 +71,7 @@ function createRouter(deps = {}) {
       const correct = await credentials.passwordMatches(req.body?.password, access);
       const personDoc = id ? await db.collection('influencers').doc(id).get() : null;
       const person = personDoc?.exists ? personDoc.data() : null;
-      if (!correct || !access?.enabled || access.email !== email || access.phone !== phone || !person || person.active === false || person.portalEnabled !== true || credentials.email(person.email) !== email || normalizePhone(person.phone) !== phone) return res.status(401).json({ success: false, error: 'Acesso não autorizado. Confira seus dados ou solicite a liberação à loja.' });
+      if (!correct || (access?.mustChangePassword && (!Number.isSafeInteger(access.temporaryExpiresAt)||access.temporaryExpiresAt<=now)) || !access?.enabled || access.email !== email || access.phone !== phone || !person || person.active === false || person.portalEnabled !== true || credentials.email(person.email) !== email || normalizePhone(person.phone) !== phone) return res.status(401).json({ success: false, error: 'Acesso não autorizado. Confira seus dados ou solicite a liberação à loja.' });
       const token = credentials.randomBytes(32).toString('hex');
       await db.collection('influencerPortalSessions').doc(credentials.hash(token)).set({ influencerId: id, version: access.version, expiresAt: now + 8 * 3600000 });
       res.cookie(credentials.cookieName, token, { ...credentials.cookieOptions, maxAge: 8 * 3600000 });
@@ -96,12 +96,22 @@ function createRouter(deps = {}) {
       const changed=await db.runTransaction(async tx=>{
         const fresh=await tx.get(ref);
         if(!fresh.exists||!fresh.data().enabled||fresh.data().version!==access.version)return false;
-        tx.update(ref,{...secret,version:credentials.randomBytes(16).toString('hex'),updatedAt:new Date().toISOString(),updatedBy:'influencer:'+user.id});return true;
+        tx.update(ref,{...secret,mustChangePassword:false,temporaryExpiresAt:null,version:credentials.randomBytes(16).toString('hex'),updatedAt:new Date().toISOString(),updatedBy:'influencer:'+user.id});return true;
       });
       if(!changed)return res.status(409).json({success:false,error:'Seu acesso mudou. Entre novamente e tente outra vez.'});
       res.clearCookie(credentials.cookieName,credentials.cookieOptions);res.json({success:true});
     }catch{res.status(503).json({success:false,error:'Não foi possível alterar sua senha agora.'});}
   });
+  router.post('/session',async(req,res)=>{
+    try{const user=await credentials.identity(getDb(),req);if(!user)return res.status(401).json({success:false,error:'Entre com seu e-mail, telefone e senha. Se o convite expirou, solicite um novo à loja.'});res.json({success:true,data:{profile:{name:user.name,email:user.email},mustChangePassword:user.mustChangePassword}});}
+    catch{res.status(503).json({success:false,error:'Não foi possível conferir seu acesso.'});}
+  });
+  router.use(async(req,res,next)=>{
+    try{const user=await credentials.identity(getDb(),req);if(user?.mustChangePassword)return res.status(403).json({success:false,code:'PASSWORD_CHANGE_REQUIRED',error:'Crie sua senha pessoal antes de continuar.'});next();}
+    catch{res.status(503).json({success:false,error:'Não foi possível conferir seu acesso.'});}
+  });
+  const profileHandlers=require('./portal-profile').createHandlers({getDb});
+  router.post('/profile',profileHandlers.read);router.put('/profile',profileHandlers.write);
   const storeHandlers=require('./portal-store').createHandlers({getDb,getCatalog:deps.getStoreCatalog});
   router.post('/store',storeHandlers.read);
   router.put('/store',storeHandlers.write);
