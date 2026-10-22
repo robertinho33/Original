@@ -118,6 +118,7 @@ const sections = [
     'campaigns',
     'influencers',
     'commissions',
+    'business-partners',
     'partnerships',
     'contracts',
     'logistics',
