@@ -43,7 +43,9 @@ async function provision(db, id, input, actor) {
     });
     return { enabled: false };
   }
-  const address = email(person.email), number = phone(person.phone), password = input.password;
+  const address = email(person.email), number = phone(person.phone);
+  const initialPassword = !previous?.passwordHash && !input.password ? 'Fp' + randomBytes(12).toString('hex') : null;
+  const password = input.password || initialPassword;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address) || !/^\d{10,11}$/.test(number) || person.active === false) throw Error('Salve um e-mail e telefone válidos e ative o cadastro antes de liberar o portal.');
   if ((!previous?.passwordHash || password) && !passwordValid(password)) throw Error('Use uma senha de 10 a 128 caracteres, somente letras e números, incluindo ambos.');
   const secret = password ? await passwordRecord(password) : { passwordHash: previous.passwordHash, passwordSalt: previous.passwordSalt };
@@ -56,6 +58,6 @@ async function provision(db, id, input, actor) {
     tx.set(accessRef, { ...secret, email: address, phone: number, enabled: true, version: randomBytes(16).toString('hex'), updatedAt: new Date().toISOString(), updatedBy: actor });
     tx.update(ref, { portalEnabled: true, portalUpdatedAt: new Date().toISOString() });
   });
-  return { enabled: true };
+  return { enabled: true, ...(initialPassword ? { initialPassword } : {}) };
 }
 module.exports = { cookieName, cookieOptions, hash, email, phone, passwordValid, passwordRecord, passwordMatches, token, identity, provision, randomBytes };

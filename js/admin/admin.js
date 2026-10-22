@@ -605,7 +605,7 @@ async function load(section) {
 
         storefront: [
             'Vitrine e campanhas',
-            'Atualize o banner, as ofertas dos influenciadores e os rituais.'
+            'Atualize o banner, as ofertas dos influenciadores e as indicações de cuidado.'
         ],
 
         campaigns: [

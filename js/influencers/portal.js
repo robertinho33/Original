@@ -23,7 +23,7 @@ async function request(path, body = {}) {
   if (!response.ok || !result.success) { const error = new Error(result.error || 'Não foi possível consultar o portal.'); error.status=response.status; throw error; }
   return result.data;
 }
-function showLogin() { storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+function showLogin() { $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
 const storeEditor=mountStoreEditor($('portalStoreEditor'),{onUnauthorized:showLogin});
 async function refresh(silent = false) {
   $('portalDashboardMessage').textContent='Consultando suas vendas…';
@@ -58,3 +58,12 @@ function renderPromotions(data) {
   $('portalCampaign').innerHTML=campaign?.products?.length ? campaign.products.slice(0,3).map(p=>card(p)).join('') : '<p class="field-help">Nenhuma campanha ativa no momento.</p>';
   $('portalBestSellers').innerHTML=data.bestSellers?.length ? data.bestSellers.map((p,i)=>card(p,i+1)).join('') : '<p class="field-help">Nenhum produto vendido em pedidos pagos neste período.</p>';
 }
+
+$('portalPasswordForm').addEventListener('submit',async event=>{
+  event.preventDefault();const form=event.currentTarget,message=$('portalPasswordMessage'),button=form.querySelector('button');
+  if(form.elements.newPassword.value!==form.elements.confirmPassword.value){message.textContent='As novas senhas precisam ser iguais.';return;}
+  button.disabled=true;message.textContent='Salvando…';
+  try{await request('password',{currentPassword:form.elements.currentPassword.value,newPassword:form.elements.newPassword.value});showLogin();$('portalLoginMessage').textContent='Senha alterada. Entre com sua nova senha.';}
+  catch(error){if(error.status===401){showLogin();$('portalLoginMessage').textContent=error.message;}else message.textContent=error.message;}
+  finally{button.disabled=false;}
+});

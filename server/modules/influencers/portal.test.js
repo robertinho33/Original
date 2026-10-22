@@ -111,3 +111,33 @@ test('HTTP access requires email+phone+password, scopes sessions, rejects forged
     assert.equal((await call('/portal/logout',{}, {Cookie:secondCookie})).status,200);
   } finally {server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 });
+
+test('initial passwords are individual and owner password change revokes every old session',async()=>{
+  const {db,records}=database();
+  for(const id of ['one','two'])records.set('influencers/'+id,{name:id,email:id+'@example.test',phone:'11999999999',active:true});
+  const first=await credentials.provision(db,'one',{},'admin'),second=await credentials.provision(db,'two',{},'admin');
+  assert.ok(credentials.passwordValid(first.initialPassword));assert.notEqual(first.initialPassword,second.initialPassword);
+  assert.ok(!JSON.stringify([...records]).includes(first.initialPassword));
+  assert.equal((await credentials.provision(db,'one',{},'admin')).initialPassword,undefined);
+  const app=express();app.use(express.json());app.use(createRouter({getDb:()=>db}));
+  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+  const base='http://127.0.0.1:'+server.address().port;
+  async function call(path,body,cookie='',origin='https://www.fiosperfeitos.com.br') {return fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json',Origin:origin,Cookie:cookie},body:JSON.stringify(body)});}
+  const login=password=>call('/login',{email:'one@example.test',phone:'11999999999',password});
+  try{
+    assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'NewSecret123'})).status,401);
+    const logged=await login(first.initialPassword),cookie=logged.headers.get('set-cookie').split(';')[0];
+    const again=await login(first.initialPassword),otherCookie=again.headers.get('set-cookie').split(';')[0];
+    assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'NewSecret123'},cookie,'https://evil.test')).status,403);
+    assert.equal((await call('/password',{currentPassword:'Wrong123456',newPassword:'NewSecret123'},cookie)).status,400);
+    assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:'weak'},cookie)).status,400);
+    assert.equal((await call('/password',{currentPassword:first.initialPassword,newPassword:first.initialPassword},cookie)).status,400);
+    const otherHash=records.get('influencerPortalAccess/two').passwordHash;
+    const saved=await call('/password',{currentPassword:first.initialPassword,newPassword:'NewSecret123',influencerId:'two'},cookie);
+    assert.equal(saved.status,200);assert.match(saved.headers.get('cache-control'),/no-store/);
+    assert.equal(records.get('influencerPortalAccess/two').passwordHash,otherHash);
+    assert.equal((await call('/password',{currentPassword:'NewSecret123',newPassword:'NextSecret123'},otherCookie)).status,401);
+    assert.equal((await login(first.initialPassword)).status,401);assert.equal((await login('NewSecret123')).status,200);
+    assert.ok(!JSON.stringify([...records]).includes('NewSecret123'));
+  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

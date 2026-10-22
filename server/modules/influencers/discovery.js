@@ -69,7 +69,7 @@ function createRouter(deps={}){
   router.post('/ritual',async(req,res)=>{try{
     const [snapshot,catalog]=await Promise.all([db().collection('storeRitualRules').doc('current').get(),getCatalog()]);
     res.json({success:true,data:recommend(snapshot.exists?snapshot.data():null,catalog,req.body)});
-  }catch(error){res.status(error.message.startsWith('Confira')||error.message.startsWith('Informe')?400:503).json({success:false,error:error.message.startsWith('Confira')||error.message.startsWith('Informe')?error.message:'Não foi possível montar seu ritual agora.'});}});
+  }catch(error){res.status(error.message.startsWith('Confira')||error.message.startsWith('Informe')?400:503).json({success:false,error:error.message.startsWith('Confira')||error.message.startsWith('Informe')?error.message:'Não foi possível encontrar sua seleção agora.'});}});
   return router;
 }
 function admin(kind,write=false){return async(req,res)=>{

@@ -83,6 +83,25 @@ function createRouter(deps = {}) {
     try { if (token) await getDb().collection('influencerPortalSessions').doc(credentials.hash(token)).delete(); } catch {}
     res.clearCookie(credentials.cookieName, credentials.cookieOptions); res.json({ success: true });
   });
+  router.post('/password', async (req,res)=>{
+    try {
+      if(!['https://www.fiosperfeitos.com.br','https://fiosperfeitos.com.br','http://localhost:3000','http://127.0.0.1:3000'].includes(req.get('origin')))return res.status(403).json({success:false,error:'Origem não autorizada.'});
+      const db=getDb(),user=await credentials.identity(db,req);
+      if(!user)return res.status(401).json({success:false,error:'Entre novamente para alterar sua senha.'});
+      const {currentPassword,newPassword}=req.body||{};
+      if(!passwordValid(newPassword)||newPassword===currentPassword)return res.status(400).json({success:false,error:'Escolha uma nova senha de 10 a 128 caracteres com letras e números.'});
+      const ref=db.collection('influencerPortalAccess').doc(user.id),snapshot=await ref.get(),access=snapshot.data();
+      if(!await credentials.passwordMatches(currentPassword,access))return res.status(400).json({success:false,error:'A senha atual não confere.'});
+      const secret=await credentials.passwordRecord(newPassword);
+      const changed=await db.runTransaction(async tx=>{
+        const fresh=await tx.get(ref);
+        if(!fresh.exists||!fresh.data().enabled||fresh.data().version!==access.version)return false;
+        tx.update(ref,{...secret,version:credentials.randomBytes(16).toString('hex'),updatedAt:new Date().toISOString(),updatedBy:'influencer:'+user.id});return true;
+      });
+      if(!changed)return res.status(409).json({success:false,error:'Seu acesso mudou. Entre novamente e tente outra vez.'});
+      res.clearCookie(credentials.cookieName,credentials.cookieOptions);res.json({success:true});
+    }catch{res.status(503).json({success:false,error:'Não foi possível alterar sua senha agora.'});}
+  });
   const storeHandlers=require('./portal-store').createHandlers({getDb,getCatalog:deps.getStoreCatalog});
   router.post('/store',storeHandlers.read);
   router.put('/store',storeHandlers.write);

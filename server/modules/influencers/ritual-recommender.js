@@ -11,10 +11,10 @@ function compare(a,b){
   return b.signature.localeCompare(a.signature);
 }
 function recommend(config,catalog,input={}){
-  if(!input||Array.isArray(input)||typeof input.goal!=='string'||typeof input.hair!=='string'||!Object.hasOwn(goals,input.goal)||!Object.hasOwn(hairs,input.hair)||!['treated','natural'].includes(input.chemistry))throw Error('Confira as respostas do seu ritual.');
+  if(!input||Array.isArray(input)||typeof input.goal!=='string'||typeof input.hair!=='string'||!Object.hasOwn(goals,input.goal)||!Object.hasOwn(hairs,input.hair)||!['treated','natural'].includes(input.chemistry))throw Error('Confira suas respostas para encontrar seu cuidado.');
   const budget=Number(input.budget);
   if(!['number','string'].includes(typeof input.budget)||!Number.isFinite(budget)||budget<1||budget>10000)throw Error('Informe um orçamento entre R$ 1 e R$ 10.000.');
-  if(!config?.enabled)return {products:[],total:0,message:'A loja está preparando as recomendações. Fale conosco para montar seu ritual.'};
+  if(!config?.enabled)return {products:[],total:0,message:'A loja está preparando as recomendações. Fale conosco para encontrar o cuidado do seu jeito.'};
   const budgetCents=Math.floor(budget*100+1e-7),bySku=new Map();
   for(const product of catalog){
     const cents=Math.round(Number(product.price)*100),stock=Number(product.stock);
@@ -51,6 +51,6 @@ function recommend(config,catalog,input={}){
   return {products,total:best.cents/100,
     explanation:'Cruzamos suas respostas com as indicações revisadas pela loja. Priorizamos tratamento e a combinação com mais etapas dentro do orçamento; entre essas combinações, escolhemos a mais específica para seu perfil. Em caso de empate, priorizamos o menor total.',
     missingSteps:steps.filter(step=>!products.some(product=>product.step===step)),
-    message:products.length===3?'Seu ritual reúne três etapas dentro do orçamento.':products.length?'Montamos uma seleção parcial dentro do orçamento e das indicações disponíveis.':'Não encontramos uma indicação disponível dentro desse orçamento. Você pode ajustar o valor ou falar com a loja.'};
+    message:products.length===3?'Sua seleção reúne três etapas dentro do orçamento.':products.length?'Montamos uma seleção parcial dentro do orçamento e das indicações disponíveis.':'Não encontramos uma indicação disponível dentro desse orçamento. Você pode ajustar o valor ou falar com a loja.'};
 }
 module.exports={recommend};

@@ -28,14 +28,22 @@ No painel administrativo, em Vitrine, a seção “Campanha exclusiva dos influe
 
 A configuração fica na coleção restrita `influencerPortalCampaigns/current`, acessada somente pelo servidor. Na prévia, o editor `/campaign-editor` usa dados temporários locais, perdidos ao reiniciar a prévia; não altera a configuração real.
 
-## Vitrine individual e Monte seu ritual
+## Vitrine individual e Cuidado do seu jeito
 
 Na lista de influenciadores, o botão “Vitrine pública” permite ao administrador cadastrar nome público, apresentação, foto HTTPS, um link de vídeo, até seis favoritos e um cupom ativo vinculado àquele influenciador. A ativação torna somente esses dados públicos. Desativar a vitrine ou o influenciador retira a página do ar. Compartilhe o link exibido nesse formulário. E-mail, telefone, Pix, credenciais e resultados não fazem parte da página pública.
 
-As compras são atribuídas pelo cupom, validado no checkout conforme as regras existentes. O link da vitrine encaminha o código nas URLs de produtos e do ritual. Não há rastreamento de cliques ou comissão atribuída apenas por visita. O cliente pode escolher outro cupom no checkout; nenhum pagamento é marcado como aprovado por esta funcionalidade.
+As compras são atribuídas pelo cupom, validado no checkout conforme as regras existentes. O link da vitrine encaminha o código nas URLs de produtos e do cuidado personalizado. Não há rastreamento de cliques ou comissão atribuída apenas por visita. O cliente pode escolher outro cupom no checkout; nenhum pagamento é marcado como aprovado por esta funcionalidade.
 
-Em Vitrine, a seção “Curadoria · Monte seu ritual” cadastra até 30 indicações revisadas pela loja: produto, objetivo, etapa, tipo de cabelo, presença de química e motivo. Habilite a curadoria após revisar. Não há recomendações automáticas em produção até essa configuração existir. A consulta usa apenas produtos visíveis, ativos e com estoque, os preços do catálogo e o orçamento sem frete. Seleciona no máximo um produto por etapa, priorizando tratamento, depois limpeza e finalização; dentro da etapa prefere o menor preço. Uma seleção parcial é sinalizada. As respostas não são armazenadas em perfil.
+Em Vitrine, a seção “Curadoria · Cuidado do seu jeito” cadastra até 30 indicações revisadas pela loja: produto, objetivo, etapa, tipo de cabelo, presença de química e motivo. Habilite a curadoria após revisar. Não há recomendações automáticas em produção até essa configuração existir. A consulta usa apenas produtos visíveis, ativos e com estoque, os preços do catálogo e o orçamento sem frete. Seleciona no máximo um produto por etapa, priorizando tratamento, depois limpeza e finalização; dentro da etapa prefere o menor preço. Uma seleção parcial é sinalizada. As respostas não são armazenadas em perfil.
 
-A adição do ritual preserva a sacola anterior e acrescenta uma unidade por produto, mediante clique do cliente. O checkout continua validando preço, estoque, frete e cupom. Os dados demonstrativos e preços da prévia não representam uma oferta publicada.
+A adição do cuidado personalizado preserva a sacola anterior e acrescenta uma unidade por produto, mediante clique do cliente. O checkout continua validando preço, estoque, frete e cupom. Os dados demonstrativos e preços da prévia não representam uma oferta publicada.
 
 Configurações: `storeRitualRules/current` e `influencerPublicStores/{influencerId}`. Os endpoints públicos retornam somente os campos necessários à experiência de compra. Apenas o administrador configura ambas as funcionalidades. No teste local, use `/ritual-editor`; suas alterações são temporárias e desaparecem ao reiniciar a prévia.
+
+## Acesso e cuidado personalizado
+
+A experiência agora se chama Cuidado do seu jeito, com Encontrar meu cuidado nos botões. As URLs e identificadores internos existentes foram preservados para manter links, cupons e integrações compatíveis.
+
+Ao liberar um novo acesso, deixar a senha em branco gera uma senha inicial individual, exibida somente na resposta ao administrador. O administrador deve compartilhá-la por um canal privado. A senha não é enviada automaticamente. Acessos existentes mantêm a senha atual quando o campo fica vazio. No portal, Alterar minha senha exige a senha atual, grava somente o hash com salt e invalida as sessões anteriores. O usuário precisa entrar novamente.
+
+A tela inicial foi simplificada em quatro botões, e a vitrine pública do influenciador também oferece acesso ao portal.
