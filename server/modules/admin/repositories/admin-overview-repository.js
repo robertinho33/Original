@@ -8,6 +8,7 @@ const {
     buildOperationalAlerts
 } = require("../services/firestore-admin-indicators");
 
+const sales=require('../services/dashboard-sales');
 const ORDERS = "orders";
 const USERS = "users";
 const TRACKING = "orderTracking";
@@ -114,45 +115,7 @@ async function countCustomers() {
     );
 }
 
-async function getTodayOrders() {
-    const now = new Date();
-
-    const start =
-        new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate()
-        );
-
-    const end =
-        new Date(start);
-
-    end.setDate(
-        end.getDate() + 1
-    );
-
-    const snapshot =
-        await db()
-            .collection(ORDERS)
-            .where(
-                "createdAt",
-                ">=",
-                start
-            )
-            .where(
-                "createdAt",
-                "<",
-                end
-            )
-            .get();
-
-    return snapshot.docs.map(
-        doc => ({
-            id: doc.id,
-            ...doc.data()
-        })
-    );
-}
+async function getTodayOrders() { return sales.ordersBetween(db().collection(ORDERS),sales.range(1)); }
 
 async function countPendingPayments() {
     const snapshot =
@@ -171,27 +134,7 @@ async function countPendingPayments() {
     );
 }
 
-async function countOpenShipments() {
-    const snapshot =
-        await db()
-            .collection(TRACKING)
-            .where(
-                "status",
-                "not-in",
-                [
-                    "delivered",
-                    "completed",
-                    "cancelled",
-                    "canceled"
-                ]
-            )
-            .count()
-            .get();
-
-    return Number(
-        snapshot.data().count || 0
-    );
-}
+async function countOpenShipments() { return sales.pendingShipments(await sales.readPaidOrders(db().collection(ORDERS))); }
 
 async function getAdminOverview() {
     const [
@@ -208,12 +151,7 @@ async function getAdminOverview() {
         countOpenShipments()
     ]);
 
-    const faturamentoHoje =
-        todayOrders.reduce(
-            (sum, order) =>
-                sum + money(order.total),
-            0
-        );
+    const faturamentoHoje = sales.revenue(todayOrders);
 
     return {
         faturamentoHoje,
@@ -266,90 +204,7 @@ async function getOperationalAlerts() {
     });
 }
 
-async function getSalesTimeline(days = 30) {
-    const safeDays =
-        Math.min(
-            Math.max(
-                Number(days || 30),
-                1
-            ),
-            365
-        );
-
-    const now =
-        new Date();
-
-    const start =
-        new Date(now);
-
-    start.setDate(
-        start.getDate() - safeDays
-    );
-
-    const snapshot =
-        await db()
-            .collection(ORDERS)
-            .where(
-                "createdAt",
-                ">=",
-                start
-            )
-            .get();
-
-    const grouped =
-        new Map();
-
-    for (const doc of snapshot.docs) {
-        const order = {
-            id: doc.id,
-            ...doc.data()
-        };
-
-        const date =
-            dateValue(order.createdAt);
-
-        if (!date) {
-            continue;
-        }
-
-        const key =
-            new Intl.DateTimeFormat(
-                "en-CA",
-                {
-                    timeZone:
-                        "America/Sao_Paulo"
-                }
-            ).format(date);
-
-        if (!grouped.has(key)) {
-            grouped.set(
-                key,
-                {
-                    date: key,
-                    orders: 0,
-                    revenue: 0
-                }
-            );
-        }
-
-        const item =
-            grouped.get(key);
-
-        item.orders += 1;
-
-        item.revenue +=
-            money(order.total);
-    }
-
-    return Array.from(
-        grouped.values()
-    ).sort(
-        (a, b) =>
-            a.date.localeCompare(
-                b.date
-            )
-    );
-}
+async function getSalesTimeline(days = 30) { const bounds=sales.range(days); return sales.timeline(await sales.ordersBetween(db().collection(ORDERS),bounds),bounds); }
 
 module.exports = {
     getAdminOverview,

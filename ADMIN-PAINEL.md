@@ -26,3 +26,13 @@ Acesse http://127.0.0.1:3000/admin-preview. São 746 produtos de demonstração,
 A busca aceita nome, SKU e marca, ignora acentos e oferece o botão Buscar. As marcas ausentes nos registros antigos são recuperadas pelo SKU a partir do catálogo, sem regravar o banco. Produtos e vitrine compartilham os preços atuais do cadastro. A consulta administrativa de pedidos usa a API protegida, sem o limite anterior de 100 pedidos da ponte do navegador.
 
 A camada visual comum oferece menu recolhível no celular, tabelas em cartões com rótulos, botões legíveis e formulários em uma coluna. Produtos, estoque/categorias, banner, ofertas, cuidado personalizado, financeiro, entregas e histórico receberam conferência local dos fluxos principais. A prévia usa dados demonstrativos; ela não valida gravações reais nem substitui testes autenticados em produção.
+
+## Cupons compactos e indicadores de vendas
+
+Os indicadores de cupons ficam em uma faixa compacta, com rótulo e quantidade lado a lado. A tabela mantém uma linha por cupom também no celular, com rolagem horizontal contida para preservar todas as colunas e ações. Os seletores de editar, ativar/desativar e excluir foram preservados.
+
+O dashboard consulta createdAt tanto como Timestamp quanto como texto ISO; une os resultados por ID e aplica o intervalo exato no horário de São Paulo. As consultas de texto incluem margem para offsets e o filtro final elimina os dias vizinhos. Pedidos hoje conta a data de criação; faturamento e série diária somam apenas pagamentos confirmados desse grupo, usando totals.total com fallback para total e cálculo em centavos. A série cobre os últimos 30 dias incluindo hoje e a interface mostra os dias mais recentes primeiro. Este indicador não representa fluxo de caixa por data de recebimento.
+
+Envios pendentes considera pedidos pagos com logística ainda aberta, excluindo entregues e cancelados. Usa a logística do pedido, em vez de contar documentos de rastreamento antigos ou tentativas não pagas. Nenhum documento de pedido, pagamento, rastreamento ou cupom é alterado por esses cálculos.
+
+Validação: testes cobrem strings ISO, offsets, Timestamp, fronteira de meia-noite em São Paulo, soma exata, totais legados, pagamentos não confirmados, duplicação entre consultas e entregas concluídas. Conferir a leitura do dashboard autenticado e as ações dos cupons após a publicação.

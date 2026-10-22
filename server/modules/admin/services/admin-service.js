@@ -8,6 +8,7 @@ const {
     calculateIndicators
 } = require("./firestore-admin-indicators");
 
+const sales=require('./dashboard-sales');
 const ORDERS = "orders";
 const TRACKING = "orderTracking";
 const USERS = "users";
@@ -53,7 +54,7 @@ function normalizeOrder(data, id) {
     return {
         ...data,
         id: data.id || id,
-        total: money(data.total),
+        total: sales.orderTotal(data),
         createdAt: normalizeDate(data.createdAt),
         updatedAt: normalizeDate(data.updatedAt)
     };
@@ -503,26 +504,9 @@ async function getDashboard() {
         getCollection(TRACKING)
     ]);
 
-    const today = new Date();
-
-    const todayOrders = orders.filter(order => {
-        if (!order.createdAt) {
-            return false;
-        }
-
-        const date = new Date(order.createdAt);
-
-        return (
-            date.getFullYear() === today.getFullYear() &&
-            date.getMonth() === today.getMonth() &&
-            date.getDate() === today.getDate()
-        );
-    });
-
-    const revenueToday = todayOrders.reduce(
-        (sum, order) => sum + money(order.total),
-        0
-    );
+    const bounds=sales.range(1);
+    const todayOrders=orders.filter(order=>sales.inRange(order,bounds));
+    const revenueToday=sales.revenue(todayOrders);
 
     const indicators = calculateIndicators({
         orders,
@@ -543,7 +527,7 @@ async function getDashboard() {
             indicators.pagamentosPendentes,
 
         enviosPendentes:
-            indicators.enviosPendentes,
+            sales.pendingShipments(orders),
 
         vendasRecentes: orders.slice(0, 10)
     };

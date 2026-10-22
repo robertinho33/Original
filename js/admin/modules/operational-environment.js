@@ -1,4 +1,5 @@
 const adminApi = window.AdminAPI;
+const dayLabel=value=>/^\d{4}-\d{2}-\d{2}$/.test(String(value))?value.split('-').reverse().join('/'):date(value);
 
 import {
     money,
@@ -46,7 +47,7 @@ export async function renderOperationalEnvironment(root) {
             ]);
 
         const data = overview.data || {};
-        const rows = timeline.data || [];
+        const rows = Array.isArray(timeline.data) ? [...timeline.data].sort((a,b)=>String(b.date).localeCompare(String(a.date))) : [];
         const notifications = alerts.data || [];
 
         /*
@@ -123,11 +124,11 @@ export async function renderOperationalEnvironment(root) {
                 )}
             </div>
 
-            <div class="admin-operation-grid">
+            <p class="admin-help-text">Datas no horário de São Paulo. Pedidos são contados pela criação; o faturamento soma apenas os pedidos pagos desse dia. Envios pendentes consideram pedidos pagos ainda não concluídos.</p><div class="admin-operation-grid">
 
                 <div class="module-panel">
                     <div class="module-panel-header">
-                        <h3>Vendas recentes</h3>
+                        <h3>Vendas recentes</h3><p>Pedidos pagos por dia · últimos 30 dias.</p>
                     </div>
 
                     <div class="admin-table-wrap">
@@ -146,17 +147,17 @@ export async function renderOperationalEnvironment(root) {
                                     rows.length
                                     ? rows.map(row => `
                                         <tr>
-                                            <td>${date(row.date)}</td>
-                                            <td>${number(row.orders)}</td>
-                                            <td>${money(row.revenue)}</td>
-                                            <td>${money(row.revenue / Math.max(Number(row.orders), 1))}</td>
+                                            <td data-label="Data">${dayLabel(row.date)}</td>
+                                            <td data-label="Pedidos">${number(row.orders)}</td>
+                                            <td data-label="Faturamento">${money(row.revenue)}</td>
+                                            <td data-label="Ticket">${money(row.revenue / Math.max(Number(row.orders), 1))}</td>
                                         </tr>
                                     `).join("")
                                     : `
                                         <tr>
                                             <td colspan="4"
                                                 class="admin-empty-cell">
-                                                Nenhum dado disponível.
+                                                Nenhuma venda paga neste período.
                                             </td>
                                         </tr>
                                     `

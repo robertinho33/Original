@@ -2115,9 +2115,9 @@ function renderCoupons(content, coupons) {
 
     content.outerHTML = `
 
-        <div class="admin-module-data">
+        <div class="admin-module-data admin-coupons-module">
 
-            <div class="admin-metrics-grid">
+            <div class="admin-metrics-grid coupon-metrics">
 
                 ${metricCard(
                     'Cupons cadastrados',
@@ -2177,7 +2177,7 @@ function renderCoupons(content, coupons) {
                 ${
                     list.length
                         ? `
-                            <div class="admin-table-wrap">
+                            <p class="admin-help-text">Em telas menores, deslize a tabela para consultar as demais colunas e ações.</p><div class="admin-table-wrap coupon-table-scroll" tabindex="0" aria-label="Cupons cadastrados — deslize para consultar todas as colunas">
 
                                 <table class="admin-table">
 
