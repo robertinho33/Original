@@ -1,5 +1,6 @@
 import {analyticsPage, readConsent, CONSENT_KEY, CONSENT_TTL, createAnalyticsController} from './analytics-policy.js';
 import {recordStoreVisit} from './visit-counter.js';
+import {mountAdsChoice,adsChoice} from './ads-measurement.js';
 
 const page = analyticsPage(location.href);
 const browserAllows = () => navigator.globalPrivacyControl !== true && navigator.doNotTrack !== '1';
@@ -40,13 +41,15 @@ function clearAnalyticsCookies() {
 }
 let panel = null;
 function showPreferences() {
-    if (panel) { panel.hidden = false; panel.querySelector('button')?.focus(); return; }
+    if (panel) { panel.querySelector('input[type=checkbox]').checked = adsChoice() === 'granted'; panel.hidden = false; panel.querySelector('button')?.focus(); return; }
     panel = document.createElement('section');
     panel.className = 'analytics-consent';
     panel.setAttribute('aria-label','Preferências de estatísticas');
     const title = document.createElement('strong'); title.textContent = 'Estatísticas de uso';
     const description = document.createElement('p'); description.textContent = 'Podemos usar o Google Analytics para entender as visitas e melhorar a loja? É opcional e você pode mudar sua escolha depois.';
     const link = document.createElement('a'); link.href = '/pages/privacidade.html'; link.textContent = 'Como usamos seus dados';
+    panel.append(title,description,link);
+    const saveAdsChoice=mountAdsChoice(panel);
     const actions = document.createElement('div'); actions.className = 'analytics-consent-actions';
     for (const [value,label] of [['denied','Recusar'],['granted','Aceitar estatísticas']]) {
         const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
@@ -55,17 +58,19 @@ function showPreferences() {
             try { localStorage.setItem(CONSENT_KEY, JSON.stringify({value,savedAt:Date.now()})); } catch { /* Apply the choice for this page even when storage is blocked. */ }
             if (value === 'denied') clearAnalyticsCookies();
             chooseStatistics(value);
+            saveAdsChoice(value === 'granted');
             panel.hidden = true;
         });
         actions.append(button);
     }
-    panel.append(title,description,link,actions); document.body.append(panel);
+    panel.append(actions); document.body.append(panel);
 }
 if (page) {
     const footer = document.querySelector('footer');
     const preferences = document.createElement('button'); preferences.type = 'button'; preferences.className = 'analytics-preferences'; preferences.textContent = 'Preferências de estatísticas';
     preferences.addEventListener('click',showPreferences); (footer || document.body).append(preferences);
     let choice = null; try { choice = readConsent(localStorage.getItem(CONSENT_KEY)); } catch {}
+    if (choice && adsChoice() === null) showPreferences();
     if (choice) { if (choice === 'denied') clearAnalyticsCookies(); chooseStatistics(choice); }
     else showPreferences();
     window.addEventListener('storage',event=>{

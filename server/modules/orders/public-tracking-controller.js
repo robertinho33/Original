@@ -84,13 +84,14 @@ async function getPublicTracking(req, res) {
             .where('publicTrackingToken', '==', reference).limit(1).get();
         if (matches.empty) return res.status(404).json({ success: false, error: 'Pedido não encontrado.' });
         const order = matches.docs[0].data();
+        const adsPurchase = require('./ads-conversion').purchaseMeasurement(matches.docs[0].id, order);
         const projection = snapshot.data();
         projection.status = order.status || 'pending';
         projection.paymentStatus = order.payment?.status || 'pending';
         projection.paymentProvider = order.payment?.provider || '';
         projection.paymentConfirmedAt = order.payment?.confirmedAt || order.payment?.paidAt || null;
         res.set('Cache-Control', 'no-store');
-        return res.json({ success: true, data: publicFields(snapshot.id, projection) });
+        return res.json({ success: true, data: {...publicFields(snapshot.id, projection), adsPurchase} });
     } catch (error) {
         console.error('[PUBLIC TRACKING] Consulta falhou:', error?.message || error);
         return res.status(503).json({ success: false, error: 'Não foi possível consultar o pedido agora.' });

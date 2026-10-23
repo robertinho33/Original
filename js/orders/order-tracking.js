@@ -1,3 +1,4 @@
+import {measurePurchase} from '../analytics/ads-measurement.js';
 import { readPaymentReturn } from './payment-return.js';
 import {mountProductReviews} from './product-reviews.js';
 'use strict';
@@ -165,6 +166,7 @@ function renderOrder(order) {
 
     document.dispatchEvent(new CustomEvent('nefer:tracking-loaded', { detail: { orderNumber: order.orderNumber || order.id, paymentStatus: order.paymentStatus, paymentProvider: order.paymentProvider, trackingToken: order.trackingToken } }));
     renderTimeline(order);
+    measurePurchase(order.adsPurchase);
     void mountProductReviews(elements.result,order.trackingToken);
     elements.share.hidden = !order.trackingToken;
     if (order.trackingToken) {

@@ -13,12 +13,17 @@ const contentPolicy = [
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' https: data: blob:",
   "connect-src 'self' https:",
-  "frame-src https://www.google.com https://recaptcha.google.com",
+  "frame-src 'self' https://www.google.com https://recaptcha.google.com",
   "object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'"
 ].join('; ');
 
 function securityHeaders(req, res, next) {
-  res.setHeader('Content-Security-Policy', contentPolicy);
+  // Additional vendor hosts are restricted to the clean measurement document.
+  const policy = req.path === '/pages/ads-measurement.html'
+    ? contentPolicy.replace("script-src 'self'", "script-src 'self' https://www.googleadservices.com https://www.google.com")
+        .replace("frame-src 'self'", "frame-src 'self' https://www.googletagmanager.com")
+    : contentPolicy;
+  res.setHeader('Content-Security-Policy', policy);
   if (req.secure || (req.get?.('x-forwarded-proto') || '').split(',')[0].trim() === 'https') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000');
   }

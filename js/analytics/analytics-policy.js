@@ -10,9 +10,9 @@ const pageNames = {
 export function analyticsPage(href) {
     try {
         const url = new URL(href);
-        if (url.protocol !== 'https:' || !['www.fiosperfeitos.com.br','fiosperfeitos.com.br'].includes(url.hostname) || !pageNames[url.pathname]) return null;
+        if (url.protocol !== 'https:' || !['www.fiosperfeitos.com.br','fiosperfeitos.com.br'].includes(url.hostname) || (!pageNames[url.pathname] && !/^\/produto\/[^/]{1,160}$/.test(url.pathname) && url.pathname !== '/produtos')) return null;
         if ([...url.searchParams.keys()].some(key => /token|pedido|mp_test|mp_live_test|payment|collection|merchant_order|preference/i.test(key)) || /token=/i.test(url.hash)) return null;
-        return {page_location: url.origin + url.pathname, page_title: pageNames[url.pathname], page_referrer: ''};
+        return {page_location: url.origin + url.pathname, page_title: pageNames[url.pathname] || 'Fios Perfeitos — Produtos', page_referrer: ''};
     } catch { return null; }
 }
 export function readConsent(raw, now = Date.now()) {
