@@ -10,7 +10,7 @@ function classify(product,input){
   /selante|progressiv|alisant|botox|formol|descolor|oxidante|emulsao|\box\d*\b|coloracao|tonalizante|permanente|ironed|matizador|matizadora|acidificante/.test(name))return null;
  let step;if(/\bshampoo\b/.test(name+' '+category))step='wash';
  else if(/mascara|condicionador|tratamento/.test(name+' '+category))step='treat';
- else if(/finalizador|leave[ -]?in|creme de pentear|ativador de cachos|protetor termico|reparador de pontas|oleo de|serum capilar|perfume capilar/.test(name+' '+category))step='finish';
+ else if(/finalizador|leave[ -]?in|creme de pentear|ativador de cachos|protetor termico|reparador de pontas|oleo de|serum capilar|serum hidrasim|serum nutrisim|perfume capilar/.test(name+' '+category))step='finish';
  if(!step)return null;
  const curly=/cach|curly|curlys|crespo/.test(name),straight=/\bliso\b|\blisos\b/.test(name),wavy=/ondulad/.test(name);
  if(curly&&!['curly','coily'].includes(input.hair)||straight&&input.hair!=='straight'||wavy&&input.hair!=='wavy')return null;

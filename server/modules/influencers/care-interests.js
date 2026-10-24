@@ -16,7 +16,8 @@ async function recordInterest(db,input,result,session,now=Date.now()){
  const day=dayKey(now),signature=Object.values(profile).join('_');
  const receipt=db.collection('careInterestReceipts').doc(hash(day+':'+session+':'+signature));
  const aggregate=db.collection('careInterestStats').doc(day+'_'+signature);
- const outcome=result.products.length===3?'complete':result.products.length?'partial':'none';
+ const complete=typeof result.routineComplete==='boolean'?result.routineComplete:result.products.length>=3;
+ const outcome=complete?'complete':result.products.length?'partial':'none';
  return db.runTransaction(async tx=>{
   const [seen,previous]=await Promise.all([tx.get(receipt),tx.get(aggregate)]);if(seen.exists)return false;
   const old=previous.data()||{};

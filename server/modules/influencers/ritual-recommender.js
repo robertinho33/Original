@@ -2,7 +2,7 @@
 const goals={hydration:'Hidratação e maciez',repair:'Cuidado de fios danificados',frizz:'Controle do frizz',curls:'Definição dos cachos',color:'Cuidado da cor'};
 const hairs={straight:'cabelos lisos',wavy:'cabelos ondulados',curly:'cabelos cacheados',coily:'cabelos crespos'};
 const steps=['wash','treat','finish'];
-const {automaticCandidates}=require('./catalog-care-candidates');
+const {recommendByLine}=require('./line-care-selector');
 const key=value=>String(value??'').trim().toLowerCase();
 function image(value){try{const url=new URL(String(value||''));return url.protocol==='https:'?url.href:'';}catch{return '';}}
 function compare(a,b){
@@ -21,6 +21,7 @@ function recommend(config,catalog,input={}){
     const cents=Math.round(Number(product.price)*100),stock=Number(product.stock);
     if(product.active!==false&&!/^inativo/i.test(product.name||'')&&Number.isFinite(stock)&&stock>=1&&Number.isFinite(cents)&&cents>0&&cents<=budgetCents)bySku.set(key(product.sku),{product,cents});
   }
+  if(config.automatic===true)return recommendByLine(bySku,config,input);
   const candidates=Object.fromEntries(steps.map(step=>[step,new Map()]));
   // The saved curation permits at most 30 rows. Keep work bounded for older/malformed documents too.
   for(const rule of (Array.isArray(config.rules)?config.rules:[]).slice(0,30)){
@@ -30,12 +31,6 @@ function recommend(config,catalog,input={}){
     const specificity=Number(rule.hair===input.hair)+Number(rule.chemistry===input.chemistry);
     const candidate={...found,rule,specificity,curated:1},previous=candidates[rule.step].get(key(rule.sku));
     if(!previous||specificity>previous.specificity)candidates[rule.step].set(key(rule.sku),candidate);
-  }
-  if(config.automatic===true){
-    for(const candidate of automaticCandidates(bySku,config,input)){
-      const group=candidates[candidate.rule.step],sku=key(candidate.product.sku);
-      if(!group.has(sku))group.set(sku,candidate);
-    }
   }
   let best={rows:[],treatment:0,count:0,curated:0,specificity:0,cents:0,signature:''};
   function visit(index,rows,cents,used){

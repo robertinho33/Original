@@ -81,3 +81,9 @@ test('manual refresh rechecks current stock instead of retaining an automatic ca
  await controller.query(input);await controller.query(input);assert.equal(calls,1);
  await controller.query(input,{force:true});assert.equal(calls,2);assert.deepEqual(results.at(-1),{products:[]});
 });
+
+test('four-product complete routines are not counted as partial and matching duos remain partial',async()=>{
+ const db=fakeDb(),now=Date.now();await recordInterest(db,input,{products:[{},{},{},{}],routineComplete:true},session,now);
+ await recordInterest(db,input,{products:[{},{}],routineComplete:false},'22222222-2222-4222-8222-222222222222',now);
+ const stats=[...db.rows.entries()].find(([k])=>k.startsWith('careInterestStats/'))[1];assert.equal(stats.complete,1);assert.equal(stats.partial,1);
+});

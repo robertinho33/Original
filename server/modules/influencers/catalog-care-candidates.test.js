@@ -2,9 +2,9 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {recommend}=require('./ritual-recommender'),{classify,automaticCandidates}=require('./catalog-care-candidates');
 const input={hair:'curly',chemistry:'treated',goal:'hydration',budget:150},config={enabled:true,automatic:true,rules:[]};
-const catalog=[{sku:'SH',name:'Shampoo HidraSim',category:'Bela Pro',price:28,stock:2},{sku:'MA',name:'Máscara Hidratante',price:40,stock:2},{sku:'FI',name:'Creme de Pentear Cachos',price:28,stock:2}];
+const catalog=[{sku:'SH',name:'Shampoo HidraSim',category:'Bela Pro',price:28,stock:2},{sku:'MA',name:'Condicionador HidraSim',price:40,stock:2},{sku:'FI',name:'Máscara HidraSim',price:28,stock:2}];
 test('catalog algorithm builds three categories within budget without saved indications',()=>{
- const value=recommend(config,catalog,input);assert.equal(value.products.length,3);assert.equal(value.total,96);assert.deepEqual(value.products.map(p=>p.step),['wash','treat','finish']);
+ const value=recommend(config,catalog,input);assert.equal(value.products.length,3);assert.equal(value.total,96);assert.deepEqual(value.products.map(p=>p.step),['wash','treat','condition']);
  assert.ok(value.products.every(p=>p.selectionSource==='catalog'));assert.ok(value.products.every(p=>p.matchReasons.some(reason=>reason.includes('química')||reason.includes('quimica'))));
  assert.equal(recommend(config,catalog,{...input,budget:40}).products[0].step,'treat');
  assert.equal(recommend(config,catalog,{...input,budget:20}).products.length,0);
@@ -27,17 +27,15 @@ test('explicit hair and chemistry constraints are respected without inventing mi
  const generic=classify({name:'Shampoo'},input);assert.ok(generic.evidence.some(r=>r.includes('conferir se atende')));assert.ok(generic.evidence.some(r=>r.includes('rótulo')));
 });
 test('reviewed indications win among selections with the same number of stages',()=>{
- const reviewed={sku:'REVIEWED',name:'Máscara revisada',price:60,stock:1};
+ const reviewed={sku:'REVIEWED',name:'Máscara HidraSim revisada',price:60,stock:1};
  const rules=[{sku:'REVIEWED',step:'treat',goal:'hydration',hair:'curly',chemistry:'treated',reason:'Indicação revisada.'}];
  const result=recommend({...config,rules},[...catalog,reviewed],input);
  assert.equal(result.products.find(p=>p.step==='treat').sku,'REVIEWED');assert.equal(result.products.find(p=>p.step==='treat').selectionSource,'curated');
  const incompatible=rules.map(r=>({...r,hair:'straight'}));assert.ok(!recommend({...config,rules:incompatible},[...catalog,reviewed],input).products.some(p=>p.sku==='REVIEWED'));
 });
-test('goal keywords rank relevant catalog items above generic alternatives within the budget',()=>{
- const specific={sku:'HYDRA',name:'Máscara Hidratação e maciez',price:70,stock:1};
- const generic={...catalog[1],name:'Máscara genérica',price:30};
- const result=recommend(config,[catalog[0],generic,catalog[2],specific],input);
- assert.equal(result.products.find(p=>p.step==='treat').sku,'HYDRA');assert.ok(result.total<=input.budget);
+test('matching line is preferred over a cheaper generic line within the budget',()=>{
+ const generic=['Shampoo','Condicionador','Máscara'].map((role,i)=>({sku:'GEN-'+i,name:role+' Linha Básica',price:10,stock:1}));
+ const result=recommend(config,[...catalog,...generic],input);assert.equal(result.line,'HidraSim');assert.ok(result.total<=input.budget);
 });
 test('large catalogs keep search bounded, retain low-cost choices and remain deterministic',()=>{
  const large=Array.from({length:1000},(_,i)=>({sku:'SKU-'+String(i).padStart(4,'0'),name:['Shampoo Hidratante','Máscara Hidratante','Finalizador Cachos'][i%3],price:10+i/100,stock:1}));

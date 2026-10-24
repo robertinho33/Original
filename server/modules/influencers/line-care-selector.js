@@ -1,0 +1,66 @@
+'use strict';
+const {classify}=require('./catalog-care-candidates');
+const {careLine,productRole}=require('./care-lines');
+const key=v=>String(v||'').trim().toLowerCase();
+const order=['wash','treat','condition','finish'];
+const image=value=>{try{const url=new URL(String(value||''));return url.protocol==='https:'?url.href:'';}catch{return '';}};
+function compare(a,b){
+ for(const field of ['pair','fit','mask','finish','curated'])if(a[field]!==b[field])return a[field]-b[field];
+ return b.cents-a.cents||b.signature.localeCompare(a.signature);
+}
+function recommendByLine(available,config,input){
+ const groups=new Map(),singles=[];
+ const rules=(Array.isArray(config.rules)?config.rules:[]).slice(0,30);
+ for(const item of available.values()){
+  let info=classify(item.product,input);const related=rules.filter(r=>key(r.sku)===key(item.product.sku)&&r.goal===input.goal);
+  const approved=related.filter(r=>['all',input.hair].includes(r.hair)&&['all',input.chemistry].includes(r.chemistry));
+  if(related.length&&!approved.length)continue;
+  const rule=approved.sort((a,b)=>(Number(b.hair===input.hair)+Number(b.chemistry===input.chemistry))-(Number(a.hair===input.hair)+Number(a.chemistry===input.chemistry)))[0];
+  if(!info&&!rule)continue;
+  const reviewedOnly=!info;
+  if(!info)info={score:0,evidence:['Uma indicação revisada pela equipe da loja.']};
+  // A reviewed bundle may be offered alone, but its unknown components must not be duplicated.
+  const bundle=reviewedOnly&&/kit|dupla|cronograma|shampoo e condicionador/i.test(item.product.name||'');
+  const role=bundle?rule.step:productRole(item.product),line=bundle?null:careLine(item.product);
+  const row={...item,role,line,info,rule,fit:rule?Math.max(info.score,4):info.score,curated:Number(Boolean(rule))};singles.push(row);
+  if(!line)continue;
+  if(!groups.has(line.key))groups.set(line.key,{line,roles:{wash:[],condition:[],treat:[],finish:[]}});
+  groups.get(line.key).roles[role].push(row);
+ }
+ const budget=Math.floor(Number(input.budget)*100+1e-7);
+ let best={rows:[],pair:0,fit:0,mask:0,finish:0,curated:0,cents:0,signature:'',line:null};
+ function consider(rows,line,pair){
+  if(new Set(rows.map(r=>key(r.product.sku))).size!==rows.length)return;
+  const cents=rows.reduce((sum,r)=>sum+r.cents,0);if(cents>budget)return;
+  const base=rows.filter(r=>r.role!=='finish');
+  const candidate={rows,line,pair,fit:Math.max(0,...base.map(r=>r.fit)),mask:Number(rows.some(r=>r.role==='treat')),finish:Number(rows.some(r=>r.role==='finish')),curated:rows.reduce((sum,r)=>sum+r.curated,0),cents,signature:[...rows].sort((a,b)=>order.indexOf(a.role)-order.indexOf(b.role)).map(r=>r.role+':'+key(r.product.sku)).join('|')};
+  if(compare(candidate,best)>0)best=candidate;
+ }
+ const cheapest=(a,b)=>a.cents-b.cents||key(a.product.sku).localeCompare(key(b.product.sku));
+ for(const group of groups.values()){
+  // At most four variants per role: retain fit, curation and affordable options.
+  const options={};for(const role of order){const rows=group.roles[role];const ranked=[...rows].sort((a,b)=>b.curated-a.curated||b.fit-a.fit||cheapest(a,b)).slice(0,3);const cheap=[...rows].sort(cheapest).slice(0,1);options[role]=[...new Map([...ranked,...cheap].map(r=>[key(r.product.sku),r])).values()];}
+  for(const wash of options.wash)for(const condition of options.condition){
+   const base=[wash,condition];if(wash.cents+condition.cents>budget)continue;
+   consider(base,group.line,1);
+   const masks=options.treat.filter(mask=>wash.cents+condition.cents+mask.cents<=budget);
+   if(masks.length){for(const mask of masks){consider([...base,mask],group.line,1);for(const finish of options.finish)consider([...base,mask,finish],group.line,1);}}
+   else if(!options.treat.length){for(const finish of options.finish)consider([...base,finish],group.line,1);}
+  }
+ }
+ if(!best.pair){
+  // A smaller coherent selection beats an unverified cross-line combination.
+  for(const row of singles.filter(r=>r.role==='treat'))consider([row],row.line,0);
+  if(!best.rows.length)for(const row of singles.filter(r=>r.role==='condition'))consider([row],row.line,0);
+  if(!best.rows.length)for(const row of singles)consider([row],row.line,0);
+ }
+ const rows=best.rows.sort((a,b)=>order.indexOf(a.role)-order.indexOf(b.role));
+ const products=rows.map(row=>({sku:String(row.product.sku).slice(0,100),name:String(row.product.name||'').slice(0,200),image:image(row.product.image),price:row.cents/100,step:row.role,line:row.line?.label||'',selectionSource:row.rule?'curated':'catalog',
+  reason:row.rule?String(row.rule.reason).slice(0,400):!best.pair?({wash:'Seu cuidado começa na lavagem. Conheça esta opção para o primeiro passo.',condition:'Uma opção de condicionador para você conhecer.',treat:'Um momento de cuidado para incluir na sua rotina.',finish:'Uma opção para finalizar o seu cuidado.'}[row.role]):({wash:'O primeiro passo da sua rotina, com uma opção da linha '+row.line?.label+'.',condition:'Para acompanhar o shampoo da mesma linha no seu cuidado.',treat:'Um cuidado extra da mesma linha para incluir na sua rotina.',finish:'Para completar o cuidado com mais uma opção da mesma linha.'}[row.role]),
+  matchReasons:[...(best.pair?['Shampoo e condicionador da linha '+best.line.label+'.']:[]),...row.info.evidence]}));
+ const hasMask=products.some(p=>p.step==='treat'),routineComplete=Boolean(best.pair&&hasMask);
+ return {products,total:best.cents/100,routineComplete,line:best.line?.label||'',missingSteps:order.filter(role=>!products.some(p=>p.step===role)),
+  explanation:best.pair?(hasMask?'Escolhemos shampoo, condicionador e máscara da linha '+best.line.label+' para montar uma rotina coerente, dentro do seu orçamento. Confira as instruções de cada produto para a ordem e a frequência de uso.':'Começamos com shampoo e condicionador da linha '+best.line.label+'. Mantivemos a dupla dentro do seu orçamento, sem misturar linhas para completar a seleção.'):'Escolhemos um cuidado para começar dentro desse valor. Para montar uma rotina com shampoo e condicionador da mesma linha, você pode ajustar o orçamento ou pedir ajuda à nossa equipe.',
+  message:routineComplete?'Sua rotina da mesma linha está pronta para você conhecer.':best.pair?'Uma dupla da mesma linha para começar seu cuidado.':products.length?'Um cuidado para começar, respeitando seu orçamento.':'Ainda não encontramos uma combinação nesse valor. Fale com a gente para escolher suas opções.'};
+}
+module.exports={recommendByLine};
