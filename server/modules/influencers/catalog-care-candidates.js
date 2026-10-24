@@ -1,6 +1,7 @@
 'use strict';
 const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-const stageNames={wash:'Limpar',treat:'Tratar',finish:'Finalizar'};
+const stageReasons={wash:'Seu cuidado começa na lavagem. Conheça esta opção para o primeiro passo.',treat:'Um momento de cuidado para incluir depois da lavagem.',finish:'O toque final para completar sua rotina.'};
+const goalNames={hydration:'hidratação e maciez',repair:'cuidado dos fios danificados',frizz:'controle do frizz',curls:'definição dos cachos',color:'cuidado da cor'};
 const goalWords={hydration:/hidrat|hidrasim|maciez/,repair:/repar|reconstr|reestrutur|danific|quebra/,frizz:/frizz/,curls:/cach|curly|curlys|crespo|definicao/,color:/protecao da cor|coloridos|color protection|cuidado da cor/};
 function classify(product,input){
  const name=normalize(product.name),category=normalize(product.categoryName||product.category),description=normalize(product.description),text=name+' '+category+' '+description;
@@ -17,11 +18,11 @@ function classify(product,input){
  if(treated&&input.chemistry!=='treated'||natural&&input.chemistry!=='natural')return null;
  const goalMatch=goalWords[input.goal].test(text),hairMatch=curly||straight||wavy;
  const evidence=[
-  'Categoria identificada no nome ou cadastro: '+stageNames[step]+'.',
-  goalMatch?'O nome ou descrição contém termos relacionados ao objetivo escolhido.':'O cadastro não confirma o objetivo escolhido; esta alternativa foi selecionada por categoria e preço.',
-  hairMatch?'O nome menciona o tipo de cabelo selecionado.':'O cadastro não informa um tipo de cabelo específico.',
-  treated||natural?'O cadastro menciona a condição de química selecionada.':'A compatibilidade com química ou coloração não está informada no cadastro; confira o rótulo.'
- ];
+  stageReasons[step],
+  goalMatch?'Na sua busca por '+goalNames[input.goal]+', encontramos esta opção entre os produtos da loja.':'Esta opção completa a etapa e cabe no seu orçamento. Veja as indicações do produto para conferir se atende ao cuidado que você procura.',
+  hairMatch?(curly?'Uma opção da linha de cachos para você conhecer.':straight?'Uma opção da linha para cabelos lisos para você conhecer.':'Uma opção da linha para cabelos ondulados para você conhecer.'):null,
+  treated||natural?'As informações do produto mencionam fios '+(treated?'com química ou coloração.':'sem química.'):(input.chemistry==='treated'?'Fez química ou coloração? Confira a indicação no rótulo ou peça ajuda à nossa equipe antes de escolher.':null)
+ ].filter(Boolean);
  return {step,score:Number(goalMatch)*4+Number(hairMatch)*2+Number(treated||natural),evidence};
 }
 function automaticCandidates(available,config,input){
@@ -32,7 +33,7 @@ function automaticCandidates(available,config,input){
   if(rules.length&&!rules.some(r=>['all',input.hair].includes(r.hair)&&['all',input.chemistry].includes(r.chemistry)))continue;
   const info=classify(found.product,input);if(!info)continue;
   rows.push({...found,curated:0,specificity:info.score,automatic:true,evidence:info.evidence,
-   rule:{sku,step:info.step,reason:'Alternativa automática por categoria e preço. Confira as indicações de uso no rótulo.'}});
+   rule:{sku,step:info.step,reason:stageReasons[info.step]}});
  }
  const stable=(a,b)=>a.cents-b.cents||String(a.product.sku).localeCompare(String(b.product.sku));
  const result=[];

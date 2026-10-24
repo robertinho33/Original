@@ -24,7 +24,7 @@ test('explicit hair and chemistry constraints are respected without inventing mi
  assert.equal(classify({name:'Shampoo Liso Mágico'},input),null);
  assert.equal(classify({name:'Shampoo Cachos'},{...input,hair:'straight'}),null);
  assert.equal(classify({name:'Shampoo',description:'Para cabelos quimicamente tratados'},{...input,chemistry:'natural'}),null);
- const generic=classify({name:'Shampoo'},input);assert.ok(generic.evidence.some(r=>r.includes('não informa um tipo')));assert.ok(generic.evidence.some(r=>r.includes('não confirma o objetivo')));
+ const generic=classify({name:'Shampoo'},input);assert.ok(generic.evidence.some(r=>r.includes('conferir se atende')));assert.ok(generic.evidence.some(r=>r.includes('rótulo')));
 });
 test('reviewed indications win among selections with the same number of stages',()=>{
  const reviewed={sku:'REVIEWED',name:'Máscara revisada',price:60,stock:1};

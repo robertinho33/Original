@@ -15,7 +15,7 @@ function recommend(config,catalog,input={}){
   if(!input||Array.isArray(input)||typeof input.goal!=='string'||typeof input.hair!=='string'||!Object.hasOwn(goals,input.goal)||!Object.hasOwn(hairs,input.hair)||!['treated','natural'].includes(input.chemistry))throw Error('Confira suas respostas para encontrar seu cuidado.');
   const budget=Number(input.budget);
   if(!['number','string'].includes(typeof input.budget)||!Number.isFinite(budget)||budget<1||budget>10000)throw Error('Informe um orçamento entre R$ 1 e R$ 10.000.');
-  if(!config?.enabled)return {products:[],total:0,message:'A loja está preparando as recomendações. Fale conosco para encontrar o cuidado do seu jeito.'};
+  if(!config?.enabled)return {products:[],total:0,message:'Nossa equipe pode ajudar você a escolher. Fale com a gente para encontrar suas opções.'};
   const budgetCents=Math.floor(budget*100+1e-7),bySku=new Map();
   for(const product of catalog){
     const cents=Math.round(Number(product.price)*100),stock=Number(product.stock);
@@ -53,11 +53,11 @@ function recommend(config,catalog,input={}){
   }
   visit(0,[],0,new Set());
   const products=best.rows.map(({product,rule,cents,automatic,evidence})=>({sku:String(product.sku).slice(0,100),name:String(product.name||'').slice(0,200),image:image(product.image),price:cents/100,step:rule.step,reason:String(rule.reason).trim().slice(0,400),selectionSource:automatic?'catalog':'curated',
-    matchReasons:automatic?evidence:[`Objetivo da curadoria: ${goals[input.goal]}.`,rule.hair==='all'?'Indicação da loja para todos os tipos de cabelo.':`Indicação da loja para ${hairs[input.hair]}.`,
-      rule.chemistry==='all'?'Curadoria com ou sem química.':input.chemistry==='treated'?'Curadoria para cabelos com química ou coloração.':'Curadoria para cabelos sem química.']}));
+    matchReasons:automatic?evidence:[`Uma indicação da nossa equipe para quem busca ${goals[input.goal].toLowerCase()}.`,rule.hair==='all'?'A equipe selecionou esta opção para diferentes tipos de cabelo.':`Uma escolha da nossa equipe para ${hairs[input.hair]}.`,
+      rule.chemistry==='all'?'Na seleção da equipe, esta opção atende fios com ou sem química. Confira também as instruções de uso.':input.chemistry==='treated'?'A equipe incluiu esta opção para fios com química ou coloração.':'A equipe incluiu esta opção para fios sem química.']}));
   return {products,total:best.cents/100,
-    explanation:config.automatic===true?'Combinamos as etapas e preços dentro do orçamento, priorizando tratamento e o maior número de etapas. Entre seleções com as mesmas etapas, priorizamos as indicações revisadas da loja, os termos do cadastro relacionados às respostas e o menor total. As alternativas automáticas são identificadas; informações ausentes no cadastro não confirmam compatibilidade.':'Cruzamos suas respostas com as indicações revisadas pela loja. Priorizamos tratamento e a combinação com mais etapas dentro do orçamento; entre essas combinações, escolhemos a mais específica para seu perfil. Em caso de empate, priorizamos o menor total.',
+    explanation:products.length===3?'Separamos opções para lavar, cuidar e finalizar, dentro do valor que você escolheu. Conheça cada produto e leve os seus favoritos.':'Encontramos estas opções dentro do valor que você escolheu. Conheça os produtos ou ajuste o orçamento para explorar outras combinações.',
     missingSteps:steps.filter(step=>!products.some(product=>product.step===step)),
-    message:products.length===3?'Sua seleção reúne três etapas dentro do orçamento.':products.length?'Montamos uma seleção parcial dentro do orçamento e das indicações disponíveis.':'Não encontramos uma indicação disponível dentro desse orçamento. Você pode ajustar o valor ou falar com a loja.'};
+    message:products.length===3?'Pronto! Três passos para o seu cuidado, dentro do seu orçamento.':products.length?'Encontramos opções para começar seu cuidado dentro desse valor.':'Ainda não encontramos uma combinação nesse valor. Experimente outro orçamento ou peça ajuda à nossa equipe.'};
 }
 module.exports={recommend};
