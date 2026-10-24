@@ -20,7 +20,7 @@ function normalizeRules(body={}){
     if(!rule.sku||!goals.includes(rule.goal)||!steps.includes(rule.step)||!['all','straight','wavy','curly','coily'].includes(rule.hair)||!['all','treated','natural'].includes(rule.chemistry)||!rule.reason)throw Error('Complete produto, objetivo, etapa e motivo da indicação.');
     const id=[key(rule.sku),rule.goal,rule.hair,rule.chemistry].join(':');if(seen.has(id))throw Error('Há recomendações repetidas para o mesmo perfil.');seen.add(id);return rule;
   });
-  return {enabled:body.enabled===true,rules};
+  return {enabled:body.enabled===true,automatic:body.automatic===true,rules};
 }
 const {recommend}=require('./ritual-recommender');
 function normalizeStore(body={}){

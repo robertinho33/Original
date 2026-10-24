@@ -9,7 +9,7 @@ function productOptions(catalog,value){return '<option value="">Selecione um pro
 export async function renderRitualTools(container){
   const access=await window.AdminAPI.get('/access');if(access.data?.role!=='admin')return;
   addStyles();const result=await window.AdminAPI.get('/marketing/ritual'),data=result.data||{};
-  container.innerHTML=`<section class="module-panel"><h2>Curadoria · Cuidado do seu jeito</h2><p>Cadastre indicações que você revisou. O cliente recebe até um produto por etapa, priorizando tratamento e respeitando o orçamento. Produtos ocultos ou sem estoque não são sugeridos.</p><form><label><input name="enabled" type="checkbox" ${data.enabled?'checked':''}> Habilitar recomendações</label><div data-rules></div><button type="button" data-add-rule>Adicionar indicação</button> <button type="submit" class="admin-button admin-button-primary">Salvar curadoria</button><p role="status"></p></form></section>`;
+  container.innerHTML=`<section class="module-panel"><h2>Curadoria · Cuidado do seu jeito</h2><p>Cadastre indicações que você revisou. A seleção automática usa categorias e preços do catálogo, priorizando as indicações revisadas. O cliente recebe até um produto por etapa, priorizando tratamento e respeitando o orçamento. Produtos ocultos ou sem estoque não são sugeridos.</p><form><label><input name="enabled" type="checkbox" ${data.enabled?'checked':''}> Habilitar recomendações</label><label><input name="automatic" type="checkbox" ${data.automatic?'checked':''}> Completar automaticamente com categorias e preços do catálogo</label><div data-rules></div><button type="button" data-add-rule>Adicionar indicação</button> <button type="submit" class="admin-button admin-button-primary">Salvar curadoria</button><p role="status"></p></form></section>`;
   const form=container.querySelector('form'),rows=form.querySelector('[data-rules]'),message=form.querySelector('[role="status"]');
   const add=(rule={})=>{
     if(rows.children.length>=30){message.textContent='Limite de 30 indicações.';return;}
@@ -19,7 +19,7 @@ export async function renderRitualTools(container){
     row.querySelector('[data-remove]').addEventListener('click',()=>row.remove());rows.append(row);
   };
   (data.rules||[]).forEach(add);form.querySelector('[data-add-rule]').addEventListener('click',()=>add());
-  form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('[type="submit"]');button.disabled=true;try{await window.AdminAPI.put('/marketing/ritual',{enabled:form.elements.enabled.checked,rules:[...rows.children].map(row=>Object.fromEntries([...row.querySelectorAll('[data-field]')].map(el=>[el.dataset.field,el.value])))});message.textContent='Curadoria salva. As novas indicações já podem ser consultadas.';}catch(error){message.textContent=error.message;}finally{button.disabled=false;}});
+  form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('[type="submit"]');button.disabled=true;try{await window.AdminAPI.put('/marketing/ritual',{enabled:form.elements.enabled.checked,automatic:form.elements.automatic.checked,rules:[...rows.children].map(row=>Object.fromEntries([...row.querySelectorAll('[data-field]')].map(el=>[el.dataset.field,el.value])))});message.textContent='Curadoria salva. As novas indicações já podem ser consultadas.';}catch(error){message.textContent=error.message;}finally{button.disabled=false;}});
 }
 document.addEventListener('click',async event=>{
   const trigger=event.target.closest('[data-influencer-store]');if(!trigger)return;
