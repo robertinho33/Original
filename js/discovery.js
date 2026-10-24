@@ -38,8 +38,8 @@ if(careForm){
  });
  const answers=()=>Object.fromEntries(new FormData(careForm));
  const valid=()=>[...careForm.querySelectorAll('select,input')].every(field=>field.checkValidity());
- const run=()=>{clearTimeout(timer);if(valid())void query.query(answers());};
- careForm.addEventListener('submit',event=>{event.preventDefault();run();});
+ const run=(force=false)=>{clearTimeout(timer);if(valid())void query.query(answers(),{force});};
+ careForm.addEventListener('submit',event=>{event.preventDefault();run(true);});
  careForm.addEventListener('input',()=>{
   clearTimeout(timer);query.invalidate();selected=[];$('ritualResult').hidden=true;button.disabled=false;
   message.textContent=valid()?'Atualizando sua seleção…':'Preencha todas as respostas para ver sua seleção.';

@@ -74,3 +74,10 @@ test('recommendation HTTP requests without consent never write; consented reques
   assert.equal([...db.rows.keys()].filter(k=>k.startsWith('careInterestStats/')).length,1);assert.ok(!JSON.stringify([...db.rows]).includes('secret@example.test'));
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+test('manual refresh rechecks current stock instead of retaining an automatic cached result',async()=>{
+ const {createCareQueryController}=await controllerModule;let calls=0;const results=[];
+ const controller=createCareQueryController({request:async()=>({products:++calls===1?['available']:[]}),start(){},result:data=>results.push(data),error:()=>assert.fail(),finish(){}});
+ await controller.query(input);await controller.query(input);assert.equal(calls,1);
+ await controller.query(input,{force:true});assert.equal(calls,2);assert.deepEqual(results.at(-1),{products:[]});
+});
