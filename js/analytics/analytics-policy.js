@@ -5,6 +5,7 @@ const pageNames = {
     '/index.html': 'Fios Perfeitos — Loja',
     '/pages/checkout.html': 'Fios Perfeitos — Checkout',
     '/pages/privacidade.html': 'Fios Perfeitos — Privacidade',
+    '/pages/monte-seu-ritual.html': 'Fios Perfeitos — Cuidado do seu jeito',
     '/pages/trocas.html': 'Fios Perfeitos — Trocas e devoluções'
 };
 export function analyticsPage(href) {

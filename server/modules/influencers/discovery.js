@@ -68,7 +68,12 @@ function createRouter(deps={}){
   }catch{res.status(503).json({success:false,error:'Não foi possível carregar esta vitrine.'});}});
   router.post('/ritual',async(req,res)=>{try{
     const [snapshot,catalog]=await Promise.all([db().collection('storeRitualRules').doc('current').get(),getCatalog()]);
-    res.json({success:true,data:recommend(snapshot.exists?snapshot.data():null,catalog,req.body)});
+    const data=recommend(snapshot.exists?snapshot.data():null,catalog,req.body);
+    const interests=require('./care-interests');
+    if(interests.mayMeasure(req)){
+      try{void interests.recordInterest(db(),req.body,data,req.body.measurement.session).catch(()=>{});}catch{ /* Optional reporting never prevents a recommendation. */ }
+    }
+    res.json({success:true,data});
   }catch(error){res.status(error.message.startsWith('Confira')||error.message.startsWith('Informe')?400:503).json({success:false,error:error.message.startsWith('Confira')||error.message.startsWith('Informe')?error.message:'Não foi possível encontrar sua seleção agora.'});}});
   return router;
 }

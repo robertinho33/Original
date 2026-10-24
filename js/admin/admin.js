@@ -3381,7 +3381,10 @@ function renderLogistics(content, shipments) {
 }
 
 function renderReports(content, reports) {
-    return renderOrderWorkspace(content, Array.isArray(reports) ? reports : [], 'reports');
+    renderOrderWorkspace(content, Array.isArray(reports) ? reports : [], 'reports');
+    const interests = document.createElement('section');
+    content.append(interests);
+    void import('./modules/care-interests.js').then(module => module.renderCareInterests(interests)).catch(() => { interests.textContent = 'Não foi possível carregar o relatório de interesses.'; });
 }
 
 function renderAudit(content, logs) {

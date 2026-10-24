@@ -25,7 +25,7 @@ export function chooseAds(value){
 }
 export function mountAdsChoice(panel){
  const label=document.createElement('label');label.className='ads-consent-choice';
- const input=document.createElement('input');input.type='checkbox';input.checked=adsChoice()==='granted';input.disabled=!allows();
+ const input=document.createElement('input');input.type='checkbox';input.dataset.adsConsent='';input.checked=adsChoice()==='granted';input.disabled=!allows();
  const text=document.createElement('span');text.textContent='Também permitir medição de anúncios pelo Google Ads para associar compras aos anúncios. Opcional, sem personalização.';
  label.append(input,text);panel.append(label);
  return accepted=>chooseAds(accepted && input.checked?'granted':'denied');

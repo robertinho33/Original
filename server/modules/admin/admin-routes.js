@@ -57,6 +57,7 @@ const promotions = require('../influencers/promotions');
 router.get('/marketing/influencer-campaign', promotions.read);
 router.put('/marketing/influencer-campaign', promotions.save);
 router.get("/dashboard", adminController.dashboard);
+router.get('/care-interests',require('../influencers/care-interests').report());
 router.get('/store-visits', require('../storefront-engagement').visitStats);
 router.get('/shipping/melhor-envio/status',require('../shipping/melhor-envio-oauth').status);
 router.post('/shipping/melhor-envio/connect',require('../shipping/melhor-envio-oauth').start);

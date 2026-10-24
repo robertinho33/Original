@@ -1,3 +1,6 @@
+import {careConsent} from './analytics/care-consent.js';
+import {createCareQueryController} from './care-query-controller.js';
+import {readConsent,CONSENT_KEY} from './analytics/analytics-policy.js';
 import { installProductImageFallbacks } from './catalog/image-fallback.js';
 installProductImageFallbacks();
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -13,11 +16,37 @@ updatePartnerLinks();
 const image=v=>{try{const u=new URL(v);return u.protocol==='https:'?u.href:'';}catch{return '';}};
 function cards(products){return products.map(p=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${esc(steps[p.step])}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p>${Array.isArray(p.matchReasons)&&p.matchReasons.length?`<details class="ritual-match"><summary>Por que este produto combina com você?</summary><ul>${p.matchReasons.map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></details>`:''}<strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Ver detalhes na loja ↗</a></p></div></article>`).join('');}
 async function api(path,body){const res=await fetch('/api/discovery/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(60000)});const result=await res.json();if(!res.ok||!result.success)throw Error(result.error||'Não foi possível consultar agora.');return result.data;}
-$('ritualForm')?.addEventListener('submit',async event=>{
-  event.preventDefault();const button=event.currentTarget.querySelector('button');button.disabled=true;$('discoveryMessage').textContent='Encontrando o cuidado do seu jeito…';$('ritualResult').hidden=true;
-  try{const data=await api('ritual',Object.fromEntries(new FormData(event.currentTarget)));selected=data.products;$('discoveryMessage').textContent=data.message;$('discoveryProducts').innerHTML=cards(selected);if($('ritualExplanation'))$('ritualExplanation').textContent=data.explanation||'';$('ritualTotal').textContent=money(data.total)+' em produtos · frete calculado no checkout';$('ritualResult').hidden=!selected.length;}
-  catch(error){$('discoveryMessage').textContent=error.message;}finally{button.disabled=false;}
-});
+const careForm=$('ritualForm');
+if(careForm){
+ const button=careForm.querySelector('[type="submit"]'),message=$('discoveryMessage');let timer;
+ const measurement=()=>{
+  try{
+   if(navigator.globalPrivacyControl===true||navigator.doNotTrack==='1'||readConsent(localStorage.getItem(CONSENT_KEY))!=='granted'||careConsent()!=='granted')return undefined;
+   const key='fp-care-session-v1',now=Date.now();let session=JSON.parse(sessionStorage.getItem(key)||'null');
+   if(!session||!Number.isFinite(session.startedAt)||session.startedAt>now||now-session.startedAt>=30*60000){session={id:crypto.randomUUID(),startedAt:now};sessionStorage.setItem(key,JSON.stringify(session));}
+   return {consent:true,session:session.id};
+  }catch{return undefined;}
+ };
+ const query=createCareQueryController({
+  request:async(input,signal)=>{
+   const response=await fetch('/api/discovery/ritual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...input,measurement:measurement()}),signal:typeof AbortSignal.any==='function'?AbortSignal.any([signal,AbortSignal.timeout(60000)]):signal});
+   const payload=await response.json();if(!response.ok||!payload.success)throw Error(payload.error||'Não foi possível consultar agora.');return payload.data;
+  },
+  start(){button.disabled=true;message.textContent='Encontrando o cuidado do seu jeito…';$('ritualResult').hidden=true;selected=[];},
+  result(data){selected=data.products;message.textContent=data.message;$('discoveryProducts').innerHTML=cards(selected);$('ritualExplanation').textContent=data.explanation||'';$('ritualTotal').textContent=money(data.total)+' em produtos · frete calculado no checkout';$('ritualResult').hidden=!selected.length;},
+  error(reason){message.textContent=reason.message;},finish(){button.disabled=false;}
+ });
+ const answers=()=>Object.fromEntries(new FormData(careForm));
+ const valid=()=>[...careForm.querySelectorAll('select,input')].every(field=>field.checkValidity());
+ const run=()=>{clearTimeout(timer);if(valid())void query.query(answers());};
+ careForm.addEventListener('submit',event=>{event.preventDefault();run();});
+ careForm.addEventListener('input',()=>{
+  clearTimeout(timer);query.invalidate();selected=[];$('ritualResult').hidden=true;button.disabled=false;
+  message.textContent=valid()?'Atualizando sua seleção…':'Preencha todas as respostas para ver sua seleção.';
+  if(valid())timer=setTimeout(run,650);
+ });
+}
+
 function cart(items){
   let current;try{current=JSON.parse(localStorage.getItem('aurea-cart')||'[]');}catch{current=[];}
   if(!Array.isArray(current))current=[];
