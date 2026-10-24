@@ -1504,7 +1504,8 @@ function openProductEditor(product) {
                         ...product,
                         ...normalizedSaved,
                         ...updatedProduct,
-                        id: normalizedSaved.id || productId
+                        id: normalizedSaved.id || productId,
+                        isNew: false
                     });
 
                 }
