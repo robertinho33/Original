@@ -1,5 +1,6 @@
 "use strict";
 
+const {isProductAuthorized}=require('../../../js/catalog/source-authorization');
 const service = require("./catalog-visibility-service");
 const storefrontCatalog = require("./catalog-storefront-service");
 
@@ -26,7 +27,7 @@ async function storefrontProducts(req, res, next) {
     try {
         const products = await storefrontCatalog.getPublicCatalog();
         res.set("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
-        return res.json({ success: true, data: { products } });
+        return res.json({ success: true, data: { products: products.filter(isProductAuthorized) } });
     } catch (error) { return next(error); }
 }
 

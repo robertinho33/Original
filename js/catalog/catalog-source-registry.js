@@ -16,8 +16,8 @@ export const catalogSources = [
         url: 'https://loja.inovaxcosmeticos.com.br/',
         file: 'Inovax.csv',
         enabled: true,
-        visible: true,
-        featured: true
+        visible: false,
+        featured: false
     },
     {
         id: 'brae',
@@ -25,8 +25,8 @@ export const catalogSources = [
         url: 'https://www.brae.com.br/produtos',
         file: 'Brae.csv',
         enabled: true,
-        visible: true,
-        featured: true
+        visible: false,
+        featured: false
     }
 ];
 

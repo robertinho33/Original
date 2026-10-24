@@ -52,7 +52,7 @@ async function createSupplier(payload, actor) {
 
     const now = new Date().toISOString();
     const supplier = {
-        id, name, url, enabled: true, visible: true, featured: false,
+        id, name, url, enabled: true, visible: false, featured: false,
         createdAt: now, updatedAt: now, createdBy: clean(actor, 160)
     };
     await getFirestore().collection(SUPPLIERS).doc(id).create(supplier);

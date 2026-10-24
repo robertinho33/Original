@@ -5,8 +5,8 @@ const {securityHeaders}=require('../../infrastructure/security');
 const {isPublicFile}=require('../../infrastructure/public-files');
 const {registerSearchFiles}=require('../../infrastructure/web-delivery');
 const {selectIndexable,renderProduct,registerProductPages}=require('./product-pages');
-const product={sku:'SKU-1',name:'Máscara & cuidado',sourceId:'brae',sourceName:'Braé',price:39.95,stock:3,active:true,image:'https://example.com/item.jpg',description:'Cuidado diário.'};
-const state={sources:[{id:'brae',visible:true},{id:'truss',visible:false}],inactiveProductSkus:['hidden']};
+const product={sku:'SKU-1',name:'Máscara & cuidado',sourceId:'ecobelle',sourceName:'EcoBelle',price:39.95,stock:3,active:true,image:'https://example.com/item.jpg',description:'Cuidado diário.'};
+const state={sources:[{id:'ecobelle',visible:true},{id:'truss',visible:false}],inactiveProductSkus:['hidden']};
 test('only visible, active, priced products appear in pages and sitemap',()=>{
  const rows=[product,{...product,sku:'hidden'},{...product,sku:'inactive',active:false},{...product,sku:'brand',sourceId:'truss'},{...product,sku:'draft',name:'INATIVO Produto'},{...product,sku:'invalid',price:NaN}];
  assert.deepEqual(selectIndexable(rows,state),[product]);

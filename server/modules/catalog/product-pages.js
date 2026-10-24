@@ -1,4 +1,5 @@
 'use strict';
+const {isProductAuthorized}=require('../../../js/catalog/source-authorization');
 const { createHash } = require('node:crypto');
 const { ORIGIN } = require('../../infrastructure/web-delivery');
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -7,7 +8,7 @@ const safeImage = value => { try { const url = new URL(value); return url.protoc
 function selectIndexable(products, visibility) {
   const sources = new Set(visibility.sources.filter(source => source.visible === true).map(source => String(source.id).toLowerCase()));
   const hidden = new Set(visibility.inactiveProductSkus.map(sku => String(sku).toLowerCase()));
-  return products.filter(product => product.sku && product.name && product.active !== false &&
+  return products.filter(product => isProductAuthorized(product) && product.sku && product.name && product.active !== false &&
     !/^INATIVO\b/i.test(product.name) && Number.isFinite(Number(product.price)) && Number(product.price) > 0 &&
     sources.has(String(product.sourceId).toLowerCase()) && !hidden.has(String(product.sku).toLowerCase()));
 }

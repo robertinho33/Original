@@ -1,5 +1,6 @@
 "use strict";
 
+const {isSourceAuthorized}=require('../../../js/catalog/source-authorization');
 const path = require("node:path");
 const { getFirestore } = require("../../infrastructure/firebase/firebase-admin");
 
@@ -50,9 +51,10 @@ async function readState() {
             url: String(source.url || ""),
             file: String(source.file || ""),
             managed: source.managed === true,
-            visible: typeof sourceOverrides[id] === "boolean"
+            authorized: isSourceAuthorized(id),
+            visible: isSourceAuthorized(id) && (typeof sourceOverrides[id] === "boolean"
                 ? sourceOverrides[id]
-                : source.visible !== false
+                : source.visible !== false)
         };
     });
     const inactiveProductSkus = inactiveProducts.docs
@@ -67,6 +69,7 @@ async function setSourceVisibility(id, visible, actor = "") {
         throw new Error("Informe se o fornecedor deve ficar visível.");
     }
     const normalizedId = normalizeId(id);
+    if (visible && !isSourceAuthorized(normalizedId)) throw new Error("Este fornecedor aguarda autorização comercial para aparecer na loja.");
     const sources = [...await loadSources(), ...await loadManagedSources()];
     if (!sources.some(source => normalizeId(source.id) === normalizedId)) {
         throw new Error("Fornecedor não encontrado no catálogo.");

@@ -1,5 +1,14 @@
 ﻿'use strict';
 
+const {isProductAuthorized}=require('../../../js/catalog/source-authorization');
+const {loadCatalog}=require('./catalog-service');
+let sourceBySku;
+function assertAuthorizedProduct(product){
+ if(!sourceBySku)sourceBySku=new Map(loadCatalog().map(p=>[String(p.sku||p.SKU||'').trim().toLowerCase(),p.sourceId]));
+ const sourceId=product.sourceId||sourceBySku.get(String(product.sku||product.SKU||'').trim().toLowerCase());
+ if(product.active===false||!isProductAuthorized({...product,sourceId}))throw new AppError('Este produto não está disponível para venda na loja.',{code:'PRODUCT_NOT_AVAILABLE',status:409});
+ return product;
+}
 const { AppError } = require('../../core/app-error');
 
 const {
@@ -84,6 +93,8 @@ async function resolveProduct(sku, quantity) {
     );
   }
 
+  assertAuthorizedProduct(product);
+
   const unitPrice = normalizePrice(
     getProductPrice(product)
   );
@@ -143,6 +154,7 @@ async function resolveProduct(sku, quantity) {
 
 module.exports = {
   findProductBySku,
+  assertAuthorizedProduct,
   resolveProduct,
   normalizePrice,
   normalizeStock

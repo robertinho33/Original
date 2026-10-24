@@ -1,4 +1,5 @@
-﻿'use strict';
+﻿import './source-authorization.js';
+'use strict';
 
 function normalizedId(value) {
     return String(value ?? '')
@@ -12,6 +13,7 @@ export function isSourceEnabled(source) {
 
 export function isSourceVisible(source) {
     return (
+        globalThis.CatalogAuthorization.isSourceAuthorized(source?.id) &&
         isSourceEnabled(source) &&
         source?.visible === true
     );

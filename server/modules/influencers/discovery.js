@@ -1,5 +1,6 @@
 'use strict';
 const express=require('express');
+const {isProductAuthorized}=require('../../../js/catalog/source-authorization');
 const {getFirestore}=require('../../infrastructure/firebase/firebase-admin');
 const text=(value,max=200)=>String(value??'').trim().slice(0,max);
 const key=value=>text(value,100).toLowerCase();
@@ -10,7 +11,7 @@ function productView(p){return {sku:text(p.sku,100),name:text(p.name),image:safe
 async function publicCatalog(){
   const [products,visibility]=await Promise.all([require('../catalog/catalog-storefront-service').getPublicCatalog(),require('../catalog/catalog-visibility-service').getVisibility()]);
   const visible=new Set(visibility.sources.filter(s=>s.visible).map(s=>key(s.id))),hidden=new Set(visibility.inactiveProductSkus.map(key));
-  return products.filter(p=>p.active!==false&&!/^inativo/i.test(p.name)&&!hidden.has(key(p.sku))&&(!p.sourceId||visible.has(key(p.sourceId)))&&Number.isFinite(Number(p.price))&&Number(p.price)>0&&Number(p.stock)>0);
+  return products.filter(p=>isProductAuthorized(p)&&p.active!==false&&!/^inativo/i.test(p.name)&&!hidden.has(key(p.sku))&&(!p.sourceId||visible.has(key(p.sourceId)))&&Number.isFinite(Number(p.price))&&Number(p.price)>0&&Number(p.stock)>0);
 }
 function normalizeRules(body={}){
   if(!Array.isArray(body.rules)||body.rules.length>30)throw Error('Cadastre no máximo 30 recomendações.');

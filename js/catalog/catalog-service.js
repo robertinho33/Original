@@ -1,3 +1,4 @@
+import './source-authorization.js';
 'use strict';
 
 import {
@@ -150,7 +151,7 @@ async function loadRawCatalog() {
                 normalizeProduct(product)
             )
             .filter(product =>
-                product.sku
+                product.sku && globalThis.CatalogAuthorization.isProductAuthorized(product)
             );
 
     return catalogCache;
@@ -215,6 +216,7 @@ export async function loadSources() {
         sourceCache = [];
     }
 
+    sourceCache=sourceCache.map(source=>({...source,visible:source.visible===true&&globalThis.CatalogAuthorization.isSourceAuthorized(source.id)}));
     const visibility = await loadVisibilityOverrides();
     const visibleSources = Array.isArray(visibility.visibleSources)
         ? new Set(visibility.visibleSources.map(value => String(value).trim().toLowerCase()))
