@@ -8,8 +8,33 @@ details.module-panel:not([open]){min-height:0!important;height:auto!important}.a
 
 .product-care-fields fieldset{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0;padding:12px}.product-care-fields fieldset label{display:flex;align-items:center;gap:8px;min-height:44px}.product-care-fields input[type=checkbox]{width:20px;height:20px;flex:none}
 
-.care-bulk-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;background:#fff;z-index:2;padding:12px 0}.care-bulk-scroll{max-height:65vh;overflow:auto}.care-bulk-table{width:max-content!important;min-width:100%!important;table-layout:auto;border-collapse:separate;border-spacing:0}.care-bulk-table :is(th,td){white-space:nowrap!important;padding:6px 10px!important}.care-bulk-table thead th{position:sticky;top:0;background:#edf3ed;z-index:2}.care-bulk-table tbody th{position:sticky;left:0;background:#fff;z-index:1;text-align:left;max-width:290px}.care-bulk-table tbody th span{display:inline-block;max-width:210px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;white-space:nowrap}.care-bulk-table tbody small{font-size:11px;color:#657167}.care-bulk-options{display:flex;align-items:center;gap:10px}.care-bulk-options label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;min-height:36px;font-size:12px}.care-bulk-options input[type=checkbox]{width:18px;height:18px;min-height:18px!important;flex:none}.care-bulk-all{font-weight:700;border-right:1px solid #ccd8cc;padding-right:10px}.care-bulk-modified>th{box-shadow:inset 4px 0 #92702d;background:#fff8e8!important}.admin-page .care-bulk-table tbody{display:table-row-group!important}.admin-page .care-bulk-table tr{display:table-row!important}.admin-page .care-bulk-table :is(th,td){display:table-cell!important}.admin-page .care-bulk-table thead{display:table-header-group!important}
 
-.care-bulk-legend,.care-bulk-options{display:grid;grid-auto-flow:column;align-items:center;gap:0}.care-bulk-legend{margin-top:8px}.care-bulk-legend span{white-space:normal!important;text-align:center;line-height:1.3;font-size:11px;font-weight:500}.care-bulk-options label{justify-content:center;min-height:40px;padding:0}.care-bulk-legend[data-care-field=hair],.care-bulk-options[data-care-group=hair]{grid-template-columns:repeat(5,50px)}.care-bulk-legend[data-care-field=chemistry],.care-bulk-options[data-care-group=chemistry]{grid-template-columns:repeat(3,74px)}.care-bulk-legend[data-care-field=goals],.care-bulk-options[data-care-group=goals]{grid-template-columns:repeat(6,64px)}.care-bulk-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.care-bulk-table tbody th{min-width:230px;max-width:230px}.care-bulk-table tbody th span{max-width:155px}.care-bulk-table tbody small{display:inline-block!important}.care-bulk-table thead th:first-child{left:0;z-index:3}.care-bulk-all{padding:0!important}.care-bulk-scroll:focus-visible{outline:2px solid #244633;outline-offset:2px}
-
-.care-bulk-legend[data-care-field=hair],.care-bulk-options[data-care-group=hair]{grid-template-columns:repeat(5,58px)}.care-bulk-legend span{padding:0 3px}.care-bulk-options label{min-height:44px}
+.care-bulk-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#fff;padding:12px 0}
+.care-bulk-scroll{max-height:65vh;width:100%;min-width:0;overflow:auto}
+.care-bulk-table{width:100%!important;min-width:940px!important;table-layout:fixed;border-collapse:separate;border-spacing:0}
+.care-bulk-table :is(th,td){padding:6px!important;vertical-align:middle;white-space:normal!important;border-bottom:1px solid #e5e9e3}
+.care-bulk-table thead th{position:sticky;top:0;background:#edf3ed;z-index:2;font-size:12px;text-align:center}
+.care-bulk-table thead th:first-child{width:44%;left:0;z-index:3;text-align:left}
+.care-bulk-table thead th:nth-child(2){width:18%}
+.care-bulk-table thead th:nth-child(3){width:16%}
+.care-bulk-table thead th:nth-child(4){width:22%}
+.care-bulk-table tbody th{position:sticky;left:0;background:#fff;z-index:1;text-align:left;font-size:13px}
+.care-bulk-table tbody th .care-bulk-name{display:block;max-width:none;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.4}
+.care-bulk-table tbody small{display:block!important;white-space:normal;overflow-wrap:anywhere;margin-top:3px;font-size:11px;color:#657167}
+.care-bulk-legend,.care-bulk-options{display:grid;align-items:center;gap:0}
+.care-bulk-legend{margin-top:8px}
+.care-bulk-legend span{text-align:center;line-height:1.25;font-size:10px;font-weight:500;overflow-wrap:anywhere}
+.care-bulk-legend[data-care-field=hair],.care-bulk-options[data-care-group=hair]{grid-template-columns:repeat(5,minmax(0,1fr))}
+.care-bulk-legend[data-care-field=chemistry],.care-bulk-options[data-care-group=chemistry]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.care-bulk-legend[data-care-field=goals],.care-bulk-options[data-care-group=goals]{grid-template-columns:repeat(6,minmax(0,1fr))}
+.care-bulk-options label{display:flex;justify-content:center;align-items:center;min-height:32px;margin:0;padding:0;cursor:pointer}
+.care-bulk-options input[type=checkbox]{width:16px;height:16px;min-height:16px!important;margin:0;flex:none}
+.care-bulk-all{border-right:1px solid #ccd8cc}
+.care-bulk-modified>th{box-shadow:inset 4px 0 #92702d;background:#fff8e8!important}
+.care-bulk-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.admin-page .care-bulk-table tbody{display:table-row-group!important}
+.admin-page .care-bulk-table tr{display:table-row!important}
+.admin-page .care-bulk-table :is(th,td){display:table-cell!important}
+.admin-page .care-bulk-table thead{display:table-header-group!important}
+.care-bulk-scroll:focus-visible{outline:2px solid #244633;outline-offset:2px}
+@media(max-width:700px){.care-bulk-table{min-width:840px!important}.care-bulk-table tbody th{position:static}.care-bulk-table thead th:first-child{left:auto}.care-bulk-options label{min-height:44px}.workspace-filters label{min-width:0;flex-basis:100%}}

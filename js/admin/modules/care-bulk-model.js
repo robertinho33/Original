@@ -1,5 +1,20 @@
 import '../../product-care-profile.js';
 const {normalize,options}=globalThis.ProductCareProfile;
+const searchKey=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+export function careSupplier(product,sources=[]){
+ const id=searchKey(product.sourceId||product.source_id||product.supplierId||product.supplier_id);
+ const source=sources.find(s=>searchKey(s.id)===id);
+ const name=String(source?.name||product.supplierName||product.sourceName||product.source_name||'').trim();
+ return {id:id?'id:'+id:name?'name:'+searchKey(name):'unassigned',name:name||id||'Sem fornecedor'};
+}
+export function filterCareProducts(products,{query='',supplier='',scope='all'}={},model,sources=[]){
+ const words=searchKey(query).split(/\s+/).filter(Boolean);
+ return products.filter(p=>{
+  const vendor=careSupplier(p,sources),id=productId(p);
+  return (!supplier||vendor.id===supplier)&&words.every(word=>searchKey([p.name,p.sku,p.brand,p.sourceName,vendor.name].join(' ')).includes(word))
+   &&(scope==='all'||scope==='changed'&&model.drafts.has(id)||scope==='pending'&&Object.values(model.profile(id)).some(values=>!values.length));
+ });
+}
 export const productId=p=>String(p.id||p.productId||p.docId||'');
 export const canonical=value=>Object.fromEntries(Object.entries(options).map(([field,choices])=>[field,Object.keys(choices).filter(key=>normalize(value)[field].includes(key))]));
 export const equalProfiles=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));

@@ -6,3 +6,23 @@ test('bulk comparison ignores ordering and drafts survive filtering outside the 
 test('bulk persistence sends only care metadata and chunks large saves without extra reads',async()=>{const {persistCareChanges}=await model();const chunks=[],committed=[];const result=await persistCareChanges(Array.from({length:747},(_,i)=>({id:'p'+i,price:999,stock:50,careProfile:{hair:['curly','invalid'],goals:['repair']}})),{writeChunk:async chunk=>chunks.push(chunk),onCommitted:chunk=>committed.push(...chunk)});assert.equal(result.saved,747);assert.deepEqual(chunks.map(c=>c.length),[400,347]);assert.equal(committed.length,747);assert.deepEqual(Object.keys(chunks[0][0]).sort(),['careProfile','id']);assert.deepEqual(chunks[0][0].careProfile,{hair:['curly'],chemistry:[],goals:['repair']});});
 test('bulk partial failure commits only successful chunks and retry excludes saved products',async()=>{const {createCareDrafts,persistCareChanges}=await model();const products=Array.from({length:401},(_,i)=>({id:'p'+i})),drafts=createCareDrafts(products);for(const p of products)drafts.set(p.id,{hair:['curly']});let calls=0;await assert.rejects(persistCareChanges(drafts.changes(),{writeChunk:async()=>{if(++calls===2)throw Error('quota');},onCommitted:chunk=>drafts.commit(chunk)}),error=>error.savedCount===400);assert.equal(drafts.drafts.size,1);assert.equal(drafts.changes()[0].id,'p400');await persistCareChanges(drafts.changes(),{writeChunk:async chunk=>assert.equal(chunk.length,1),onCommitted:chunk=>drafts.commit(chunk)});assert.equal(drafts.drafts.size,0);});
 test('bulk rejects invalid identifiers and duplicate targets before any write',async()=>{const {persistCareChanges}=await model();let calls=0;for(const changes of [[{id:'a/b'}],[{id:'a'},{id:'a'}],[{id:''}]])await assert.rejects(persistCareChanges(changes,{writeChunk:async()=>calls++}));assert.equal(calls,0);const result=await persistCareChanges([],{writeChunk:async()=>calls++});assert.equal(result.saved,0);assert.equal(calls,0);});
+
+test('supplier filtering combines search and care scope without losing hidden drafts',async()=>{
+ const {careSupplier,filterCareProducts,createCareDrafts}=await model();
+ const sources=[{id:'ecobelle',name:'EcoBelle'},{id:'truss',name:'TRUSS'}];
+ const products=[{id:'a',sku:'OX10',name:'Emulsão Cremosa Oxidante 900 mL',sourceId:'EcoBelle',brand:'Shine Express'},
+ {id:'b',sku:'S2',name:'Shampoo',sourceId:'truss',brand:'EcoBelle',careProfile:{hair:['curly'],chemistry:['natural'],goals:['repair']}},
+ {id:'c',name:'Óleo',supplierName:'Fornecedor local'},{id:'d',name:'Sem vínculo'}];
+ const drafts=createCareDrafts(products);drafts.set('a',{hair:['curly']});drafts.set('b',{});
+ assert.deepEqual(careSupplier(products[0],sources),{id:'id:ecobelle',name:'EcoBelle'});
+ const select=filters=>filterCareProducts(products,filters,drafts,sources).map(p=>p.id);
+ assert.deepEqual(select({supplier:'id:ecobelle',query:'emulsao ox10',scope:'changed'}),['a']);
+ assert.deepEqual(select({supplier:'id:truss',scope:'pending'}),['b']);
+ assert.deepEqual(select({supplier:'id:ecobelle',query:'Shampoo'}),[]);
+ assert.deepEqual(select({supplier:'name:fornecedor local'}),['c']);
+ assert.deepEqual(select({supplier:'unassigned'}),['d']);
+ assert.deepEqual(select({query:'fornecedor local'}),['c']);
+ assert.equal(drafts.drafts.size,2);
+ assert.deepEqual(select({scope:'changed'}),['a','b']);
+ assert.equal(products[0].careProfile,undefined);
+});
