@@ -1,6 +1,7 @@
 'use strict';
 const {createHash} = require('node:crypto');
 const {getFirestore} = require('../infrastructure/firebase/firebase-admin');
+const {createAdminReadCache,isQuotaError,quotaMessage}=require('../infrastructure/admin-read-cache');
 const hash = value => createHash('sha256').update(value).digest('hex');
 const origins = new Set(['https://www.fiosperfeitos.com.br','https://fiosperfeitos.com.br']);
 const attempts = new Map();
@@ -30,14 +31,17 @@ async function recordVisit(db, session, now = Date.now()) {
         return true;
     });
 }
+const visitStatsRead=createAdminReadCache(async()=>{
+ const db=getFirestore(),stats=db.collection('storeVisitStats');
+ const keys=Array.from({length:30},(_,i)=>dayKey(Date.now()-i*86400000));
+ const docs=await db.getAll(stats.doc('total'),...keys.map(key=>stats.doc(key)));
+ return {total:docs[0].data()?.visits||0,today:docs[1].data()?.visits||0,last30Days:docs.slice(1).reduce((sum,doc)=>sum+(doc.data()?.visits||0),0),startedAt:docs[0].data()?.startedAt||null};
+},120000);
 async function visitStats(req,res) {
     try {
-        const stats = getFirestore().collection('storeVisitStats');
-        const keys = Array.from({length:30},(_,i)=>dayKey(Date.now()-i*86400000));
-        const docs = await getFirestore().getAll(stats.doc('total'),...keys.map(key=>stats.doc(key)));
         res.set('Cache-Control','no-store');
-        res.json({success:true,data:{total:docs[0].data()?.visits || 0,today:docs[1].data()?.visits || 0,last30Days:docs.slice(1).reduce((sum,doc)=>sum+(doc.data()?.visits || 0),0),startedAt:docs[0].data()?.startedAt || null}});
-    } catch { res.status(503).json({success:false,error:'Contador temporariamente indisponível.'}); }
+        res.json({success:true,data:await visitStatsRead.get()});
+    } catch(error) { res.status(503).json({success:false,code:isQuotaError(error)?'DATABASE_QUOTA_EXCEEDED':'VISIT_STATS_UNAVAILABLE',error:isQuotaError(error)?quotaMessage:'Contador temporariamente indisponível.'}); }
 }
 function eligible(order) {
     return !!order && order.testMode !== true && order.payment?.mode !== 'test' && order.payment?.liveMode !== false &&

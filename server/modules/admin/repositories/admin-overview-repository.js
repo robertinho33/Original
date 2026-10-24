@@ -103,17 +103,7 @@ async function productStats() {
     };
 }
 
-async function countCustomers() {
-    const snapshot =
-        await db()
-            .collection(USERS)
-            .count()
-            .get();
-
-    return Number(
-        snapshot.data().count || 0
-    );
-}
+async function countCustomers(){return (await require('../services/admin-service').getCustomers()).length;}
 
 async function getTodayOrders() { return sales.ordersBetween(db().collection(ORDERS),sales.range(1)); }
 

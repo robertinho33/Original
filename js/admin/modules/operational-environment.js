@@ -16,7 +16,7 @@ export async function renderOperationalEnvironment(root) {
                 <div>
                     <span class="module-eyebrow">Fios Perfeitos Cosmetics</span>
                     <h2>Ambiente operacional</h2>
-                    <p>Visão consolidada da operação.</p>
+                    <p>Visão consolidada da operação. Indicadores atualizados em até um minuto.</p>
                 </div>
                 <button class="admin-primary-button"
                         data-refresh-admin>
@@ -37,14 +37,14 @@ export async function renderOperationalEnvironment(root) {
         "#admin-operational-content"
     );
 
+    root.querySelector('[data-refresh-admin]').addEventListener('click',()=>renderOperationalEnvironment(root));
     try {
-        const [overview, timeline, alerts, customers] =
-            await Promise.all([
-                adminApi.overview(),
-                adminApi.timeline(30),
-                adminApi.alerts(),
-                adminApi.customers()
-            ]);
+        const overview = await adminApi.overview();
+        const supplements = await Promise.allSettled([adminApi.timeline(30), adminApi.alerts()]);
+        const timelineAvailable = supplements[0].status === 'fulfilled';
+        const alertsAvailable = supplements[1].status === 'fulfilled';
+        const timeline = timelineAvailable ? supplements[0].value : {data:[]};
+        const alerts = alertsAvailable ? supplements[1].value : {data:[]};
 
         const data = overview.data || {};
         const rows = Array.isArray(timeline.data) ? [...timeline.data].sort((a,b)=>String(b.date).localeCompare(String(a.date))) : [];
@@ -69,7 +69,7 @@ export async function renderOperationalEnvironment(root) {
         const overviewData = {
             revenue: data.faturamentoHoje,
             ordersToday: data.pedidosHoje,
-            customers: Array.isArray(customers?.data) ? customers.data.length : (data.clientes ?? data.customers ?? 0),
+            customers: data.clientes ?? data.customers ?? 0,
             products: data.produtos,
             inventory: {
                 low_stock: data.estoqueBaixo,
@@ -157,7 +157,7 @@ export async function renderOperationalEnvironment(root) {
                                         <tr>
                                             <td colspan="4"
                                                 class="admin-empty-cell">
-                                                Nenhuma venda paga neste período.
+                                                ${timelineAvailable ? 'Nenhuma venda paga neste período.' : 'Vendas recentes temporariamente indisponíveis.'}
                                             </td>
                                         </tr>
                                     `
@@ -187,7 +187,7 @@ export async function renderOperationalEnvironment(root) {
                             `).join("")
                             : `
                                 <div class="admin-empty-state">
-                                    Operação sem alertas.
+                                    ${alertsAvailable ? 'Operação sem alertas.' : 'Alertas temporariamente indisponíveis.'}
                                 </div>
                             `
                         }

@@ -97,7 +97,9 @@ async function getInventory() {
     return getCollection("inventory");
 }
 
-async function getCustomers() {
+const customerReadCache=require('../../../infrastructure/admin-read-cache').createAdminReadCache(loadCustomers);
+function getCustomers(){return customerReadCache.get();}
+async function loadCustomers() {
     const [users, orders] = await Promise.all([
         getCollection(USERS),
         getOrders()

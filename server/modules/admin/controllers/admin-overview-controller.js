@@ -1,4 +1,5 @@
-﻿const service = require("../services/admin-overview-service");
+﻿const {isQuotaError,quotaMessage}=require('../../../infrastructure/admin-read-cache');
+const service = require("../services/admin-overview-service");
 
 async function overview(req, res) {
     try {
@@ -8,9 +9,10 @@ async function overview(req, res) {
         });
     } catch (error) {
         console.error("[ADMIN OVERVIEW]", error);
-        res.status(500).json({
+        res.status(isQuotaError(error)?503:500).json({
             success: false,
-            error: "Não foi possível carregar o resumo administrativo."
+            code: isQuotaError(error)?"DATABASE_QUOTA_EXCEEDED":"ADMIN_READ_FAILED",
+            error: isQuotaError(error)?quotaMessage:"Não foi possível carregar o resumo administrativo."
         });
     }
 }
@@ -28,9 +30,10 @@ async function timeline(req, res) {
         });
     } catch (error) {
         console.error("[ADMIN TIMELINE]", error);
-        res.status(500).json({
+        res.status(isQuotaError(error)?503:500).json({
             success: false,
-            error: "Não foi possível carregar a evolução das vendas."
+            code: isQuotaError(error)?"DATABASE_QUOTA_EXCEEDED":"ADMIN_READ_FAILED",
+            error: isQuotaError(error)?quotaMessage:"Não foi possível carregar a evolução das vendas."
         });
     }
 }
@@ -43,9 +46,10 @@ async function alerts(req, res) {
         });
     } catch (error) {
         console.error("[ADMIN ALERTS]", error);
-        res.status(500).json({
+        res.status(isQuotaError(error)?503:500).json({
             success: false,
-            error: "Não foi possível carregar os alertas."
+            code: isQuotaError(error)?"DATABASE_QUOTA_EXCEEDED":"ADMIN_READ_FAILED",
+            error: isQuotaError(error)?quotaMessage:"Não foi possível carregar os alertas."
         });
     }
 }

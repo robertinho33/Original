@@ -73,6 +73,7 @@ import {renderFreightConnection} from './modules/freight-connection.js';
 import {normalizeSettings} from './modules/settings-format.js';
 
 import '../product-care-profile.js';
+import {bindCareSelectAll} from './modules/care-select-all.js';
 import { createProduct, updateProduct } from './product-repository.js';
 
 import {
@@ -509,6 +510,7 @@ function table(title, columns, rows) {
    ============================================================ */
 
 let catalogRequestedTab = '';
+let catalogView = null;
 async function load(section) {
     if (section === 'categories' || section === 'inventory') { catalogRequestedTab = section === 'categories' ? 'categories' : 'products'; section='products'; }
     window.loadAdminSection = load;
@@ -983,6 +985,7 @@ async function loadModuleData(section) {
    ============================================================ */
 
 function renderProducts(content, products, visibility = {}, inventory = []) {
+    catalogView = {content, visibility, inventory};
     window.__aureaAdminProducts = products;
     renderCatalogWorkspace(content, products, visibility, inventory, { api:adminApi,notify:showAdminToast,onEdit:openProductEditor,onRefresh:()=>load('products'),initialTab:catalogRequestedTab });
     catalogRequestedTab='';
@@ -1210,7 +1213,7 @@ function openProductEditor(product) {
 
 
                     <fieldset class="admin-product-editor-full product-care-fields"><legend>Indicações de cuidado</legend><p>Marque todas as opções confirmadas pelo fabricante. Deixar vazio significa não informado. Para uso geral, marque todos os tipos aplicáveis.</p>
-                    ${Object.entries(globalThis.ProductCareProfile.options).map(([field,choices])=>`<fieldset><legend>${{hair:'Como é o cabelo?',chemistry:'Química ou coloração',goals:'Objetivos do cuidado'}[field]}</legend>${Object.entries(choices).map(([value,label])=>`<label><input type="checkbox" name="care_${field}" value="${value}" ${globalThis.ProductCareProfile.normalize(product.careProfile)[field].includes(value)?'checked':''}>${label}</label>`).join('')}</fieldset>`).join('')}
+                    ${Object.entries(globalThis.ProductCareProfile.options).map(([field,choices])=>`<fieldset data-care-group="${field}"><legend>${{hair:'Como é o cabelo?',chemistry:'Química ou coloração',goals:'Objetivos do cuidado'}[field]}</legend><label><input type="checkbox" data-care-all="${field}">Todas as opções</label>${Object.entries(choices).map(([value,label])=>`<label><input type="checkbox" name="care_${field}" value="${value}" ${globalThis.ProductCareProfile.normalize(product.careProfile)[field].includes(value)?'checked':''}>${label}</label>`).join('')}</fieldset>`).join('')}
                     </fieldset>
                     <label class="admin-product-editor-full">
                         Descrição
@@ -1280,6 +1283,7 @@ function openProductEditor(product) {
         );
 
 
+    bindCareSelectAll(form);
     const close =
         () => {
             modal.remove();
@@ -1519,7 +1523,9 @@ function openProductEditor(product) {
                 );
 
 
-                await load('products');
+                if (state.section === 'products' && catalogView?.content.isConnected) {
+                    renderProducts(catalogView.content, products, catalogView.visibility, catalogView.inventory);
+                }
 
             } catch (error) {
 
