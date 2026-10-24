@@ -72,7 +72,8 @@ import {renderStoreVisits} from './modules/store-visits.js';
 import {renderFreightConnection} from './modules/freight-connection.js';
 import {normalizeSettings} from './modules/settings-format.js';
 
-import { updateProduct } from './product-repository.js';
+import '../product-care-profile.js';
+import { createProduct, updateProduct } from './product-repository.js';
 
 import {
     confirmPayment,
@@ -1021,7 +1022,7 @@ function openProductEditor(product) {
         '';
 
 
-    if (!productId) {
+    if (!productId && !product?.isNew) {
         console.error(
             '[ADMIN PRODUCTS] Produto sem ID:',
             product
@@ -1060,7 +1061,7 @@ function openProductEditor(product) {
                 <div>
 
                     <h2 id="aurea-product-editor-title">
-                        Editar produto
+                        ${product.isNew ? 'Cadastrar produto' : 'Editar produto'}
                     </h2>
 
                     <p>
@@ -1208,6 +1209,9 @@ function openProductEditor(product) {
                     </label>
 
 
+                    <fieldset class="admin-product-editor-full product-care-fields"><legend>Indicações de cuidado</legend><p>Marque todas as opções confirmadas pelo fabricante. Deixar vazio significa não informado. Para uso geral, marque todos os tipos aplicáveis.</p>
+                    ${Object.entries(globalThis.ProductCareProfile.options).map(([field,choices])=>`<fieldset><legend>${{hair:'Como é o cabelo?',chemistry:'Química ou coloração',goals:'Objetivos do cuidado'}[field]}</legend>${Object.entries(choices).map(([value,label])=>`<label><input type="checkbox" name="care_${field}" value="${value}" ${globalThis.ProductCareProfile.normalize(product.careProfile)[field].includes(value)?'checked':''}>${label}</label>`).join('')}</fieldset>`).join('')}
+                    </fieldset>
                     <label class="admin-product-editor-full">
                         Descrição
 
@@ -1256,7 +1260,7 @@ function openProductEditor(product) {
                         type="submit"
                         class="admin-product-editor-save"
                     >
-                        Salvar alterações
+                        ${product.isNew ? 'Cadastrar produto' : 'Salvar alterações'}
                     </button>
 
                 </div>
@@ -1360,6 +1364,7 @@ function openProductEditor(product) {
 
 
             const updatedProduct = {
+                careProfile: globalThis.ProductCareProfile.normalize({hair:formData.getAll("care_hair"),chemistry:formData.getAll("care_chemistry"),goals:formData.getAll("care_goals")}),
 
                 name:
                     String(
@@ -1443,10 +1448,7 @@ function openProductEditor(product) {
             try {
 
                 const saved =
-                    await updateProduct(
-                        productId,
-                        updatedProduct
-                    );
+                    await (product.isNew ? createProduct(updatedProduct) : updateProduct(productId, updatedProduct));
 
 
                 const products =
@@ -1498,7 +1500,7 @@ function openProductEditor(product) {
                         ...product,
                         ...normalizedSaved,
                         ...updatedProduct,
-                        id: productId
+                        id: normalizedSaved.id || productId
                     });
 
                 }

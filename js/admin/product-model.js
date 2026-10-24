@@ -1,6 +1,8 @@
-﻿'use strict';
+﻿import '../product-care-profile.js';
+'use strict';
 
 const PRODUCT_FIELDS = Object.freeze({
+    careProfile: 'object',
     sku: 'string',
     name: 'string',
     description: 'string',
@@ -30,6 +32,7 @@ function normalizeProduct(input = {}) {
             : Number(input.promotionalPrice);
 
     return {
+        careProfile: globalThis.ProductCareProfile.normalize(input.careProfile),
         sku:
             String(input.sku || '')
                 .trim()

@@ -1,4 +1,5 @@
 'use strict';
+const {matches:matchesCare}=require('../../../js/product-care-profile');
 const {classify}=require('./catalog-care-candidates');
 const {careLine,productRole}=require('./care-lines');
 const key=v=>String(v||'').trim().toLowerCase();
@@ -12,6 +13,7 @@ function recommendByLine(available,config,input){
  const groups=new Map(),singles=[];
  const rules=(Array.isArray(config.rules)?config.rules:[]).slice(0,30);
  for(const item of available.values()){
+  if(!matchesCare(item.product.careProfile,input))continue;
   let info=classify(item.product,input);const related=rules.filter(r=>key(r.sku)===key(item.product.sku)&&r.goal===input.goal);
   const approved=related.filter(r=>['all',input.hair].includes(r.hair)&&['all',input.chemistry].includes(r.chemistry));
   if(related.length&&!approved.length)continue;

@@ -1,4 +1,5 @@
 'use strict';
+const {normalize:normalizeCare}=require('../../../js/product-care-profile');
 const key=v=>String(v??'').trim().toLowerCase();
 function enrichProducts(products,base,sources=[]){
   const bySku=new Map(base.map(p=>[key(p.sku||p.SKU),p]));
@@ -18,7 +19,7 @@ function mergePublicProducts(base,documents,sources=[]){
     const before=map.get(key(row.sku))||{};
     const merged={...before,...row};
     // Keep public output limited to catalog fields; Firestore document metadata stays private.
-    const result={sku:row.sku,name:row.name,price:row.price??row['Preço']??before.price,stock:row.stock??row.Estoque??before.stock??0,
+    const result={careProfile:normalizeCare(merged.careProfile),sku:row.sku,name:row.name,price:row.price??row['Preço']??before.price,stock:row.stock??row.Estoque??before.stock??0,
       active:row.active??before.active??true,image:row.image||before.image||'',description:row.description||before.description||'',
       sourceId:row.sourceId,sourceName:row.sourceName,sourceUrl:merged.sourceUrl||'',category:row.categoryName||merged.category||'',
       categoryName:row.categoryName,weight:merged.weight||'',featured:merged.featured===true,priority:Number(merged.priority)||0};

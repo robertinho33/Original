@@ -5,3 +5,5 @@
 details.module-panel:not([open]){min-height:0!important;height:auto!important}.admin-module-data .admin-table{font-size:13px}.admin-module-data .admin-table th,.admin-module-data .admin-table td{padding:14px 12px}.workspace-preview{min-height:0!important}
 
 .workspace-dialog textarea{width:100%;font:inherit;padding:12px;border:1px solid #d5d5cc;border-radius:5px}.workspace-dialog input[type=checkbox]{width:auto}
+
+.product-care-fields fieldset{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0;padding:12px}.product-care-fields fieldset label{display:flex;align-items:center;gap:8px;min-height:44px}.product-care-fields input[type=checkbox]{width:20px;height:20px;flex:none}
