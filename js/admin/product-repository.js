@@ -5,6 +5,7 @@ import { db } from '../firebase-config.js';
 import {
     collection,
     addDoc,
+    writeBatch,
     getDocs,
     getDoc,
     doc,
@@ -314,4 +315,13 @@ export async function setProductActive(
         active:
             Boolean(active)
     };
+}
+
+export async function saveProductCareProfiles(changes,options={}){
+ const {persistCareChanges}=await import('./modules/care-bulk-model.js');
+ return persistCareChanges(changes,{onCommitted:options.onCommitted,writeChunk:async chunk=>{
+  const batch=writeBatch(db),updatedAt=new Date().toISOString();
+  for(const change of chunk)batch.update(doc(db,PRODUCTS_COLLECTION,change.id),{careProfile:change.careProfile,updatedAt});
+  await batch.commit();
+ }});
 }

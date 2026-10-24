@@ -74,7 +74,7 @@ import {normalizeSettings} from './modules/settings-format.js';
 
 import '../product-care-profile.js';
 import {bindCareSelectAll} from './modules/care-select-all.js';
-import { createProduct, updateProduct } from './product-repository.js';
+import { createProduct, updateProduct, saveProductCareProfiles } from './product-repository.js';
 
 import {
     confirmPayment,
@@ -987,7 +987,7 @@ async function loadModuleData(section) {
 function renderProducts(content, products, visibility = {}, inventory = []) {
     catalogView = {content, visibility, inventory};
     window.__aureaAdminProducts = products;
-    renderCatalogWorkspace(content, products, visibility, inventory, { api:adminApi,notify:showAdminToast,onEdit:openProductEditor,onRefresh:()=>load('products'),initialTab:catalogRequestedTab });
+    renderCatalogWorkspace(content, products, visibility, inventory, { api:adminApi,saveCareProfiles:saveProductCareProfiles,notify:showAdminToast,onEdit:openProductEditor,onRefresh:()=>load('products'),initialTab:catalogRequestedTab });
     catalogRequestedTab='';
 }
 
