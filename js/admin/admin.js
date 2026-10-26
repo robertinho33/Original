@@ -7,6 +7,7 @@ import { renderCatalogWorkspace } from './modules/catalog-workspace.js';
 import { renderOrderWorkspace, renderHistoryWorkspace } from './modules/order-workspace.js';
 import './modules/discovery-tools.js';
 import './modules/influencer-access.js';
+import './modules/community-admin.js';
 import './modules/order-modal-close.js';
 'use strict';
 

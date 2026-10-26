@@ -1,3 +1,4 @@
+import {mountPublicCommunity} from './influencers/public-community.js';
 import {mergeCareCart,cleanMatchReasons} from './care-selection.js';
 import {careConsent} from './analytics/care-consent.js';
 import {createCareQueryController} from './care-query-controller.js';
@@ -87,5 +88,6 @@ if($('publicStore')){
     $('storeRitual').href='/pages/monte-seu-ritual.html?cupom='+encodeURIComponent(data.coupon);
     $('discoveryProducts').innerHTML=cards(data.products);$('discoveryMessage').textContent=data.products.length?'Seleção pessoal deste parceiro da Fios Perfeitos.':'Nenhum produto desta seleção está disponível no momento.';
     $('publicStore').hidden=false;
+    void mountPublicCommunity($('storeCommunity'),{owner:id,name:data.name,coupon:data.coupon});
   }catch(error){$('discoveryMessage').textContent=error.message;}})();
 }

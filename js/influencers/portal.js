@@ -1,3 +1,4 @@
+import {mountGalleryEditor} from './gallery-editor.js';
 import {mountStoreSharing} from './store-sharing.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
 import { mountProfileEditor } from './profile-editor.js';
@@ -29,7 +30,8 @@ async function request(path, body = {}) {
   if (!response.ok || !result.success) { const error = new Error(result.error || 'Não foi possível consultar o portal.'); error.status=response.status; throw error; }
   return result.data;
 }
-function showLogin() { storeSharing.reset(); $('portalCampaign').replaceChildren();$('portalBestSellers').replaceChildren();$('portalStoreLink').hidden=true;$('portalStoreLink').removeAttribute('href'); $('portalFirstAccess').hidden=true;$('portalFirstPasswordForm').reset();profileEditor.reset(); $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+function showLogin() { galleryEditor.reset(); storeSharing.reset(); $('portalCampaign').replaceChildren();$('portalBestSellers').replaceChildren();$('portalStoreLink').hidden=true;$('portalStoreLink').removeAttribute('href'); $('portalFirstAccess').hidden=true;$('portalFirstPasswordForm').reset();profileEditor.reset(); $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+const galleryEditor=mountGalleryEditor($('portalGalleryEditor'),{onUnauthorized:showLogin});
 const storeSharing=mountStoreSharing($('portalStoreSharing'));
 const profileEditor=mountProfileEditor($('portalProfileEditor'),{onUnauthorized:showLogin});
 const storeEditor=mountStoreEditor($('portalStoreEditor'),{onUnauthorized:showLogin});

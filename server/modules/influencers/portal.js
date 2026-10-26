@@ -110,6 +110,7 @@ function createRouter(deps = {}) {
     try{const user=await credentials.identity(getDb(),req);if(user?.mustChangePassword)return res.status(403).json({success:false,code:'PASSWORD_CHANGE_REQUIRED',error:'Crie sua senha pessoal antes de continuar.'});next();}
     catch{res.status(503).json({success:false,error:'Não foi possível conferir seu acesso.'});}
   });
+  router.use('/community',require('./community-routes').createOwnerRouter({getDb,getCatalog:deps.getStoreCatalog}));
   const profileHandlers=require('./portal-profile').createHandlers({getDb});
   router.post('/profile',profileHandlers.read);router.put('/profile',profileHandlers.write);
   const storeHandlers=require('./portal-store').createHandlers({getDb,getCatalog:deps.getStoreCatalog});

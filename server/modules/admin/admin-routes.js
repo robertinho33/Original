@@ -48,6 +48,12 @@ router.use((req, res, next) => {
 const businessPartners = require('../partners/portal').adminHandlers();
 router.get('/business-partners', businessPartners.list);
 router.put('/business-partners/:id', businessPartners.save);
+const community=require('../influencers/community-routes').adminHandlers();
+router.get('/community',community.list);
+router.get('/community/photos/:id/image',community.image);
+router.put('/community/photos/:id',community.review);
+router.post('/community/photos/:id/rescan',community.rescan);
+router.put('/community/follow/:id',community.confirm);
 const discovery = require('../influencers/discovery');
 router.get('/marketing/ritual',discovery.admin('ritual'));
 router.put('/marketing/ritual',discovery.admin('ritual',true));

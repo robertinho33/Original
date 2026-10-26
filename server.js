@@ -94,6 +94,7 @@ app.use('/api/storefront/engagement', require('./server/modules/storefront-engag
 app.use('/api/admin', aureaAdminRoutes);
 app.use('/api/business-partners', require('./server/modules/partners/portal').createRouter());
 app.use('/api/influencer', require('./server/modules/influencers/portal').createRouter());
+app.use('/api/community',require('./server/modules/influencers/community-routes').createPublicRouter());
 app.use('/api/discovery',require('./server/modules/influencers/discovery').createRouter());
 app.get('/api/storefront/hero', require('./server/modules/admin/controllers/marketing-controller').publicHero);
 app.get('/api/storefront/catalog-visibility', require('./server/modules/catalog/catalog-visibility-controller').storefront);
