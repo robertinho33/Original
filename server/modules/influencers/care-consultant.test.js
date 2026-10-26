@@ -44,11 +44,31 @@ test('published care restrictions explain the repeated line and expose compatibl
  const {matches}=require('../../../js/product-care-profile');
  for(const option of [result,...result.alternatives]){
   assert.ok(option.total<=answers.budget);
-  for(const p of option.products)assert.ok(matches(products.find(row=>row.sku===p.sku).careProfile,answers));
+  for(const p of option.products)assert.ok(matches({...products.find(row=>row.sku===p.sku).careProfile,...(p.complementary?{goals:[]}: {})},answers));
  }
  assert.deepEqual(result,recommend(config,[...products].reverse(),answers));
  const curls=recommend(config,products,{...answers,hair:'curly',chemistry:'natural',goal:'curls'});
  assert.notEqual(curls.line,result.line);
  const lowBudget=recommend(config,products,{...answers,budget:80});
  for(const option of [lowBudget,...lowBudget.alternatives])assert.ok(option.total<=80);
+});
+
+test('curly natural hair with frizz gets a targeted routine with honestly labeled complementary stages',()=>{
+ const products=require('./fixtures/consultant-published.json'),answers={hair:'curly',chemistry:'natural',goal:'frizz',budget:500};
+ const result=recommend(config,products,answers);
+ assert.equal(result.line,'Curlys Cachos');assert.equal(result.total,80);assert.equal(result.routineComplete,true);
+ assert.deepEqual(result.products.map(p=>p.sku),['W35UTMS43','5F5NZ9HN9','Y6H5QMT4P']);
+ assert.equal(result.products[0].complementary,false);
+ for(const p of result.products.slice(1)){
+  assert.equal(p.complementary,true);
+  assert.ok(p.matchReasons.some(reason=>reason.includes('não é uma indicação específica')));
+  assert.ok(!p.matchReasons.some(reason=>reason.includes('cadastrou esta opção para controle do frizz')));
+ }
+ assert.deepEqual(result,recommend(config,[...products].reverse(),answers));
+ const restricted=products.map(p=>p.sku==='Y6H5QMT4P'?{...p,careProfile:{...p.careProfile,chemistry:['treated']}}:p);
+ const excluded=recommend(config,restricted,answers);assert.ok(![excluded,...excluded.alternatives].some(option=>option.products.some(p=>p.sku==='Y6H5QMT4P')));
+ const small=recommend(config,products,{...answers,budget:40});for(const option of [small,...small.alternatives])assert.ok(option.total<=40);
+ // A routine consisting entirely of complements cannot satisfy another objective.
+ const hydrationOnly=products.filter(p=>p.name.includes('HidraSim')).map(p=>({...p,careProfile:{hair:['curly'],chemistry:['natural'],goals:['hydration']}}));
+ assert.equal(recommend(config,hydrationOnly,answers).products.length,0);
 });

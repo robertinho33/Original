@@ -4,8 +4,8 @@ const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036
 const stageReasons={wash:'Seu cuidado começa na lavagem. Conheça esta opção para o primeiro passo.',treat:'Um momento de cuidado para incluir depois da lavagem.',finish:'O toque final para completar sua rotina.'};
 const goalNames={hydration:'hidratação e maciez',repair:'cuidado dos fios danificados',frizz:'controle do frizz',curls:'definição dos cachos',color:'cuidado da cor'};
 const goalWords={hydration:/hidrat|hidrasim|maciez/,repair:/repar|reconstr|reestrutur|danific|quebra/,frizz:/frizz/,curls:/cach|curly|curlys|crespo|definicao/,color:/protecao da cor|coloridos|color protection|cuidado da cor/};
-function classify(product,input){
- const profile=normalizeCare(product.careProfile);if(!matchesCare(profile,input))return null;
+function classify(product,input,{allowComplementary=false}={}){
+ const profile=normalizeCare(product.careProfile);if(!matchesCare(allowComplementary?{...profile,goals:[]}:profile,input))return null;
  const name=normalize(product.name),category=normalize(product.categoryName||product.category),description=normalize(product.description),text=name+' '+category+' '+description;
  // Ambiguous kits and chemical/professional/color-changing products require human curation.
  if(/kit|dupla|cronograma|shampoo e condicionador/.test(name)||/skin|facial|body splash|barber|barba|esfoliante/.test(name+' '+category)||
@@ -19,18 +19,18 @@ function classify(product,input){
  const treated=/pos[ -]?quimica|quimicamente tratados|cabelos coloridos/.test(text),natural=/cabelos sem quimica|apenas cabelos naturais/.test(text);
  if(!profile.chemistry.length&&(treated&&input.chemistry!=='treated'||natural&&input.chemistry!=='natural'))return null;
  // Explicit care metadata and product purpose outweigh incidental description words.
- const goalStrength=profile.goals.includes(input.goal)?4:goalWords[input.goal].test(name)?3:goalWords[input.goal].test(description)?1:0;
+ const goalStrength=profile.goals.length?(profile.goals.includes(input.goal)?4:0):goalWords[input.goal].test(name)?3:goalWords[input.goal].test(description)?1:0;
  const goalMatch=goalStrength>0,hairMatch=profile.hair.includes(input.hair)||curly||straight||wavy;
  const evidence=[
   profile.goals.includes(input.goal)?"A equipe da loja cadastrou esta opção para "+goalNames[input.goal]+".":null,
   profile.hair.includes(input.hair)?"Indicado no cadastro para o seu tipo de cabelo.":null,
   profile.chemistry.includes(input.chemistry)?"O cadastro inclui a condição de química ou coloração que você informou.":null,
   stageReasons[step],
-  goalMatch?'Na sua busca por '+goalNames[input.goal]+', encontramos esta opção entre os produtos da loja.':'Esta opção completa a etapa e cabe no seu orçamento. Veja as indicações do produto para conferir se atende ao cuidado que você procura.',
+  goalMatch?'Na sua busca por '+goalNames[input.goal]+', encontramos esta opção entre os produtos da loja.':'Complementa a rotina da mesma linha; não é uma indicação específica para '+goalNames[input.goal]+'. Veja as instruções para conferir se atende ao cuidado que você procura.',
   !profile.hair.length&&hairMatch?(curly?'Uma opção da linha de cachos para você conhecer.':straight?'Uma opção da linha para cabelos lisos para você conhecer.':'Uma opção da linha para cabelos ondulados para você conhecer.'):null,
   profile.chemistry.length?null:treated||natural?'As informações do produto mencionam fios '+(treated?'com química ou coloração.':'sem química.'):(input.chemistry==='treated'?'Fez química ou coloração? Confira a indicação no rótulo ou peça ajuda à nossa equipe antes de escolher.':null)
  ].filter(Boolean);
- return {step,goalStrength,score:goalStrength*4+Number(hairMatch)*2+Number(profile.chemistry.includes(input.chemistry))*2+Number(treated||natural),evidence};
+ return {step,goalStrength,score:goalStrength*4+(goalStrength?2/Math.max(1,profile.goals.length):0)+Number(hairMatch)*2/Math.max(1,profile.hair.length)+Number(profile.chemistry.includes(input.chemistry))*2/Math.max(1,profile.chemistry.length)+Number(treated||natural),evidence};
 }
 function automaticCandidates(available,config,input){
  const rows=[];

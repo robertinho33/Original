@@ -1,23 +1,25 @@
 'use strict';
-const {matches:matchesCare}=require('../../../js/product-care-profile');
+const {normalize:normalizeCare,matches:matchesCare}=require('../../../js/product-care-profile');
 const {classify}=require('./catalog-care-candidates');
 const {careLine,productRole}=require('./care-lines');
 const key=v=>String(v||'').trim().toLowerCase();
 const order=['wash','treat','condition','finish'];
 const image=value=>{try{const url=new URL(String(value||''));return url.protocol==='https:'?url.href:'';}catch{return '';}};
 function compare(a,b){
- for(const field of ['goalFit','pair','fit','mask','finish','curated'])if(a[field]!==b[field])return a[field]-b[field];
+ for(const field of ['goalFit','pair','fit','mask','finish','finishFit','curated'])if(a[field]!==b[field])return a[field]-b[field];
  return b.cents-a.cents||b.signature.localeCompare(a.signature);
 }
 function recommendByLine(available,config,input){
  const groups=new Map(),singles=[],choices=new Map();
  const rules=(Array.isArray(config.rules)?config.rules:[]).slice(0,30);
  for(const item of available.values()){
-  if(!matchesCare(item.product.careProfile,input))continue;
-  let info=classify(item.product,input);const related=rules.filter(r=>key(r.sku)===key(item.product.sku)&&r.goal===input.goal);
+  const profile=normalizeCare(item.product.careProfile);
+  if(!matchesCare({...profile,goals:[]},input))continue;
+  let info=classify(item.product,input,{allowComplementary:true});const related=rules.filter(r=>key(r.sku)===key(item.product.sku)&&r.goal===input.goal);
   const approved=related.filter(r=>['all',input.hair].includes(r.hair)&&['all',input.chemistry].includes(r.chemistry));
   if(related.length&&!approved.length)continue;
   const rule=approved.sort((a,b)=>(Number(b.hair===input.hair)+Number(b.chemistry===input.chemistry))-(Number(a.hair===input.hair)+Number(a.chemistry===input.chemistry)))[0];
+  if(rule&&!matchesCare(profile,input))continue;
   if(!info&&!rule)continue;
   const reviewedOnly=!info;
   if(!info)info={score:0,evidence:['Uma indicação revisada pela equipe da loja.']};
@@ -30,12 +32,12 @@ function recommendByLine(available,config,input){
   groups.get(line.key).roles[role].push(row);
  }
  const budget=Math.floor(Number(input.budget)*100+1e-7);
- let best={rows:[],goalFit:0,pair:0,fit:0,mask:0,finish:0,curated:0,cents:0,signature:'',line:null};
+ let best={rows:[],goalFit:0,pair:0,fit:0,mask:0,finish:0,finishFit:0,curated:0,cents:0,signature:'',line:null};
  function consider(rows,line,pair){
   if(new Set(rows.map(r=>key(r.product.sku))).size!==rows.length)return;
   const cents=rows.reduce((sum,r)=>sum+r.cents,0);if(cents>budget)return;
   const base=rows.filter(r=>r.role!=='finish');
-  const candidate={rows,line,pair,goalFit:Math.max(0,...base.map(r=>r.rule?4:(r.info.goalStrength||0))),fit:base.reduce((sum,r)=>sum+r.fit,0)/Math.max(1,base.length),mask:Number(rows.some(r=>r.role==='treat')),finish:Number(rows.some(r=>r.role==='finish')),curated:rows.reduce((sum,r)=>sum+r.curated,0),cents,signature:[...rows].sort((a,b)=>order.indexOf(a.role)-order.indexOf(b.role)).map(r=>r.role+':'+key(r.product.sku)).join('|')};
+  const candidate={rows,line,pair,goalFit:Math.max(0,...base.map(r=>r.rule?4:(r.info.goalStrength||0))),fit:Math.max(0,...base.map(r=>r.fit)),mask:Number(rows.some(r=>r.role==='treat')),finish:Number(rows.some(r=>r.role==='finish')),finishFit:Math.max(0,...rows.filter(r=>r.role==='finish').map(r=>r.fit)),curated:rows.reduce((sum,r)=>sum+r.curated,0),cents,signature:[...rows].sort((a,b)=>order.indexOf(a.role)-order.indexOf(b.role)).map(r=>r.role+':'+key(r.product.sku)).join('|')};
   if(candidate.goalFit<=0)return;
   const choiceKey=line?.key||candidate.signature,previous=choices.get(choiceKey);
   if(!previous||compare(candidate,previous)>0)choices.set(choiceKey,candidate);
@@ -61,7 +63,7 @@ function recommendByLine(available,config,input){
  }
  function project(best){
  const rows=[...best.rows].sort((a,b)=>order.indexOf(a.role)-order.indexOf(b.role));
- const products=rows.map(row=>({sku:String(row.product.sku).slice(0,100),name:String(row.product.name||'').slice(0,200),image:image(row.product.image),price:row.cents/100,step:row.role,line:row.line?.label||'',selectionSource:row.rule?'curated':'catalog',
+ const products=rows.map(row=>({sku:String(row.product.sku).slice(0,100),name:String(row.product.name||'').slice(0,200),image:image(row.product.image),price:row.cents/100,step:row.role,line:row.line?.label||'',selectionSource:row.rule?'curated':'catalog',complementary:!row.rule&&!row.info.goalStrength,
   reason:row.rule?String(row.rule.reason).slice(0,400):!best.pair?({wash:'Seu cuidado começa na lavagem. Conheça esta opção para o primeiro passo.',condition:'Uma opção de condicionador para você conhecer.',treat:'Um momento de cuidado para incluir na sua rotina.',finish:'Uma opção para finalizar o seu cuidado.'}[row.role]):({wash:'O primeiro passo da sua rotina, com uma opção da linha '+row.line?.label+'.',condition:'Para acompanhar o shampoo da mesma linha no seu cuidado.',treat:'Um cuidado extra da mesma linha para incluir na sua rotina.',finish:'Para completar o cuidado com mais uma opção da mesma linha.'}[row.role]),
   matchReasons:[...(best.pair?['Shampoo e condicionador da linha '+best.line.label+'.']:[]),...row.info.evidence]}));
  const hasMask=products.some(p=>p.step==='treat'),routineComplete=Boolean(best.pair&&hasMask);
