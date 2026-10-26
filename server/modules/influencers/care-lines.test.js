@@ -20,7 +20,7 @@ test('does not substitute conditioner or mask from another line or brand',()=>{
 });
 test('generic brand names do not establish a line and unknown products do not form a routine',()=>{
  assert.equal(careLine({name:'Shampoo',sourceName:'Marca'}),null);assert.equal(careLine({name:'Máscara Hidratante',sourceName:'Marca'}),null);
- const result=recommend(config,[product('A','Shampoo',10),product('B','Condicionador',10),product('C','Máscara',10)],input);assert.equal(result.products.length,1);assert.ok(!JSON.stringify(result).includes('undefined'));assert.equal(result.routineComplete,false);
+ const result=recommend(config,[product('A','Shampoo',10),product('B','Condicionador',10),product('C','Máscara',10)],input);assert.equal(result.products.length,0);assert.ok(!JSON.stringify(result).includes('undefined'));assert.equal(result.routineComplete,false);
 });
 test('line matching handles accents and volumes while keeping La Boue color variants separate',()=>{
  const names=['Shampoo Coco & Camomila by Vitória Lima EcoBelle - 300 mL','Condicionador Coco & Camomila by Vitória Lima EcoBelle 300 mL','Máscara Coco & Camomila by Vitória Lima EcoBelle 250g'];

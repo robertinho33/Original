@@ -18,7 +18,9 @@ function classify(product,input){
  if(!profile.hair.length&&(curly&&!['curly','coily'].includes(input.hair)||straight&&input.hair!=='straight'||wavy&&input.hair!=='wavy'))return null;
  const treated=/pos[ -]?quimica|quimicamente tratados|cabelos coloridos/.test(text),natural=/cabelos sem quimica|apenas cabelos naturais/.test(text);
  if(!profile.chemistry.length&&(treated&&input.chemistry!=='treated'||natural&&input.chemistry!=='natural'))return null;
- const goalMatch=profile.goals.includes(input.goal)||goalWords[input.goal].test(text),hairMatch=profile.hair.includes(input.hair)||curly||straight||wavy;
+ // Explicit care metadata and product purpose outweigh incidental description words.
+ const goalStrength=profile.goals.includes(input.goal)?4:goalWords[input.goal].test(name)?3:goalWords[input.goal].test(description)?1:0;
+ const goalMatch=goalStrength>0,hairMatch=profile.hair.includes(input.hair)||curly||straight||wavy;
  const evidence=[
   profile.goals.includes(input.goal)?"A equipe da loja cadastrou esta opção para "+goalNames[input.goal]+".":null,
   profile.hair.includes(input.hair)?"Indicado no cadastro para o seu tipo de cabelo.":null,
@@ -28,7 +30,7 @@ function classify(product,input){
   !profile.hair.length&&hairMatch?(curly?'Uma opção da linha de cachos para você conhecer.':straight?'Uma opção da linha para cabelos lisos para você conhecer.':'Uma opção da linha para cabelos ondulados para você conhecer.'):null,
   profile.chemistry.length?null:treated||natural?'As informações do produto mencionam fios '+(treated?'com química ou coloração.':'sem química.'):(input.chemistry==='treated'?'Fez química ou coloração? Confira a indicação no rótulo ou peça ajuda à nossa equipe antes de escolher.':null)
  ].filter(Boolean);
- return {step,score:Number(goalMatch)*4+Number(hairMatch)*2+Number(treated||natural),evidence};
+ return {step,goalStrength,score:goalStrength*4+Number(hairMatch)*2+Number(profile.chemistry.includes(input.chemistry))*2+Number(treated||natural),evidence};
 }
 function automaticCandidates(available,config,input){
  const rows=[];

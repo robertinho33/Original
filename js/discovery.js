@@ -1,3 +1,4 @@
+import {mergeCareCart,cleanMatchReasons} from './care-selection.js';
 import {careConsent} from './analytics/care-consent.js';
 import {createCareQueryController} from './care-query-controller.js';
 import {readConsent,CONSENT_KEY} from './analytics/analytics-policy.js';
@@ -14,7 +15,7 @@ function updatePartnerLinks(){
 }
 updatePartnerLinks();
 const image=v=>{try{const u=new URL(v);return u.protocol==='https:'?u.href:'';}catch{return '';}};
-function cards(products){return products.map((p,index)=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${String(index+1).padStart(2,'0')} · ${esc(steps[p.step])}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p>${Array.isArray(p.matchReasons)&&p.matchReasons.length?`<details class="ritual-match"><summary>Um pouco mais sobre esta escolha</summary><ul>${p.matchReasons.map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></details>`:''}<strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Conhecer este produto ↗</a></p></div></article>`).join('');}
+function cards(products){return products.map((p,index)=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${String(index+1).padStart(2,'0')} · ${esc(steps[p.step])}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p>${cleanMatchReasons(p.matchReasons).length?`<details class="ritual-match"><summary>Um pouco mais sobre esta escolha</summary><ul>${cleanMatchReasons(p.matchReasons).map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></details>`:''}<strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Conhecer este produto ↗</a></p></div></article>`).join('');}
 async function api(path,body){const res=await fetch('/api/discovery/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(60000)});const result=await res.json();if(!res.ok||!result.success)throw Error(result.error||'Não foi possível consultar agora.');return result.data;}
 const careForm=$('ritualForm');
 if(careForm){
@@ -50,11 +51,10 @@ if(careForm){
 function cart(items){
   let current;try{current=JSON.parse(localStorage.getItem('aurea-cart')||'[]');}catch{current=[];}
   if(!Array.isArray(current))current=[];
-  const rows=current.filter(row=>typeof row?.sku==='string'&&Number.isInteger(row.quantity)&&row.quantity>0).map(row=>({sku:row.sku,quantity:row.quantity}));
-  for(const item of items){const row=rows.find(row=>row.sku===item.sku);if(row)row.quantity++;else rows.push({sku:item.sku,quantity:1});}
+  const rows=mergeCareCart(current,items);
   localStorage.setItem('aurea-cart',JSON.stringify(rows));
 }
-$('addRitual')?.addEventListener('click',()=>{try{if(!selected.length)return;cart(selected);location.href='/pages/checkout.html'+(currentCoupon?'?cupom='+encodeURIComponent(currentCoupon):'');}catch{$('discoveryMessage').textContent='Não foi possível salvar sua sacola neste aparelho. Abra os produtos pela loja.';}});
+$('addRitual')?.addEventListener('click',()=>{try{if(!selected.length)return;cart(selected);location.href='/index.html?'+new URLSearchParams({sacola:'1',...(currentCoupon?{cupom:currentCoupon}:{})});}catch{$('discoveryMessage').textContent='Não foi possível salvar sua sacola neste aparelho. Abra os produtos pela loja.';}});
 if($('publicStore')){
   (async()=>{try{
     const id=params.get('loja');if(!id)throw Error('Abra o link de uma vitrine compartilhada pela loja.');
@@ -62,7 +62,13 @@ if($('publicStore')){
     $('storeName').textContent=data.name;$('storeBio').textContent=data.bio;
     if(image(data.image)){$('storePhoto').src=image(data.image);$('storePhoto').hidden=false;}
     if(data.videoUrl){$('storeVideo').href=data.videoUrl;$('storeVideo').hidden=false;}
-    $('storeCoupon').textContent='Cupom desta parceria: '+data.coupon+'. A validade e as condições serão conferidas no checkout.';
+    $('storeCouponTitle').textContent='Compre com o cupom de '+data.name;
+    $('storeCoupon').textContent=data.coupon;
+    $('shopStoreCoupon').href='/index.html?cupom='+encodeURIComponent(data.coupon);
+    $('copyStoreCoupon').addEventListener('click',async()=>{
+      try{await navigator.clipboard.writeText(data.coupon);$('storeCouponMessage').textContent='Cupom copiado! Use no checkout para conferir o desconto.';}
+      catch{$('storeCouponMessage').textContent='Copie o código '+data.coupon+' e use no checkout.';}
+    });
     $('storeRitual').href='/pages/monte-seu-ritual.html?cupom='+encodeURIComponent(data.coupon);
     $('discoveryProducts').innerHTML=cards(data.products);$('discoveryMessage').textContent=data.products.length?'Seleção pessoal deste parceiro da Fios Perfeitos.':'Nenhum produto desta seleção está disponível no momento.';
     $('publicStore').hidden=false;

@@ -60,7 +60,7 @@ async function provision(db, id, input, actor) {
     tx.update(ref, { portalEnabled: true, portalUpdatedAt: new Date().toISOString() });
   });
   const temporary=password||null;
-  const invitation=temporary ? 'Olá, '+String(person.name||'').slice(0,100)+'! Seu acesso à Fios Perfeitos está pronto.\nPortal: https://www.fiosperfeitos.com.br/pages/influenciadores.html\nE-mail: '+address+'\nTelefone cadastrado: '+number+'\nSenha temporária: '+temporary+'\nVálida por 48 horas. Entre, crie sua senha pessoal de 8 a 16 caracteres com letras e números e complete sua foto e os produtos da sua vitrine. Não compartilhe este acesso.' : null;
+  const invitation=temporary ? 'Olá, '+String(person.name||'').slice(0,100)+'! Seu acesso à Fios Perfeitos está pronto.\n\nPortal: https://www.fiosperfeitos.com.br/pages/influenciadores.html\n\nSua senha temporária é válida por 48 horas. No primeiro acesso, crie sua senha pessoal de 8 a 16 caracteres, somente com letras e números, incluindo ambos. Depois, complete sua foto e escolha os produtos da sua vitrine. Não compartilhe este acesso.\n\nSeus dados de acesso:\nE-mail: '+address+'\nTelefone cadastrado: '+number+'\nSenha temporária: '+temporary+'\n\nPara entrar, copie e cole o e-mail, o telefone e a senha temporária acima nos campos correspondentes do portal.' : null;
   return { enabled: true, ...(temporary ? {initialPassword:temporary,whatsappUrl:'https://wa.me/55'+number+'?text='+encodeURIComponent(invitation)} : {}) };
 }
 module.exports = { cookieName, cookieOptions, hash, email, phone, passwordValid, passwordRecord, passwordMatches, token, identity, provision, randomBytes };

@@ -3,10 +3,10 @@ const credentials=require('./credentials');
 const {randomBytes}=require('node:crypto');
 const revision=data=>String(data.profileRevision||data.updatedAt||'');
 function profile(body){
-  if(!body||Array.isArray(body)||Object.keys(body).some(k=>!['image','bio','revision'].includes(k))||typeof body.revision!=='string'||body.revision.length>200||typeof body.image!=='string'||body.image.length>2000||typeof body.bio!=='string'||body.bio.length>500)throw Error('Confira sua foto e apresentação.');
-  const image=body.image.trim(),bio=body.bio.trim();
+  if(!body||Array.isArray(body)||Object.keys(body).some(k=>!['image','revision'].includes(k))||typeof body.revision!=='string'||body.revision.length>200||typeof body.image!=='string'||body.image.length>2000)throw Error('Você pode alterar somente sua foto de perfil.');
+  const image=body.image.trim();
   if(image){let url;try{url=new URL(image);}catch{throw Error('Informe o endereço HTTPS da sua foto.');}if(url.protocol!=='https:'||url.username||url.password)throw Error('Use uma foto com endereço HTTPS, sem credenciais.');}
-  return {image,bio};
+  return {image};
 }
 function createHandlers({getDb}){
   async function owner(req){const user=await credentials.identity(getDb(),req);return user&&!user.mustChangePassword?user:null;}

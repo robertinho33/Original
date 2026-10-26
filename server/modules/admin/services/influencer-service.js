@@ -5,6 +5,7 @@ const {
 } = require("../../../infrastructure/firebase/firebase-admin");
 
 const COLLECTION = "influencers";
+const {introducedDuplicate}=require("../../../../js/influencer-identity");
 
 function db() {
     return getFirestore();
@@ -65,8 +66,8 @@ async function listInfluencers() {
 
     return snapshot.docs
         .map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }))
         .sort((a, b) =>
             String(a.name || "")
@@ -104,110 +105,31 @@ async function getInfluencer(id) {
     };
 }
 
-async function createInfluencer(data = {}) {
-    const influencer =
-        normalizeInfluencer(data);
-
-    const now =
-        new Date().toISOString();
-
-    const document = {
-        ...influencer,
-        createdAt: now,
-        updatedAt: now
-    };
-
-    const reference =
-        await db()
-            .collection(COLLECTION)
-            .add(document);
-
-    return {
-        id: reference.id,
-        ...document
-    };
+async function saveInfluencer(database, id, data = {}) {
+    const collection=database.collection(COLLECTION);
+    const reference=id?collection.doc(id):collection.doc();
+    // Every create/update locks the same document before checking legacy and new rows.
+    const lock=database.collection('settings').doc('influencer-write-lock');
+    return database.runTransaction(async tx=>{
+        await tx.get(lock);
+        const snapshot=await tx.get(collection);
+        const rows=snapshot.docs.map(doc=>({...doc.data(),id:doc.id}));
+        const current=id?rows.find(row=>row.id===id):null;
+        if(id&&!current)throw Error('Influenciador não encontrado.');
+        const influencer=normalizeInfluencer({...current,...data,commissionDefault:data.commissionDefault??data.commission??current?.commissionDefault??current?.commission??0});
+        const duplicate=introducedDuplicate(rows,influencer,current);
+        if(duplicate)throw Error('Já existe um influenciador com esse e-mail ou com o mesmo nome e telefone: '+duplicate.name+'. Edite o cadastro existente.');
+        const now=new Date().toISOString();
+        const document={...influencer,updatedAt:now,...(!id?{createdAt:now}:{})};
+        tx.set(lock,{updatedAt:now,version:require('node:crypto').randomBytes(16).toString('hex')});
+        if(id)tx.update(reference,document);else tx.set(reference,document);
+        return {...current,...document,id:reference.id};
+    });
 }
-
+async function createInfluencer(data = {}) {return saveInfluencer(db(),null,data);}
 async function updateInfluencer(id, data = {}) {
-    if (!id) {
-        throw new Error(
-            "ID do influenciador é obrigatório."
-        );
-    }
-
-    const reference =
-        db()
-            .collection(COLLECTION)
-            .doc(id);
-
-    const snapshot =
-        await reference.get();
-
-    if (!snapshot.exists) {
-        throw new Error(
-            "Influenciador não encontrado."
-        );
-    }
-
-    const current =
-        snapshot.data() || {};
-
-    const merged = {
-        name:
-            data.name !== undefined
-                ? data.name
-                : current.name,
-
-        email:
-            data.email !== undefined
-                ? data.email
-                : current.email,
-
-        phone:
-            data.phone !== undefined
-                ? data.phone
-                : current.phone,
-
-        pixKey:
-            data.pixKey !== undefined
-                ? data.pixKey
-                : current.pixKey,
-
-        active:
-            data.active !== undefined
-                ? Boolean(data.active)
-                : current.active !== false,
-
-        commissionDefault:
-            data.commissionDefault !== undefined ||
-            data.commission !== undefined
-                ? normalizeCommission(
-                    data.commissionDefault ??
-                    data.commission
-                )
-                : normalizeCommission(
-                    current.commissionDefault ??
-                    current.commission ??
-                    0
-                )
-    };
-
-    const normalized =
-        normalizeInfluencer(merged);
-
-    const updated = {
-        ...normalized,
-        updatedAt:
-            new Date().toISOString()
-    };
-
-    await reference.update(updated);
-
-    return {
-        id,
-        ...current,
-        ...updated
-    };
+    if(!id)throw Error('ID do influenciador é obrigatório.');
+    return saveInfluencer(db(),id,data);
 }
 
 async function deleteInfluencer(id) {
@@ -240,6 +162,7 @@ async function deleteInfluencer(id) {
 }
 
 module.exports = {
+    saveInfluencer,
     listInfluencers,
     getInfluencer,
     createInfluencer,

@@ -6,7 +6,7 @@ const key=v=>String(v||'').trim().toLowerCase();
 const order=['wash','treat','condition','finish'];
 const image=value=>{try{const url=new URL(String(value||''));return url.protocol==='https:'?url.href:'';}catch{return '';}};
 function compare(a,b){
- for(const field of ['pair','fit','mask','finish','curated'])if(a[field]!==b[field])return a[field]-b[field];
+ for(const field of ['goalFit','pair','fit','mask','finish','curated'])if(a[field]!==b[field])return a[field]-b[field];
  return b.cents-a.cents||b.signature.localeCompare(a.signature);
 }
 function recommendByLine(available,config,input){
@@ -24,19 +24,19 @@ function recommendByLine(available,config,input){
   // A reviewed bundle may be offered alone, but its unknown components must not be duplicated.
   const bundle=reviewedOnly&&/kit|dupla|cronograma|shampoo e condicionador/i.test(item.product.name||'');
   const role=bundle?rule.step:productRole(item.product),line=bundle?null:careLine(item.product);
-  const row={...item,role,line,info,rule,fit:rule?Math.max(info.score,4):info.score,curated:Number(Boolean(rule))};singles.push(row);
+  const row={...item,role,line,info,rule,fit:rule?Math.max(info.score,16):info.score,curated:Number(Boolean(rule))};singles.push(row);
   if(!line)continue;
   if(!groups.has(line.key))groups.set(line.key,{line,roles:{wash:[],condition:[],treat:[],finish:[]}});
   groups.get(line.key).roles[role].push(row);
  }
  const budget=Math.floor(Number(input.budget)*100+1e-7);
- let best={rows:[],pair:0,fit:0,mask:0,finish:0,curated:0,cents:0,signature:'',line:null};
+ let best={rows:[],goalFit:0,pair:0,fit:0,mask:0,finish:0,curated:0,cents:0,signature:'',line:null};
  function consider(rows,line,pair){
   if(new Set(rows.map(r=>key(r.product.sku))).size!==rows.length)return;
   const cents=rows.reduce((sum,r)=>sum+r.cents,0);if(cents>budget)return;
   const base=rows.filter(r=>r.role!=='finish');
-  const candidate={rows,line,pair,fit:Math.max(0,...base.map(r=>r.fit)),mask:Number(rows.some(r=>r.role==='treat')),finish:Number(rows.some(r=>r.role==='finish')),curated:rows.reduce((sum,r)=>sum+r.curated,0),cents,signature:[...rows].sort((a,b)=>order.indexOf(a.role)-order.indexOf(b.role)).map(r=>r.role+':'+key(r.product.sku)).join('|')};
-  if(compare(candidate,best)>0)best=candidate;
+  const candidate={rows,line,pair,goalFit:Math.max(0,...base.map(r=>r.rule?4:(r.info.goalStrength||0))),fit:base.reduce((sum,r)=>sum+r.fit,0)/Math.max(1,base.length),mask:Number(rows.some(r=>r.role==='treat')),finish:Number(rows.some(r=>r.role==='finish')),curated:rows.reduce((sum,r)=>sum+r.curated,0),cents,signature:[...rows].sort((a,b)=>order.indexOf(a.role)-order.indexOf(b.role)).map(r=>r.role+':'+key(r.product.sku)).join('|')};
+  if(candidate.goalFit>0&&compare(candidate,best)>0)best=candidate;
  }
  const cheapest=(a,b)=>a.cents-b.cents||key(a.product.sku).localeCompare(key(b.product.sku));
  for(const group of groups.values()){
@@ -50,8 +50,8 @@ function recommendByLine(available,config,input){
    else if(!options.treat.length){for(const finish of options.finish)consider([...base,finish],group.line,1);}
   }
  }
- if(!best.pair){
-  // A smaller coherent selection beats an unverified cross-line combination.
+ {
+  // Compare relevant single treatments too; an unrelated pair must not hide them.
   for(const row of singles.filter(r=>r.role==='treat'))consider([row],row.line,0);
   if(!best.rows.length)for(const row of singles.filter(r=>r.role==='condition'))consider([row],row.line,0);
   if(!best.rows.length)for(const row of singles)consider([row],row.line,0);
@@ -62,7 +62,7 @@ function recommendByLine(available,config,input){
   matchReasons:[...(best.pair?['Shampoo e condicionador da linha '+best.line.label+'.']:[]),...row.info.evidence]}));
  const hasMask=products.some(p=>p.step==='treat'),routineComplete=Boolean(best.pair&&hasMask);
  return {products,total:best.cents/100,routineComplete,line:best.line?.label||'',missingSteps:order.filter(role=>!products.some(p=>p.step===role)),
-  explanation:best.pair?(hasMask?'Escolhemos shampoo, condicionador e máscara da linha '+best.line.label+' para montar uma rotina coerente, dentro do seu orçamento. Confira as instruções de cada produto para a ordem e a frequência de uso.':'Começamos com shampoo e condicionador da linha '+best.line.label+'. Mantivemos a dupla dentro do seu orçamento, sem misturar linhas para completar a seleção.'):'Escolhemos um cuidado para começar dentro desse valor. Para montar uma rotina com shampoo e condicionador da mesma linha, você pode ajustar o orçamento ou pedir ajuda à nossa equipe.',
+  explanation:!products.length?'Não encontramos uma indicação para esse perfil dentro do orçamento. Ajuste suas respostas ou peça ajuda à nossa equipe.':best.pair?(hasMask?'Escolhemos shampoo, condicionador e máscara da linha '+best.line.label+' para montar uma rotina coerente, dentro do seu orçamento. Confira as instruções de cada produto para a ordem e a frequência de uso.':'Começamos com shampoo e condicionador da linha '+best.line.label+'. Mantivemos a dupla dentro do seu orçamento, sem misturar linhas para completar a seleção.'):'Escolhemos um cuidado para começar dentro desse valor. Para montar uma rotina com shampoo e condicionador da mesma linha, você pode ajustar o orçamento ou pedir ajuda à nossa equipe.',
   message:routineComplete?'Sua rotina da mesma linha está pronta para você conhecer.':best.pair?'Uma dupla da mesma linha para começar seu cuidado.':products.length?'Um cuidado para começar, respeitando seu orçamento.':'Ainda não encontramos uma combinação nesse valor. Fale com a gente para escolher suas opções.'};
 }
 module.exports={recommendByLine};

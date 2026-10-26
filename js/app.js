@@ -1497,6 +1497,7 @@ async function init() {
         await renderCatalog();
 
         renderCart();
+        if (new URLSearchParams(location.search).get('sacola') === '1') openCart();
 
     } catch (error) {
         console.error(
