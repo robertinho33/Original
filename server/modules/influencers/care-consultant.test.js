@@ -32,3 +32,23 @@ test('cart merges one unit per selection, keeps previous items and filters empty
  assert.deepEqual(mergeCareCart([{sku:'A',quantity:2},{sku:' A ',quantity:1},{sku:'B',quantity:1},{sku:'BAD',quantity:-1}],[{sku:'A'},{sku:'C'}]),[{sku:'A',quantity:4},{sku:'B',quantity:1},{sku:'C',quantity:1}]);
  assert.deepEqual(cleanMatchReasons(['',null,'  ','-','Hidratação','Hidratação',false]),['Hidratação']);
 });
+
+test('published care restrictions explain the repeated line and expose compatible alternatives for the reported profile',()=>{
+ const products=require('./fixtures/consultant-published.json');
+ const answers={hair:'wavy',chemistry:'treated',goal:'hydration',budget:300};
+ const result=recommend(config,products,answers);
+ assert.equal(result.line,'Coco & Camomila');assert.equal(result.total,200);
+ const alternative=result.alternatives.find(option=>option.line==='HidraSim');assert.ok(alternative);
+ assert.equal(alternative.routineComplete,false);assert.equal(alternative.total,101.9);
+ assert.ok(!alternative.products.some(p=>p.sku==='TJFJENBKK'),'mask explicitly excludes treated hair and hydration');
+ const {matches}=require('../../../js/product-care-profile');
+ for(const option of [result,...result.alternatives]){
+  assert.ok(option.total<=answers.budget);
+  for(const p of option.products)assert.ok(matches(products.find(row=>row.sku===p.sku).careProfile,answers));
+ }
+ assert.deepEqual(result,recommend(config,[...products].reverse(),answers));
+ const curls=recommend(config,products,{...answers,hair:'curly',chemistry:'natural',goal:'curls'});
+ assert.notEqual(curls.line,result.line);
+ const lowBudget=recommend(config,products,{...answers,budget:80});
+ for(const option of [lowBudget,...lowBudget.alternatives])assert.ok(option.total<=80);
+});

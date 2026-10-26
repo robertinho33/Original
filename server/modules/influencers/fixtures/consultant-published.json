@@ -1,0 +1,334 @@
+[
+  {
+    "sku": "Z3ND3HEVB",
+    "name": "Shampoo Coco & Camomila by Vitória Lima EcoBelle - 300 mL",
+    "price": 35,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "hydration"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "22TJS8HBH",
+    "name": "Condicionador Coco & Camomila by Vitória Lima EcoBelle 300 mL",
+    "price": 35,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "hydration"
+      ]
+    },
+    "description": "A linha Coco & Camomila by Vitória Lima EcoBelle foi desenvolvida com esses dois maravilhosos ativos que proproporcionam juntos luminosidade e maciez aos cabelos. A camomila traz muitos benefícios aos fios além do brilho e luminosidade natural, acalma e refresca o couro cabeludo ao passo que faz uma limpeza delicada. Além disso as propriedades da camomila ajudam no processo de nutrição e hidratação, revitalizando os fios. Já o poderoso óleo de coco, presente nessa formulação, deixa os fios extremamente macios, penetra na fibra capilar, devolvendo os nutrientes que os cabelos precisam para fugir do aspecto ressecado.",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "ASUE5CZGP",
+    "name": "Shampoo HidraSim Bela Pro 500 mL",
+    "price": 28,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "hydration",
+        "frizz"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "CSH5ETU2N",
+    "name": "Máscara Coco & Camomila by Vitória Lima EcoBelle 250g",
+    "price": 50,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "hydration",
+        "repair",
+        "frizz",
+        "curls",
+        "color"
+      ]
+    },
+    "description": "A linha Coco & Camomila by Vitória Lima EcoBelle foi desenvolvida com esses dois maravilhosos ativos que proporcionam juntos luminosidade e maciez aos cabelos. A camomila traz muitos benefícios aos fios além do brilho e luminosidade natural, acalma e refresca o couro cabeludo ao passo que faz uma limpeza delicada. Além disso as propriedades da camomila ajudam no processo de nutrição e hidratação, revitalizando os fios. Já o poderoso óleo de coco, presente nessa formulação, deixa os fios extremamente macios, penetra na fibra capilar, devolvendo os nutrientes que os cabelos precisam para fugir do aspecto ressecado.",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "ULQHGSVA7",
+    "name": "Shampoo Leite de Coco EcoBelle 2,5 L",
+    "price": 110,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "repair",
+        "curls"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "RJZSGEAVY",
+    "name": "Finalizador Térmico Coco & Camomila By Vitória Lima 200 mL",
+    "price": 80,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "hydration",
+        "repair",
+        "frizz",
+        "curls",
+        "color"
+      ]
+    },
+    "description": "A linha Coco & Camomila by Vitória Lima EcoBelle foi desenvolvida com esses dois maravilhosos ativos que proproporcionam juntos luminosidade e maciez aos cabelos. A camomila traz muitos benefícios aos fios além do brilho e luminosidade natural, acalma e refresca o couro cabeludo ao passo que faz uma limpeza delicada. Além disso as propriedades da camomila ajudam no processo de nutrição e hidratação, revitalizando os fios. Já o poderoso óleo de coco, presente nessa formulação, deixa os fios extremamente macios, penetra na fibra capilar, devolvendo os nutrientes que os cabelos precisam para fugir do aspecto ressecado.",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "W35UTMS43",
+    "name": "Shampoo Curlys Cachos Bela Pro 300 mL",
+    "price": 22,
+    "stock": 9,
+    "careProfile": {
+      "hair": [
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "frizz"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "Y6H5QMT4P",
+    "name": "Condicionador Curlys Cachos Bela Pro 300 mL",
+    "price": 22,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "hydration"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "TJFJENBKK",
+    "name": "Máscara HidraSim Bela Pro 300 g",
+    "price": 36,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly"
+      ],
+      "chemistry": [
+        "natural"
+      ],
+      "goals": [
+        "curls"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "5F5NZ9HN9",
+    "name": "Máscara Curlys Cachos Bela Pro 300 g",
+    "price": 36,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "hydration"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "JKHS7FKJ9",
+    "name": "Reparador de Pontas Coco & Camomila By Vitória Lima 60 mL",
+    "price": 69,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "repair",
+        "frizz"
+      ]
+    },
+    "description": "A linha Coco & Camomila by Vitória Lima EcoBelle foi desenvolvida com esses dois maravilhosos ativos que proproporcionam juntos luminosidade e maciez aos cabelos. A camomila traz muitos benefícios aos fios além do brilho e luminosidade natural, acalma e refresca o couro cabeludo ao passo que faz uma limpeza delicada. Além disso as propriedades da camomila ajudam no processo de nutrição e hidratação, revitalizando os fios. Já o poderoso óleo de coco, presente nessa formulação, deixa os fios extremamente macios, penetra na fibra capilar, devolvendo os nutrientes que os cabelos precisam para fugir do aspecto ressecado.",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "2XFPQEJHA",
+    "name": "Condicionador Leite de Coco 2,5 L",
+    "price": 110,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "repair",
+        "curls"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "XFGMQY4RW",
+    "name": "Condicionador HidraSim Bela Pro 500 mL",
+    "price": 28,
+    "stock": 10,
+    "careProfile": {
+      "hair": [
+        "straight",
+        "wavy",
+        "curly",
+        "coily"
+      ],
+      "chemistry": [
+        "treated",
+        "natural"
+      ],
+      "goals": [
+        "hydration"
+      ]
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  },
+  {
+    "sku": "ZKDQ2Y47Q",
+    "name": "Sérum HidraSim Bela Pro 60 mL",
+    "price": 45.9,
+    "stock": 10,
+    "careProfile": {
+      "hair": [],
+      "chemistry": [],
+      "goals": []
+    },
+    "description": "",
+    "sourceId": "ecobelle",
+    "sourceName": "EcoBelle"
+  }
+]

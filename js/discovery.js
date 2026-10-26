@@ -9,13 +9,13 @@ $('storePhoto')?.addEventListener('error',()=>{$('storePhoto').hidden=true;});
 const money=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const params=new URLSearchParams(location.search), coupon=(params.get('cupom')||'').slice(0,60);
 const steps={wash:'Limpar',treat:'Tratar',condition:'Condicionar',finish:'Finalizar'};
-let selected=[],currentCoupon=coupon;
+let selected=[],currentCoupon=coupon,selectionOptions=[],selectedOption=0;
 function updatePartnerLinks(){
   for(const link of document.querySelectorAll('a[href="/index.html"]'))if(currentCoupon)link.href='/index.html?cupom='+encodeURIComponent(currentCoupon);
 }
 updatePartnerLinks();
 const image=v=>{try{const u=new URL(v);return u.protocol==='https:'?u.href:'';}catch{return '';}};
-function cards(products){return products.map((p,index)=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${String(index+1).padStart(2,'0')} · ${esc(steps[p.step])}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p>${cleanMatchReasons(p.matchReasons).length?`<details class="ritual-match"><summary>Um pouco mais sobre esta escolha</summary><ul>${cleanMatchReasons(p.matchReasons).map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></details>`:''}<strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Conhecer este produto ↗</a></p></div></article>`).join('');}
+function cards(products){return products.map((p,index)=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${String(index+1).padStart(2,'0')} · ${esc(steps[p.step])}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p>${cleanMatchReasons(p.matchReasons).length?`<div class="ritual-match"><p class="ritual-match-title">Por que esta opção?</p><ul>${cleanMatchReasons(p.matchReasons).map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></div>`:''}<strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Conhecer este produto ↗</a></p></div></article>`).join('');}
 async function api(path,body){const res=await fetch('/api/discovery/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(60000)});const result=await res.json();if(!res.ok||!result.success)throw Error(result.error||'Não foi possível consultar agora.');return result.data;}
 const careForm=$('ritualForm');
 if(careForm){
@@ -33,16 +33,31 @@ if(careForm){
    const response=await fetch('/api/discovery/ritual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...input,measurement:measurement()}),signal:typeof AbortSignal.any==='function'?AbortSignal.any([signal,AbortSignal.timeout(60000)]):signal});
    const payload=await response.json();if(!response.ok||!payload.success)throw Error(payload.error||'Não foi possível consultar agora.');return payload.data;
   },
-  start(){button.disabled=true;message.textContent='Um instante, estamos escolhendo suas opções…';$('ritualResult').hidden=true;selected=[];},
-  result(data){selected=data.products;message.textContent=data.message;$('discoveryProducts').innerHTML=cards(selected);$('ritualExplanation').textContent=data.explanation||'';$('ritualTotal').textContent='Sua seleção: '+money(data.total)+' em produtos. Frete calculado ao finalizar.';$('ritualResult').hidden=!selected.length;},
+  start(){selectionOptions=[];selectedOption=0;button.disabled=true;message.textContent='Um instante, estamos escolhendo suas opções…';$('ritualResult').hidden=true;selected=[];},
+  result(data){
+   const input=answers(),hairs={straight:'liso',wavy:'ondulado',curly:'cacheado',coily:'crespo'},goals={hydration:'hidratação e maciez',repair:'cuidado de fios danificados',frizz:'controle do frizz',curls:'definição dos cachos',color:'cuidado da cor'};
+   $('ritualProfile').textContent='Para cabelo '+hairs[input.hair]+', '+(input.chemistry==='treated'?'com química ou coloração':'sem química')+', buscando '+goals[input.goal]+'. Limite de '+money(input.budget)+' em produtos.';
+   selectionOptions=[data,...(Array.isArray(data.alternatives)?data.alternatives:[])].filter(option=>option.products?.length);selectedOption=0;
+   if(selectionOptions.length)showSelection();else{selected=[];message.textContent=data.message;$('ritualResult').hidden=true;}
+  },
   error(reason){message.textContent=reason.message;},finish(){button.disabled=false;}
  });
+ function showSelection(){
+  const data=selectionOptions[selectedOption];selected=data.products;message.textContent=data.message;
+  $('discoveryProducts').innerHTML=cards(selected);$('ritualExplanation').textContent=data.explanation||'';
+  const remaining=Math.max(0,Number(answers().budget)-Number(data.total));
+  $('ritualTotal').textContent='Sua seleção: '+money(data.total)+' em produtos'+(remaining>0?' · '+money(remaining)+' abaixo do seu limite.':'.')+' Frete calculado ao finalizar.';
+  const options=$('ritualOptions');options.hidden=selectionOptions.length<2;
+  options.innerHTML=selectionOptions.length>1?'<p>Compare as opções compatíveis com suas respostas:</p><div>'+selectionOptions.map((option,index)=>'<button type="button" data-ritual-option="'+index+'" aria-pressed="'+(index===selectedOption)+'">'+esc(option.line||'Seleção de cuidados')+' · '+money(option.total)+'<small>'+option.products.length+' produtos · '+(option.routineComplete?'com shampoo, condicionador e máscara':'seleção parcial')+'</small></button>').join('')+'</div>':'';
+  $('ritualResult').hidden=false;
+ }
+ $('ritualOptions').addEventListener('click',event=>{const button=event.target.closest('[data-ritual-option]');if(!button)return;const index=Number(button.dataset.ritualOption);if(Number.isInteger(index)&&selectionOptions[index]){selectedOption=index;showSelection();}});
  const answers=()=>Object.fromEntries(new FormData(careForm));
  const valid=()=>[...careForm.querySelectorAll('select,input')].every(field=>field.checkValidity());
  const run=(force=false)=>{clearTimeout(timer);if(valid())void query.query(answers(),{force});};
  careForm.addEventListener('submit',event=>{event.preventDefault();run(true);});
  careForm.addEventListener('input',()=>{
-  clearTimeout(timer);query.invalidate();selected=[];$('ritualResult').hidden=true;button.disabled=false;
+  clearTimeout(timer);query.invalidate();selected=[];selectionOptions=[];$('ritualResult').hidden=true;button.disabled=false;
   message.textContent=valid()?'Vamos atualizar suas opções…':'Conte um pouquinho mais para a gente encontrar suas opções.';
   if(valid())timer=setTimeout(run,650);
  });
