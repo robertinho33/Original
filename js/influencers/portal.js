@@ -1,3 +1,4 @@
+import {mountStoreSharing} from './store-sharing.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
 import { mountProfileEditor } from './profile-editor.js';
 import { mountStoreEditor } from './store-editor.js';
@@ -10,6 +11,7 @@ const commissionLabels = { paid:'Repassada',pending:'Aguardando repasse',estimat
 const dateLabel = value => value ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? value + 'T12:00:00-03:00' : value).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '';
 let passwordChangeRequested=false;
 function render(data) {
+  storeSharing.update(data.storeUrl,data.profile.name);
   $('portalLogin').hidden = true; $('portalDashboard').hidden = false;
   $('portalGreeting').textContent = 'Olá, ' + data.profile.name.split(' ')[0] + '.';
   const storeLink=$('portalStoreLink'); storeLink.hidden=!data.storeUrl; if(data.storeUrl?.startsWith('/pages/vitrine-influenciador.html?loja=')) storeLink.href=data.storeUrl;
@@ -27,7 +29,8 @@ async function request(path, body = {}) {
   if (!response.ok || !result.success) { const error = new Error(result.error || 'Não foi possível consultar o portal.'); error.status=response.status; throw error; }
   return result.data;
 }
-function showLogin() { $('portalCampaign').replaceChildren();$('portalBestSellers').replaceChildren();$('portalStoreLink').hidden=true;$('portalStoreLink').removeAttribute('href'); $('portalFirstAccess').hidden=true;$('portalFirstPasswordForm').reset();profileEditor.reset(); $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+function showLogin() { storeSharing.reset(); $('portalCampaign').replaceChildren();$('portalBestSellers').replaceChildren();$('portalStoreLink').hidden=true;$('portalStoreLink').removeAttribute('href'); $('portalFirstAccess').hidden=true;$('portalFirstPasswordForm').reset();profileEditor.reset(); $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+const storeSharing=mountStoreSharing($('portalStoreSharing'));
 const profileEditor=mountProfileEditor($('portalProfileEditor'),{onUnauthorized:showLogin});
 const storeEditor=mountStoreEditor($('portalStoreEditor'),{onUnauthorized:showLogin});
 async function refresh(silent = false) {
