@@ -1,5 +1,15 @@
 # Comunidade e galeria dos influenciadores
 
+## Disponibilidade e permissões
+
+A atualização fica oculta e bloqueada por padrão, inclusive quando ainda não existe configuração no banco. Fotos aprovadas anteriormente também deixam de ser servidas enquanto a galeria estiver suspensa. Os dados não são apagados.
+
+Em **Influenciadores → Disponibilidade da atualização**, a **chave geral** suspende ou disponibiliza a atualização inteira. Quando desligada, nenhuma liberação individual pode ativar os recursos. A liberação coletiva define o padrão separado para seguidores, galeria comercial e botões de compartilhamento.
+
+Em **Liberar recursos**, na linha de cada influenciador, escolha **Seguir padrão coletivo**, **Liberar para este influenciador** ou **Bloquear para este influenciador** em cada recurso. Exceções individuais são preservadas quando o padrão coletivo muda. Para liberar apenas algumas pessoas, ative a chave geral, mantenha o padrão coletivo bloqueado e libere individualmente as pessoas escolhidas.
+
+Somente administradores podem alterar essas permissões. As gravações são auditadas e verificam a versão da configuração para evitar que uma tela antiga sobrescreva uma alteração recente. A restrição é aplicada no servidor, não apenas nos botões. O cancelamento de acompanhamentos já existentes continua disponível ao titular mesmo durante a suspensão.
+
 ## Uso
 
 Na vitrine pública, o visitante clica em **Me seguir para mais novidades**, informa nome e WhatsApp e autoriza o vínculo. A autorização para receber mensagens é opcional e separada. O botão seguinte prepara uma mensagem para o atendimento; não há envio automático.

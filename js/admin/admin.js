@@ -8,6 +8,7 @@ import { renderOrderWorkspace, renderHistoryWorkspace } from './modules/order-wo
 import './modules/discovery-tools.js';
 import './modules/influencer-access.js';
 import './modules/community-admin.js';
+import './modules/community-permissions.js';
 import './modules/order-modal-close.js';
 'use strict';
 

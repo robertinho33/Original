@@ -1,9 +1,12 @@
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(path,body){const response=await fetch('/api/community/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(45000)});const result=await response.json();if(!response.ok||!result.success)throw Error(result.error||'Não foi possível consultar agora.');return result.data;}
-export async function mountPublicCommunity(container,{owner,name,coupon}){
+export async function mountPublicCommunity(container,{owner,name,coupon,features={}}){
  if(!container)return;
+ if(!features.followers&&!features.gallery){container.replaceChildren();container.hidden=true;return;}
+ container.hidden=false;
  const key='fp-follow-'+owner;let saved;try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch{}
  container.innerHTML=`<section class="community-follow"><h2>Acompanhe ${esc(name)}</h2><p>Siga esta vitrine para acompanhar as novidades. O atendimento confirma seu cadastro pelo WhatsApp.</p><button type="button" class="solid-button" data-open-follow>Me seguir para mais novidades</button><form data-follow-form hidden><label>Seu nome<input name="name" maxlength="100" autocomplete="name" required></label><label>WhatsApp com DDD<input name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="(11) 99999-9999" required></label><label class="community-check"><input type="checkbox" name="followConsent" required> Quero acompanhar este influenciador e autorizo o cadastro desse vínculo na Fios Perfeitos.</label><label class="community-check"><input type="checkbox" name="marketingConsent"> Também autorizo receber novidades desta parceria pelo WhatsApp. Posso cancelar quando quiser.</label><p class="discovery-note">Seu telefone fica restrito ao atendimento da loja. Seguir não obriga receber mensagens. <a href="/pages/privacidade.html">Conheça nossa privacidade.</a></p><button type="submit" class="solid-button">Preparar confirmação no WhatsApp</button></form><div data-follow-confirm></div><p data-follow-status role="status" aria-live="polite"></p><div class="community-actions"><button type="button" class="outline-button" data-follow-refresh hidden>Conferir confirmação</button><button type="button" class="outline-button" data-unfollow hidden>Cancelar acompanhamento</button></div></section><section data-community-gallery hidden><h2>Na prática, com nossos produtos</h2><p>Fotos comerciais enviadas pelo influenciador e aprovadas pela loja.</p><div class="community-gallery" data-gallery-grid></div></section>`;
+ container.querySelector('.community-follow').hidden=!features.followers;
  const open=container.querySelector('[data-open-follow]'),form=container.querySelector('form'),status=container.querySelector('[data-follow-status]'),confirm=container.querySelector('[data-follow-confirm]'),refresh=container.querySelector('[data-follow-refresh]'),cancel=container.querySelector('[data-unfollow]');
  function save(value){saved=value;try{if(value)localStorage.setItem(key,JSON.stringify(value));else localStorage.removeItem(key);}catch{status.textContent+=' Este aparelho não permite guardar a confirmação; mantenha esta página aberta.';}}
  async function check(){
@@ -19,7 +22,8 @@ export async function mountPublicCommunity(container,{owner,name,coupon}){
  });
  refresh.addEventListener('click',()=>void check());
  cancel.addEventListener('click',async()=>{if(!saved)return;cancel.disabled=true;try{await api('follow/'+encodeURIComponent(saved.id)+'/cancel',{secret:saved.secret});save(null);confirm.replaceChildren();form.reset();status.textContent='Acompanhamento e autorização de novidades cancelados.';open.hidden=false;refresh.hidden=true;cancel.hidden=true;}catch(error){status.textContent=error.message;}finally{cancel.disabled=false;}});
- if(saved)void check();
+ if(saved&&features.followers)void check();
+ if(!features.gallery)return;
  try{const data=await api('stores/'+encodeURIComponent(owner)+'/gallery');if(data.photos?.length){container.querySelector('[data-community-gallery]').hidden=false;container.querySelector('[data-gallery-grid]').innerHTML=data.photos.map(photo=>'<figure><img src="'+esc(photo.imageUrl)+'" alt="'+esc(photo.caption||'Uso comercial de produto da Fios Perfeitos')+'" loading="lazy"><figcaption>'+esc(photo.caption)+' <a href="/index.html?'+new URLSearchParams({search:photo.productSku,...(coupon?{cupom:coupon}:{})})+'#colecao">Conhecer produto ↗</a></figcaption></figure>').join('');}}
  catch{/* A gallery outage does not prevent browsing products or following. */}
 }

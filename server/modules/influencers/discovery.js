@@ -65,7 +65,7 @@ function createRouter(deps={}){
     if(!store.exists||!person.exists||person.data().active===false||!store.data().enabled)return res.status(404).json({success:false,error:'Esta vitrine não está disponível.'});
     const config=normalizeStore(store.data()),coupon=await validCoupon(db(),config.coupon,id);
     if(!coupon)return res.status(404).json({success:false,error:'Esta vitrine está temporariamente indisponível.'});
-    res.json({success:true,data:projectStore(config,catalog,coupon)});
+    res.json({success:true,data:{...projectStore(config,catalog,coupon),features:await require('./feature-access').getAccess(db(),id)}});
   }catch{res.status(503).json({success:false,error:'Não foi possível carregar esta vitrine.'});}});
   router.post('/ritual',async(req,res)=>{try{
     const [snapshot,catalog]=await Promise.all([db().collection('storeRitualRules').doc('current').get(),getCatalog()]);

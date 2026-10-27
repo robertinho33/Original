@@ -1,6 +1,7 @@
 'use strict';
 const {randomBytes,createHash,timingSafeEqual}=require('node:crypto');
 const {phone}=require('./credentials');
+const {getAccess}=require('./feature-access');
 const digest=value=>createHash('sha256').update(String(value)).digest('hex');
 const idValid=id=>typeof id==='string'&&/^[\w-]{1,100}$/.test(id);
 const secretValid=secret=>typeof secret==='string'&&/^[a-f0-9]{64}$/.test(secret);
@@ -10,6 +11,7 @@ const clean=(value,max)=>typeof value==='string'?value.trim().slice(0,max):'';
 function photoView(id,data){return {id,caption:clean(data.caption,240),productSku:clean(data.productSku,100),state:data.state,analysis:data.analysis,createdAt:data.createdAt,reviewNote:clean(data.reviewNote,240),imageUrl:'/api/community/photos/'+encodeURIComponent(id)};}
 function createService({getDb,analyzeImage=bytes=>require('./image-moderation').analyzeImage(bytes),prepareImage=body=>require('./image-moderation').prepareImage(body),getCatalog=()=>require('./discovery').publicCatalog(),now=()=>Date.now()}){
  const db=()=>getDb();
+ async function requireFeature(owner,key,tx){if(!(await getAccess(db(),owner,tx))[key])fail(404,'Recurso indisponível.');}
  async function publicStore(owner){
   if(!idValid(owner))fail(400,'Vitrine inválida.');
   const [store,person]=await Promise.all([db().collection('influencerPublicStores').doc(owner).get(),db().collection('influencers').doc(owner).get()]);
@@ -17,7 +19,7 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   return store.data();
  }
  async function gallery(owner,privateView=false){
-  if(!privateView)await publicStore(owner);
+  if(!privateView){await requireFeature(owner,'gallery');await publicStore(owner);}
   const community=await db().collection('influencerCommunities').doc(owner).get();
   const ids=community.exists&&Array.isArray(community.data().photoIds)?community.data().photoIds.slice(0,6):[];
   const docs=await Promise.all(ids.map(id=>db().collection('influencerGalleryPhotos').doc(id).get()));
@@ -27,10 +29,12 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   if(!/^[a-f0-9]{32}$/.test(id))fail(404,'Foto indisponível.');
   const doc=await db().collection('influencerGalleryPhotos').doc(id).get();
   if(!doc.exists)fail(404,'Foto indisponível.');const data=doc.data();
+  if(!admin)await requireFeature(data.owner,'gallery');
   if(!admin&&owner!==data.owner){if(data.state!=='approved')fail(404,'Foto indisponível.');await publicStore(data.owner);}
   if(!data.bytes)fail(404,'Foto indisponível.');return Buffer.from(data.bytes);
  }
  async function upload(owner,body){
+  await requireFeature(owner,'gallery');
   if(body?.policyAccepted!==true||body?.rightsConfirmed!==true)fail(400,'Confirme as regras e a autorização de uso da foto.');
   const productSku=clean(body.productSku,100),catalog=await getCatalog();
   if(!catalog.some(p=>p.sku===productSku))fail(400,'Escolha um produto disponível para esta foto.');
@@ -42,12 +46,14 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   const id=randomBytes(16).toString('hex'),ref=db().collection('influencerGalleryPhotos').doc(id);
   const data={owner,caption:clean(body.caption,240),productSku,bytes,state:'pending',analysis:['clear','review'].includes(analysis.status)?analysis.status:'unavailable',createdAt:new Date(now()).toISOString(),policyVersion:'2026-10-26',rightsConfirmed:true};
   await db().runTransaction(async tx=>{
+   await requireFeature(owner,'gallery',tx);
    const snapshot=await tx.get(slots),current=snapshot.exists?snapshot.data():{},ids=Array.isArray(current.photoIds)?current.photoIds:[];
    if(ids.length>=6)fail(409,'Limite de seis fotos.');
    tx.set(ref,data);tx.set(slots,{...current,photoIds:[...ids,id]});
   });return photoView(id,data);
  }
  async function remove(owner,id){
+  await requireFeature(owner,'gallery');
   const ref=db().collection('influencerGalleryPhotos').doc(id),slots=db().collection('influencerCommunities').doc(owner);
   await db().runTransaction(async tx=>{
    const [doc,snapshot]=await Promise.all([tx.get(ref),tx.get(slots)]);
@@ -76,11 +82,13 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   });
  }
  async function follow(owner,body){
+  await requireFeature(owner,'followers');
   const store=await publicStore(owner),name=clean(body?.name,100),number=phone(body?.phone);
   if(!name||!/^\d{10,11}$/.test(number)||body.followConsent!==true)fail(400,'Informe nome, WhatsApp com DDD e autorize o acompanhamento.');
   const id=randomBytes(16).toString('hex'),secret=randomBytes(32).toString('hex'),code=randomBytes(6).toString('hex').toUpperCase(),createdAt=new Date(now()).toISOString();
   const ref=db().collection('communityFollowRequests').doc(id),limit=db().collection('communityFollowLimits').doc(digest(owner+':'+number));
   await db().runTransaction(async tx=>{
+   await requireFeature(owner,'followers',tx);
    const previous=await tx.get(limit);if(previous.exists&&now()-previous.data().createdAt<300000)fail(429,'Já há um pedido recente para esse WhatsApp. Aguarde cinco minutos.');
    tx.set(ref,{owner,name,phone:number,managementHash:digest(secret),codeHash:digest(code),status:'pending',followConsent:true,marketingConsent:body.marketingConsent===true,consentVersion:'2026-10-26',createdAt,expiresAt:now()+48*3600000});tx.set(limit,{createdAt:now()});
   });
@@ -110,6 +118,7 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
    const doc=await tx.get(ref);if(!doc.exists||doc.data().status!=='pending')fail(409,'Este pedido não está pendente.');const data=doc.data();
    if(data.expiresAt<=now())fail(409,'Pedido expirado. O visitante deve solicitar novamente.');
    if(phone(body.phone)!==data.phone||digest(clean(body.code,30).toUpperCase())!==data.codeHash)fail(400,'Número ou código não corresponde à mensagem recebida.');
+   if(body.decision==='approve')await requireFeature(data.owner,'followers',tx);
    const target=followerRef(data),follower=await tx.get(target);
    if(body.decision==='approve'&&follower.exists&&Number(follower.data().consentUpdatedAt)>=Date.parse(data.createdAt))fail(409,'Este pedido é anterior à última alteração ou cancelamento. Solicite uma nova confirmação.');
    tx.update(ref,{status:body.decision==='approve'?'confirmed':'rejected',reviewedBy:actor,reviewedAt:new Date(now()).toISOString()});
@@ -117,8 +126,10 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   });
  }
  async function ownerSummary(owner){
-  const snap=await db().collection('influencerCommunities').doc(owner).collection('followers').where('active','==',true).count().get();
-  return {followers:snap.data().count,photos:await gallery(owner,true)};
+  const features=await getAccess(db(),owner);
+  if(!features.followers&&!features.gallery)fail(404,'Recurso indisponível.');
+  const snap=features.followers?await db().collection('influencerCommunities').doc(owner).collection('followers').where('active','==',true).count().get():null;
+  return {features,followers:snap?snap.data().count:0,photos:features.gallery?await gallery(owner,true):[]};
  }
  async function adminQueue(owner){
   if(owner&&!idValid(owner))fail(400,'Influenciador inválido.');

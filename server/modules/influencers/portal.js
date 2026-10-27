@@ -143,7 +143,7 @@ function createRouter(deps = {}) {
       data.storeUrl = publicStore.exists && publicStore.data().enabled ? '/pages/vitrine-influenciador.html?loja=' + encodeURIComponent(identity.id) : '';
       data.campaign = features.activeCampaign(campaignSnapshot.exists ? campaignSnapshot.data() : null);
       data.bestSellers = features.rankProducts(overview.attributedOrders.filter(row => row.influencerId === identity.id && !row.unlinked && row.paymentStatus === 'Pago' && (!range.from || orderDay(row.createdAt) >= range.from) && (!range.to || orderDay(row.createdAt) <= range.to)));
-      res.json({ success: true, data: { profile: { name: identity.name, email: identity.email }, ...data } });
+      res.json({ success: true, data: { profile: { name: identity.name, email: identity.email }, ...data, features:await require('./feature-access').getAccess(getDb(),identity.id) } });
     } catch { res.status(503).json({ success: false, error: 'Não foi possível consultar suas vendas agora. Tente novamente em instantes.' }); }
   });
   return router;

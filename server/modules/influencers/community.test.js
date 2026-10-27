@@ -10,6 +10,7 @@ function database(){
   const result=source=>({docs:[...source.keys()].filter(key=>key.startsWith(name+'/')&&!key.slice(name.length+1).includes('/')).filter(key=>filters.every(([field,value])=>source.get(key)[field]===value)).slice(0,limit).map(key=>{const s=snap(key,source);if(fields){const data=s.data;s.data=()=>Object.fromEntries(fields.filter(k=>data()[k]!==undefined).map(k=>[k,data()[k]]));}return s;})});
   return {query:result,doc:id=>ref(name+'/'+id),get:async()=>result(records),where:(field,_op,value)=>query(name,[...filters,[field,value]],fields,limit),orderBy:()=>query(name,filters,fields,limit),limit:value=>query(name,filters,fields,value),select:(...values)=>query(name,filters,values,limit),count:()=>({get:async()=>({data:()=>({count:result(records).docs.length})})})};
  }
+ records.set('settings/influencerFeatureRollout',{enabled:true,defaults:{followers:true,gallery:true,sharing:true}});
  const db={collection:query,runTransaction:fn=>{
   const job=serial.then(async()=>{const draft=structuredClone(records);let wrote=false;const tx={get:async target=>{assert.equal(wrote,false,'reads precede writes');return target.query?target.query(draft):snap(target.key,draft);},set:(target,value)=>{wrote=true;draft.set(target.key,structuredClone(value));},update:(target,value)=>{wrote=true;assert.ok(draft.has(target.key));draft.set(target.key,{...draft.get(target.key),...structuredClone(value)});},delete:target=>{wrote=true;draft.delete(target.key);}};const result=await fn(tx);records.clear();for(const item of draft)records.set(...item);return result;});serial=job.catch(()=>{});return job;
  }};
@@ -68,7 +69,42 @@ test('moderation thresholds block sexual categories, invalid images fail validat
 });
 test('administrative queue and private image endpoints reject anonymous and collaborator roles',async()=>{
  const {adminHandlers}=require('./community-routes');const {db}=database();const handlers=adminHandlers({getDb:()=>db});
- for(const role of [undefined,'collaborator']){let status;const res={status:value=>{status=value;return res;},json:()=>{}};await handlers.list({method:'GET',admin:role?{role}:null},res);assert.equal(status,403);}
+ for(const role of [undefined,'collaborator'])for(const action of ['list','rolloutRead','rolloutWrite']){let status;const res={status:value=>{status=value;return res;},json:()=>{}};await handlers[action]({method:action==='rolloutWrite'?'PUT':'GET',admin:role?{role}:null},res);assert.equal(status,403);}
+});
+
+test('rollout is hidden by default and blocks public and owner access to already-approved photos',async()=>{
+ const {getAccess}=require('./feature-access'),{db,records,service}=setup();records.delete('settings/influencerFeatureRollout');
+ assert.deepEqual(await getAccess(db,'one'),{followers:false,gallery:false,sharing:false});
+ const id='a'.repeat(32);records.set('influencerGalleryPhotos/'+id,{owner:'one',bytes:Buffer.from('photo'),state:'approved'});
+ await assert.rejects(service.photo(id),error=>error.status===404);await assert.rejects(service.photo(id,'one'),error=>error.status===404);
+ await assert.rejects(service.gallery('one'),error=>error.status===404);await assert.rejects(service.ownerSummary('one'),error=>error.status===404);
+ await assert.rejects(service.upload('one',body),error=>error.status===404);
+ await assert.rejects(service.follow('one',{name:'Teste',phone:'11999999999',followConsent:true}),error=>error.status===404);
+ assert.equal((await service.photo(id,null,true)).toString(),'photo','admin can still review hidden records');
+});
+
+test('global defaults, individual exceptions and the master suspension enforce reversible access with revision protection',async()=>{
+ const {getAccess,getSettings,saveSettings}=require('./feature-access'),{db}=setup();
+ let global=await getSettings(db);
+ global=await saveSettings(db,null,{revision:global.revision,enabled:true,defaults:{followers:false,gallery:false,sharing:false}},'admin');
+ await saveSettings(db,'one',{revision:'',followers:true,gallery:false,sharing:'inherit'},'admin');
+ assert.deepEqual(await getAccess(db,'one'),{followers:true,gallery:false,sharing:false});assert.deepEqual(await getAccess(db,'two'),{followers:false,gallery:false,sharing:false});
+ global=await saveSettings(db,null,{revision:global.revision,enabled:true,defaults:{followers:true,gallery:true,sharing:true}},'admin');
+ assert.deepEqual(await getAccess(db,'two'),{followers:true,gallery:true,sharing:true});assert.deepEqual(await getAccess(db,'one'),{followers:true,gallery:false,sharing:true});
+ await assert.rejects(saveSettings(db,null,{revision:'',enabled:true,defaults:{followers:true,gallery:true,sharing:true}},'admin'),error=>error.status===409);
+ global=await saveSettings(db,null,{revision:global.revision,enabled:false,defaults:global.defaults},'admin');
+ assert.deepEqual(await getAccess(db,'one'),{followers:false,gallery:false,sharing:false});
+ await saveSettings(db,null,{revision:global.revision,enabled:true,defaults:global.defaults},'admin');assert.equal((await getAccess(db,'one')).gallery,false,'individual block survives collective changes and suspension');
+});
+
+test('suspension during analysis prevents saving and opt-out remains possible while disabled',async()=>{
+ const {db,records,service}=setup();
+ const request=await service.follow('one',{name:'Teste',phone:'11999999999',followConsent:true,marketingConsent:true});
+ await service.confirmFollow(request.id,{verifiedInWhatsApp:true,decision:'approve',phone:'11999999999',code:request.code},'admin');
+ const racing=createService({getDb:()=>db,getCatalog:async()=>[product],prepareImage:async()=>Buffer.from('photo'),analyzeImage:async()=>{records.delete('settings/influencerFeatureRollout');return {status:'clear'};}});
+ await assert.rejects(racing.upload('one',body),error=>error.status===404);assert.equal([...records.keys()].some(key=>key.startsWith('influencerGalleryPhotos/')),false);
+ await service.unfollow(request.id,request.secret);assert.equal((await service.followStatus(request.id,request.secret)).status,'cancelled');
+ const follower=[...records.entries()].find(([key])=>key.includes('/followers/'))[1];assert.equal(follower.active,false);assert.equal(follower.marketingConsent,false);
 });
 
 test('HTTP endpoints keep pending photos private, reject forged owners and foreign origins, and return only public gallery fields',async t=>{
