@@ -1,3 +1,4 @@
+import {mountProductPageAffection} from './catalog/product-page-affection.js';
 import {installProductImageFallbacks} from './catalog/image-fallback.js';
 installProductImageFallbacks();
 const form=document.getElementById('productBuyForm');
@@ -17,3 +18,5 @@ form?.addEventListener('submit',event=>{
     location.assign('/pages/checkout.html'+(coupon?'?cupom='+encodeURIComponent(coupon):''));
   }catch{message.textContent='Não foi possível salvar a sacola neste aparelho. Abra a loja ou fale com nosso atendimento.';}
 });
+
+void mountProductPageAffection();

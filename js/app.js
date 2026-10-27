@@ -1515,6 +1515,7 @@ async function init() {
 
         renderCart();
         if (new URLSearchParams(location.search).get('sacola') === '1') openCart();
+        if(location.hash==='#desejos')document.getElementById('openWishlist')?.click();
 
     } catch (error) {
         console.error(
