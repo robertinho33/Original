@@ -17,7 +17,7 @@ function database(){
  for(const owner of ['one','two']){records.set('influencers/'+owner,{active:true});records.set('influencerPublicStores/'+owner,{enabled:true,name:'Vitrine '+owner});}
  return {db,records};
 }
-const product={sku:'PRODUCT',name:'Shampoo'},body={image:'test',productSku:'PRODUCT',caption:'Uso do produto',policyAccepted:true,rightsConfirmed:true};
+const product={sku:'PRODUCT',name:'Shampoo',price:35,stock:10},body={image:'test',productSku:'PRODUCT',caption:'Uso do produto',policyAccepted:true,rightsConfirmed:true};
 function setup(analysis='clear'){const memory=database();let time=Date.now();const service=createService({getDb:()=>memory.db,getCatalog:async()=>[product],prepareImage:async()=>Buffer.from('photo'),analyzeImage:async()=>({status:analysis}),now:()=>time});return {...memory,service,advance:milliseconds=>{time+=milliseconds;}};}
 const checklist={adultsOnly:true,noSexualContent:true,noWeaponsDrugsViolence:true,commercialRights:true};
 test('photos stay private until automatic analysis plus full admin checklist; ownership and withdrawal are enforced',async()=>{
@@ -188,4 +188,14 @@ test('home product counts aggregate existing photos and accepted interactions ac
  await service.interact(one,'like','a'.repeat(64),member);await service.interact(one,'like','a'.repeat(64),member);assert.deepEqual(await service.productReactions(),[{sku:'PRODUCT',likes:10,wants:3}]);
  await service.remove('one',one);assert.deepEqual(await service.productReactions(),[{sku:'PRODUCT',likes:10,wants:3}]);
  assert.ok(!JSON.stringify(await service.productReactions()).includes(member.secret));assert.ok(!JSON.stringify(await service.productReactions()).includes('owner'));
+});
+
+test('public product hearts and wishes toggle without signup, remain idempotent, and preserve photo totals',async()=>{
+ const {service,records}=setup(),visitor='c'.repeat(64);records.set('influencerGalleryPhotos/'+'a'.repeat(32),{owner:'one',productSku:'PRODUCT',likes:4,wants:2});
+ assert.deepEqual(await service.setProductReaction('PRODUCT','like',true,visitor),{sku:'PRODUCT',likes:5,wants:2});
+ await Promise.all(Array.from({length:4},()=>service.setProductReaction('PRODUCT','like',true,visitor)));assert.equal((await service.productReactions())[0].likes,5);
+ assert.equal((await service.setProductReaction('PRODUCT','like',false,visitor)).likes,4);assert.equal((await service.setProductReaction('PRODUCT','like',false,visitor)).likes,4);
+ assert.equal((await service.setProductReaction('PRODUCT','want',true,visitor)).wants,3);assert.equal((await service.setProductReaction('PRODUCT','want',false,visitor)).wants,2);
+ assert.equal(records.get('influencerGalleryPhotos/'+'a'.repeat(32)).likes,4);assert.equal([...records.keys()].filter(key=>key.startsWith('communityFollowRequests/')).length,0);
+ await assert.rejects(service.setProductReaction('UNKNOWN','like',true,visitor),e=>e.status===404);await assert.rejects(service.setProductReaction('PRODUCT','like','true',visitor),e=>e.status===400);
 });

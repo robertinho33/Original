@@ -136,6 +136,19 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   for(const doc of totals.docs){const data=doc.data();if(data.sku)rows.set(data.sku,{sku:data.sku,likes:Math.max(0,Number(data.likes)||0),wants:Math.max(0,Number(data.wants)||0)});}
   return [...rows.values()];
  }
+ async function setProductReaction(sku,kind,active,visitor){
+  if(typeof sku!=='string'||!sku.trim()||sku.length>100||!['like','want'].includes(kind)||typeof active!=='boolean'||!secretValid(visitor))fail(400,'Escolha uma interação válida.');
+  if(active){const catalog=await getCatalog();if(!catalog.some(p=>p.sku===sku&&p.active!==false&&Number(p.stock)>0&&Number(p.price)>0))fail(404,'Este cuidado não está disponível agora.');}
+  const ref=db().collection('communityProductMetrics').doc(digest(sku)),ledger=db().collection('communityProductVisitors').doc(digest(sku+':'+visitor));
+  return db().runTransaction(async tx=>{
+   const [total,previous]=await Promise.all([tx.get(ref),tx.get(ledger)]);let values;
+   if(total.exists)values=total.data();else{values={likes:0,wants:0};const related=await tx.get(db().collection('influencerGalleryPhotos').where('productSku','==',sku).select('likes','wants'));for(const doc of related.docs){values.likes+=Math.max(0,Number(doc.data().likes)||0);values.wants+=Math.max(0,Number(doc.data().wants)||0);}}
+   const old=previous.exists?previous.data():{},delta=Number(active)-Number(old[kind]===true),field=kind==='like'?'likes':'wants';
+   const result={sku,likes:Math.max(0,Number(values.likes)||0),wants:Math.max(0,Number(values.wants)||0)};result[field]=Math.max(0,result[field]+delta);
+   if(delta){tx.set(ref,result);tx.set(ledger,{...old,[kind]:active,updatedAt:new Date(now()).toISOString()});}
+   return result;
+  });
+ }
  async function interact(id,kind,visitor,membership){
   if(!/^[a-f0-9]{32}$/.test(id)||!['like','want'].includes(kind)||!secretValid(visitor))fail(400,'Interação inválida.');
   const followMessage='Para curtir ou marcar Quero, siga este influenciador e aguarde seu pedido ser aceito.';
@@ -205,6 +218,6 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   ]);
   return {photos:photos.docs.map(doc=>({...photoView(doc.id,doc.data()),owner:doc.data().owner})),requests:requests.docs.map(doc=>({id:doc.id,...doc.data(),status:doc.data().status==='pending'&&doc.data().expiresAt<=now()?'expired':doc.data().status}))};
  }
- return {productReactions,stats,publicStats,interact,manageFollower,gallery,photo,upload,remove,reviewPhoto,rescan,follow,followStatus,unfollow,confirmFollow,ownerSummary,adminQueue};
+ return {setProductReaction,productReactions,stats,publicStats,interact,manageFollower,gallery,photo,upload,remove,reviewPhoto,rescan,follow,followStatus,unfollow,confirmFollow,ownerSummary,adminQueue};
 }
 module.exports={createService,CommunityError,digest};

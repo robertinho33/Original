@@ -12,6 +12,10 @@ function rateLimit(max=60){const entries=new Map();return (req,res,next)=>{const
 function sendPhoto(res,bytes){res.type('image/jpeg').set({'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Disposition':'inline'}).send(bytes);}
 function createPublicRouter(deps={}){
  const service=createService({getDb:firebase.getFirestore,...deps}),router=express.Router();router.use(rateLimit(120));
+ router.post('/products/react',rateLimit(60),wrap(async(req,res)=>{
+  origin(req);const secure=req.secure||req.get('x-forwarded-proto')==='https',name=secure?'__Host-fp_community':'fp_community_local';const entry=String(req.get('cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(name+'=')),value=entry?entry.slice(name.length+1):'',visitor=/^[a-f0-9]{64}$/.test(value)?value:randomBytes(32).toString('hex');
+  const data=await service.setProductReaction(req.body?.sku,req.body?.kind,req.body?.active,visitor);res.cookie(name,visitor,{httpOnly:true,secure,sameSite:'lax',path:'/',maxAge:365*86400000});res.set('Cache-Control','no-store').json({success:true,data});
+ }));
  router.get('/products/reactions',wrap(async(req,res)=>res.set('Cache-Control','no-store').json({success:true,data:await service.productReactions()})));
  router.get('/stores/:id/gallery',wrap(async(req,res)=>res.json({success:true,data:{photos:await service.gallery(req.params.id)}})));
  router.get('/stores/:id/stats',wrap(async(req,res)=>res.set('Cache-Control','no-store').json({success:true,data:await service.publicStats(req.params.id)})));

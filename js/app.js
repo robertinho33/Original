@@ -3,6 +3,8 @@
 import { subscribeCatalog } from './catalog/catalog-service.js';
 import {hydrateRatings} from './catalog/product-ratings.js';
 import {productReactionMarkup,hydrateProductReactions} from './catalog/product-reactions.js';
+import {mountShoppingAffection} from './catalog/shopping-affection.js';
+import {routinePairings} from './catalog/routine-pairings.js';
 
 import {
     loadProducts,
@@ -33,6 +35,7 @@ let catalogSort = 'priority';
 
 const CART_STORAGE_KEY = 'aurea-cart';
 
+let shoppingAffection = null;
 let products = [];
 let cart = [];
 
@@ -289,6 +292,7 @@ async function refreshCatalog() {
 
     products = catalogProducts;
     renderStoreHighlights();
+    shoppingAffection?.render();
 
     return catalogProducts;
 }
@@ -1091,6 +1095,8 @@ function renderProductModal(product) {
                 : formatCurrency(0);
     }
 
+    renderProductComplements(product);
+    const savedActions=document.getElementById('modalShoppingReactions');if(savedActions){savedActions.innerHTML=productReactionMarkup(product.sku);void hydrateProductReactions(savedActions);}
     updateModalStock(product);
     updateModalImage(product);
     updateModalQuantity();
@@ -1112,6 +1118,12 @@ function renderProductModal(product) {
                 : 'Adicionar à sacola';
     }
 }
+
+function renderProductComplements(product){
+ const target=document.getElementById('productComplements');if(!target)return;const suggestions=routinePairings(product,catalogProducts,cart.map(row=>row.sku));target.hidden=!suggestions.length;
+ target.innerHTML=suggestions.length?'<h3>Um carinho a mais na sua rotina</h3><p>Cuidados da mesma linha para você conhecer. Uma unidade de cada produto, somente se você escolher.</p>'+suggestions.map(other=>'<article><div><strong>'+escapeHTML(other.name)+'</strong><small>'+formatCurrency(other.price)+' individual</small></div><button type="button" data-add-pair="'+escapeAttribute(other.sku)+'">Adicionar os dois · '+formatCurrency(Number(product.price)+Number(other.price))+'</button></article>').join('')+'<p>O total soma os dois produtos, sem desconto adicional. Frete no checkout.</p><p data-pair-message role="status"></p>':'';
+}
+document.getElementById('productComplements')?.addEventListener('click',event=>{const button=event.target.closest('[data-add-pair]');if(!button)return;const base=getProductBySku(selectedProductSku),other=getProductBySku(button.dataset.addPair);if(!base||!other)return;const enough=[base,other].every(p=>Number(p.stock)>(cart.find(item=>item.sku===p.sku)?.quantity||0));if(!enough){document.querySelector('[data-pair-message]').textContent='A quantidade disponível mudou. Confira sua sacola antes de continuar.';return;}addToCart(base.sku,1,false);addToCart(other.sku,1,false);closeProductModal();openCart();});
 
 function openProductModal(
     sku,
@@ -1488,6 +1500,8 @@ document
 /* =========================================================
    INICIALIZAÃ‡ÃƒO
    ========================================================= */
+
+shoppingAffection=mountShoppingAffection({getCatalog:()=>catalogProducts,onAdd:sku=>addToCart(sku),onDetails:(sku,trigger)=>openProductModal(sku,trigger)});
 
 async function init() {
     try {
