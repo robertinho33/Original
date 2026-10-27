@@ -78,7 +78,7 @@ if($('publicStore')){
     $('storeName').textContent=data.name;$('storeBio').textContent=data.bio;
     if(image(data.image)){$('storePhoto').src=image(data.image);$('storePhoto').hidden=false;}
     if(data.videoUrl){$('storeVideo').href=data.videoUrl;$('storeVideo').hidden=false;}
-    $('storeCouponTitle').textContent='Compre com o cupom de '+data.name;
+    $('storeCouponTitle').textContent='Seu cupom com '+data.name;
     $('storeCoupon').textContent=data.coupon;
     $('shopStoreCoupon').href='/index.html?cupom='+encodeURIComponent(data.coupon);
     $('copyStoreCoupon').addEventListener('click',async()=>{
@@ -86,7 +86,7 @@ if($('publicStore')){
       catch{$('storeCouponMessage').textContent='Copie o código '+data.coupon+' e use no checkout.';}
     });
     $('storeRitual').href='/pages/monte-seu-ritual.html?cupom='+encodeURIComponent(data.coupon);
-    $('discoveryProducts').innerHTML=cards(data.products);$('discoveryMessage').textContent=data.products.length?'Seleção pessoal deste parceiro da Fios Perfeitos.':'Nenhum produto desta seleção está disponível no momento.';
+    $('discoveryProducts').innerHTML=cards(data.products);$('discoveryMessage').textContent=data.products.length?'Entre, fique à vontade e descubra seus novos favoritos.':'Nenhum produto desta seleção está disponível no momento.';
     $('publicStore').hidden=false;
     if(data.features?.followers||data.features?.gallery)void mountPublicCommunity($('storeCommunity'),{owner:id,name:data.name,coupon:data.coupon,features:data.features});
   }catch(error){$('discoveryMessage').textContent=error.message;}})();
