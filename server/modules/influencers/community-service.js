@@ -130,11 +130,17 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
  }
  async function stats(owner){return require('./community-stats').communityStats(db(),owner);}
  async function publicStats(owner){await publicStore(owner);const features=await getAccess(db(),owner);if(!features.followers&&!features.gallery)fail(404,'Recurso indisponível.');const result=await stats(owner);return {friends:features.followers?result.friends:0,likes:features.gallery?result.likes:0,wants:features.gallery?result.wants:0};}
- async function interact(id,kind,visitor){
+ async function interact(id,kind,visitor,membership){
   if(!/^[a-f0-9]{32}$/.test(id)||!['like','want'].includes(kind)||!secretValid(visitor))fail(400,'Interação inválida.');
+  const followMessage='Para curtir ou marcar Quero, siga este influenciador e aguarde seu pedido ser aceito.';
+  if(!/^[a-f0-9]{32}$/.test(membership?.id||'')||!secretValid(membership?.secret))fail(403,followMessage);
   const ref=db().collection('influencerGalleryPhotos').doc(id),ledger=db().collection('communityPhotoInteractions').doc(digest(id+':'+visitor));
   return db().runTransaction(async tx=>{
-   const photo=await tx.get(ref);if(!photo.exists||photo.data().state!=='approved')fail(404,'Foto indisponível.');const data=photo.data();await requireFeature(data.owner,'gallery',tx);
+   const photo=await tx.get(ref);if(!photo.exists||photo.data().state!=='approved')fail(404,'Foto indisponível.');const data=photo.data();await requireFeature(data.owner,'gallery',tx);await requireFeature(data.owner,'followers',tx);
+   const request=await tx.get(db().collection('communityFollowRequests').doc(membership.id));
+   if(!request.exists||request.data().owner!==data.owner||request.data().status!=='confirmed'||request.data().managementHash!==digest(membership.secret))fail(403,followMessage);
+   const follower=await tx.get(followerRef(request.data()));
+   if(!follower.exists||follower.data().active!==true||follower.data().blocked===true||follower.data().managementHash!==request.data().managementHash)fail(403,followMessage);
    const parent=db().collection('influencerCommunities').doc(data.owner);
    const [store,person,previous,summary]=await Promise.all([tx.get(db().collection('influencerPublicStores').doc(data.owner)),tx.get(db().collection('influencers').doc(data.owner)),tx.get(ledger),tx.get(parent)]);
    if(!store.exists||store.data().enabled!==true||!person.exists||person.data().active===false)fail(404,'Vitrine indisponível.');
