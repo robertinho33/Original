@@ -179,3 +179,13 @@ test('only accepted followers of this owner interact; public totals survive bloc
  records.set('settings/influencerFeatureRollout',{enabled:false});await assert.rejects(service.interact(photo.id,'want',b,member),e=>e.status===404);
  records.set('settings/influencerFeatureRollout',{enabled:true,defaults:{gallery:true,followers:true}});records.set('influencerPublicStores/one',{enabled:true});await service.remove('one',photo.id);assert.deepEqual(await service.publicStats('one'),{friends:0,likes:2,wants:1});await assert.rejects(service.interact(photo.id,'want',b,member),e=>e.status===404);
 });
+
+test('home product counts aggregate existing photos and accepted interactions across influencers and survive photo removal',async()=>{
+ const {service,records}=setup(),one='1'.repeat(32),two='2'.repeat(32);
+ records.set('influencerGalleryPhotos/'+one,{owner:'one',state:'approved',productSku:'PRODUCT',likes:3,wants:1});records.set('influencerGalleryPhotos/'+two,{owner:'two',state:'approved',productSku:'PRODUCT',likes:6,wants:2});
+ assert.deepEqual(await service.productReactions(),[{sku:'PRODUCT',likes:9,wants:3}]);
+ const member=await service.follow('one',{name:'Pessoa',phone:'11999999999',followConsent:true});await service.manageFollower('one',member.id,'accept');
+ await service.interact(one,'like','a'.repeat(64),member);await service.interact(one,'like','a'.repeat(64),member);assert.deepEqual(await service.productReactions(),[{sku:'PRODUCT',likes:10,wants:3}]);
+ await service.remove('one',one);assert.deepEqual(await service.productReactions(),[{sku:'PRODUCT',likes:10,wants:3}]);
+ assert.ok(!JSON.stringify(await service.productReactions()).includes(member.secret));assert.ok(!JSON.stringify(await service.productReactions()).includes('owner'));
+});

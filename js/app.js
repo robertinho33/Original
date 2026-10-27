@@ -2,6 +2,7 @@
 
 import { subscribeCatalog } from './catalog/catalog-service.js';
 import {hydrateRatings} from './catalog/product-ratings.js';
+import {productReactionMarkup,hydrateProductReactions} from './catalog/product-reactions.js';
 
 import {
     loadProducts,
@@ -679,6 +680,7 @@ async function renderCatalog() {
 
                             ${source}
                             <div class="product-rating" data-rating-sku="${escapeAttribute(product.sku)}" aria-live="polite">☆☆☆☆☆ · Carregando avaliações</div>
+                            ${productReactionMarkup(product.sku)}
                             ${weight}
                             ${stock}
 
@@ -709,6 +711,7 @@ async function renderCatalog() {
 
         renderPagination(total);
         void hydrateRatings(productsEl);
+        void hydrateProductReactions(productsEl);
 
     } catch (error) {
         console.error(
@@ -1617,7 +1620,7 @@ function renderStoreHighlights(){
   const eligible=catalogProducts.filter(p=>p.active!==false&&!/^INATIVO\b/i.test(p.name||'')&&p.image&&Number(p.stock)>0&&Number(p.price)>0).sort((a,b)=>Number(b.featured)-Number(a.featured)||(Number(b.priority)||0)-(Number(a.priority)||0));
   const brands=[...new Set(eligible.map(p=>p.sourceId||''))],picks=[];
   for(let index=0;picks.length<8&&index<eligible.length;index++){for(const brand of brands){const product=eligible.filter(p=>(p.sourceId||'')===brand)[index];if(product)picks.push(product);if(picks.length===8)break;}}
-  target.innerHTML=picks.map(p=>`<article class="store-highlight-card"><button type="button" class="store-highlight-visual" data-featured-detail="${escapeAttribute(p.sku)}" aria-label="Ver detalhes de ${escapeAttribute(p.name)}"><img src="${escapeAttribute(p.image)}" alt="${escapeAttribute(p.name)}" class="product-image" width="240" height="240" loading="lazy" decoding="async"></button><div><small>${escapeHTML(p.sourceName||'Fios Perfeitos')}</small><h3>${escapeHTML(p.name)}</h3><strong>${formatCurrency(p.price)}</strong><button type="button" data-featured-add="${escapeAttribute(p.sku)}" aria-label="Adicionar ${escapeAttribute(p.name)} à sacola">Adicionar à sacola</button></div></article>`).join('')||'<p>Explore todos os produtos abaixo.</p>';target.setAttribute('aria-busy','false');
+  target.innerHTML=picks.map(p=>`<article class="store-highlight-card"><button type="button" class="store-highlight-visual" data-featured-detail="${escapeAttribute(p.sku)}" aria-label="Ver detalhes de ${escapeAttribute(p.name)}"><img src="${escapeAttribute(p.image)}" alt="${escapeAttribute(p.name)}" class="product-image" width="240" height="240" loading="lazy" decoding="async"></button><div><small>${escapeHTML(p.sourceName||'Fios Perfeitos')}</small><h3>${escapeHTML(p.name)}</h3>${productReactionMarkup(p.sku)}<strong>${formatCurrency(p.price)}</strong><button type="button" data-featured-add="${escapeAttribute(p.sku)}" aria-label="Adicionar ${escapeAttribute(p.name)} à sacola">Adicionar à sacola</button></div></article>`).join('')||'<p>Explore todos os produtos abaixo.</p>';target.setAttribute('aria-busy','false');void hydrateProductReactions(target);
 }
 document.addEventListener('click',event=>{
   const query=event.target.closest('[data-store-query]');

@@ -130,6 +130,12 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
  }
  async function stats(owner){return require('./community-stats').communityStats(db(),owner);}
  async function publicStats(owner){await publicStore(owner);const features=await getAccess(db(),owner);if(!features.followers&&!features.gallery)fail(404,'Recurso indisponível.');const result=await stats(owner);return {friends:features.followers?result.friends:0,likes:features.gallery?result.likes:0,wants:features.gallery?result.wants:0};}
+ async function productReactions(){
+  const [photos,totals]=await Promise.all([db().collection('influencerGalleryPhotos').select('productSku','likes','wants').get(),db().collection('communityProductMetrics').select('sku','likes','wants').get()]);
+  const rows=new Map();for(const doc of photos.docs){const data=doc.data();if(!data.productSku)continue;const row=rows.get(data.productSku)||{sku:data.productSku,likes:0,wants:0};row.likes+=Math.max(0,Number(data.likes)||0);row.wants+=Math.max(0,Number(data.wants)||0);rows.set(row.sku,row);}
+  for(const doc of totals.docs){const data=doc.data();if(data.sku)rows.set(data.sku,{sku:data.sku,likes:Math.max(0,Number(data.likes)||0),wants:Math.max(0,Number(data.wants)||0)});}
+  return [...rows.values()];
+ }
  async function interact(id,kind,visitor,membership){
   if(!/^[a-f0-9]{32}$/.test(id)||!['like','want'].includes(kind)||!secretValid(visitor))fail(400,'Interação inválida.');
   const followMessage='Para curtir ou marcar Quero, siga este influenciador e aguarde seu pedido ser aceito.';
@@ -146,7 +152,13 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
    if(!store.exists||store.data().enabled!==true||!person.exists||person.data().active===false)fail(404,'Vitrine indisponível.');
    const field=kind==='like'?'likes':'wants',old=previous.exists?previous.data():{},current=summary.exists?summary.data():{},totals=current.reactionTotals||{};
    const count=Math.max(0,Number(data[field])||0)+(old[kind]===true?0:1);
-   if(old[kind]!==true){tx.update(ref,{[field]:count});tx.set(ledger,{...old,[kind]:true,owner:data.owner,photoId:id,updatedAt:new Date(now()).toISOString()});tx.set(parent,{...current,reactionTotals:{...totals,[field]:(Number(totals[field])||0)+1}});}
+   let productRef,productTotals;
+   if(old[kind]!==true&&data.productSku){
+    productRef=db().collection('communityProductMetrics').doc(digest(data.productSku));const product=await tx.get(productRef);
+    if(product.exists)productTotals=product.data();else{const related=await tx.get(db().collection('influencerGalleryPhotos').where('productSku','==',data.productSku).select('likes','wants'));productTotals={sku:data.productSku,likes:0,wants:0};for(const doc of related.docs){productTotals.likes+=Math.max(0,Number(doc.data().likes)||0);productTotals.wants+=Math.max(0,Number(doc.data().wants)||0);}}
+   }
+
+   if(old[kind]!==true){if(productRef)tx.set(productRef,{sku:data.productSku,likes:Math.max(0,Number(productTotals.likes)||0),wants:Math.max(0,Number(productTotals.wants)||0),[field]:Math.max(0,Number(productTotals[field])||0)+1});tx.update(ref,{[field]:count});tx.set(ledger,{...old,[kind]:true,owner:data.owner,photoId:id,updatedAt:new Date(now()).toISOString()});tx.set(parent,{...current,reactionTotals:{...totals,[field]:(Number(totals[field])||0)+1}});}
    return {likes:field==='likes'?count:Number(data.likes)||0,wants:field==='wants'?count:Number(data.wants)||0};
   });
  }
@@ -193,6 +205,6 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   ]);
   return {photos:photos.docs.map(doc=>({...photoView(doc.id,doc.data()),owner:doc.data().owner})),requests:requests.docs.map(doc=>({id:doc.id,...doc.data(),status:doc.data().status==='pending'&&doc.data().expiresAt<=now()?'expired':doc.data().status}))};
  }
- return {stats,publicStats,interact,manageFollower,gallery,photo,upload,remove,reviewPhoto,rescan,follow,followStatus,unfollow,confirmFollow,ownerSummary,adminQueue};
+ return {productReactions,stats,publicStats,interact,manageFollower,gallery,photo,upload,remove,reviewPhoto,rescan,follow,followStatus,unfollow,confirmFollow,ownerSummary,adminQueue};
 }
 module.exports={createService,CommunityError,digest};
