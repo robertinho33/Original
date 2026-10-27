@@ -1,5 +1,6 @@
 'use strict';
 const express=require('express');
+const {randomBytes}=require('node:crypto');
 const {createService,CommunityError}=require('./community-service');
 const firebase=require('../../infrastructure/firebase/firebase-admin');
 const credentials=require('./credentials');
@@ -12,8 +13,10 @@ function sendPhoto(res,bytes){res.type('image/jpeg').set({'Cache-Control':'no-st
 function createPublicRouter(deps={}){
  const service=createService({getDb:firebase.getFirestore,...deps}),router=express.Router();router.use(rateLimit(120));
  router.get('/stores/:id/gallery',wrap(async(req,res)=>res.json({success:true,data:{photos:await service.gallery(req.params.id)}})));
+ router.get('/stores/:id/stats',wrap(async(req,res)=>res.set('Cache-Control','no-store').json({success:true,data:await service.publicStats(req.params.id)})));
+ router.post('/photos/:id/interact',rateLimit(60),wrap(async(req,res)=>{origin(req);const secure=req.secure||req.get('x-forwarded-proto')==='https',name=secure?'__Host-fp_community':'fp_community_local';const match=String(req.get('cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(name+'='));const value=match?match.slice(name.length+1):'';const visitor=/^[a-f0-9]{64}$/.test(value)?value:randomBytes(32).toString('hex');const data=await service.interact(req.params.id,req.body?.kind,visitor);res.cookie(name,visitor,{httpOnly:true,secure,sameSite:'lax',path:'/',maxAge:365*86400000});res.set('Cache-Control','no-store').json({success:true,data});}));
  router.get('/photos/:id',wrap(async(req,res)=>sendPhoto(res,await service.photo(req.params.id))));
- router.post('/stores/:id/follow',rateLimit(8),wrap(async(req,res)=>{origin(req);res.json({success:true,data:await service.follow(req.params.id,req.body)});}));
+ router.post('/stores/:id/follow',rateLimit(8),wrap(async(req,res)=>{origin(req);const {id,secret,status}=await service.follow(req.params.id,req.body);res.set('Cache-Control','no-store').json({success:true,data:{id,secret,status}});}));
  router.post('/follow/:id/status',wrap(async(req,res)=>{origin(req);res.json({success:true,data:await service.followStatus(req.params.id,req.body?.secret)});}));
  router.post('/follow/:id/cancel',wrap(async(req,res)=>{origin(req);await service.unfollow(req.params.id,req.body?.secret);res.json({success:true});}));
  return router;
@@ -22,6 +25,7 @@ function createOwnerRouter(deps={}){
  const getDb=deps.getDb||firebase.getFirestore,service=createService({getDb,...deps}),router=express.Router();router.use(rateLimit(80));
  router.use(async(req,res,next)=>{try{const user=await credentials.identity(getDb(),req);if(!user||user.mustChangePassword)return res.status(401).json({success:false,error:'Entre com sua senha pessoal.'});req.communityOwner=user.id;next();}catch{res.status(503).json({success:false,error:'Não foi possível conferir seu acesso.'});}});
  router.get('/',wrap(async(req,res)=>res.json({success:true,data:await service.ownerSummary(req.communityOwner)})));
+ router.post('/followers/:id',wrap(async(req,res)=>{origin(req);await service.manageFollower(req.communityOwner,req.params.id,req.body?.decision);res.json({success:true});}));
  router.post('/photos',rateLimit(12),wrap(async(req,res)=>{origin(req);res.json({success:true,data:await service.upload(req.communityOwner,req.body)});}));
  router.get('/photos/:id',wrap(async(req,res)=>sendPhoto(res,await service.photo(req.params.id,req.communityOwner))));
  router.delete('/photos/:id',wrap(async(req,res)=>{origin(req);await service.remove(req.communityOwner,req.params.id);res.json({success:true});}));

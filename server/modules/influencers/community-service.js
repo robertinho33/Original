@@ -8,7 +8,7 @@ const secretValid=secret=>typeof secret==='string'&&/^[a-f0-9]{64}$/.test(secret
 class CommunityError extends Error{constructor(status,message){super(message);this.status=status;}}
 const fail=(status,message)=>{throw new CommunityError(status,message);};
 const clean=(value,max)=>typeof value==='string'?value.trim().slice(0,max):'';
-function photoView(id,data){return {id,caption:clean(data.caption,240),productSku:clean(data.productSku,100),state:data.state,analysis:data.analysis,createdAt:data.createdAt,reviewNote:clean(data.reviewNote,240),imageUrl:'/api/community/photos/'+encodeURIComponent(id)};}
+function photoView(id,data){return {id,likes:Number(data.likes)||0,wants:Number(data.wants)||0,caption:clean(data.caption,240),productSku:clean(data.productSku,100),state:data.state,analysis:data.analysis,createdAt:data.createdAt,reviewNote:clean(data.reviewNote,240),imageUrl:'/api/community/photos/'+encodeURIComponent(id)};}
 function createService({getDb,analyzeImage=bytes=>require('./image-moderation').analyzeImage(bytes),prepareImage=body=>require('./image-moderation').prepareImage(body),getCatalog=()=>require('./discovery').publicCatalog(),now=()=>Date.now()}){
  const db=()=>getDb();
  async function requireFeature(owner,key,tx){if(!(await getAccess(db(),owner,tx))[key])fail(404,'Recurso indisponível.');}
@@ -89,6 +89,7 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   const ref=db().collection('communityFollowRequests').doc(id),limit=db().collection('communityFollowLimits').doc(digest(owner+':'+number));
   await db().runTransaction(async tx=>{
    await requireFeature(owner,'followers',tx);
+   const existing=await tx.get(followerRef({owner,phone:number}));if(existing.exists&&existing.data().blocked===true)fail(403,'Este acompanhamento está bloqueado pelo influenciador.');
    const previous=await tx.get(limit);if(previous.exists&&now()-previous.data().createdAt<300000)fail(429,'Já há um pedido recente para esse WhatsApp. Aguarde cinco minutos.');
    tx.set(ref,{owner,name,phone:number,managementHash:digest(secret),codeHash:digest(code),status:'pending',followConsent:true,marketingConsent:body.marketingConsent===true,consentVersion:'2026-10-26',createdAt,expiresAt:now()+48*3600000});tx.set(limit,{createdAt:now()});
   });
@@ -104,6 +105,7 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
  async function followStatus(id,secret){
   const {data}=await ownRequest(id,secret);let status=data.status;
   if(status==='pending'&&data.expiresAt<=now())status='expired';
+  if(['pending','confirmed'].includes(status)){const target=await followerRef(data).get();if(target.exists&&target.data().blocked===true)status='blocked';}
   if(status==='confirmed'){const follower=await followerRef(data).get();if(!follower.exists||!follower.data().active||follower.data().managementHash!==data.managementHash)status='inactive';}
   return {status,marketingConsent:data.marketingConsent===true};
  }
@@ -120,16 +122,56 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
    if(phone(body.phone)!==data.phone||digest(clean(body.code,30).toUpperCase())!==data.codeHash)fail(400,'Número ou código não corresponde à mensagem recebida.');
    if(body.decision==='approve')await requireFeature(data.owner,'followers',tx);
    const target=followerRef(data),follower=await tx.get(target);
+   if(body.decision==='approve'&&follower.exists&&follower.data().blocked===true)fail(403,'Acompanhamento bloqueado pelo influenciador.');
    if(body.decision==='approve'&&follower.exists&&Number(follower.data().consentUpdatedAt)>=Date.parse(data.createdAt))fail(409,'Este pedido é anterior à última alteração ou cancelamento. Solicite uma nova confirmação.');
    tx.update(ref,{status:body.decision==='approve'?'confirmed':'rejected',reviewedBy:actor,reviewedAt:new Date(now()).toISOString()});
-   if(body.decision==='approve')tx.set(target,{name:data.name,phone:data.phone,active:true,managementHash:data.managementHash,followConsent:true,marketingConsent:data.marketingConsent,consentVersion:data.consentVersion,consentedAt:data.createdAt,consentUpdatedAt:Date.parse(data.createdAt),confirmedAt:new Date(now()).toISOString(),confirmedBy:actor});
+   if(body.decision==='approve')tx.set(target,{name:data.name,phone:data.phone,active:true,sourceRequestId:id,managementHash:data.managementHash,followConsent:true,marketingConsent:data.marketingConsent,consentVersion:data.consentVersion,consentedAt:data.createdAt,consentUpdatedAt:Date.parse(data.createdAt),confirmedAt:new Date(now()).toISOString(),confirmedBy:actor});
+  });
+ }
+ async function stats(owner){return require('./community-stats').communityStats(db(),owner);}
+ async function publicStats(owner){await publicStore(owner);const features=await getAccess(db(),owner);if(!features.followers&&!features.gallery)fail(404,'Recurso indisponível.');const result=await stats(owner);return {friends:features.followers?result.friends:0,likes:features.gallery?result.likes:0,wants:features.gallery?result.wants:0};}
+ async function interact(id,kind,visitor){
+  if(!/^[a-f0-9]{32}$/.test(id)||!['like','want'].includes(kind)||!secretValid(visitor))fail(400,'Interação inválida.');
+  const ref=db().collection('influencerGalleryPhotos').doc(id),ledger=db().collection('communityPhotoInteractions').doc(digest(id+':'+visitor));
+  return db().runTransaction(async tx=>{
+   const photo=await tx.get(ref);if(!photo.exists||photo.data().state!=='approved')fail(404,'Foto indisponível.');const data=photo.data();await requireFeature(data.owner,'gallery',tx);
+   const parent=db().collection('influencerCommunities').doc(data.owner);
+   const [store,person,previous,summary]=await Promise.all([tx.get(db().collection('influencerPublicStores').doc(data.owner)),tx.get(db().collection('influencers').doc(data.owner)),tx.get(ledger),tx.get(parent)]);
+   if(!store.exists||store.data().enabled!==true||!person.exists||person.data().active===false)fail(404,'Vitrine indisponível.');
+   const field=kind==='like'?'likes':'wants',old=previous.exists?previous.data():{},current=summary.exists?summary.data():{},totals=current.reactionTotals||{};
+   const count=Math.max(0,Number(data[field])||0)+(old[kind]===true?0:1);
+   if(old[kind]!==true){tx.update(ref,{[field]:count});tx.set(ledger,{...old,[kind]:true,owner:data.owner,photoId:id,updatedAt:new Date(now()).toISOString()});tx.set(parent,{...current,reactionTotals:{...totals,[field]:(Number(totals[field])||0)+1}});}
+   return {likes:field==='likes'?count:Number(data.likes)||0,wants:field==='wants'?count:Number(data.wants)||0};
+  });
+ }
+ async function manageFollower(owner,id,decision){
+  if(!/^[a-f0-9]{32}$/.test(id)||!['accept','block','unblock'].includes(decision))fail(400,'Ação inválida.');
+  const ref=db().collection('communityFollowRequests').doc(id);
+  await db().runTransaction(async tx=>{
+   await requireFeature(owner,'followers',tx);const doc=await tx.get(ref);
+   if(!doc.exists||doc.data().owner!==owner)fail(404,'Pedido não encontrado.');const data=doc.data(),target=followerRef(data),follower=await tx.get(target),current=follower.exists?follower.data():{};
+   const stamp=new Date(now()).toISOString();
+   if(decision==='accept'){
+    if(data.status!=='pending'||data.expiresAt<=now())fail(409,'Este pedido não está pendente ou expirou.');
+    if(current.blocked===true)fail(409,'Desbloqueie esta pessoa antes de aceitar um novo pedido.');
+    if(Number(current.consentUpdatedAt)>=Date.parse(data.createdAt))fail(409,'Pedido anterior ao último cancelamento. Aguarde uma nova solicitação.');
+    tx.set(target,{name:data.name,phone:data.phone,active:true,blocked:false,sourceRequestId:id,managementHash:data.managementHash,followConsent:true,marketingConsent:data.marketingConsent===true,consentVersion:data.consentVersion,consentedAt:data.createdAt,consentUpdatedAt:Date.parse(data.createdAt),confirmedAt:stamp,confirmedBy:owner,phoneVerified:false});
+    tx.update(ref,{status:'confirmed',reviewedBy:owner,reviewedAt:stamp});
+   }else{
+    if(decision==='unblock'&&current.blocked!==true)fail(409,'Esta pessoa não está bloqueada.');
+    tx.set(target,{...current,name:current.name||data.name,phone:data.phone,sourceRequestId:id,active:false,blocked:decision==='block',marketingConsent:false,consentUpdatedAt:now(),reviewedAt:stamp,reviewedBy:owner});
+    tx.update(ref,{status:decision==='block'?'blocked':'inactive',reviewedBy:owner,reviewedAt:stamp});
+   }
   });
  }
  async function ownerSummary(owner){
-  const features=await getAccess(db(),owner);
-  if(!features.followers&&!features.gallery)fail(404,'Recurso indisponível.');
-  const snap=features.followers?await db().collection('influencerCommunities').doc(owner).collection('followers').where('active','==',true).count().get():null;
-  return {features,followers:snap?snap.data().count:0,photos:features.gallery?await gallery(owner,true):[]};
+  const features=await getAccess(db(),owner);if(!features.followers&&!features.gallery)fail(404,'Recurso indisponível.');
+  const [counts,requests,followers]=await Promise.all([stats(owner),features.followers?db().collection('communityFollowRequests').where('owner','==',owner).select('name','phone','status','createdAt','expiresAt','managementHash').get():null,features.followers?db().collection('influencerCommunities').doc(owner).collection('followers').get():null]);
+  const rows=requests?requests.docs.map(d=>({id:d.id,...d.data()})):[];
+  const blockedNumbers=new Set((followers?followers.docs:[]).filter(d=>d.data().blocked===true).map(d=>d.data().phone));
+  const view=r=>({id:r.id,name:r.name,phone:'•••• '+String(r.phone||'').slice(-4),createdAt:r.createdAt});
+  const friends=(followers?followers.docs:[]).map(d=>d.data()).filter(d=>d.active||d.blocked).map(d=>{const source=rows.find(r=>r.id===d.sourceRequestId)||rows.find(r=>r.managementHash===d.managementHash);return source?{...view({...source,name:d.name}),blocked:d.blocked===true}:null;}).filter(Boolean);
+  return {features,followers:features.followers?counts.friends:0,stats:counts,requests:rows.filter(r=>r.status==='pending'&&r.expiresAt>now()&&!blockedNumbers.has(r.phone)).map(view),friends,photos:features.gallery?await gallery(owner,true):[]};
  }
  async function adminQueue(owner){
   if(owner&&!idValid(owner))fail(400,'Influenciador inválido.');
@@ -145,6 +187,6 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
   ]);
   return {photos:photos.docs.map(doc=>({...photoView(doc.id,doc.data()),owner:doc.data().owner})),requests:requests.docs.map(doc=>({id:doc.id,...doc.data(),status:doc.data().status==='pending'&&doc.data().expiresAt<=now()?'expired':doc.data().status}))};
  }
- return {gallery,photo,upload,remove,reviewPhoto,rescan,follow,followStatus,unfollow,confirmFollow,ownerSummary,adminQueue};
+ return {stats,publicStats,interact,manageFollower,gallery,photo,upload,remove,reviewPhoto,rescan,follow,followStatus,unfollow,confirmFollow,ownerSummary,adminQueue};
 }
 module.exports={createService,CommunityError,digest};

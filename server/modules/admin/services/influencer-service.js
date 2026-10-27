@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const {
     getFirestore
@@ -64,9 +64,12 @@ async function listInfluencers() {
             .collection(COLLECTION)
             .get();
 
+    const {communityStats}=require("../../influencers/community-stats");
+    const stats=new Map(await Promise.all(snapshot.docs.map(async doc=>[doc.id,await communityStats(db(),doc.id)])));
     return snapshot.docs
         .map(doc => ({
             ...doc.data(),
+            communityStats:stats.get(doc.id),
             id: doc.id
         }))
         .sort((a, b) =>
