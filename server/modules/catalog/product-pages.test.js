@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),express=req
 const {createHash}=require('node:crypto');
 const {securityHeaders}=require('../../infrastructure/security');
 const {isPublicFile}=require('../../infrastructure/public-files');
-const {registerSearchFiles}=require('../../infrastructure/web-delivery');
+const {registerSearchFiles,INDEXABLE}=require('../../infrastructure/web-delivery');
 const {selectIndexable,renderProduct,registerProductPages}=require('./product-pages');
 const product={sku:'SKU-1',name:'Máscara & cuidado',sourceId:'ecobelle',sourceName:'EcoBelle',price:39.95,stock:3,active:true,image:'https://example.com/item.jpg',description:'Cuidado diário.'};
 const state={sources:[{id:'ecobelle',visible:true},{id:'truss',visible:false}],inactiveProductSkus:['hidden']};
@@ -42,7 +42,7 @@ test('real route pipeline serves crawlable pages, product sitemap and true 404s 
  assert.equal((directory.match(/<li>/g)||[]).length,2);assert.match(directory,/SKU-37/);
  const xml=await (await fetch(base+'/sitemap.xml')).text();
  assert.match(xml,/<loc>https:\/\/www.fiosperfeitos.com.br\/produto\/SKU-1<\/loc>/);
- assert.equal((xml.match(/<loc>/g)||[]).length,44);
+ assert.equal((xml.match(/<loc>/g)||[]).length,INDEXABLE.length+1+products.length);
 });
 test('catalog failures never publish fallback hidden products',async t=>{
  const app=express();registerProductPages(app,{getProducts:async()=>{throw Error('offline');}});

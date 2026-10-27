@@ -165,6 +165,7 @@ function renderOrder(order) {
         (currentStep(order) >= 3 ? 'Os dados de rastreio ainda não foram informados.' : 'As informações de envio aparecerão após a postagem.');
 
     document.dispatchEvent(new CustomEvent('nefer:tracking-loaded', { detail: { orderNumber: order.orderNumber || order.id, paymentStatus: order.paymentStatus, paymentProvider: order.paymentProvider, trackingToken: order.trackingToken } }));
+    const support=document.getElementById('trackingSupport'),number=String(order.orderNumber||order.id||'');if(support)support.href='/pages/atendimento.html'+(/^[a-z0-9-]{1,50}$/i.test(number)?'#pedido='+encodeURIComponent(number):'');
     renderTimeline(order);
     measurePurchase(order.adsPurchase);
     void mountProductReviews(elements.result,order.trackingToken);

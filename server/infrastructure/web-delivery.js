@@ -1,6 +1,6 @@
 'use strict';
 const ORIGIN = 'https://www.fiosperfeitos.com.br';
-const INDEXABLE = ['/', '/index.html', '/pages/monte-seu-ritual.html', '/pages/trocas.html', '/pages/privacidade.html'];
+const INDEXABLE = ['/', '/index.html', '/pages/monte-seu-ritual.html', '/pages/trocas.html', '/pages/privacidade.html', '/pages/atendimento.html'];
 function deliveryHeaders(req, res, next) {
   // Public catalog controllers may explicitly override this after authorization-free reads.
   if (req.path === '/api' || req.path.startsWith('/api/')) {

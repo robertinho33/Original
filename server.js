@@ -35,7 +35,7 @@ app.use((req, res, next) => {
     if (!pathname.startsWith('/api/') && !require('./server/infrastructure/public-files').isPublicFile(pathname)) return res.sendStatus(404);
     next();
 });
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'pages/boas-vindas.html')));
+require('./server/modules/store/business-identity').registerPublicIdentityPages(app,{root:__dirname});
 const productPages = require('./server/modules/catalog/product-pages');
 webDelivery.registerSearchFiles(app, { getProducts: productPages.getIndexableProducts });
 productPages.registerProductPages(app);
