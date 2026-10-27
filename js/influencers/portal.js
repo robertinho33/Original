@@ -1,5 +1,5 @@
 import {mountGalleryEditor} from './gallery-editor.js';
-import {mountStoreSharing} from './store-sharing.js';
+import {mountStoreSharing,storeShareUrl} from './store-sharing.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
 import { mountProfileEditor } from './profile-editor.js';
 import { mountStoreEditor } from './store-editor.js';
@@ -11,12 +11,17 @@ const statuses = { pending:'Aguardando processamento',new:'Pedido recebido',paid
 const commissionLabels = { paid:'Repassada',pending:'Aguardando repasse',estimated:'Estimada · a conciliar',not_eligible:'Ainda não elegível' };
 const dateLabel = value => value ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? value + 'T12:00:00-03:00' : value).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '';
 let passwordChangeRequested=false;
+$('portalStoreAddress').addEventListener('click',event=>event.currentTarget.select());
 function render(data) {
   if(data.features?.sharing)storeSharing.update(data.storeUrl,data.profile.name);else storeSharing.reset();
   syncCommunityFeatures(data.features||{});
   $('portalLogin').hidden = true; $('portalDashboard').hidden = false;
   $('portalGreeting').textContent = 'Olá, ' + data.profile.name.split(' ')[0] + '.';
-  const storeLink=$('portalStoreLink'); storeLink.hidden=!data.storeUrl; if(data.storeUrl?.startsWith('/pages/vitrine-influenciador.html?loja=')) storeLink.href=data.storeUrl;
+  const publicUrl=storeShareUrl(data.storeUrl),storeLink=$('portalStoreLink');
+  storeLink.hidden=!publicUrl;if(publicUrl)storeLink.href=publicUrl;else storeLink.removeAttribute('href');
+  $('portalStoreAddress').value=publicUrl;$('portalStoreAddress').hidden=!publicUrl;
+  $('portalStoreAddressLabel').hidden=!publicUrl;$('portalStoreUnpublished').hidden=Boolean(publicUrl);
+  $('portalStoreAddressWrap').hidden=Boolean(publicUrl&&data.features?.sharing===true);
   renderPromotions(data);
   if(passwordChangeRequested){passwordChangeRequested=false;openPasswordPanel();}
   const summary = data.summary;
@@ -31,7 +36,7 @@ async function request(path, body = {}) {
   if (!response.ok || !result.success) { const error = new Error(result.error || 'Não foi possível consultar o portal.'); error.status=response.status; throw error; }
   return result.data;
 }
-function showLogin() { galleryEditor.reset();$('portalGalleryEditor').hidden=true; storeSharing.reset(); $('portalCampaign').replaceChildren();$('portalBestSellers').replaceChildren();$('portalStoreLink').hidden=true;$('portalStoreLink').removeAttribute('href'); $('portalFirstAccess').hidden=true;$('portalFirstPasswordForm').reset();profileEditor.reset(); $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
+function showLogin() { $('portalStoreAddress').value='';$('portalStoreAddressWrap').hidden=true; galleryEditor.reset();$('portalGalleryEditor').hidden=true; storeSharing.reset(); $('portalCampaign').replaceChildren();$('portalBestSellers').replaceChildren();$('portalStoreLink').hidden=true;$('portalStoreLink').removeAttribute('href'); $('portalFirstAccess').hidden=true;$('portalFirstPasswordForm').reset();profileEditor.reset(); $('portalPasswordForm').reset(); $('portalPasswordMessage').textContent=''; storeEditor.reset(); $('portalDashboard').hidden=true; $('portalLogin').hidden=false; $('portalSalesBody').replaceChildren(); $('portalMetrics').replaceChildren(); }
 let galleryEditor={reset(){}};let galleryFeatureKey='';
 function syncCommunityFeatures(features){
  const container=$('portalGalleryEditor'),enabled=features.followers||features.gallery,key=JSON.stringify([features.followers===true,features.gallery===true]);
