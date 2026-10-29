@@ -36,10 +36,21 @@ test('all profiles respect stock, visibility, budget, verified purpose and uniqu
   const result=recommend(config,catalog,{hair,chemistry,goal,budget});assert.ok(result.total<=budget);assert.equal(new Set(result.products.map(p=>p.sku)).size,result.products.length);
   assert.equal(Math.round(result.products.reduce((sum,p)=>sum+p.price,0)*100),Math.round(result.total*100));
   const kit=result.products.find(p=>p.step==='kit'),members=new Set(catalog.find(p=>p.sku===kit?.sku)?.recommendationProfile.components.map(c=>c.sku)||[]);
-  for(const p of result.products){const original=catalog.find(c=>c.sku===p.sku),profile=original.recommendationProfile;assert.ok(profile.verified&&profile.goals.includes(goal));assert.ok(!profile.restrictions.includes('blonde_only')&&!profile.restrictions.includes('light_tones_only'));assert.ok(!members.has(p.sku));if(profile.hairScope!=='unknown')assert.ok(profile.hair.includes(hair));if(profile.chemistryScope!=='unknown')assert.ok(profile.chemistry.includes(chemistry));}
+  for(const p of result.products){const original=catalog.find(c=>c.sku===p.sku),profile=original.recommendationProfile;assert.ok(profile.verified&&profile.goals.includes(p.matchedGoal));if(p.matchedGoal!==goal){assert.equal(p.step,'kit');assert.ok(result.products.some(other=>other.matchedGoal===goal));}assert.ok(!profile.restrictions.includes('blonde_only')&&!profile.restrictions.includes('light_tones_only'));assert.ok(!members.has(p.sku));if(profile.hairScope!=='unknown')assert.ok(profile.hair.includes(hair));if(profile.chemistryScope!=='unknown')assert.ok(profile.chemistry.includes(chemistry));}
  }
  const unavailable=catalog.map(p=>({...p,stock:0}));assert.deepEqual(recommend(config,unavailable,input).products,[]);
  const legacy=catalog.map(({recommendationProfile,...p})=>p);assert.deepEqual(recommend({...config,manufacturerEvidence:'ecobelle'},legacy,input).products,[]);
+});
+test('coily curls with dry ends receives a supporting kit first and retains a curl product',()=>{
+ const result=recommend(config,catalog,{hair:'coily',chemistry:'treated',goal:'curls',ends:'dry',budget:400});
+ assert.equal(result.products[0].step,'kit');assert.ok(['hydration','nutrition'].includes(result.products[0].matchedGoal));assert.ok(result.products.some(p=>p.matchedGoal==='curls'));assert.ok(result.total<=400);
+ assert.ok(!result.products.some(p=>p.sku==='7TNHTQDUL'));
+ for(let i=2;i<result.products.length;i++)assert.ok(result.products[i-1].price>=result.products[i].price);
+});
+test('an affordable kit is prioritized at exactly 120 and below, without exceeding the budget',()=>{
+ const goal={...input,goal:'oiliness',ends:'normal',budget:120};assert.equal(recommend(config,catalog,goal).products[0].step,'kit');
+ const lower=catalog.map(p=>p.sku==='2QSQFLXZ6'?{...p,price:99}:p);assert.equal(recommend(config,lower,{...goal,budget:100}).products[0].step,'kit');
+ const noRoom=catalog.map(p=>p.recommendationProfile.type==='kit'?{...p,price:400}:p);assert.ok(!recommend(config,noRoom,{hair:'coily',chemistry:'treated',goal:'curls',ends:'dry',budget:400}).products.some(p=>p.step==='kit'));
 });
 test('toning asks for the actual shade and never suggests blonde-only products for grey or dark hair',()=>{
  const color={...input,goal:'color'};
