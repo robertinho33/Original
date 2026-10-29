@@ -26,6 +26,7 @@ test('all profiles respect stock, visibility, budget, verified purpose and uniqu
   for(const p of result.products){const original=catalog.find(c=>c.sku===p.sku),profile=original.recommendationProfile;assert.ok(profile.verified&&profile.goals.includes(goal));assert.ok(!profile.restrictions.includes('blonde_only')&&!profile.restrictions.includes('light_tones_only'));assert.ok(!members.has(p.sku));if(profile.hairScope!=='unknown')assert.ok(profile.hair.includes(hair));if(profile.chemistryScope!=='unknown')assert.ok(profile.chemistry.includes(chemistry));}
  }
  const unavailable=catalog.map(p=>({...p,stock:0}));assert.deepEqual(recommend(config,unavailable,input).products,[]);
+ const legacy=catalog.map(({recommendationProfile,...p})=>p);assert.deepEqual(recommend({...config,manufacturerEvidence:'ecobelle'},legacy,input).products,[]);
 });
 test('toning asks for the actual shade and never suggests blonde-only products for grey or dark hair',()=>{
  const color={...input,goal:'color'};

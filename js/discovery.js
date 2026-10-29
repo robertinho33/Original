@@ -1,4 +1,4 @@
-import {mountRitualGallery} from './ritual-gallery.js';
+import {mountRitualGallery} from './ritual-gallery.js?v=20261029-eco';
 import {mountPublicCommunity} from './influencers/public-community.js';
 import {mergeCareCart,cleanMatchReasons} from './care-selection.js';
 import {careConsent} from './analytics/care-consent.js';

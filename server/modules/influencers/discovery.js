@@ -69,7 +69,7 @@ function createRouter(deps={}){
   }catch{res.status(503).json({success:false,error:'Não foi possível carregar esta vitrine.'});}});
   router.post('/ritual',async(req,res)=>{try{
     const [snapshot,catalog]=await Promise.all([db().collection('storeRitualRules').doc('current').get(),getCatalog()]);
-    const data=recommend(snapshot.exists?snapshot.data():null,catalog,req.body);
+    const data=recommend(snapshot.exists?{...snapshot.data(),manufacturerEvidence:'ecobelle'}:null,catalog,req.body);
     const interests=require('./care-interests');
     if(interests.mayMeasure(req)){
       try{void interests.recordInterest(db(),req.body,data,req.body.measurement.session).catch(()=>{});}catch{ /* Optional reporting never prevents a recommendation. */ }
