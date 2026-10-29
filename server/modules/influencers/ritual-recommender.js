@@ -23,7 +23,7 @@ function recommend(config,catalog,input={}){
     const cents=Math.round(Number(product.price)*100),stock=Number(product.stock);
     if(product.careReviewStatus!=='excluded'&&product.active!==false&&!/^inativo/i.test(product.name||'')&&Number.isFinite(stock)&&stock>=1&&Number.isFinite(cents)&&cents>0&&cents<=budgetCents)bySku.set(key(product.sku),{product,cents});
   }
-  if(config.automatic===true&&(config.manufacturerEvidence==='ecobelle'||catalog.some(p=>p.sourceId==='ecobelle'&&p.recommendationProfile)))return require('./verified-care-selector').recommendVerified(bySku,input);
+  if(config.manufacturerEvidence==='ecobelle'||config.automatic===true&&catalog.some(p=>p.sourceId==='ecobelle'&&p.recommendationProfile))return require('./verified-care-selector').recommendVerified(bySku,input);
   if(config.automatic===true)return require('./budget-selection').budgetSelection(recommendByLine(bySku,config,input),bySku,config,input);
   const candidates=Object.fromEntries(steps.map(step=>[step,new Map()]));
   // The saved curation permits at most 30 rows. Keep work bounded for older/malformed documents too.

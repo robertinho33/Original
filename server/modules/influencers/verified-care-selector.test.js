@@ -70,12 +70,27 @@ test('three comparisons preserve kits, primary purpose, budget and actual distin
  for(const hair of ['straight','wavy','curly','coily'])for(const goal of ['hydration','nutrition','repair','frizz','curls','oiliness','color'])for(const ends of ['normal','dry','damaged','frizzy'])for(const budget of [120,400,600]){
   const answers={hair,goal,ends,budget,chemistry:'treated',...(goal==='color'?{shade:'blonde'}:{})};const result=recommend(config,catalog,answers),all=[result,...result.alternatives];assert.ok(all.length<=3);
   const signatures=[];for(const option of all){if(!option.products.length)continue;const signature=option.products.map(p=>p.sku).sort().join('|');signatures.push(signature);assert.ok(option.total<=budget);assert.equal(Math.round(option.total*100),option.products.reduce((sum,p)=>sum+Math.round(p.price*100),0));assert.equal(new Set(option.products.map(p=>p.sku)).size,option.products.length);
-   if(result.products[0]?.step==='kit')assert.equal(option.products[0].step,'kit');if(result.products.some(p=>p.matchedGoal===goal))assert.ok(option.products.some(p=>p.matchedGoal===goal));
+   assert.equal(option.products[0].step,'kit');if(result.products.some(p=>p.matchedGoal===goal))assert.ok(option.products.some(p=>p.matchedGoal===goal));
    const kit=option.products.find(p=>p.step==='kit'),members=new Set(catalog.find(p=>p.sku===kit?.sku)?.recommendationProfile.components.map(c=>c.sku)||[]);for(const p of option.products)assert.ok(!members.has(p.sku));
   }assert.equal(new Set(signatures).size,signatures.length);
  }
  const answers={hair:'coily',chemistry:'treated',goal:'curls',ends:'dry',budget:400};const result=recommend(config,catalog,answers);assert.equal(result.alternatives.length,2);assert.equal(new Set([result,...result.alternatives].map(o=>o.products[0].sku)).size,3);
  assert.deepEqual(recommend(config,[...catalog].reverse(),answers),result);
+});
+test('reported straight natural curls with frizz at 300 always starts every option with a kit',()=>{
+ const answers={hair:'straight',chemistry:'natural',goal:'curls',ends:'frizzy',budget:300};
+ const result=recommend({...config,manufacturerEvidence:'ecobelle'},catalog,answers),all=[result,...result.alternatives];assert.equal(all.length,3);
+ for(const option of all){assert.equal(option.products[0].step,'kit');assert.ok(option.total<=300);assert.match(option.explanation,/Não encontramos indicação confirmada/);
+  const kit=catalog.find(p=>p.sku===option.products[0].sku),members=new Set(kit.recommendationProfile.components.map(c=>c.sku));
+  assert.ok(!option.products.some(p=>p.sku==='7TNHTQDUL'||p.matchedGoal==='curls'));
+  for(let i=1;i<option.products.length;i++){assert.ok(!members.has(option.products[i].sku));assert.equal(option.products[i].step==='kit',false);if(i>1)assert.ok(option.products[i-1].price>=option.products[i].price);}
+ }
+ assert.deepEqual(recommend({...config,automatic:false,manufacturerEvidence:'ecobelle'},catalog,answers),result);
+});
+test('no affordable available compatible kit means no individual-only fallback in any option',()=>{
+ for(const variant of [catalog.filter(p=>p.recommendationProfile.type!=='kit'),catalog.map(p=>p.recommendationProfile.type==='kit'?{...p,stock:0}:p),catalog.map(p=>p.recommendationProfile.type==='kit'?{...p,active:false}:p),catalog.map(p=>p.recommendationProfile.type==='kit'?{...p,price:1000}:p),catalog.map(p=>p.recommendationProfile.type==='kit'?{...p,recommendationProfile:{...p.recommendationProfile,step:'finish'}}:p)]){
+  const result=recommend(config,variant,{...input,budget:300,ends:'frizzy'});assert.deepEqual(result.products,[]);assert.deepEqual(result.alternatives,[]);assert.match(result.message,/kit/);
+ }
 });
 test('limited inventory never fabricates three copies of a sole available kit',()=>{
  const only=catalog.filter(p=>p.sku==='2QSQFLXZ6');const result=recommend(config,only,{...input,goal:'oiliness',budget:400,ends:'normal'});assert.equal(result.products.length,1);assert.deepEqual(result.alternatives,[]);
