@@ -17,3 +17,7 @@ test('public catalog uses current prices and visibility without exposing adminis
   assert.ok(!JSON.stringify(result).includes('PRIVATE'));
 });
 
+
+test('recommendation exclusion is projected without exposing review notes or evidence',()=>{
+ const original=base[0];const result=mergePublicProducts([original],[{sku:original.sku,catalogProfile:{reviewStatus:'excluded',notes:'PRIVATE-REVIEW-NOTE',source:'PRIVATE-SOURCE'}}])[0];assert.equal(result.careReviewStatus,'excluded');assert.ok(!JSON.stringify(result).includes('PRIVATE'));assert.equal(result.active,original.active);
+});

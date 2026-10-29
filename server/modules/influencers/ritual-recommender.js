@@ -19,7 +19,7 @@ function recommend(config,catalog,input={}){
   const budgetCents=Math.floor(budget*100+1e-7),bySku=new Map();
   for(const product of catalog){
     const cents=Math.round(Number(product.price)*100),stock=Number(product.stock);
-    if(product.active!==false&&!/^inativo/i.test(product.name||'')&&Number.isFinite(stock)&&stock>=1&&Number.isFinite(cents)&&cents>0&&cents<=budgetCents)bySku.set(key(product.sku),{product,cents});
+    if(product.careReviewStatus!=='excluded'&&product.active!==false&&!/^inativo/i.test(product.name||'')&&Number.isFinite(stock)&&stock>=1&&Number.isFinite(cents)&&cents>0&&cents<=budgetCents)bySku.set(key(product.sku),{product,cents});
   }
   if(config.automatic===true)return require('./budget-selection').budgetSelection(recommendByLine(bySku,config,input),bySku,config,input);
   const candidates=Object.fromEntries(steps.map(step=>[step,new Map()]));

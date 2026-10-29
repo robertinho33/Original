@@ -21,7 +21,7 @@ Os arquivos Tru.csv, Truss_.csv, Truss.csv e outros históricos não fazem parte
 5. Confira os componentes dos kits pelo SKU, tamanho da embalagem e quantidade.
 6. Preencha a fonte em `care_source`. Depois da conferência, use `approved`. Produtos que devem ficar fora da recomendação podem usar `excluded`.
 
-Todos os 747 registros estão com a revisão geral pendente. Nenhuma compatibilidade nova foi aprovada automaticamente. As indicações que já existiam no cadastro público da EcoBelle foram copiadas e identificadas em `care_notes`, ainda para revisão neste novo modelo.
+A revisão inicial foi importada em 29/10/2026: 3 registros aprovados com fonte do fabricante, 32 classificados fora do questionário e 712 pendentes. Nos pendentes, dados anteriores ou sugeridos continuam identificados para conferência. Não houve aprovação em massa.
 
 ## Colunas novas
 
@@ -65,7 +65,7 @@ Cinco composições foram associadas aos SKUs dos produtos individuais disponív
 - Curlys Cachos: shampoo, condicionador e máscara.
 - Coco & Camomila: shampoo, condicionador, máscara, finalizador térmico e reparador de pontas.
 
-Essas cinco composições usam `kit_review_status=approved`, pois as apresentações e fotos foram conferidas durante este trabalho. A revisão geral de indicação continua `pending`. Uma mudança de embalagem ou de conteúdo exige nova conferência. Os demais kits têm composição pendente, sem códigos inventados.
+Essas cinco composições usam `kit_review_status=approved`, pois as apresentações e fotos foram conferidas durante este trabalho. A revisão geral de indicação desses kits continua `pending`. Uma mudança de embalagem ou de conteúdo exige nova conferência. Os demais kits têm composição pendente, sem códigos inventados.
 
 ## Importação e próximos passos
 
@@ -73,7 +73,7 @@ Os importadores foram ajustados para ler e validar as novas colunas, inclusive d
 
 A importação pelo módulo de fornecedores armazena a classificação em `catalogProfile`. Indicações `careProfile` só são atualizadas com revisão geral `approved`. Um CSV pendente não apaga indicações já existentes e não substitui uma classificação já aprovada. A importação antiga continua criando somente produtos que ainda não existem; para atualizar existentes, use a importação do fornecedor.
 
-Este pacote não foi importado no banco nem publicado. A ampliação dos CSVs prepara os dados; o próximo passo é revisar as indicações e depois adaptar o filtro completo para usar os novos campos de categoria, etapa, prioridade, restrições e composição. Enquanto isso, os filtros atuais e o catálogo publicado permanecem em uso.
+A classificação foi importada no banco em 29/10/2026, com cópia de segurança e conferência dos 747 registros após a gravação. A operação alterou somente classificação, indicações aprovadas, vínculo do fornecedor e composição dos kits. Preços, estoque, imagens, descrições e visibilidade foram preservados. O questionário respeita o estado excluded; registros pendentes mantêm o comportamento anterior até uma revisão confirmada. O próximo passo é obter as fichas técnicas que faltam e concluir as indicações pendentes.
 
 ## Validação
 
@@ -81,6 +81,16 @@ Este pacote não foi importado no banco nem publicado. A ampliação dos CSVs pr
 - Referências dos cinco kits resolvidas nos próprios arquivos.
 - Separação entre indicação pendente, todos os tipos e seleção específica.
 - Importação testada para dados novos e existentes, com preservação de revisões aprovadas.
-- Nenhuma escrita em produção, envio ao GitHub ou deploy.
+- Importação de classificação autorizada, com cópia de segurança e auditoria. Nenhuma alteração comercial.
 
-Validação final: 256 testes aprovados, incluindo os dois importadores e os vínculos dos fornecedores.
+Validação final: 258 testes aprovados, incluindo os importadores, vínculos dos fornecedores e exclusões do questionário.
+
+## Aprovações com fonte confirmada
+
+Os três produtos Liso Mágico foram alinhados à indicação do fabricante: cabelo liso, natural ou quimicamente tratado, com objetivo principal de controle do frizz e reparação secundária. Não permanecem marcados para ondulados.
+
+- Shampoo: https://www.grupoecobelle.com.br/shampoo-liso-magico-bela-pro-300-ml/p
+- Condicionador: https://www.grupoecobelle.com.br/condicionador-liso-magico-bela-pro-300-ml/p
+- Máscara: https://www.grupoecobelle.com.br/mascara-liso-magico-bela-pro-300-ml/p
+
+Outras 21 fichas da EcoBelle tiveram revisão parcial de finalidade com fonte registrada, mas continuam pendentes por falta de confirmação completa dos tipos de cabelo e da condição química. Nutrição é uma finalidade citada pelo fabricante que ainda não existe como opção específica no questionário.

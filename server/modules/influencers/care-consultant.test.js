@@ -136,3 +136,10 @@ test('490 budget supports more than two general complements outside the 269 kit'
 test('large limits and cent prices produce exact unique selections',()=>{
  const {fillBudget}=require('./budget-fill');const rows=Array.from({length:25},(_,i)=>({product:{sku:String(i)},cents:790+i*37}));const result=fillBudget(rows,12345);assert.ok(result.cents<=12345);assert.equal(result.rows.length,new Set(result.rows.map(r=>r.product.sku)).size);assert.equal(result.cents,result.rows.reduce((n,r)=>n+r.cents,0));assert.equal(fillBudget(rows,1000000).rows.length,rows.length);
 });
+
+test('products excluded during catalog review remain outside both automatic and curated recommendations',()=>{
+ const product={sku:'EXCLUDED',name:'Máscara HidraSim Bela Pro',price:30,stock:5,careReviewStatus:'excluded',careProfile:{goals:['hydration']}};
+ assert.equal(recommend(config,[product],input).products.length,0);
+ const manual={enabled:true,automatic:false,rules:[{sku:product.sku,step:'treat',goal:'hydration',hair:'all',chemistry:'all',reason:'Indicação antiga.'}]};assert.equal(recommend(manual,[product],input).products.length,0);
+ assert.equal(recommend(config,[{...product,careReviewStatus:'pending'}],input).products.length,1);
+});
