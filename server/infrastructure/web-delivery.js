@@ -6,7 +6,7 @@ function deliveryHeaders(req, res, next) {
   if (req.path === '/api' || req.path.startsWith('/api/')) {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  } else if (/\.html$/i.test(req.path) && !INDEXABLE.includes(req.path) && req.path !== '/pages/boas-vindas.html') {
+  } else if (/\.html$/i.test(req.path) && !INDEXABLE.includes(req.path)) {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     res.setHeader('Cache-Control', 'no-store');
   }

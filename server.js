@@ -39,7 +39,7 @@ require('./server/modules/store/business-identity').registerPublicIdentityPages(
 const productPages = require('./server/modules/catalog/product-pages');
 webDelivery.registerSearchFiles(app, { getProducts: productPages.getIndexableProducts });
 productPages.registerProductPages(app);
-app.use(express.static(__dirname, { dotfiles: 'deny', setHeaders: webDelivery.staticHeaders }));
+app.use(express.static(__dirname, { index: 'index.html', dotfiles: 'deny', setHeaders: webDelivery.staticHeaders }));
 
 const PORT = process.env.PORT || 3000;
 
@@ -86,6 +86,7 @@ app.use(cors({
     credentials: true,
     optionsSuccessStatus: 204
 }));
+app.use('/api/influencer-applications', require('./server/modules/influencers/applications').createRouter());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/shipping', require('./server/modules/shipping/shipping-routes'));

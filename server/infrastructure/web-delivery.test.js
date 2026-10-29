@@ -7,8 +7,8 @@ const { createPublishedJsonReader } = require('./published-json');
 test('indexable documents have matching canonical URLs and no product claims without product pages', () => {
   const {readFileSync}=require('node:fs'); const {resolve}=require('node:path');
   for(const path of INDEXABLE) {
-    const html=readFileSync(resolve(__dirname,'../..',path==='/'?'pages/boas-vindas.html':path.slice(1)),'utf8');
-    assert.ok(html.includes(`rel="canonical" href="https://www.fiosperfeitos.com.br${path}"`),path);
+    const html=readFileSync(resolve(__dirname,'../..',path==='/'?'index.html':path.slice(1)),'utf8');
+    assert.ok(html.includes(`rel="canonical" href="https://www.fiosperfeitos.com.br${path==='/'?'/index.html':path}"`),path);
   }
   const html=readFileSync(resolve(__dirname,'../../index.html'),'utf8');
   const schema=JSON.parse(/type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/.exec(html)[1]);
