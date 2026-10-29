@@ -66,3 +66,17 @@ test('purpose evidence requires official exact-domain source and keeps unknown s
  for(const care_source of ['https://grupoecobelle.com.br.evil.example/p','http://www.grupoecobelle.com.br/a/p','https://other.example/p'])assert.throws(()=>parseMetadata({...row,care_source}));
  const publicProduct=catalog.find(p=>p.sku==='LPGSTQBW8');assert.ok(!JSON.stringify(publicProduct).includes('care_notes'));assert.equal(publicProduct.recommendationProfile.verified,true);
 });
+test('three comparisons preserve kits, primary purpose, budget and actual distinct product sets',()=>{
+ for(const hair of ['straight','wavy','curly','coily'])for(const goal of ['hydration','nutrition','repair','frizz','curls','oiliness','color'])for(const ends of ['normal','dry','damaged','frizzy'])for(const budget of [120,400,600]){
+  const answers={hair,goal,ends,budget,chemistry:'treated',...(goal==='color'?{shade:'blonde'}:{})};const result=recommend(config,catalog,answers),all=[result,...result.alternatives];assert.ok(all.length<=3);
+  const signatures=[];for(const option of all){if(!option.products.length)continue;const signature=option.products.map(p=>p.sku).sort().join('|');signatures.push(signature);assert.ok(option.total<=budget);assert.equal(Math.round(option.total*100),option.products.reduce((sum,p)=>sum+Math.round(p.price*100),0));assert.equal(new Set(option.products.map(p=>p.sku)).size,option.products.length);
+   if(result.products[0]?.step==='kit')assert.equal(option.products[0].step,'kit');if(result.products.some(p=>p.matchedGoal===goal))assert.ok(option.products.some(p=>p.matchedGoal===goal));
+   const kit=option.products.find(p=>p.step==='kit'),members=new Set(catalog.find(p=>p.sku===kit?.sku)?.recommendationProfile.components.map(c=>c.sku)||[]);for(const p of option.products)assert.ok(!members.has(p.sku));
+  }assert.equal(new Set(signatures).size,signatures.length);
+ }
+ const answers={hair:'coily',chemistry:'treated',goal:'curls',ends:'dry',budget:400};const result=recommend(config,catalog,answers);assert.equal(result.alternatives.length,2);assert.equal(new Set([result,...result.alternatives].map(o=>o.products[0].sku)).size,3);
+ assert.deepEqual(recommend(config,[...catalog].reverse(),answers),result);
+});
+test('limited inventory never fabricates three copies of a sole available kit',()=>{
+ const only=catalog.filter(p=>p.sku==='2QSQFLXZ6');const result=recommend(config,only,{...input,goal:'oiliness',budget:400,ends:'normal'});assert.equal(result.products.length,1);assert.deepEqual(result.alternatives,[]);
+});

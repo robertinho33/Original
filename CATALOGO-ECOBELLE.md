@@ -57,6 +57,12 @@ Complementos entram por preço decrescente enquanto couberem no saldo, sem repet
 
 Sem kit elegível, retorna individuais com finalidade confirmada. Sem produtos elegíveis, orienta contato com a loja. Não completa o orçamento com itens sem indicação confirmada. Frete separado.
 
+## Três opções para comparar
+
+O resultado apresenta até três combinações. A primeira mantém a seleção por preço decrescente. As próximas priorizam outros kits elegíveis; quando faltam kits distintos, variam os complementos preservando o kit e o objetivo principal. Conjuntos com os mesmos SKUs são considerados iguais independentemente da ordem e não se repetem. Cada opção respeita integralmente o mesmo orçamento, estoque, composição e restrições. O cálculo é limitado a vinte tentativas de kits e vinte e quatro variações de complementos por seleção-base.
+
+O resumo inicial mostra as três opções com fotos e totais. Os cartões de comparação atualizam a galeria, o detalhamento e o valor ao escolher uma opção. A sacola recebe somente os produtos da opção selecionada. Quando o catálogo não permite três combinações adequadas, a página informa a quantidade efetivamente disponível, sem duplicar conjuntos para completar a contagem.
+
 O editor administrativo mostra a ficha EcoBelle, escopos, composição, restrições, fonte e data. A tabela em lote mostra os sete objetivos, inclusive nutrição e oleosidade. Para todos os produtos importados, usa a ficha de origem: indicações pendentes não viram universais; produtos fora do questionário não recebem indicações capilares. Essas fichas ficam protegidas contra edição pelos controles gerais antigos e são atualizadas pelo CSV com fonte conferida. Produtos manuais continuam editáveis.
 
 ## Importação e validação
