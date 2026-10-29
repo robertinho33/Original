@@ -1,3 +1,4 @@
+import {mountCareQuiz} from './care-quiz.js?v=20261029-3';
 import {mountRitualGallery} from './ritual-gallery.js?v=20261029-eco';
 import {mountPublicCommunity} from './influencers/public-community.js';
 import {mergeCareCart,cleanMatchReasons} from './care-selection.js';
@@ -21,8 +22,9 @@ function cards(products){return products.map((p,index)=>`<article class="portal-
 async function api(path,body){const res=await fetch('/api/discovery/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(60000)});const result=await res.json();if(!res.ok||!result.success)throw Error(result.error||'Não foi possível consultar agora.');return result.data;}
 const careForm=$('ritualForm');
 if(careForm){
+ const quizSteps=mountCareQuiz(careForm);
  const button=careForm.querySelector('[type="submit"]'),message=$('discoveryMessage'),dialog=$('ritualQuiz');let timer;
- const openQuiz=()=>{if(dialog&&!dialog.open)dialog.showModal();};
+ const openQuiz=()=>{if(dialog&&!dialog.open){quizSteps?.open();dialog.showModal();}};
  $('openRitualQuiz')?.addEventListener('click',openQuiz);
  dialog?.querySelector('[data-close-quiz]').addEventListener('click',()=>dialog.close());
  dialog?.addEventListener('click',event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();}});
@@ -48,7 +50,7 @@ if(careForm){
   start(){$('quizMessage').textContent='Estamos montando sua seleção…';selectionOptions=[];selectedOption=0;button.disabled=true;message.textContent='Um instante, estamos escolhendo suas opções…';$('ritualResult').hidden=true;selected=[];},
   result(data){
    const input=answers(),hairs={straight:'liso',wavy:'ondulado',curly:'cacheado',coily:'crespo'},goals={hydration:'hidratação e maciez',repair:'cuidado de fios danificados',frizz:'controle do frizz',curls:'definição dos cachos',color:'cuidado da cor',nutrition:'Nutrição dos fios',oiliness:'Controle da oleosidade'};
-   $('ritualProfile').textContent='Para cabelo '+hairs[input.hair]+', '+(input.chemistry==='treated'?'com química ou coloração':'sem química')+', buscando '+goals[input.goal]+'. Limite de '+money(input.budget)+' em produtos.';
+   $('ritualProfile').textContent='Para cabelo '+hairs[input.hair]+', '+(input.chemistry==='treated'?'com química ou coloração':'sem química')+', buscando '+goals[input.goal]+({normal:'',dry:', com comprimento e pontas ressecados',damaged:', com comprimento e pontas danificados',frizzy:', buscando também menos frizz no comprimento'}[input.ends]||'')+'. Limite de '+money(input.budget)+' em produtos.';
    selectionOptions=[data,...(Array.isArray(data.alternatives)?data.alternatives:[])].filter(option=>option.products?.length);selectedOption=0;
    if(selectionOptions.length){showSelection();dialog?.close();$('openRitualQuiz').textContent='Ajustar minhas respostas ↗';const first=selected[0],photo=$('suggestionImage'),src=image(first.image);$('suggestionName').textContent=first.name;$('suggestionTotal').textContent=(first.step==='kit'?'1 kit completo'+(selected.length>1?' + '+(selected.length-1)+' '+(selected.length===2?'complemento':'complementos'):''):selected.length+' '+(selected.length===1?'produto':'produtos'))+' · Total de '+money(selectionOptions[0].total)+' em produtos';photo.hidden=!src;if(src){photo.src=src;photo.alt=first.name;}if(suggestion&&!suggestion.open)suggestion.showModal();else focusResult();}else{selected=[];message.textContent=data.message;$('quizMessage').textContent=data.message;$('ritualResult').hidden=true;}
   },
@@ -65,12 +67,12 @@ if(careForm){
  }
  $('ritualOptions').addEventListener('click',event=>{const button=event.target.closest('[data-ritual-option]');if(!button)return;const index=Number(button.dataset.ritualOption);if(Number.isInteger(index)&&selectionOptions[index]){selectedOption=index;showSelection();}});
  const answers=()=>Object.fromEntries(new FormData(careForm));
- const valid=()=>[...careForm.querySelectorAll('select,input')].every(field=>field.checkValidity());
+ const valid=()=>[...careForm.querySelectorAll('select,input')].every(field=>field.disabled||field.validity.valid);
  const run=(force=false)=>{clearTimeout(timer);if(valid())void query.query(answers(),{force});};
  careForm.addEventListener('submit',event=>{event.preventDefault();run(true);});
  const shadeField=careForm.elements.shade,shadeLabel=$('ritualShade');
  const syncShade=()=>{if(!shadeField||!shadeLabel)return;const needsTone=careForm.elements.goal.value==='color';shadeLabel.hidden=!needsTone;shadeField.disabled=!needsTone;shadeField.required=needsTone;};
- careForm.elements.goal.addEventListener('change',syncShade);syncShade();
+ careForm.addEventListener('change',syncShade);syncShade();
  careForm.addEventListener('input',()=>{
   clearTimeout(timer);query.invalidate();selected=[];selectionOptions=[];$('ritualResult').hidden=true;button.disabled=false;
   message.textContent=valid()?'Vamos atualizar suas opções…':'Conte um pouquinho mais para a gente encontrar suas opções.';

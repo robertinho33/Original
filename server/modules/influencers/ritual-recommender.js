@@ -14,6 +14,7 @@ function compare(a,b){
 function recommend(config,catalog,input={}){
   if(!input||Array.isArray(input)||typeof input.goal!=='string'||typeof input.hair!=='string'||!Object.hasOwn(goals,input.goal)||!Object.hasOwn(hairs,input.hair)||!['treated','natural'].includes(input.chemistry))throw Error('Confira suas respostas para encontrar seu cuidado.');
   const budget=Number(input.budget);
+  if(input.ends!==undefined&&!['normal','dry','damaged','frizzy'].includes(input.ends))throw Error('Confira como estão o comprimento e as pontas.');
   if(input.shade!==undefined&&!['blonde','grey','other'].includes(input.shade))throw Error('Confira o tom dos seus cabelos.');
   if(!['number','string'].includes(typeof input.budget)||!Number.isFinite(budget)||budget<1||budget>10000)throw Error('Informe um orçamento entre R$ 1 e R$ 10.000.');
   if(!config?.enabled)return {products:[],total:0,message:'Nossa equipe pode ajudar você a escolher. Fale com a gente para encontrar suas opções.'};

@@ -14,9 +14,22 @@ test('verified EcoBelle selection chooses a factual frizz kit and excludes its c
  for(let i=2;i<result.products.length;i++)assert.ok(result.products[i-1].price>=result.products[i].price);
  assert.ok(result.products[0].matchReasons.some(r=>r.includes('não detalha')));
 });
-test('nutrition and oiliness select their own line rather than an expensive unrelated kit',()=>{
- assert.equal(recommend(config,catalog,{...input,goal:'nutrition',budget:490}).products[0].sku,'YYYS5P629');
+test('kits use descending price only after the confirmed purpose filter',()=>{
+ assert.equal(recommend(config,catalog,{...input,goal:'nutrition',budget:490}).products[0].sku,'3SSKRFEP5');
  assert.equal(recommend(config,catalog,{...input,goal:'oiliness',budget:490}).products[0].sku,'2QSQFLXZ6');
+});
+test('oily roots can receive focused treatments for ends without repeating kit members',()=>{
+ const base={...input,goal:'oiliness',budget:490},normal=recommend(config,catalog,{...base,ends:'normal'});
+ assert.equal(normal.products.length,1);
+ const signatures=[];
+ for(const ends of ['dry','damaged','frizzy']){
+  const result=recommend(config,catalog,{...base,ends});assert.equal(result.products[0].sku,'2QSQFLXZ6');assert.ok(result.products.length>1);assert.ok(result.total<=490);
+  assert.ok(!result.products.some(p=>['THQ44H5B8','HP9LFWALK','X3DYUC6EA'].includes(p.sku)));
+  for(let i=2;i<result.products.length;i++)assert.ok(result.products[i-1].price>=result.products[i].price);
+  for(const p of result.products.slice(1)){const c=catalog.find(c=>c.sku===p.sku).recommendationProfile;assert.ok(['treat','finish'].includes(c.step));assert.ok(c.goals.includes(p.matchedGoal));}
+  signatures.push(result.products.map(p=>p.sku).join('|'));
+ }
+ assert.equal(new Set(signatures).size,3);assert.throws(()=>recommend(config,catalog,{...base,ends:'invalid'}));
 });
 test('all profiles respect stock, visibility, budget, verified purpose and unique kit contents',()=>{
  for(const hair of ['straight','wavy','curly','coily'])for(const chemistry of ['natural','treated'])for(const goal of ['hydration','nutrition','repair','oiliness','frizz','curls','color'])for(const budget of [1,40,120,121,200,490,1000]){

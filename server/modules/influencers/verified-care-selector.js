@@ -10,22 +10,23 @@ function fits(p,input){
  return !(p.restrictions||[]).some(r=>['professional_only','chemical_service'].includes(r)||r==='blonde_only'&&!(input.goal==='color'&&input.shade==='blonde')||r==='light_tones_only'&&!(input.goal==='color'&&['blonde','grey'].includes(input.shade)));
 }
 function recommendVerified(available,input){
- const budget=Math.floor(Number(input.budget)*100+1e-7),rows=[...available.values()].filter(r=>r.product.sourceId==='ecobelle'&&fits(r.product.recommendationProfile,input));
+ const extraGoals=({dry:['nutrition','hydration'],damaged:['repair'],frizzy:['frizz']})[input.ends]||[];
+ const budget=Math.floor(Number(input.budget)*100+1e-7),rows=[...available.values()].filter(r=>r.product.sourceId==='ecobelle');
  const profile=r=>r.product.recommendationProfile;
- const rank=r=>Number(profile(r).primaryGoal===input.goal)*10+Number(profile(r).hairScope!=='unknown')*2+Number(profile(r).chemistryScope!=='unknown');
- const kits=rows.filter(r=>profile(r).type==='kit'&&profile(r).components?.length);
- const kit=budget>12000?kits.sort((a,b)=>rank(b)-rank(a)||b.cents-a.cents||key(a.product.sku).localeCompare(key(b.product.sku)))[0]:null;
+ const kits=rows.filter(r=>fits(profile(r),input)&&profile(r).type==='kit'&&profile(r).components?.length);
+ const kit=budget>12000?kits.sort((a,b)=>b.cents-a.cents||key(a.product.sku).localeCompare(key(b.product.sku)))[0]:null;
  const excluded=new Set(kit?[key(kit.product.sku),...profile(kit).components.map(c=>key(c.sku))]:[]);
- const singles=rows.filter(r=>profile(r).type==='individual'&&!excluded.has(key(r.product.sku)));
+ const matchedGoal=row=>fits(profile(row),input)?input.goal:['treat','finish'].includes(profile(row)?.step)?extraGoals.find(goal=>profile(row).primaryGoal===goal&&fits(profile(row),{...input,goal})):undefined;
+ const singles=rows.filter(r=>profile(r)?.type==='individual'&&!excluded.has(key(r.product.sku))&&matchedGoal(r));
  // Value order applies only after factual purpose and explicit restrictions are checked.
  const packed=fillBudget(singles,budget-(kit?.cents||0)),selected=kit?[kit,...packed.rows]:packed.rows;
  const products=selected.map(row=>{
-  const p=row.product,c=profile(row),limits=[];
+  const p=row.product,c=profile(row),limits=[],goal=row===kit?input.goal:matchedGoal(row);
   if(c.hairScope==='unknown')limits.push('A ficha da fabricante não especifica o tipo de cabelo.');
   if(c.chemistryScope==='unknown')limits.push('A ficha da fabricante não detalha a compatibilidade com química.');
   const labels=(c.components||[]).map(component=>component.name||available.get(key(component.sku))?.product.name||'Item do kit');
   return {sku:p.sku,name:p.name,image:safeImage(p.image),price:row.cents/100,step:c.step,line:c.line,selectionSource:'manufacturer',complementary:Boolean(kit&&row!==kit),
-   ...(c.type==='kit'?{kitComponents:labels}:{}),reason:'Segundo a EcoBelle, esta opção oferece '+(input.goal==='color'?'matização de tons amarelados para os fios indicados na ficha':options.goals[input.goal].toLowerCase())+'.',
+   ...(c.type==='kit'?{kitComponents:labels}:{}),matchedGoal:goal,reason:'Segundo a EcoBelle, esta opção oferece '+(goal==='color'?'matização de tons amarelados para os fios indicados na ficha':options.goals[goal].toLowerCase())+(goal!==input.goal?' para complementar o cuidado do comprimento e das pontas.':'.'),
    matchReasons:[...limits],source:c.source};
  });
  const coverage=new Set(selected.flatMap(r=>profile(r).type==='kit'?profile(r).components.map(c=>c.step||available.get(key(c.sku))?.product.recommendationProfile?.step):[profile(r).step]));

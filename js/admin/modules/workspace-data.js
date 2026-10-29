@@ -33,11 +33,11 @@ export function catalogRows(products,inventory=[],sources=[]){
     const stock=number(i?.quantity??p.stock??p.Estoque??p.inventory??p.quantity),reserved=number(i?.reserved??0);
     const brand=String(p.sourceName||p.source_name||p.brand||p.marca||p.Marca||p.supplierName||sourceNames.get(normalized(p.sourceId))||p.sourceId||'Sem marca');
     const category=String(p.categoryName||p.category_name||p.category||'Sem categoria');
-    return {...p,_physical:stock,_reserved:reserved,_available:Math.max(0,stock-reserved),_brand:brand,_category:category,_search:normalized([p.name,p.sku,brand,category,...Object.entries(globalThis.ProductCareProfile.normalize(p.careProfile)).flatMap(([field,values])=>values.map(value=>globalThis.ProductCareProfile.options[field][value]))].join(' '))};
+    return {...p,_physical:stock,_reserved:reserved,_available:Math.max(0,stock-reserved),_brand:brand,_category:category,_search:normalized([p.name,p.sku,brand,category,...Object.entries(globalThis.ProductCareProfile.forProduct(p)).flatMap(([field,values])=>values.map(value=>globalThis.ProductCareProfile.options[field][value]))].join(' '))};
   });
 }
 export function filterCatalog(rows,{query='',brand='',category='',stock='all',care=''}={}){
   const words=normalized(query).split(/\s+/).filter(Boolean);
-  return rows.filter(p=>(!care||(Object.values(globalThis.ProductCareProfile.normalize(p.careProfile)).every(v=>v.length>0)?'complete':'pending')===care)&&words.every(word=>(p._search||normalized([p.name,p.title,p.sku,p._brand,p._category].join(' '))).includes(word))&&(!brand||p._brand===brand)&&(!category||p._category===category)&&(stock==='all'||stock==='empty'&&p._available<=0||stock==='low'&&p._available>0&&p._available<=5||stock==='available'&&p._available>0||stock==='hidden'&&p.active===false));
+  return rows.filter(p=>(!care||(Object.values(globalThis.ProductCareProfile.forProduct(p)).every(v=>v.length>0)?'complete':'pending')===care)&&words.every(word=>(p._search||normalized([p.name,p.title,p.sku,p._brand,p._category].join(' '))).includes(word))&&(!brand||p._brand===brand)&&(!category||p._category===category)&&(stock==='all'||stock==='empty'&&p._available<=0||stock==='low'&&p._available>0&&p._available<=5||stock==='available'&&p._available>0||stock==='hidden'&&p.active===false));
 }
 export function csvCell(value){const text=String(value??'');return '"'+(/^[\s]*[=+\-@]/.test(text)?"'":'')+text.replaceAll('"','""')+'"';}

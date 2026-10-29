@@ -12,7 +12,7 @@ export function filterCareProducts(products,{query='',supplier='',scope='all'}={
  return products.filter(p=>{
   const vendor=careSupplier(p,sources),id=productId(p);
   return (!supplier||vendor.id===supplier)&&words.every(word=>searchKey([p.name,p.sku,p.brand,p.sourceName,vendor.name].join(' ')).includes(word))
-   &&(scope==='all'||scope==='changed'&&model.drafts.has(id)||scope==='pending'&&Object.values(model.profile(id)).some(values=>!values.length));
+   &&(scope==='all'||scope==='changed'&&model.drafts.has(id)||scope==='pending'&&(p.catalogProfile?p.catalogProfile.reviewStatus!=='approved':Object.values(model.profile(id)).some(values=>!values.length)));
  });
 }
 export const productId=p=>String(p.id||p.productId||p.docId||'');
@@ -20,7 +20,7 @@ export const canonical=value=>Object.fromEntries(Object.entries(options).map(([f
 export const equalProfiles=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
 export function createCareDrafts(products){
  const byId=new Map(products.map(p=>[productId(p),p]).filter(([id])=>id));const drafts=new Map();
- return {drafts,profile:id=>canonical(drafts.get(id)??byId.get(id)?.careProfile),
+ return {drafts,profile:id=>canonical(drafts.get(id)??globalThis.ProductCareProfile.forProduct(byId.get(id))),
   set(id,value){if(!byId.has(id))throw Error('Produto não identificado.');const profile=canonical(value);if(equalProfiles(profile,byId.get(id).careProfile))drafts.delete(id);else drafts.set(id,profile);},
   changes:()=>[...drafts].map(([id,careProfile])=>({id,careProfile:canonical(careProfile)})),
   commit(changes){for(const change of changes){const p=byId.get(change.id);if(p)p.careProfile=canonical(change.careProfile);drafts.delete(change.id);}},

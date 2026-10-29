@@ -20,8 +20,8 @@ Preço, estoque disponível e visibilidade usam os dados comerciais atuais da lo
 Foram localizadas fichas oficiais correspondentes ao SKU de 117 dos 118 registros EcoBelle. A finalidade de 63 produtos foi conferida e registrada em `data/catalog/ecobelle-evidence.json`, com fontes individuais. Isso não confirma todas as compatibilidades.
 
 - 58 registros com finalidade verificada e revisão aprovada para os filtros, incluindo 6 kits com composição conferida.
-- 49 pendentes, incluindo 5 kits com finalidade conferida mas composição ainda pendente.
-- 11 fora do questionário capilar; permanecem à venda.
+- 44 pendentes, incluindo 5 kits com finalidade conferida mas composição ainda pendente.
+- 16 fora do questionário capilar, incluindo oxidantes; permanecem à venda.
 
 Entre os 58 aprovados, apenas 10 têm escopo de tipo de cabelo explicitamente preenchido e 6 têm escopo químico preenchido. Os demais conservam `unknown`. Sete produtos têm restrições de tom; aprovação não remove essas restrições. Disponibilidade comercial continua sendo requisito.
 
@@ -47,15 +47,15 @@ No modelo anterior (27 colunas), aprovação geral exige indicações preenchida
 
 ## Funcionamento da página
 
-As quatro perguntas básicas continuam sendo cabelo, química, objetivo e orçamento. Para cuidado da cor, aparece uma pergunta adicional sobre o tom. Sem essa resposta, matizadores não entram. `blonde_only` exige loiro/descolorido; `light_tones_only` aceita também grisalho/branco. Outros tons não recebem matizadores.
+O questionário tem três etapas: cabelo/química; prioridade/comprimento e pontas; orçamento. A condição do comprimento pode ser normal, ressecada, danificada ou com frizz. Para cuidado da cor, aparece uma pergunta adicional sobre o tom. Sem essa resposta, matizadores não entram. `blonde_only` exige loiro/descolorido; `light_tones_only` aceita também grisalho/branco. Outros tons não recebem matizadores.
 
 Com os novos dados EcoBelle, a seleção automática usa somente finalidade verificada e uso doméstico. Não infere indicação por preço, nome da linha ou cadastro antigo. Escopos explícitos são respeitados. Escopos desconhecidos permitem busca por finalidade, com observação sobre a informação ausente. Procedimentos químicos e uso profissional não entram.
 
-Acima de R$ 120, escolhe primeiro um kit com finalidade confirmada e composição conferida. Objetivo principal tem prioridade sobre secundários; escopos conhecidos ajudam a desempatar; depois vem o maior preço e SKU. Complementos precisam ter finalidade confirmada para o mesmo objetivo, não podem repetir componentes do kit e entram por preço decrescente enquanto couberem no saldo. Cada SKU aparece uma vez. Se faltarem complementos pertinentes, o saldo permanece livre. Essa regra não é um otimizador de quantidade máxima nem de soma mais próxima.
+Acima de R$ 120, escolhe primeiro o kit de maior preço entre os que atendem à prioridade, aos escopos e à composição conferida. Complementos entram por preço decrescente enquanto couberem no saldo, sem repetir componentes do kit. Atendem ao objetivo principal ou, somente nas etapas tratar/finalizar, à finalidade principal confirmada para a necessidade adicional do comprimento: ressecamento → nutrição/hidratação; danos → reparação; frizz → controle do frizz. Pontas normais não adicionam necessidades. Cada SKU aparece uma vez. Empate de preço usa SKU para manter estabilidade. Se faltarem opções pertinentes, o saldo permanece livre. Essa regra não é um otimizador de quantidade máxima nem de soma mais próxima.
 
 Sem kit elegível, retorna individuais com finalidade confirmada. Sem produtos elegíveis, orienta contato com a loja. Não completa o orçamento com itens sem indicação confirmada. Frete separado.
 
-O editor administrativo mostra a ficha EcoBelle, escopos, composição, restrições, fonte e data. As marcações gerais antigas continuam disponíveis; a seleção EcoBelle usa `catalogProfile`, revisado e importado pelo CSV. Alterações nas marcações gerais não modificam a evidência oficial.
+O editor administrativo mostra a ficha EcoBelle, escopos, composição, restrições, fonte e data. A tabela em lote mostra os sete objetivos, inclusive nutrição e oleosidade. Para todos os produtos importados, usa a ficha de origem: indicações pendentes não viram universais; produtos fora do questionário não recebem indicações capilares. Essas fichas ficam protegidas contra edição pelos controles gerais antigos e são atualizadas pelo CSV com fonte conferida. Produtos manuais continuam editáveis.
 
 ## Importação e validação
 
@@ -63,4 +63,6 @@ Importadores aceitam descrições entre aspas, quebras de linha e ponto e vírgu
 
 A atualização desta revisão foi feita somente nos atributos dos 118 registros EcoBelle, com cópia de segurança, verificação de concorrência e auditoria em `catalogSupplierImports`. Nenhuma diferença comercial foi encontrada após a gravação. Um CSV pendente não substitui classificação anteriormente aprovada.
 
-263 testes passaram: combinações de cabelo, química, objetivo e orçamento, finalidade, estoque, ocultação, soma em centavos, composição sem repetição, restrições de tom e proteção dos dados administrativos. Na simulação ondulado/com química/frizz/R$ 490, os preços conferidos nesta revisão retornaram um kit e quatro complementos por R$ 424,88. Preços e disponibilidade podem mudar na operação normal.
+Os 747 cadastros foram alinhados à classificação existente, com cópia de segurança: 690 precisaram de atualização de indicações ou de classificação de oxidantes. Nenhuma diferença comercial foi encontrada. Isso não representa aprovação das fichas pendentes nem nova pesquisa sobre outras marcas.
+
+Testes cobrem combinações de cabelo, química, objetivo, comprimento e orçamento, finalidade, estoque, ocultação, soma em centavos, composição sem repetição, restrições de tom e proteção dos dados administrativos. Na simulação ondulado/com química/raiz oleosa/R$ 490, pontas ressecadas resultaram em R$ 479,00; danificadas em R$ 481,18; com frizz em R$ 424,88. Cada combinação mantém o kit e acrescenta produtos pertinentes distintos, com os preços conferidos nesta revisão. Preços e disponibilidade podem mudar na operação normal.

@@ -1,4 +1,13 @@
 'use strict';
+
+require('node:test')('manufacturer profiles replace stale universal tags without treating unknown as all',()=>{
+ const assert=require('node:assert/strict'),{forProduct,status}=require('../../../js/product-care-profile');
+ const stale={hair:['straight','wavy','curly','coily'],chemistry:['natural','treated'],goals:['hydration','repair','frizz','curls','color']};
+ const ox={careProfile:stale,catalogProfile:{reviewStatus:'excluded',usage:'professional'}};assert.deepEqual(forProduct(ox),{hair:[],chemistry:[],goals:[]});assert.equal(status(ox),'Fora da seleção capilar');
+ assert.deepEqual(forProduct({catalogProfile:{reviewStatus:'excluded',evidenceStatus:'purpose_verified',goals:['repair']}}),{hair:[],chemistry:[],goals:[]});
+ assert.deepEqual(forProduct({careProfile:stale,catalogProfile:{reviewStatus:'pending'}}),{hair:[],chemistry:[],goals:[]});
+ const reviewed={careProfile:stale,catalogProfile:{reviewStatus:'approved',hair:[],chemistry:[],goals:['oiliness']}};assert.deepEqual(forProduct(reviewed),{hair:[],chemistry:[],goals:['oiliness']});
+});
 const test=require('node:test'),assert=require('node:assert/strict');
 const {normalize,matches}=require('../../../js/product-care-profile');
 const {classify}=require('./catalog-care-candidates');
