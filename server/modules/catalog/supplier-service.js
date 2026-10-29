@@ -1,6 +1,8 @@
 "use strict";
 
 const fs = require("node:fs");
+const {parseTable}=require("../../../js/catalog/csv-data");
+const metadataSchema=require("../../../js/catalog/product-metadata");
 const path = require("node:path");
 const { getFirestore } = require("../../infrastructure/firebase/firebase-admin");
 const visibilityService = require("./catalog-visibility-service");
@@ -79,7 +81,7 @@ function parseCsvLine(line, delimiter) {
 }
 
 function parseCsv(text) {
-    const lines = String(text || "").replace(/^\uFEFF/, "").split(/\r?\n/).filter(line => line.trim());
+    const source=String(text||""),lines=source.replace(/^\uFEFF/, "").split(/\r?\n/).filter(line => line.trim());
     if (!lines.length) throw new Error("O arquivo CSV está vazio.");
     const candidates = [";", ",", "\t"];
     const delimiter = candidates.sort((a,b) => parseCsvLine(lines[0], b).length - parseCsvLine(lines[0], a).length)[0];
@@ -89,11 +91,12 @@ function parseCsv(text) {
     for (const [field, options] of Object.entries(aliases)) columns[field] = headers.findIndex(header => options.includes(header));
     for (const required of ["sku","name","price"]) if (columns[required] < 0) throw new Error(`Cabeçalho obrigatório ausente: ${required}.`);
 
-    return lines.slice(1).map((line, offset) => {
-        const fields = parseCsvLine(line, delimiter);
+    return parseTable(source,delimiter).slice(1).map((fields, offset) => {
+        if(fields.length!==headers.length)throw new Error(`Linha ${offset+2}: quantidade de colunas inválida.`);
         const row = {};
         for (const [key, index] of Object.entries(columns)) row[key] = index < 0 ? "" : String(fields[index] ?? "").trim();
-        row.line = offset + 2;
+        for(const column of metadataSchema.columns){const index=headers.indexOf(column);if(index>=0)row[column]=String(fields[index]??"").trim();}
+        row.__line = offset + 2;
         return row;
     });
 }
@@ -142,13 +145,14 @@ async function importSupplierCatalog(id, suppliedCsv, actor) {
         const sku = clean(row.sku, 120);
         const name = clean(row.name, 300);
         const price = parsePrice(row.price);
-        if (!sku || sku.includes("/")) errors.push(`Linha ${row.line}: SKU ausente ou inválido.`);
-        if (!name) errors.push(`Linha ${row.line}: nome ausente.`);
-        if (price === null) errors.push(`Linha ${row.line}: preço inválido.`);
+        if (!sku || sku.includes("/")) errors.push(`Linha ${row.__line}: SKU ausente ou inválido.`);
+        if (!name) errors.push(`Linha ${row.__line}: nome ausente.`);
+        if (price === null) errors.push(`Linha ${row.__line}: preço inválido.`);
+        let metadata=null;try{metadata=metadataSchema.parseMetadata(row);if(row.source_id&&row.source_id!==normalizedId)throw Error('source_id não corresponde ao fornecedor selecionado.');}catch(error){errors.push('Linha '+row.__line+': '+error.message);}
         const key = sku.toLowerCase();
-        if (sku && seen.has(key)) errors.push(`Linha ${row.line}: SKU duplicado no arquivo (${sku}).`);
+        if (sku && seen.has(key)) errors.push(`Linha ${row.__line}: SKU duplicado no arquivo (${sku}).`);
         seen.add(key);
-        if (sku && name && price !== null) valid.push({ ...row, sku, name, price });
+        if (sku && name && price !== null) valid.push({ ...row, sku, name, price, metadata });
     }
     if (errors.length) throw new Error(errors.slice(0, 8).join(" "));
     if (!valid.length) throw new Error("O arquivo não contém produtos válidos.");
@@ -162,6 +166,7 @@ async function importSupplierCatalog(id, suppliedCsv, actor) {
         if (sku && !existingBySku.has(sku)) existingBySku.set(sku, { documentId: document.id, ...product });
     });
 
+    metadataSchema.validateReferences(valid.map(row=>({sku:row.sku,metadata:row.metadata})),new Set([...existingBySku.keys(),...valid.map(row=>row.sku.toLowerCase())]));
     const conflicts = valid.filter(row => {
         const existing = existingBySku.get(row.sku.toLowerCase());
         return existing && clean(existing.sourceId).toLowerCase() !== normalizedId;
@@ -178,6 +183,7 @@ async function importSupplierCatalog(id, suppliedCsv, actor) {
         return {
             reference,
             data: {
+                ...metadataSchema.importPatch(row.metadata,existing),
                 sku: row.sku,
                 name: row.name,
                 weight: clean(row.weight, 80),
@@ -221,4 +227,4 @@ async function importSupplierCatalog(id, suppliedCsv, actor) {
     return { supplierId: normalizedId, total: writes.length, imported, updated, stockReview: unknownStock };
 }
 
-module.exports = { listSuppliers, createSupplier, importSupplierCatalog };
+module.exports = { listSuppliers, createSupplier, importSupplierCatalog, parseCsv };

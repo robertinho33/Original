@@ -72,3 +72,67 @@ test('curly natural hair with frizz gets a targeted routine with honestly labele
  const hydrationOnly=products.filter(p=>p.name.includes('HidraSim')).map(p=>({...p,careProfile:{hair:['curly'],chemistry:['natural'],goals:['hydration']}}));
  assert.equal(recommend(config,hydrationOnly,answers).products.length,0);
 });
+
+// Kits may fill the budget only after compatibility and duplicate-stage checks.
+test('budget above 120 can combine a 120 kit, 40 mask and 35 finish without exceeding 200',()=>{
+ const profile={hair:['straight'],chemistry:['natural'],goals:['hydration']};
+ const kit={sku:'KIT',name:'Kit HidraSim EcoBelle',description:'Contém shampoo e condicionador.',price:120,stock:2,careProfile:profile};
+ const mask={sku:'MASK',name:'Máscara HidraSim EcoBelle',price:40,stock:2,careProfile:profile};
+ const finish={sku:'FINISH',name:'Sérum HidraSim EcoBelle',price:35,stock:2,careProfile:profile};
+ const rows=[kit,mask,finish],result=recommend(config,rows,input);
+ assert.equal(result.total,195);assert.deepEqual(new Set(result.products.map(p=>p.sku)),new Set(['KIT','MASK','FINISH']));assert.equal(result.routineComplete,true);
+ assert.deepEqual(result,recommend(config,[...rows].reverse(),input));
+ assert.ok(!recommend(config,rows,{...input,budget:120}).products.some(p=>p.sku==='KIT'));
+ const cents=recommend(config,rows,{...input,budget:194.99});assert.ok(cents.total<=194.99);
+ assert.ok(!recommend(config,rows,{...input,hair:'curly'}).products.some(p=>p.sku==='KIT'));
+ assert.ok(!recommend(config,[{...kit,stock:0},mask,finish],input).products.some(p=>p.sku==='KIT'));
+});
+test('kits with unknown contents stay standalone; included mask is never duplicated',()=>{
+ const profile={goals:['hydration']};const kit={sku:'KIT',name:'Kit HidraSim EcoBelle',description:'Shampoo, condicionador e máscara.',price:120,stock:2,careProfile:profile};
+ const rows=[kit,{sku:'MASK',name:'Máscara HidraSim EcoBelle',price:40,stock:1,careProfile:profile},{sku:'FIN',name:'Sérum HidraSim EcoBelle',price:35,stock:1,careProfile:profile}];
+ const result=recommend(config,rows,input);assert.equal(result.total,155);assert.ok(!result.products.some(p=>p.sku==='MASK'));
+ const unknown={...kit,name:'Kit Especial',description:''};const curated={...config,rules:[{sku:'KIT',goal:'hydration',hair:'all',chemistry:'all',step:'treat',reason:'Kit revisado pela equipe.'}]};
+ const standalone=recommend(curated,[unknown,...rows.slice(1)],input);assert.equal(standalone.products.length,1);assert.equal(standalone.total,120);
+});
+
+test('complete catalog kit is one option and its included items never become complements',()=>{
+ const catalog=require('../../../data/catalog/catalog-runtime.json').products;
+ const kit=catalog.find(p=>p.sku==='LPGSTQBW8');
+ const singles=catalog.filter(p=>['ASUE5CZGP','TJFJENBKK','ZKDQ2Y47Q'].includes(p.sku));
+ const result=recommend(config,[kit,...singles],{...input,budget:200});
+ assert.equal(result.products[0].sku,'LPGSTQBW8');assert.equal(result.products[0].step,'kit');
+ assert.deepEqual(result.products[0].kitComponents,['Shampoo','Condicionador','Máscara','Sérum']);
+ assert.equal(result.products.length,1);assert.equal(result.total,kit.price);assert.deepEqual(result.alternatives,[]);
+});
+test('profile-approved kit without text is recognized; missing composition blocks extra items',()=>{
+ const kit={sku:'K',name:'Kit Especial',price:120,stock:1,careProfile:{goals:['hydration']}};
+ const finish={sku:'S',name:'Sérum HidraSim Bela Pro',price:40,stock:1};
+ const result=recommend(config,[kit,finish],input);assert.equal(result.products[0].sku,'K');assert.equal(result.products.length,1);
+});
+test('complete kit remains primary even when separate products could spend more',()=>{
+ const profile={goals:['hydration']};
+ const kit={sku:'K',name:'Kit HidraSim Bela Pro',description:'Shampoo, condicionador e máscara.',price:120,stock:1,careProfile:profile};
+ const parts=line('HidraSim','',60,profile).map(p=>({...p,name:p.name.replace('EcoBelle','Bela Pro')}));
+ const result=recommend(config,[kit,...parts],input);assert.equal(result.products[0].sku,'K');assert.equal(result.total,120);assert.equal(result.products.length,1);assert.deepEqual(result.alternatives,[]);
+});
+
+test('individuals are considered from higher to lower price, skipping those that do not fit',()=>{
+ const {fillBudget}=require('./budget-fill');
+ const rows=[70,40,30,20,10].map((cents,i)=>({product:{sku:String(i)},cents}));
+ const result=fillBudget(rows,100);assert.deepEqual(result.rows.map(r=>r.cents),[70,30]);assert.equal(result.cents,100);
+ const remainder=fillBudget(rows,95);assert.deepEqual(remainder.rows.map(r=>r.cents),[70,20]);assert.equal(remainder.cents,90);
+ assert.deepEqual(result,fillBudget([...rows].reverse(),100));
+ const ties=[{product:{sku:'B'},cents:30},{product:{sku:'A'},cents:30}];assert.equal(fillBudget(ties,30).rows[0].product.sku,'A');
+});
+test('490 budget supports more than two general complements outside the 269 kit',()=>{
+ const answers={hair:'wavy',chemistry:'treated',goal:'frizz',budget:490};
+ const kit={sku:'K269',name:'Kit Coco & Camomila EcoBelle',description:'Shampoo, condicionador, máscara e finalizador.',price:269,stock:2,careProfile:{goals:['frizz']}};
+ const extras=[45,35,40,60,30].map((price,i)=>({sku:'EXTRA'+i,name:'Máscara Linha Especial '+i+' EcoBelle',price,stock:2,careProfile:{hair:['wavy'],chemistry:['treated'],goals:['hydration']}}));
+ const result=recommend(config,[kit,...extras],answers);assert.equal(result.products[0].sku,'K269');assert.equal(result.products.length,6);assert.equal(result.total,479);assert.equal(result.products.slice(1).every(p=>p.complementary),true);
+ const restricted={...extras[0],sku:'NATURAL_ONLY',price:1,careProfile:{chemistry:['natural']}};
+ assert.ok(!recommend(config,[kit,...extras,restricted],answers).products.some(p=>p.sku==='NATURAL_ONLY'));
+ assert.deepEqual(result,recommend(config,[...extras].reverse().concat(kit),answers));
+});
+test('large limits and cent prices produce exact unique selections',()=>{
+ const {fillBudget}=require('./budget-fill');const rows=Array.from({length:25},(_,i)=>({product:{sku:String(i)},cents:790+i*37}));const result=fillBudget(rows,12345);assert.ok(result.cents<=12345);assert.equal(result.rows.length,new Set(result.rows.map(r=>r.product.sku)).size);assert.equal(result.cents,result.rows.reduce((n,r)=>n+r.cents,0));assert.equal(fillBudget(rows,1000000).rows.length,rows.length);
+});

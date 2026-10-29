@@ -6,7 +6,7 @@ function invalid(message){const error=Error(message);error.status=400;return err
 function normalize(input={}){
  if(!input||typeof input!=='object'||Array.isArray(input))throw invalid('Preencha o formulário de candidatura.');
  const result={};
- for(const [key,min,max] of [['name',3,120],['email',5,200],['phone',8,30],['city',2,120],['profileUrl',10,300],['niche',3,200],['audience',10,1000],['salesExperience',10,1500],['contentPlan',20,1500]]){
+ for(const [key,min,max] of [['name',3,120],['email',5,200],['phone',8,30],['city',2,120],['profileUrl',10,300]]){
   const value=typeof input[key]==='string'?input[key].trim():'';
   if(value.length<min||value.length>max)throw invalid('Confira o campo '+key+'.');result[key]=value;
  }
@@ -15,8 +15,8 @@ function normalize(input={}){
  if(!/^[+\d\s()-]{8,30}$/.test(result.phone))throw invalid('Informe um telefone válido.');
  let url;try{url=new URL(result.profileUrl);}catch{throw invalid('Informe o link HTTPS do seu perfil público.');}
  if(url.protocol!=='https:'||url.username||url.password)throw invalid('Informe o link HTTPS do seu perfil público.');
- for(const key of ['followers','averageViews']){
-  const number=Number(input[key]);if(input[key]===''||input[key]==null||!Number.isSafeInteger(number)||number<0||number>1000000000)throw invalid('Confira seguidores e visualizações.');result[key]=number;
+ for(const key of ['followers']){
+  const number=Number(input[key]);if(input[key]===''||input[key]==null||!Number.isSafeInteger(number)||number<0||number>1000000000)throw invalid('Confira o número de seguidores.');result[key]=number;
  }
  if(input.consent!==true||input.adult!==true)throw invalid('Confirme a maioridade e o uso dos dados para análise.');
  return {...result,consent:true,adult:true,consentVersion:'2026-10-29'};

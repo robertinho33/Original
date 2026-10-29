@@ -7,7 +7,7 @@ const order=['wash','treat','condition','finish'];
 const image=value=>{try{const url=new URL(String(value||''));return url.protocol==='https:'?url.href:'';}catch{return '';}};
 function compare(a,b){
  for(const field of ['goalFit','pair','fit','mask','finish','finishFit','curated'])if(a[field]!==b[field])return a[field]-b[field];
- return b.cents-a.cents||b.signature.localeCompare(a.signature);
+ return a.cents-b.cents||b.signature.localeCompare(a.signature);
 }
 function recommendByLine(available,config,input){
  const groups=new Map(),singles=[],choices=new Map();
@@ -46,7 +46,7 @@ function recommendByLine(available,config,input){
  const cheapest=(a,b)=>a.cents-b.cents||key(a.product.sku).localeCompare(key(b.product.sku));
  for(const group of groups.values()){
   // At most four variants per role: retain fit, curation and affordable options.
-  const options={};for(const role of order){const rows=group.roles[role];const ranked=[...rows].sort((a,b)=>b.curated-a.curated||b.fit-a.fit||cheapest(a,b)).slice(0,3);const cheap=[...rows].sort(cheapest).slice(0,1);options[role]=[...new Map([...ranked,...cheap].map(r=>[key(r.product.sku),r])).values()];}
+  const options={};for(const role of order){const rows=group.roles[role];const ranked=[...rows].sort((a,b)=>b.curated-a.curated||b.fit-a.fit||cheapest(a,b)).slice(0,3);const cheap=[...rows].sort(cheapest).slice(0,1),premium=[...rows].sort((a,b)=>b.cents-a.cents||key(a.product.sku).localeCompare(key(b.product.sku))).slice(0,1);options[role]=[...new Map([...ranked,...cheap,...premium].map(r=>[key(r.product.sku),r])).values()];}
   for(const wash of options.wash)for(const condition of options.condition){
    const base=[wash,condition];if(wash.cents+condition.cents>budget)continue;
    consider(base,group.line,1);

@@ -1,3 +1,7 @@
+import '../catalog/csv-data.js';
+import '../catalog/product-metadata.js';
+const {parseTable}=globalThis.CatalogCsv;
+const {parseMetadata,importPatch,validateReferences}=globalThis.ProductMetadata;
 ﻿'use strict';
 
 import {
@@ -12,7 +16,8 @@ import { db } from '../firebase-config.js';
 const SOURCES = [
     '../data/catalog/sources/Brae.csv',
     '../data/catalog/sources/EcoBelle.csv',
-    '../data/catalog/sources/Inovax.csv'
+    '../data/catalog/sources/Inovax.csv',
+    '../data/catalog/sources/Truss-clean.csv'
 ];
 
 const COLLECTION = 'products';
@@ -45,76 +50,10 @@ function cleanText(value) {
  *
  * O parser respeita aspas e separadores dentro de campos.
  */
-function parseCSVLine(line, delimiter = ';') {
-    const result = [];
-    let current = '';
-    let quoted = false;
-
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-
-        if (char === '"') {
-            if (quoted && line[i + 1] === '"') {
-                current += '"';
-                i++;
-                continue;
-            }
-
-            quoted = !quoted;
-            continue;
-        }
-
-        if (char === delimiter && !quoted) {
-            result.push(current);
-            current = '';
-            continue;
-        }
-
-        current += char;
-    }
-
-    result.push(current);
-
-    return result.map(cleanText);
-}
-
 function parseCSV(text) {
-    const lines = String(text || '')
-        .replace(/^\uFEFF/, '')
-        .split(/\r?\n/)
-        .filter(line => line.trim() !== '');
-
-    if (!lines.length) {
-        return {
-            headers: [],
-            rows: []
-        };
-    }
-
-    const headers = parseCSVLine(lines[0]).map(header =>
-        cleanText(header).toLowerCase()
-    );
-
-    const rows = [];
-
-    for (let index = 1; index < lines.length; index++) {
-        const values = parseCSVLine(lines[index]);
-
-        const row = {};
-
-        headers.forEach((header, columnIndex) => {
-            row[header] = values[columnIndex] ?? '';
-        });
-
-        row.__line = index + 1;
-
-        rows.push(row);
-    }
-
-    return {
-        headers,
-        rows
-    };
+    const table=parseTable(text),headers=(table[0]||[]).map(header=>cleanText(header).toLowerCase());
+    const rows=table.slice(1).map((values,index)=>{if(values.length!==headers.length)throw Error('Linha '+(index+2)+': quantidade de colunas inválida.');return {...Object.fromEntries(headers.map((header,column)=>[header,cleanText(values[column])])),__line:index+2};});
+    return {headers,rows};
 }
 
 /*
@@ -436,6 +375,7 @@ function normalizeProduct(row, source, line) {
     const stock = parseStock(row.stock);
 
     const errors = [];
+    let metadata=null;try{metadata=parseMetadata(row);}catch(error){errors.push(error.message);}
 
     if (!sku) {
         errors.push('SKU ausente');
@@ -492,6 +432,7 @@ function normalizeProduct(row, source, line) {
     return {
         ok: true,
         product: {
+            ...importPatch(metadata),
             sku,
             name,
             description,
@@ -722,6 +663,7 @@ async function validateCatalog() {
         }
 
         const existingSet = await getExistingSkus();
+        try{validateReferences(allProducts.map(p=>({sku:p.sku,metadata:p.catalogProfile})),new Set([...existingSet,...allProducts.map(p=>p.sku)].map(sku=>sku.toLowerCase())));}catch(error){errors.push(error.message);}
 
         const existing = allProducts
             .filter(product => existingSet.has(product.sku))
