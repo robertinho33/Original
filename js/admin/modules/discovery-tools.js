@@ -1,6 +1,6 @@
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const options=(values,current)=>values.map(([v,label])=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(label)}</option>`).join('');
-const goals=[['hydration','Hidratação e maciez'],['repair','Fios danificados'],['frizz','Controle do frizz'],['curls','Definição dos cachos'],['color','Cuidado da cor']];
+const goals=[['hydration','Hidratação e maciez'],['repair','Fios danificados'],['frizz','Controle do frizz'],['curls','Definição dos cachos'],['color','Cuidado da cor'],['nutrition','Nutrição dos fios'],['oiliness','Controle da oleosidade']];
 const steps=[['wash','Limpar'],['treat','Tratar'],['finish','Finalizar']];
 const hairs=[['all','Todos os tipos'],['straight','Liso'],['wavy','Ondulado'],['curly','Cacheado'],['coily','Crespo']];
 const chemicals=[['all','Com ou sem química'],['treated','Com química ou coloração'],['natural','Sem química']];

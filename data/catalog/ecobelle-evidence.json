@@ -1,0 +1,827 @@
+{
+  "checkedAt": "2026-10-29",
+  "source": "Grupo EcoBelle — fichas individuais dos SKUs",
+  "evidence": [
+    {
+      "sku": "YDMYK3MK4",
+      "source": "https://www.grupoecobelle.com.br/mascara-liquida-liquid-mask-ecobelle-200-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "repair",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "NJTFJ9RNF",
+      "source": "https://www.grupoecobelle.com.br/perfume-capilar-ecobelle-50-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "frizz",
+      "goals": [
+        "frizz",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "2QSQFLXZ6",
+      "source": "https://www.grupoecobelle.com.br/kit-doeden-capim-limao-alecrim/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "oiliness",
+      "goals": [
+        "oiliness",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "CW2L93VRJ",
+      "source": "https://www.grupoecobelle.com.br/finalizador-la-boue-home-care-verte-300ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "VLL9VL3WH",
+      "source": "https://www.grupoecobelle.com.br/condicionador-la-boue-home-care-verte-300ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "YVGKB834N",
+      "source": "https://www.grupoecobelle.com.br/ativador-de-cachos-lux-ecobelle-500ml-forte/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "curls",
+      "goals": [
+        "curls",
+        "hydration",
+        "nutrition",
+        "frizz"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "HCNTRBT4Z",
+      "source": "https://www.grupoecobelle.com.br/mascara-extratos-belapro-1-kg/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition"
+      ],
+      "hairScope": "all",
+      "chemistryScope": "selected",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "DQK7LP4BP",
+      "source": "https://www.grupoecobelle.com.br/kit-industria-pra-favela-280-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition"
+      ],
+      "hairScope": "all",
+      "chemistryScope": "unknown",
+      "reviewStatus": "pending"
+    },
+    {
+      "sku": "YYYS5P629",
+      "source": "https://www.grupoecobelle.com.br/kit-nutrisim-bela-pro/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "U292SXL8P",
+      "source": "https://www.grupoecobelle.com.br/ironed-hair-silver-500g/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "color",
+      "goals": [
+        "color"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "Z3ND3HEVB",
+      "source": "https://www.grupoecobelle.com.br/shampoo-coco-camomila-by-vitoria-lima-ecobelle-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "RAEKECC87",
+      "source": "https://www.grupoecobelle.com.br/creme-de-pentear-leave-in-nutrisim-bela-pro-500-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "ZR936JBFC",
+      "source": "https://www.grupoecobelle.com.br/shampoo-nutrisim-bela-pro-500-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "5CVZ5BS8H",
+      "source": "https://www.grupoecobelle.com.br/shampoo-e-condicionador-algas-marinhas-1l-eco-belle/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "selected",
+      "reviewStatus": "pending"
+    },
+    {
+      "sku": "NFHWURMJ4",
+      "source": "https://www.grupoecobelle.com.br/kit-industria-pra-favela-800-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition"
+      ],
+      "hairScope": "all",
+      "chemistryScope": "unknown",
+      "reviewStatus": "pending"
+    },
+    {
+      "sku": "FMC93GCXT",
+      "source": "https://www.grupoecobelle.com.br/shampoo-liso-magico-bela-pro-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "frizz",
+      "goals": [
+        "frizz",
+        "repair"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "all",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "WXM657UMY",
+      "source": "https://www.grupoecobelle.com.br/condicionador-nutrisim-bela-pro-500-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "EHE34PCDP",
+      "source": "https://www.grupoecobelle.com.br/shampoo-matizador-eco-belle-1-l/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "color",
+      "goals": [
+        "color"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "EF5ASHTNC",
+      "source": "https://www.grupoecobelle.com.br/kit-industria-pra-favela-450-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition"
+      ],
+      "hairScope": "all",
+      "chemistryScope": "unknown",
+      "reviewStatus": "pending"
+    },
+    {
+      "sku": "57DY6ECTU",
+      "source": "https://www.grupoecobelle.com.br/condicionador-liso-magico-bela-pro-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "frizz",
+      "goals": [
+        "frizz",
+        "repair"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "all",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "HR6LKXYGJ",
+      "source": "https://www.grupoecobelle.com.br/gran-finale-protetor-termico-eco-belle-200-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "7SBBKXLX2",
+      "source": "https://www.grupoecobelle.com.br/reparador-de-pontas-ecobelle-60-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "frizz",
+      "goals": [
+        "frizz",
+        "nutrition",
+        "hydration"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "22TJS8HBH",
+      "source": "https://www.grupoecobelle.com.br/condicionador-coco-camomila-by-vitoria-lima-ecobelle-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "QG732NABK",
+      "source": "https://www.grupoecobelle.com.br/condicionador-matizador-silver-eco-belle-300ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "color",
+      "goals": [
+        "color"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "ASUE5CZGP",
+      "source": "https://www.grupoecobelle.com.br/shampoo-hidrasim-bela-pro-500-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "P2M2DEK4D",
+      "source": "https://www.grupoecobelle.com.br/condicionador-matizador-eco-belle-1-l/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "color",
+      "goals": [
+        "color"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "CSH5ETU2N",
+      "source": "https://www.grupoecobelle.com.br/mascara-coco-camomila-by-vitoria-lima-ecobelle-250-g/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "YAY98Z8BS",
+      "source": "https://www.grupoecobelle.com.br/shampoo-remineralizante-extrato-de-algas-marinhas-eco-belle-1-l/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "selected",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "3FLD4KJBC",
+      "source": "https://www.grupoecobelle.com.br/mascara-ironed-hair-500g/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "frizz",
+      "goals": [
+        "frizz",
+        "nutrition",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "7TNHTQDUL",
+      "source": "https://www.grupoecobelle.com.br/kit-curlys-cachos-bela-pro/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "curls",
+      "goals": [
+        "curls",
+        "nutrition",
+        "hydration"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "EJL97KLUE",
+      "source": "https://www.grupoecobelle.com.br/oleo-de-argan-ecobelle-60-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "frizz",
+      "goals": [
+        "frizz",
+        "nutrition",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "RJZSGEAVY",
+      "source": "https://www.grupoecobelle.com.br/finalizador-termico-coco-camomila-by-vitoria-lima-200-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "AYE76QWA3",
+      "source": "https://www.grupoecobelle.com.br/gran-finale-blond-protetor-termico-eco-belle-200-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "color",
+      "goals": [
+        "color"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "KSD694YBA",
+      "source": "https://www.grupoecobelle.com.br/oleo-de-ojon-ecobelle-60-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "W35UTMS43",
+      "source": "https://www.grupoecobelle.com.br/shampoo-curlys-cachos-bela-pro-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "curls",
+      "goals": [
+        "curls"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "Y6H5QMT4P",
+      "source": "https://www.grupoecobelle.com.br/condicionador-curlys-cachos-bela-pro-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "curls",
+      "goals": [
+        "curls"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "KRHCCVSJL",
+      "source": "https://www.grupoecobelle.com.br/kit-silver-platinum-bela-pro/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "color",
+      "goals": [
+        "color"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "pending"
+    },
+    {
+      "sku": "TJFJENBKK",
+      "source": "https://www.grupoecobelle.com.br/mascara-hidrasim-bela-pro-300-g/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "8MBYSWDEF",
+      "source": "https://www.grupoecobelle.com.br/mascara-matizadora-ecobelle-1-kg/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "color",
+      "goals": [
+        "color"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "K6ND8CCHN",
+      "source": "https://www.grupoecobelle.com.br/gloss-finalizador-la-boue-home-care-blanc-300ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "selected",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "THQ44H5B8",
+      "source": "https://www.grupoecobelle.com.br/shampoo-doeden-capim-limao-alecrim-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "oiliness",
+      "goals": [
+        "oiliness",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "X3DYUC6EA",
+      "source": "https://www.grupoecobelle.com.br/mascara-doeden-capim-limao-alecrim-250-g/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "oiliness",
+      "goals": [
+        "oiliness",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "8AJ7SPN32",
+      "source": "https://www.grupoecobelle.com.br/recondicionador-manutencao-lama-la-boue-ecobelle-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "WBZA7Q6LP",
+      "source": "https://www.grupoecobelle.com.br/mascara-reestruturadora-ecobelle-2-kg/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "nutrition",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "5F5NZ9HN9",
+      "source": "https://www.grupoecobelle.com.br/mascara-curlys-cachos-bela-pro-300-g/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "curls",
+      "goals": [
+        "curls",
+        "nutrition",
+        "hydration"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "Q8ELXT62T",
+      "source": "https://www.grupoecobelle.com.br/ampolaco-nutrisim-belapro-450ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "25VPFV8HP",
+      "source": "https://www.grupoecobelle.com.br/ampola-semi-di-lino-15ml-4-unidades/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "8YHKWEN8R",
+      "source": "https://www.grupoecobelle.com.br/condicionador-la-boue-home-care-blanc-300ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "frizz",
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "5CLM83ZE4",
+      "source": "https://www.grupoecobelle.com.br/shampoo-la-boue-home-care-blanc-300ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "E35TQSMD8",
+      "source": "https://www.grupoecobelle.com.br/shampoo-manutencao-lama-la-boue-ecoebelle-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "ELVY4XSSY",
+      "source": "https://www.grupoecobelle.com.br/locao-noturna-manutencao-lama-la-boue-ecobelle-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "nutrition",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "ZHX85TBZS",
+      "source": "https://www.grupoecobelle.com.br/mascara-silver-platinum-bela-pro-300-g/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "color",
+      "goals": [
+        "color"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "V4M66277J",
+      "source": "https://www.grupoecobelle.com.br/mascara-nutrisim-bela-pro-300-g/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "XFGMQY4RW",
+      "source": "https://www.grupoecobelle.com.br/condicionador-hidrasim-bela-pro-500-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "ZKDQ2Y47Q",
+      "source": "https://www.grupoecobelle.com.br/serum-hidrasim-bela-pro-60-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "frizz",
+      "goals": [
+        "frizz",
+        "repair",
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "LJNMFY4VX",
+      "source": "https://www.grupoecobelle.com.br/condicionador-extrato-de-algas-marinhas-eco-belle-1-l/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition",
+        "hydration"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "YCP5J38EF",
+      "source": "https://www.grupoecobelle.com.br/shampoo-quartzo-la-boue-branc-com-avela-eco-belle-500-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "nutrition",
+      "goals": [
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "PML3C9J4M",
+      "source": "https://www.grupoecobelle.com.br/kit-la-boue-blanc-home-care-3-itens/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "nutrition",
+        "hydration",
+        "frizz"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "HP9LFWALK",
+      "source": "https://www.grupoecobelle.com.br/condicionador-doeden-capim-limao-alecrim-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "oiliness",
+      "goals": [
+        "oiliness",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "P3SMM9FXM",
+      "source": "https://www.grupoecobelle.com.br/mascara-liso-magico-bela-pro-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "frizz",
+      "goals": [
+        "frizz",
+        "repair"
+      ],
+      "hairScope": "selected",
+      "chemistryScope": "all",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "LPGSTQBW8",
+      "source": "https://www.grupoecobelle.com.br/kit-hidrasim-bela-pro/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "repair"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "3SSKRFEP5",
+      "source": "https://www.grupoecobelle.com.br/kit-coco-camomila-by-vitoria-lima-ecobelle-300-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "hydration",
+      "goals": [
+        "hydration",
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    },
+    {
+      "sku": "P7VJ56493",
+      "source": "https://www.grupoecobelle.com.br/oleo-de-ojon-ecobelle-7-ml/p",
+      "verifiedAt": "2026-10-29",
+      "primaryGoal": "repair",
+      "goals": [
+        "repair",
+        "nutrition"
+      ],
+      "hairScope": "unknown",
+      "chemistryScope": "unknown",
+      "reviewStatus": "approved"
+    }
+  ]
+}

@@ -4,7 +4,7 @@ const {isProductAuthorized}=require('../../../js/catalog/source-authorization');
 const {getFirestore}=require('../../infrastructure/firebase/firebase-admin');
 const text=(value,max=200)=>String(value??'').trim().slice(0,max);
 const key=value=>text(value,100).toLowerCase();
-const goals=['hydration','repair','frizz','curls','color'];
+const goals=['hydration','repair','frizz','curls','color','nutrition','oiliness'];
 const steps=['wash','treat','finish'];
 function safeImage(value){try{const url=new URL(text(value,1600));return url.protocol==='https:'?url.href:'';}catch{return '';}}
 function productView(p){return {sku:text(p.sku,100),name:text(p.name),image:safeImage(p.image),price:Number(p.price)};}

@@ -1,7 +1,7 @@
 'use strict';
 const {createHash}=require('node:crypto');
 const {getFirestore}=require('../../infrastructure/firebase/firebase-admin');
-const values={hair:['straight','wavy','curly','coily'],chemistry:['treated','natural'],goal:['hydration','repair','frizz','curls','color'],budgetBand:['up100','100to200','200to400','over400']};
+const values={hair:['straight','wavy','curly','coily'],chemistry:['treated','natural'],goal:['hydration','repair','frizz','curls','color','nutrition','oiliness'],budgetBand:['up100','100to200','200to400','over400']};
 const origins=new Set(['https://www.fiosperfeitos.com.br','https://fiosperfeitos.com.br']);
 const hash=v=>createHash('sha256').update(v).digest('hex');
 const dayKey=(now=Date.now())=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(now));

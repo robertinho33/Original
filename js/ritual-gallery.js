@@ -4,6 +4,12 @@ export function mountRitualGallery(container,products,{money,esc,safeImage}){
  const main=container.querySelector('.ritual-main-photo'),info=container.querySelector('.ritual-product-info');
  function show(index){current=index;const product=products[index],src=safeImage(product.image);main.innerHTML=src?`<img class="product-image ritual-photo-enter" src="${esc(src)}" alt="${esc(product.name)}">`:'<div class="ritual-no-photo">Imagem indisponível</div>';
   info.innerHTML=`<p class="eyebrow">${product.step==='kit'?'KIT COMPLETO':'COMPLEMENTO PARA SUA SELEÇÃO'} · ${index+1} DE ${products.length}</p><h3>${esc(product.name)}</h3><p class="ritual-product-price">${money(product.price)}</p>${product.step==='kit'&&product.kitComponents?.length?`<p class="ritual-kit-contents"><strong>O kit inclui:</strong> ${product.kitComponents.map(esc).join(', ')}.</p>`:''}<p class="ritual-product-reason">${esc(product.reason||'Uma escolha para o seu cuidado.')}</p><a class="quiet-link" href="/produto/${encodeURIComponent(product.sku)}">Ver detalhes do produto ↗</a><div class="ritual-included"><h4>${products[0]?.step==='kit'?'Seu kit e os complementos':'Sua seleção inclui'}</h4>${products.map(p=>`<p><span>${esc(p.name)}<small>${p.step==='kit'?'Kit completo':'Complemento'}</small></span><strong>${money(p.price)}</strong></p>`).join('')}</div>`;
+  if(product.selectionSource==='manufacturer'){
+   const details=document.createElement('details');details.className='discovery-note';
+   details.innerHTML='<summary>Sobre esta indicação</summary>'+(product.matchReasons||[]).map(reason=>'<p>'+esc(reason)+'</p>').join('');
+   try{const url=new URL(product.source);if(url.protocol==='https:'&&['www.grupoecobelle.com.br','grupoecobelle.com.br'].includes(url.hostname))details.innerHTML+='<a class="quiet-link" target="_blank" rel="noopener noreferrer" href="'+esc(url.href)+'">Consultar ficha da EcoBelle ↗</a>';}catch{}
+   info.querySelector('.ritual-product-reason').after(details);
+  }
   for(const button of container.querySelectorAll('[data-product-index]'))button.setAttribute('aria-pressed',String(Number(button.dataset.productIndex)===index));
  }
  container.querySelector('.ritual-thumbnails').addEventListener('click',event=>{const button=event.target.closest('[data-product-index]');if(button&&Number(button.dataset.productIndex)!==current)show(Number(button.dataset.productIndex));});

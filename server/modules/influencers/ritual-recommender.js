@@ -1,5 +1,5 @@
 'use strict';
-const goals={hydration:'Hidratação e maciez',repair:'Cuidado de fios danificados',frizz:'Controle do frizz',curls:'Definição dos cachos',color:'Cuidado da cor'};
+const goals={hydration:'Hidratação e maciez',repair:'Cuidado de fios danificados',frizz:'Controle do frizz',curls:'Definição dos cachos',color:'Cuidado da cor',nutrition:'Nutrição dos fios',oiliness:'Controle da oleosidade'};
 const hairs={straight:'cabelos lisos',wavy:'cabelos ondulados',curly:'cabelos cacheados',coily:'cabelos crespos'};
 const steps=['wash','treat','finish'];
 const {recommendByLine}=require('./line-care-selector');
@@ -14,6 +14,7 @@ function compare(a,b){
 function recommend(config,catalog,input={}){
   if(!input||Array.isArray(input)||typeof input.goal!=='string'||typeof input.hair!=='string'||!Object.hasOwn(goals,input.goal)||!Object.hasOwn(hairs,input.hair)||!['treated','natural'].includes(input.chemistry))throw Error('Confira suas respostas para encontrar seu cuidado.');
   const budget=Number(input.budget);
+  if(input.shade!==undefined&&!['blonde','grey','other'].includes(input.shade))throw Error('Confira o tom dos seus cabelos.');
   if(!['number','string'].includes(typeof input.budget)||!Number.isFinite(budget)||budget<1||budget>10000)throw Error('Informe um orçamento entre R$ 1 e R$ 10.000.');
   if(!config?.enabled)return {products:[],total:0,message:'Nossa equipe pode ajudar você a escolher. Fale com a gente para encontrar suas opções.'};
   const budgetCents=Math.floor(budget*100+1e-7),bySku=new Map();
@@ -21,6 +22,7 @@ function recommend(config,catalog,input={}){
     const cents=Math.round(Number(product.price)*100),stock=Number(product.stock);
     if(product.careReviewStatus!=='excluded'&&product.active!==false&&!/^inativo/i.test(product.name||'')&&Number.isFinite(stock)&&stock>=1&&Number.isFinite(cents)&&cents>0&&cents<=budgetCents)bySku.set(key(product.sku),{product,cents});
   }
+  if(config.automatic===true&&catalog.some(p=>p.sourceId==='ecobelle'&&p.recommendationProfile))return require('./verified-care-selector').recommendVerified(bySku,input);
   if(config.automatic===true)return require('./budget-selection').budgetSelection(recommendByLine(bySku,config,input),bySku,config,input);
   const candidates=Object.fromEntries(steps.map(step=>[step,new Map()]));
   // The saved curation permits at most 30 rows. Keep work bounded for older/malformed documents too.

@@ -1,7 +1,8 @@
 (function(root){
 'use strict';
 const columns=['source_id','brand','line','product_category','product_subcategory','product_type','care_step','hair_types','hair_scope','chemistry_types','chemistry_scope','care_goals','primary_goal','care_restrictions','kit_components','kit_review_status','care_review_status','care_source','care_notes'];
-const options={hair:['straight','wavy','curly','coily'],chemistry:['natural','treated'],goals:['hydration','repair','frizz','curls','color'],type:['individual','kit'],step:['wash','condition','treat','finish','scalp','accessory','kit'],status:['pending','approved','excluded'],scope:['unknown','selected','all']};
+const evidenceColumns=['care_usage','care_evidence_status','care_verified_at'];
+const options={hair:['straight','wavy','curly','coily'],chemistry:['natural','treated'],goals:['hydration','repair','frizz','curls','color','nutrition','oiliness'],type:['individual','kit'],step:['wash','condition','treat','finish','scalp','accessory','kit'],status:['pending','approved','excluded'],scope:['unknown','selected','all']};
 const text=value=>String(value??'').trim();
 function choice(value,allowed,label,fallback=''){const v=text(value)||fallback;if(v&&!allowed.includes(v))throw Error(label+': valor inválido ('+v+').');return v;}
 function list(value,allowed,label){const values=text(value)?text(value).split('|').map(text):[];if(values.some(v=>!v||!allowed.includes(v)))throw Error(label+': use valores separados por |.');if(new Set(values).size!==values.length)throw Error(label+': valor repetido.');return values;}
@@ -18,7 +19,16 @@ function parseMetadata(row){
  if(result.type==='individual'&&(components.length||result.step==='kit'))throw Error('Produto individual não pode conter componentes nem etapa kit.');
  if(result.type==='kit'&&result.step&&result.step!=='kit')throw Error('Kit deve usar care_step=kit.');
  if(result.kitReviewStatus==='approved'&&(result.type!=='kit'||!components.length))throw Error('Composição aprovada exige um kit com componentes.');
- if(result.reviewStatus==='approved'&&(!result.brand||!result.category||!result.subcategory||!result.type||!result.step||hair.mode==='unknown'||chemistry.mode==='unknown'||!primaryGoal||!result.source))throw Error('Aprovação exige marca, categoria, subcategoria, tipo, etapa, indicações, objetivo principal e fonte.');
+ if(evidenceColumns.some(column=>Object.hasOwn(row,column))){
+  result.schemaVersion=3;result.usage=choice(row.care_usage,['home','professional','unknown'],'care_usage','unknown');
+  result.evidenceStatus=choice(row.care_evidence_status,['purpose_verified','unverified'],'care_evidence_status','unverified');result.verifiedAt=text(row.care_verified_at);
+  if(result.evidenceStatus==='purpose_verified'){
+   let official=false;try{const url=new URL(result.source);official=url.protocol==='https:'&&['www.grupoecobelle.com.br','grupoecobelle.com.br'].includes(url.hostname)&&url.pathname.endsWith('/p');}catch{}
+   if(result.sourceId!=='ecobelle'||!official||!/^\d{4}-\d{2}-\d{2}$/.test(result.verifiedAt)||Number.isNaN(Date.parse(result.verifiedAt)))throw Error('Finalidade verificada exige fonte oficial EcoBelle e data da revisão.');
+  }
+ }
+ const verifiedPurpose=result.evidenceStatus==='purpose_verified'&&result.usage==='home';
+ if(result.reviewStatus==='approved'&&(!result.brand||!result.category||!result.subcategory||!result.type||!result.step||(!verifiedPurpose&&(hair.mode==='unknown'||chemistry.mode==='unknown'))||!primaryGoal||!result.source))throw Error('Aprovação exige marca, categoria, subcategoria, tipo, etapa, indicações, objetivo principal e fonte.');
  if(result.reviewStatus==='approved'&&result.type==='kit'&&result.kitReviewStatus!=='approved')throw Error('Kit aprovado exige composição aprovada.');
  return result;
 }
@@ -32,5 +42,5 @@ function importPatch(metadata,existing={}){
  if(metadata.kitReviewStatus==='approved'){patch.kitComponents=metadata.components;patch.kitReviewStatus='approved';}
  return patch;
 }
-const api={columns,options,parseMetadata,validateReferences,importPatch};root.ProductMetadata=api;if(typeof module==='object'&&module.exports)module.exports=api;
+const api={columns,evidenceColumns,options,parseMetadata,validateReferences,importPatch};root.ProductMetadata=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof globalThis==='object'?globalThis:this);

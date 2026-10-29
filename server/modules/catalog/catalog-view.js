@@ -23,8 +23,17 @@ function mergePublicProducts(base,documents,sources=[]){
       active:row.active??before.active??true,image:row.image||before.image||'',description:row.description||before.description||'',
       sourceId:row.sourceId,sourceName:row.sourceName,sourceUrl:merged.sourceUrl||'',category:row.categoryName||merged.category||'',
       categoryName:row.categoryName,weight:merged.weight||'',featured:merged.featured===true,priority:Number(merged.priority)||0};
+    const care=merged.catalogProfile;
+    if(care?.schemaVersion===3&&care.sourceId==='ecobelle')result.recommendationProfile={
+      verified:care.reviewStatus==='approved'&&care.evidenceStatus==='purpose_verified'&&care.usage==='home',
+      type:care.type,step:care.step,line:care.line,primaryGoal:care.primaryGoal,goals:care.goals,
+      hairScope:care.hairScope,hair:care.hair,chemistryScope:care.chemistryScope,chemistry:care.chemistry,
+      restrictions:care.restrictions,source:care.source,verifiedAt:care.verifiedAt,
+      components:care.kitReviewStatus==='approved'?care.components:[]
+    };
     map.set(key(row.sku),result);
   }
+  for(const row of map.values())if(row.recommendationProfile)row.recommendationProfile.components=row.recommendationProfile.components.map(component=>({sku:component.sku,quantity:component.quantity,name:map.get(key(component.sku))?.name||'',step:map.get(key(component.sku))?.recommendationProfile?.step||''}));
   return [...map.values()];
 }
 module.exports={enrichProducts,mergePublicProducts};

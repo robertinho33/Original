@@ -1,0 +1,43 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+const {parseTable}=require('../../../js/catalog/csv-data');
+const {parseMetadata}=require('../../../js/catalog/product-metadata');
+const {mergePublicProducts}=require('../catalog/catalog-view');
+const {recommend}=require('./ritual-recommender');
+const csv=parseTable(fs.readFileSync(require('node:path').resolve(__dirname,'../../../data/catalog/sources/EcoBelle.csv'),'utf8')),headers=csv.shift();
+const catalog=mergePublicProducts([],csv.map(values=>{const row=Object.fromEntries(headers.map((h,i)=>[h,values[i]]));return {...row,price:Number(row.price),stock:3,sourceId:'ecobelle',catalogProfile:parseMetadata(row)};}));
+const config={enabled:true,automatic:true,rules:[]},input={hair:'wavy',chemistry:'treated',goal:'frizz',budget:490};
+test('verified EcoBelle selection chooses a factual frizz kit and excludes its components',()=>{
+ const result=recommend(config,catalog,input);assert.equal(result.products[0].sku,'PML3C9J4M');assert.ok(result.products.length>1);assert.ok(result.total<=490);
+ assert.ok(!result.products.some(p=>['5CLM83ZE4','8YHKWEN8R','K6ND8CCHN','FCVXNP2J9','FMC93GCXT','3SSKRFEP5'].includes(p.sku)));
+ for(const p of result.products)assert.ok(catalog.find(c=>c.sku===p.sku).recommendationProfile.goals.includes('frizz'));
+ for(let i=2;i<result.products.length;i++)assert.ok(result.products[i-1].price>=result.products[i].price);
+ assert.ok(result.products[0].matchReasons.some(r=>r.includes('não detalha')));
+});
+test('nutrition and oiliness select their own line rather than an expensive unrelated kit',()=>{
+ assert.equal(recommend(config,catalog,{...input,goal:'nutrition',budget:490}).products[0].sku,'YYYS5P629');
+ assert.equal(recommend(config,catalog,{...input,goal:'oiliness',budget:490}).products[0].sku,'2QSQFLXZ6');
+});
+test('all profiles respect stock, visibility, budget, verified purpose and unique kit contents',()=>{
+ for(const hair of ['straight','wavy','curly','coily'])for(const chemistry of ['natural','treated'])for(const goal of ['hydration','nutrition','repair','oiliness','frizz','curls','color'])for(const budget of [1,40,120,121,200,490,1000]){
+  const result=recommend(config,catalog,{hair,chemistry,goal,budget});assert.ok(result.total<=budget);assert.equal(new Set(result.products.map(p=>p.sku)).size,result.products.length);
+  assert.equal(Math.round(result.products.reduce((sum,p)=>sum+p.price,0)*100),Math.round(result.total*100));
+  const kit=result.products.find(p=>p.step==='kit'),members=new Set(catalog.find(p=>p.sku===kit?.sku)?.recommendationProfile.components.map(c=>c.sku)||[]);
+  for(const p of result.products){const original=catalog.find(c=>c.sku===p.sku),profile=original.recommendationProfile;assert.ok(profile.verified&&profile.goals.includes(goal));assert.ok(!profile.restrictions.includes('blonde_only')&&!profile.restrictions.includes('light_tones_only'));assert.ok(!members.has(p.sku));if(profile.hairScope!=='unknown')assert.ok(profile.hair.includes(hair));if(profile.chemistryScope!=='unknown')assert.ok(profile.chemistry.includes(chemistry));}
+ }
+ const unavailable=catalog.map(p=>({...p,stock:0}));assert.deepEqual(recommend(config,unavailable,input).products,[]);
+});
+test('toning asks for the actual shade and never suggests blonde-only products for grey or dark hair',()=>{
+ const color={...input,goal:'color'};
+ assert.equal(recommend(config,catalog,{...color,shade:'other'}).products.length,0);
+ assert.ok(recommend(config,catalog,{...color,shade:'blonde'}).products.length>0);
+ const grey=recommend(config,catalog,{...color,shade:'grey'});assert.ok(grey.products.length>0);
+ for(const p of grey.products)assert.ok(!catalog.find(c=>c.sku===p.sku).recommendationProfile.restrictions.includes('blonde_only'));
+ assert.throws(()=>recommend(config,catalog,{...color,shade:'invalid'}));
+});
+test('purpose evidence requires official exact-domain source and keeps unknown scopes explicit',()=>{
+ const row=Object.fromEntries(headers.map((h,i)=>[h,csv.find(v=>v[0]==='LPGSTQBW8')[i]]));
+ const p=parseMetadata(row);assert.equal(p.hairScope,'unknown');assert.equal(p.chemistryScope,'unknown');assert.deepEqual(p.hair,[]);
+ for(const care_source of ['https://grupoecobelle.com.br.evil.example/p','http://www.grupoecobelle.com.br/a/p','https://other.example/p'])assert.throws(()=>parseMetadata({...row,care_source}));
+ const publicProduct=catalog.find(p=>p.sku==='LPGSTQBW8');assert.ok(!JSON.stringify(publicProduct).includes('care_notes'));assert.equal(publicProduct.recommendationProfile.verified,true);
+});

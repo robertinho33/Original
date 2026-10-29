@@ -1,7 +1,7 @@
 import {createCareDrafts,productId,careSupplier,filterCareProducts} from './care-bulk-model.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const choices=globalThis.ProductCareProfile.options;
-const short={treated:'Com química/cor',natural:'Sem química',hydration:'Hidratação',repair:'Danos',frizz:'Frizz',curls:'Cachos',color:'Cor'};
+const short={treated:'Com química/cor',natural:'Sem química',hydration:'Hidratação',repair:'Danos',frizz:'Frizz',curls:'Cachos',color:'Cor',nutrition:'Nutrição',oiliness:'Oleosidade'};
 const headings={hair:'Tipo de cabelo',chemistry:'Química ou coloração',goals:'Objetivos do cuidado'};
 export function renderCareBulkEditor(root,products,{save,onCommitted=()=>{},signal,sources=[]}={}){
  const model=createCareDrafts(products),valid=products.filter(p=>productId(p));

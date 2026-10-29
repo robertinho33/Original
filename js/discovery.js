@@ -47,7 +47,7 @@ if(careForm){
   },
   start(){$('quizMessage').textContent='Estamos montando sua seleção…';selectionOptions=[];selectedOption=0;button.disabled=true;message.textContent='Um instante, estamos escolhendo suas opções…';$('ritualResult').hidden=true;selected=[];},
   result(data){
-   const input=answers(),hairs={straight:'liso',wavy:'ondulado',curly:'cacheado',coily:'crespo'},goals={hydration:'hidratação e maciez',repair:'cuidado de fios danificados',frizz:'controle do frizz',curls:'definição dos cachos',color:'cuidado da cor'};
+   const input=answers(),hairs={straight:'liso',wavy:'ondulado',curly:'cacheado',coily:'crespo'},goals={hydration:'hidratação e maciez',repair:'cuidado de fios danificados',frizz:'controle do frizz',curls:'definição dos cachos',color:'cuidado da cor',nutrition:'Nutrição dos fios',oiliness:'Controle da oleosidade'};
    $('ritualProfile').textContent='Para cabelo '+hairs[input.hair]+', '+(input.chemistry==='treated'?'com química ou coloração':'sem química')+', buscando '+goals[input.goal]+'. Limite de '+money(input.budget)+' em produtos.';
    selectionOptions=[data,...(Array.isArray(data.alternatives)?data.alternatives:[])].filter(option=>option.products?.length);selectedOption=0;
    if(selectionOptions.length){showSelection();dialog?.close();$('openRitualQuiz').textContent='Ajustar minhas respostas ↗';const first=selected[0],photo=$('suggestionImage'),src=image(first.image);$('suggestionName').textContent=first.name;$('suggestionTotal').textContent=(first.step==='kit'?'1 kit completo'+(selected.length>1?' + '+(selected.length-1)+' '+(selected.length===2?'complemento':'complementos'):''):selected.length+' '+(selected.length===1?'produto':'produtos'))+' · Total de '+money(selectionOptions[0].total)+' em produtos';photo.hidden=!src;if(src){photo.src=src;photo.alt=first.name;}if(suggestion&&!suggestion.open)suggestion.showModal();else focusResult();}else{selected=[];message.textContent=data.message;$('quizMessage').textContent=data.message;$('ritualResult').hidden=true;}
@@ -68,6 +68,9 @@ if(careForm){
  const valid=()=>[...careForm.querySelectorAll('select,input')].every(field=>field.checkValidity());
  const run=(force=false)=>{clearTimeout(timer);if(valid())void query.query(answers(),{force});};
  careForm.addEventListener('submit',event=>{event.preventDefault();run(true);});
+ const shadeField=careForm.elements.shade,shadeLabel=$('ritualShade');
+ const syncShade=()=>{if(!shadeField||!shadeLabel)return;const needsTone=careForm.elements.goal.value==='color';shadeLabel.hidden=!needsTone;shadeField.disabled=!needsTone;shadeField.required=needsTone;};
+ careForm.elements.goal.addEventListener('change',syncShade);syncShade();
  careForm.addEventListener('input',()=>{
   clearTimeout(timer);query.invalidate();selected=[];selectionOptions=[];$('ritualResult').hidden=true;button.disabled=false;
   message.textContent=valid()?'Vamos atualizar suas opções…':'Conte um pouquinho mais para a gente encontrar suas opções.';

@@ -1,5 +1,7 @@
 # CSVs de produtos — preenchimento e revisão
 
+Este documento registra a preparação inicial. A revisão posterior da EcoBelle, com 30 colunas e finalidade verificada por atributo, está em [CATALOGO-ECOBELLE.md](CATALOGO-ECOBELLE.md) e substitui os números e regras gerais abaixo para essa fonte.
+
 Os quatro arquivos ativos foram ampliados de 8 para 27 colunas. Os valores originais de SKU, nome, peso, preço, categoria, estoque, descrição e imagem foram preservados, inclusive zeros à esquerda dos códigos. Formato: UTF-8, separador ponto e vírgula. Dentro de listas, use `|`.
 
 | Arquivo | Registros |
