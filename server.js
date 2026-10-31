@@ -36,6 +36,7 @@ app.use((req, res, next) => {
     next();
 });
 require('./server/modules/store/business-identity').registerPublicIdentityPages(app,{root:__dirname});
+require('./server/modules/store/professional-combos').registerProfessionalCombos(app);
 const productPages = require('./server/modules/catalog/product-pages');
 webDelivery.registerSearchFiles(app, { getProducts: productPages.getIndexableProducts });
 productPages.registerProductPages(app);
