@@ -14,7 +14,7 @@ const params=new URLSearchParams(location.search), coupon=(params.get('cupom')||
 const steps={kit:'Kit',wash:'Limpar',treat:'Tratar',condition:'Condicionar',finish:'Finalizar'};
 let selected=[],currentCoupon=coupon,selectionOptions=[],selectedOption=0;
 function updatePartnerLinks(){
-  for(const link of document.querySelectorAll('a[href="/index.html"]'))if(currentCoupon)link.href='/index.html?cupom='+encodeURIComponent(currentCoupon);
+  for(const link of document.querySelectorAll('a[href="/index.html"],a[href="/index.html#colecao"]'))if(currentCoupon){const target=new URL(link.href);target.searchParams.set('cupom',currentCoupon);link.href=target.pathname+target.search+target.hash;}
 }
 updatePartnerLinks();
 const image=v=>{try{const u=new URL(v);return u.protocol==='https:'?u.href:'';}catch{return '';}};

@@ -9,6 +9,13 @@ const {deliveryHeaders} = require('../../infrastructure/web-delivery');
 const {isPublicFile} = require('../../infrastructure/public-files');
 const root = path.resolve(__dirname,'../../..');
 
+test('visitor navigation connects shopping, care, orders, partnerships and help on public pages',async t=>{
+ const app=express();registerPublicIdentityPages(app,{root});const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));t.after(()=>{server.closeAllConnections();server.close();});const base='http://127.0.0.1:'+server.address().port;
+ const pages=['/index.html','/pages/monte-seu-ritual.html','/pages/rastrear-pedido.html','/pages/parcerias.html','/pages/candidatura-influenciador.html','/pages/influenciadores.html','/pages/parceiros.html','/pages/atendimento.html'];
+ for(const page of pages){const response=await fetch(base+page);assert.equal(response.status,200);const html=await response.text(),nav=html.match(/<nav class="visitor-nav"[^>]*>[\s\S]*?<\/nav>/)?.[0];assert.ok(nav,page);assert.match(nav,/aria-current=/);for(const href of ['/index.html#colecao','/pages/monte-seu-ritual.html','/pages/rastrear-pedido.html','/pages/parcerias.html','/pages/atendimento.html']){assert.ok(nav.includes('href="'+href+'"'),page+' / '+href);assert.ok(isPublicFile(new URL(href,base).pathname));assert.equal((await fetch(new URL(href,base))).status,200);}}
+ const hub=await(await fetch(base+'/pages/parcerias.html')).text();for(const href of ['/pages/candidatura-influenciador.html','/pages/influenciadores.html','/pages/parceiros.html'])assert.ok(hub.includes('href="'+href+'"'));assert.match(hub,/Cadastro sujeito à análise/);assert.match(hub,/store-identity/);
+});
+
 test('domain opens index store with influencer CTA and preserved catalog', async t => {
   assert.equal(publicPages['/'],'index.html');
   const app=express();registerPublicIdentityPages(app,{root});

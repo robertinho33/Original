@@ -52,7 +52,7 @@
 
   <!-- Fios Perfeitos_SEO_SCHEMA_V1 -->
 <link rel="stylesheet" href="/css/analytics-consent.css">
-<link rel="stylesheet" href="/css/store-trust.css"><link rel="icon" type="image/svg+xml" href="/assets/brands/fp.svg?v=20261029"><link rel="alternate icon" href="/favicon.ico?v=20261029"><link rel="stylesheet" href="/css/access-and-search.css?v=20261031"></head>
+<link rel="stylesheet" href="/css/store-trust.css"><link rel="icon" type="image/svg+xml" href="/assets/brands/fp.svg?v=20261029"><link rel="alternate icon" href="/favicon.ico?v=20261029"><link rel="stylesheet" href="/css/access-and-search.css?v=20261031"><link rel="stylesheet" href="/css/visitor-navigation.css?v=20261031"></head>
 
 <body>
   <a class="skip-link" href="#colecao">Ir para os produtos</a>
@@ -65,7 +65,7 @@
     <a class="brand" href="/" aria-label="Fios Perfeitos — início"><span aria-hidden="true">fp</span><span class="brand-wordmark">Fios Perfeitos<small>COSMETICS</small></span></a>
     <label class="catalog-search" for="searchInput"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg><input id="searchInput" type="search" aria-label="Buscar produtos e marcas" placeholder="Buscar produtos, marcas ou cuidados" autocomplete="off" enterkeyhint="search"></label>
     <div class="store-header-actions"><button type="button" id="openWishlist" class="wishlist-open" aria-label="Meus desejos">♡ Meus desejos <b id="wishlistCount">0</b></button><a class="order-lookup-link" href="pages/rastrear-pedido.html">Meus pedidos</a><button class="cart-button" id="openCart" type="button" aria-label="Abrir sacola">Sacola <b id="cartCount">0</b></button></div>
-    <nav aria-label="Explore a loja"><a class="portal-access" href="/pages/influenciadores.html">Portal do Influencer ↗</a><a href="#colecao">Todos os produtos</a><button type="button" data-store-query="shampoo">Shampoos</button><button type="button" data-store-query="máscara">Máscaras</button><button type="button" data-store-query="leave">Finalizadores</button><button type="button" data-store-query="kit">Kits e rotinas</button><a href="#marcas">Marcas</a><a href="/pages/monte-seu-ritual.html">Encontrar meu cuidado ↗</a></nav>
+    <nav class="visitor-nav" data-visitor-nav aria-label="Explore a loja"><a href="/index.html#colecao" aria-current="page">Comprar produtos</a><a href="/pages/monte-seu-ritual.html">Encontrar meu cuidado</a><a href="/pages/rastrear-pedido.html">Meus pedidos</a><a href="/pages/parcerias.html">Parcerias</a><a href="/pages/atendimento.html">Ajuda e contato</a><a class="portal-access" href="/pages/influenciadores.html">Portal do Influencer ↗</a></nav>
   </header>
 
   <main>
@@ -88,6 +88,7 @@
           compare produtos e transforme a sua rotina em um momento só seu.
         </p>
 
+        <a class="primary visitor-buy" href="#colecao">Comprar produtos <span>→</span></a>
         <a class="primary" id="heroInfluencerButton" href="/pages/candidatura-influenciador.html">Seja um Influencer <span>→</span></a>
         <p class="hero-caption">Escolha com calma. Cuide de você com carinho.</p>
       </div>
@@ -107,7 +108,7 @@
     </section>
 
 
-    <section class="store-shortcuts" aria-label="Encontre seu próximo cuidado"><button data-store-query="shampoo"><span aria-hidden="true">01</span><strong>Limpar</strong><small>Shampoos</small></button><button data-store-query="máscara"><span aria-hidden="true">02</span><strong>Tratar</strong><small>Máscaras e cuidados</small></button><button data-store-query="leave"><span aria-hidden="true">03</span><strong>Finalizar</strong><small>Leave-ins e proteção</small></button><a href="/pages/monte-seu-ritual.html"><span aria-hidden="true">↗</span><strong>Encontrar meu cuidado</strong><small>Escolhas para você</small></a></section>
+    <section class="visitor-paths" aria-labelledby="visitorPathsTitle"><h2 id="visitorPathsTitle">O que você quer fazer hoje?</h2><div class="visitor-paths-grid"><a href="#colecao"><strong>Comprar produtos</strong><small>Explore produtos, marcas e kits.</small><span>Ver catálogo →</span></a><a href="/pages/monte-seu-ritual.html"><strong>Encontrar meu cuidado</strong><small>Compare combinações para seu cabelo e seu orçamento.</small><span>Responder às perguntas →</span></a><a href="/pages/rastrear-pedido.html"><strong>Acompanhar meu pedido</strong><small>Consulte o andamento da compra e da entrega.</small><span>Consultar pedido →</span></a><a href="/pages/parcerias.html"><strong>Parcerias e portais</strong><small>Influenciadores, salões e perfumarias.</small><span>Escolher meu acesso →</span></a></div></section>
     <section class="store-brands" id="marcas"><div class="store-section-heading"><div><p class="eyebrow">SUAS MARCAS, SEU ESTILO</p><h2>Marcas para o cuidado do seu jeito.</h2></div><a href="#colecao">Explorar catálogo ↗</a></div><div id="catalogBrandButtons" class="catalog-brand-buttons" role="group" aria-label="Filtrar por marca"></div></section>
     <section class="store-highlights" aria-labelledby="storeHighlightsTitle"><div class="store-section-heading"><div><p class="eyebrow">UM NOVO FAVORITO TE ESPERA</p><h2 id="storeHighlightsTitle">Destaques do catálogo.</h2></div><a href="#colecao">Ver todos ↗</a></div><div id="storeHighlights" class="store-highlight-grid" aria-busy="true"></div></section>
     <section class="store-editorial-grid" aria-label="Mais formas de escolher"><a href="/pages/monte-seu-ritual.html"><small>MENOS DÚVIDA, MAIS CUIDADO</small><h2>Cuidado<br>do seu jeito.</h2><p>Conte seu objetivo e encontre uma seleção dentro do seu orçamento.</p><span>Encontrar meu cuidado ↗</span></a><button type="button" data-store-query="kit"><small>ESCOLHAS QUE SE COMPLETAM</small><h2>Seu cuidado<br>em boa companhia.</h2><p>Conheça os kits e encontre os próximos passos da sua rotina.</p><span>Explorar kits ↗</span></button></section>
@@ -136,7 +137,7 @@
         </div>
       </div>
 
-      <div class="catalog-category-bar">
+      <nav class="visitor-categories" aria-label="Escolher tipo de produto"><button type="button" data-store-query="shampoo">Shampoos</button><button type="button" data-store-query="máscara">Máscaras</button><button type="button" data-store-query="leave">Finalizadores</button><button type="button" data-store-query="kit">Kits</button><a href="#marcas">Explorar marcas</a></nav><div class="catalog-category-bar">
         <div class="filters" id="filters" aria-label="Categorias de produtos"></div>
       </div>
 
