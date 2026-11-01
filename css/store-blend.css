@@ -30,3 +30,6 @@ body :is(button,a,input,select):focus-visible{outline:3px solid #8c6d36;outline-
 .hero .hero-product-stage img{margin:0!important;mix-blend-mode:normal;filter:none}.hero-card.has-campaign-image .hero-product-stage{display:none}
 
 @media(max-width:650px){.products .add,.store-highlight-card [data-featured-add]{font-size:13px}.products .product-info h3{font-size:13px;line-height:1.6}.store-highlight-card h3{font-size:13px}}
+
+/* Preserve the entire campaign photo at every viewport width. */
+.hero .hero-card.has-campaign-image .campaign-hero-image{object-fit:contain;object-position:center;width:100%;height:100%;padding:16px;box-sizing:border-box}

@@ -1,4 +1,17 @@
 const $=id=>document.getElementById(id);
+function formatPhone(value){
+ let digits=String(value||'').replace(/\D/g,'');
+ const international=digits.length>11&&digits.startsWith('55');
+ if(international)digits=digits.slice(2);
+ digits=digits.slice(0,11);
+ if(digits.length<=2)return digits;
+ const split=digits.length>10?7:6;
+ return (international?'+55 ':'')+'('+digits.slice(0,2)+') '+digits.slice(2,split)+(digits.length>split?'-'+digits.slice(split):'');
+}
+for(const input of document.querySelectorAll('input[name="phone"]')){
+ const mask=()=>{input.value=formatPhone(input.value);};
+ input.addEventListener('input',mask);input.addEventListener('change',mask);input.addEventListener('blur',mask);mask();
+}
 async function request(path,body){const response=await fetch('/api/business-partners/'+path,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body||{}),signal:AbortSignal.timeout(60000)});if(!response.headers.get('content-type')?.includes('application/json'))throw Error('O portal está indisponível neste endereço. Use o site publicado.');const result=await response.json();if(!response.ok||!result.success){const error=Error(result.error||'Não foi possível consultar o portal.');error.status=response.status;throw error;}return result;}
 function entry(){for(const id of ['businessPassword','businessDashboard','businessLogout'])$(id).hidden=true;$('businessEntry').hidden=false;$('businessPasswordForm').reset();$('businessCompany').textContent='';$('businessConditions').textContent='';$('businessQuote').removeAttribute('href');}
 async function refresh(){const result=await request('session'),data=result.data;$('businessEntry').hidden=true;$('businessLogout').hidden=false;$('businessPassword').hidden=!data.mustChangePassword;$('businessDashboard').hidden=data.mustChangePassword;if(data.mustChangePassword)return;const partner=data.partner;$('businessCompany').textContent=partner.company;$('businessConditions').textContent=partner.conditions||'A loja está preparando sua proposta. Entre em contato para combinar as condições.';$('businessMinimum').textContent=partner.minimumOrder===null?'Pedido mínimo: a combinar.':'Pedido mínimo: '+Number(partner.minimumOrder).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});$('businessQuote').href='https://wa.me/5511986215473?text='+encodeURIComponent('Olá! Sou parceiro da Fios Perfeitos, da empresa '+partner.company+'. Gostaria de solicitar uma proposta comercial.');}
