@@ -4,10 +4,10 @@ const {definitions,buildCombos,registerProfessionalCombos}=require('./profession
 const prices={'3SSKRFEP5':120,'63KEV2FBA':120,'WBZA7Q6LP':150,'YDMYK3MK4':109,'HR6LKXYGJ':80,'EJL97KLUE':69,'NJTFJ9RNF':94.99,'CSH5ETU2N':50,'VEHZKS3RJ':84.9,'P7VJ56493':12.98,'ZR936JBFC':28,'WXM657UMY':28,'V4M66277J':36,'ASUE5CZGP':28,'XFGMQY4RW':28,'TJFJENBKK':36,'ZKDQ2Y47Q':45.9,'RAEKECC87':28,'HCNTRBT4Z':80};
 Object.assign(prices,{'3SSKRFEP5':269,'PML3C9J4M':120,'LPGSTQBW8':137.9,'YYYS5P629':133,'P3SMM9FXM':36,'FMC93GCXT':22});
 const products=Object.entries(prices).map(([sku,price])=>({sku,name:sku,price,stock:10,active:true,image:'https://example.com/p.png',privateCost:1}));
-test('six fixed assortments put EcoBelle first and reconcile per-unit 30% with current prices',()=>{
+test('six fixed assortments put EcoBelle first and reconcile tiered per-unit discounts with current prices',()=>{
  const combos=buildCombos(products);assert.equal(combos.length,6);assert.deepEqual(combos.map(x=>x.brand),['EcoBelle','EcoBelle','EcoBelle','Bela Pro','Bela Pro','Bela Pro']);
- assert.deepEqual(combos.map(x=>x.totalCents),[100380,80150,50190,100415,79912,50099]);
- for(const c of combos){assert.equal(c.available,true);assert.equal(c.discountPercent,30);assert.equal(c.totalCents,c.items.reduce((sum,p)=>sum+Math.round(p.unitCents*.70)*p.quantity,0));assert.ok(/^Kit /.test(c.items[0].name)||c.items[0].sku==='3SSKRFEP5'||c.items[0].sku==='LPGSTQBW8');assert.equal(c.totalCents+c.discountCents,c.subtotalCents);assert.ok(Math.abs(c.totalCents-c.target*100)<500);assert.equal(new Set(c.items.map(p=>p.sku)).size,c.items.length);}
+ assert.deepEqual(combos.map(x=>x.totalCents),[100380,79760,50404,100415,80296,49531]);
+ for(const c of combos){assert.equal(c.available,true);assert.equal(c.discountPercent,c.target===1000?30:c.target===800?20:15);assert.equal(c.totalCents,c.items.reduce((sum,p)=>sum+Math.round(p.unitCents*(100-c.discountPercent)/100)*p.quantity,0));assert.ok(/^Kit /.test(c.items[0].name)||c.items[0].sku==='3SSKRFEP5'||c.items[0].sku==='LPGSTQBW8');assert.equal(c.totalCents+c.discountCents,c.subtotalCents);assert.ok(Math.abs(c.totalCents-c.target*100)<500);assert.equal(new Set(c.items.map(p=>p.sku)).size,c.items.length);}
  const updated=buildCombos(products.map(p=>p.sku==='3SSKRFEP5'?{...p,price:279}:p));assert.equal(updated[0].subtotalCents,combos[0].subtotalCents+2000);
 });
 test('missing, inactive, invalid prices and insufficient stock disable the entire combo',()=>{

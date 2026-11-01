@@ -1,9 +1,10 @@
 const money=cents=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(cents/100);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;};
 function card(combo){
- const article=el('article',undefined,'combo-card');article.id=combo.id;
- const top=el('div',undefined,'combo-card-top');top.append(el('span','30% OFF','combo-badge'),el('span',`${combo.units} unidades`));article.append(top);
+ const article=el('article',undefined,'combo-card');article.id=combo.id;article.dataset.tier=String(combo.target);
+ const top=el('div',undefined,'combo-card-top');top.append(el('span',`${combo.discountPercent}% OFF`,'combo-badge'),el('span',`${combo.units} unidades`));article.append(top);
  article.append(el('h3',`Seleção ${combo.target.toLocaleString('pt-BR')}`),el('p',`${combo.items.length} produtos diferentes para compor seu estoque.`,'combo-subtitle'));
+ const benefit=combo.target===1000?'Maior desconto · mais economia por produto':combo.target===800?'Equilíbrio entre investimento e economia':'Uma seleção para começar';article.append(el('p',benefit,'combo-benefit'));
  const photos=el('div',undefined,'combo-photos');combo.items.slice(0,3).forEach(p=>{if(p.image){const img=el('img');img.src=p.image;img.alt=p.name;img.loading='lazy';img.width=92;img.height=110;photos.append(img);}});article.append(photos);
  const list=el('ul',undefined,'combo-products');combo.items.forEach(p=>{
   const li=el('li'),quantity=el('span',`${p.quantity}×`,'combo-quantity'),detail=el('div');
@@ -14,8 +15,8 @@ function card(combo){
  const offer=el('div',undefined,'combo-offer');
  if(combo.available){
   const pricing=el('div',undefined,'combo-pricing');pricing.append(el('p',`De ${money(combo.subtotalCents)}`,'combo-original'),el('strong',money(combo.totalCents),'combo-price'),el('p','Pague em até 3x no cartão','combo-installments'),el('p',`Você economiza ${money(combo.discountCents)}`,'combo-saving'));article.insertBefore(pricing,photos);
-  const text=`Olá! Quero solicitar o combo ${combo.brand} — Seleção ${combo.target}.\n`+combo.items.map(p=>`${p.quantity}x ${p.name} (${p.sku}) — unidade de ${money(p.unitCents)} por ${money(p.discountedUnitCents)}; total ${money(p.discountedUnitCents*p.quantity)}`).join('\n')+`\nSubtotal: ${money(combo.subtotalCents)}\nDesconto de 30% por produto: ${money(combo.discountCents)}\nTotal dos produtos: ${money(combo.totalCents)}\nGostaria de confirmar o frete e as condições de pagamento em até 3x.`;
-  const button=el('a','Quero este combo ↗','solid-button');button.href='https://wa.me/5511986215473?text='+encodeURIComponent(text);button.target='_blank';button.rel='noopener noreferrer';offer.append(button);
+  const text=`Olá! Quero solicitar o combo ${combo.brand} — Seleção ${combo.target}.\n`+combo.items.map(p=>`${p.quantity}x ${p.name} (${p.sku}) — unidade de ${money(p.unitCents)} por ${money(p.discountedUnitCents)}; total ${money(p.discountedUnitCents*p.quantity)}`).join('\n')+`\nSubtotal: ${money(combo.subtotalCents)}\nDesconto de ${combo.discountPercent}% por produto: ${money(combo.discountCents)}\nTotal dos produtos: ${money(combo.totalCents)}\nGostaria de confirmar o frete e as condições de pagamento em até 3x.`;
+  const button=el('a',combo.target===1000?'Quero aproveitar os 30% ↗':'Quero esta seleção ↗','solid-button');button.href='https://wa.me/5511986215473?text='+encodeURIComponent(text);button.target='_blank';button.rel='noopener noreferrer';offer.append(button,el('small','Confira a proposta com a loja antes de pagar.','combo-reassurance'));
  }else{offer.append(el('p','Combo temporariamente indisponível','combo-unavailable'),el('p','Estamos conferindo a disponibilidade dos produtos. Escolha outra seleção ou fale com a loja.'));}
  article.append(offer);return article;
 }
