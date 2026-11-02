@@ -7,3 +7,7 @@
 
 .partner-paths .partner-promise{flex:0;font-size:18px;line-height:1.5;font-weight:700;color:#254b38;margin:0 0 12px}
 .visitor-nav>.portal-access{background:#254b38;color:#fff}.visitor-nav>.portal-access:hover{background:#365d46;color:#fff}.visitor-nav>.portal-access[aria-current]{background:#e6efe3;color:#254b38}
+
+/* Keep the current destination accessible without changing its button style. */
+.visitor-nav>a[aria-current]:not(.portal-access),.topbar>.visitor-nav>a[aria-current]:not(.portal-access){background:transparent;color:#254b38;font-weight:500;border-bottom:0}
+.visitor-nav>a[aria-current]:not(.portal-access):hover{background:#edf4eb}
