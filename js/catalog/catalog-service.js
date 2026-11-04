@@ -1,3 +1,4 @@
+import {optimizedProductImage} from './optimized-images.js?v=20261104';
 import './source-authorization.js';
 'use strict';
 
@@ -55,6 +56,7 @@ function normalizeProduct(product, documentId = '') {
 
     return {
         ...source,
+        image: optimizedProductImage(String(source.image || '')),
 
         id,
 

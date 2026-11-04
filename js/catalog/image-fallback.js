@@ -1,3 +1,4 @@
+import {originalProductImage} from './optimized-images.js?v=20261104';
 const PRODUCT_IMAGE_SELECTOR = '.product-image, .mini img, .checkout-item-image img, #productModalImage';
 
 export function installProductImageFallbacks() {
@@ -7,6 +8,9 @@ export function installProductImageFallbacks() {
     document.addEventListener('error', event => {
         const image = event.target;
         if (!(image instanceof HTMLImageElement) || !image.matches(PRODUCT_IMAGE_SELECTOR)) return;
+
+        const original = originalProductImage(image.src);
+        if (original && image.dataset.originalFallback !== 'true') { image.dataset.originalFallback = 'true'; image.src = original; return; }
 
         const label = image.alt ? 'Foto indisponível: ' + image.alt : 'Foto do produto indisponível';
         const placeholder = document.createElement('div');

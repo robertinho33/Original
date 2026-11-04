@@ -141,11 +141,11 @@ test('browser redirects only to InfinitePay, preserves cart and stores no custom
   const vm = require('node:vm');
   const fs = require('node:fs');
   const path = require('node:path');
-  const values = new Map(), calls = [], redirects = [];
+  const values = new Map(), persistent = new Map(), calls = [], redirects = [];
   const storage = { getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) };
   const data = { checkoutUrl: 'https://checkout.infinitepay.io/loja/test', orderNumber: 'AUR-AAAAAAAAAAAAAAAA', trackingToken: 'a'.repeat(64) };
   const context = { location: { hostname: 'localhost', assign: url => redirects.push(url) },
-    sessionStorage: storage, document: { querySelector: () => null },
+    sessionStorage: storage, localStorage:{getItem:key=>persistent.get(key)||null,setItem:(key,value)=>persistent.set(key,value),removeItem:key=>persistent.delete(key)}, document: { querySelector: () => null },
     crypto: require('node:crypto').webcrypto, TextEncoder, Uint8Array, URL, AbortSignal,
     fetch: async (url, options) => {
       calls.push({ url, body: JSON.parse(options.body) });
@@ -157,6 +157,11 @@ test('browser redirects only to InfinitePay, preserves cart and stores no custom
     delivery: { method: 'pickup' }, payment: { method: 'infinitepay' } };
   await context.start(order);
   assert.equal(redirects[0], data.checkoutUrl);
+  const saved=JSON.parse(persistent.get('fios-infinitepay-pending'));
+  assert.deepEqual(Object.keys(saved).sort(),['orderNumber','savedAt','trackingToken']);
+  assert.equal(saved.trackingToken,data.trackingToken);assert.ok(Date.now()-saved.savedAt<1000);
+  assert.ok(!JSON.stringify([...persistent.values()]).includes('Private Customer'));
+  assert.ok(!JSON.stringify([...persistent.values()]).includes('private@example.test'));
   assert.ok(!JSON.stringify([...values.values()]).includes('Private Customer'));
   assert.ok(!JSON.stringify([...values.values()]).includes('private@example.test'));
   assert.equal(calls[0].body.items[0].unitPrice, undefined);
@@ -208,7 +213,8 @@ test('changed form recovers stale attempts, but never rotates an existing or unv
     vm.runInNewContext(source + '\nglobalThis.start = startInfinitePay;', context);
     const operation = () => context.start({ items: [{ sku: 'REAL', quantity: 1 }], customer: { name: 'Changed' }, delivery: { method: 'pickup' } });
     if (state === 'empty') {
-      await operation(); assert.equal(redirects[0], data.checkoutUrl); assert.equal(calls.length, 2);
+      await operation(); assert.equal(redirects[0], data.checkoutUrl);
+ assert.equal(calls.length, 2);
     } else {
       await assert.rejects(operation()); assert.equal(calls.length, 1); assert.equal(redirects.length, 0);
       assert.equal(JSON.parse(values.get('fios-infinitepay-attempt')).id, oldId);

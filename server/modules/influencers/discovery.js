@@ -60,6 +60,8 @@ function createRouter(deps={}){
     const previous=requests.get(id),entry=previous?.until>now?previous:{count:0,until:now+60000};entry.count++;requests.set(id,entry);
     if(entry.count>30)return res.status(429).json({success:false,error:'Aguarde um minuto antes de consultar novamente.'});next();
   });
+  const directory=require('./public-directory').createDirectory({getDb:db,getCatalog});
+  router.get('/influencers',async(req,res)=>{try{res.json({success:true,data:await directory()});}catch{res.status(503).json({success:false,error:'Não foi possível carregar os influenciadores agora.'});}});
   router.get('/stores/:id',async(req,res)=>{try{
     const id=text(req.params.id,100),[store,person,catalog]=await Promise.all([db().collection('influencerPublicStores').doc(id).get(),db().collection('influencers').doc(id).get(),getCatalog()]);
     if(!store.exists||!person.exists||person.data().active===false||!store.data().enabled)return res.status(404).json({success:false,error:'Esta vitrine não está disponível.'});

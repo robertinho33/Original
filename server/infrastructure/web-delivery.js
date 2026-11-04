@@ -14,6 +14,7 @@ function deliveryHeaders(req, res, next) {
 }
 function staticHeaders(res, filename) {
   if (String(res.getHeader('Cache-Control') || '').includes('no-store')) return;
+  if (/[\\/]assets[\\/]products[\\/][a-f0-9]{20}\.webp$/.test(filename)) { res.setHeader('Cache-Control','public, max-age=31536000, immutable'); return; }
   // Assets have no content hashes: revalidate code instead of retaining obsolete checkout code.
   res.setHeader('Cache-Control', /\.(?:png|jpe?g|webp|ico|svg)$/i.test(filename)
     ? 'public, max-age=3600' : 'public, max-age=0, must-revalidate');

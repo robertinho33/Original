@@ -592,7 +592,7 @@ async function renderCatalog() {
                                 alt="${escapeAttribute(
                                     product.name
                                 )}"
-                                loading="lazy"
+                                loading="lazy" decoding="async" width="640" height="640"
                             >
                         `
                         : `
@@ -651,14 +651,9 @@ async function renderCatalog() {
                         data-product-sku="${escapeAttribute(
                             product.sku
                         )}"
-                        tabindex="0"
-                        role="button"
-                        aria-label="Ver detalhes de ${escapeAttribute(
-                            product.name
-                        )}"
                     >
                         <div class="product-visual">
-                            ${image}
+                            <button class="product-detail-button" type="button" aria-label="Ver detalhes de ${escapeAttribute(product.name)}">${image}</button>
 
                             <span class="tag">
                                 ${escapeHTML(
@@ -887,9 +882,13 @@ function renderCart() {
     }
 }
 
+let cartReturnFocus = null;
 function openCart() {
+    cartReturnFocus = document.activeElement;
+    if (cartDrawerEl) cartDrawerEl.inert = false;
     cartDrawerEl?.classList.add('open');
     backdropEl?.classList.add('show');
+    requestAnimationFrame(() => document.getElementById('closeCart')?.focus());
 
     cartDrawerEl?.setAttribute(
         'aria-hidden',
@@ -909,6 +908,8 @@ document.getElementById('heroCampaignButton')?.addEventListener('click', event =
 });
 
 function closeCart() {
+    if (cartDrawerEl?.contains(document.activeElement)) (cartReturnFocus?.isConnected ? cartReturnFocus : document.getElementById('openCart'))?.focus();
+    if (cartDrawerEl) cartDrawerEl.inert = true;
     cartDrawerEl?.classList.remove('open');
     backdropEl?.classList.remove('show');
 
@@ -1164,6 +1165,7 @@ function openProductModal(
     }
 
     renderProductModal(product);
+    productModalEl.inert = false;
 
     productModalEl.classList.add(
         'open'
@@ -1188,6 +1190,8 @@ function closeProductModal() {
         return;
     }
 
+    if (productModalEl.contains(document.activeElement)) lastProductTriggerEl?.focus();
+    productModalEl.inert = true;
     productModalEl.classList.remove(
         'open'
     );
@@ -1361,6 +1365,7 @@ productsEl?.addEventListener(
             return;
         }
 
+        if (event.target.closest('button:not(.product-detail-button), input, select, textarea')) return;
         const productCard =
             event.target.closest(
                 '[data-product-sku]'
@@ -1370,7 +1375,7 @@ productsEl?.addEventListener(
         if (productCard) {
             openProductModal(
                 productCard.dataset.productSku,
-                productCard
+                event.target.closest('button, a') || productCard.querySelector('.product-detail-button')
             );
         }
     }
@@ -1561,75 +1566,6 @@ function activateCatalogRealtime() {
 activateCatalogRealtime();
 
 
-/* NEFER_CARD_EXPANSION */
-(() => {
-    const isInteractive = (target) =>
-        target.closest(
-            'button, a, input, select, textarea, [role="button"][data-product-sku] button'
-        );
-
-    const toggleCard = (card) => {
-        if (!card) return;
-
-        const expanded = card.classList.toggle('is-expanded');
-
-        card.setAttribute(
-            'aria-expanded',
-            expanded ? 'true' : 'false'
-        );
-
-        if (expanded) {
-            document
-                .querySelectorAll('#products .product.is-expanded')
-                .forEach((other) => {
-                    if (other !== card) {
-                        other.classList.remove('is-expanded');
-                        other.setAttribute('aria-expanded', 'false');
-                    }
-                });
-        }
-    };
-
-    document.addEventListener(
-        'click',
-        (event) => {
-            const card = event.target.closest('#products .product');
-
-            if (!card || isInteractive(event.target)) {
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            toggleCard(card);
-        },
-        true
-    );
-
-    document.addEventListener(
-        'keydown',
-        (event) => {
-            const card = event.target.closest('#products .product');
-
-            if (!card || isInteractive(event.target)) {
-                return;
-            }
-
-            if (event.key !== 'Enter' && event.key !== ' ') {
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            toggleCard(card);
-        },
-        true
-    );
-})();
-
-
 function renderStoreHighlights(){
   const target=document.getElementById('storeHighlights');if(!target)return;
   const eligible=catalogProducts.filter(p=>p.active!==false&&!/^INATIVO\b/i.test(p.name||'')&&p.image&&Number(p.stock)>0&&Number(p.price)>0).sort((a,b)=>Number(b.featured)-Number(a.featured)||(Number(b.priority)||0)-(Number(a.priority)||0));
@@ -1644,3 +1580,23 @@ document.addEventListener('click',event=>{
   const detail=event.target.closest('[data-featured-detail]');if(detail)openProductModal(detail.dataset.featuredDetail,detail);
 });
 searchInputEl?.addEventListener('keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();clearTimeout(catalogSearchTimer);catalogSearch=searchInputEl.value.trim();catalogPage=1;void renderCatalog();document.getElementById('colecao')?.scrollIntoView({block:'start'});});
+
+// Keep keyboard navigation inside the open cart and restore focus on close.
+cartDrawerEl?.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.preventDefault(); closeCart(); return; }
+    if (event.key !== 'Tab') return;
+    const controls = [...cartDrawerEl.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex="0"]')].filter(node => !node.hidden && node.getClientRects().length);
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+});
+document.getElementById('openCart')?.addEventListener('click', () => document.getElementById('closeCart')?.focus());
+
+productModalEl?.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {event.preventDefault(); closeProductModal(); return;}
+    if (event.key !== 'Tab') return;
+    const controls=[...productModalEl.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex="0"]')].filter(node=>!node.hidden&&node.getClientRects().length);
+    const first=controls[0],last=controls.at(-1);
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+});
