@@ -5,7 +5,7 @@ import { installAdminUX } from './modules/admin-ux.js';
 installAdminUX();
 import { renderCatalogWorkspace } from './modules/catalog-workspace.js';
 import { renderOrderWorkspace, renderHistoryWorkspace } from './modules/order-workspace.js';
-import './modules/discovery-tools.js';
+import './modules/discovery-tools.js?v=20261104-2';
 import './modules/influencer-access.js';
 import './modules/community-admin.js';
 import './modules/community-permissions.js';

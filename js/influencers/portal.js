@@ -1,7 +1,7 @@
 import {mountGalleryEditor} from './gallery-editor.js';
 import {mountStoreSharing,storeShareUrl} from './store-sharing.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
-import { mountProfileEditor } from './profile-editor.js';
+import { mountProfileEditor } from './profile-editor.js?v=20261104-2';
 import { mountStoreEditor } from './store-editor.js';
 installProductImageFallbacks();
 const $ = id => document.getElementById(id);

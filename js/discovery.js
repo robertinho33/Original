@@ -1,6 +1,6 @@
 import {mountCareQuiz} from './care-quiz.js?v=20261029-3';
 import {mountRitualGallery} from './ritual-gallery.js?v=20261029-eco';
-import {mountPublicCommunity} from './influencers/public-community.js';
+import {mountPublicCommunity} from './influencers/public-community.js?v=20261104-2';
 import {mergeCareCart,cleanMatchReasons} from './care-selection.js';
 import {careConsent} from './analytics/care-consent.js';
 import {createCareQueryController} from './care-query-controller.js';
