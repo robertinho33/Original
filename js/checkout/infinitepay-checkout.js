@@ -35,7 +35,14 @@ export async function configureInfinitePay() {
         if (description) description.textContent = 'Pagamento temporariamente indisponível. Tente verificar novamente em instantes.';
     }
 }
-function read(key) { try { return JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { return null; } }
+function read(key) {
+    try { const value = JSON.parse(sessionStorage.getItem(key) || 'null'); if (value) return value; } catch {}
+    if (key === pendingKey) try {
+        const value = JSON.parse(localStorage.getItem(key) || 'null');
+        if (/^AUR-[A-F0-9]{16}$/.test(value?.orderNumber || '') && /^[a-f0-9]{64}$/i.test(value?.trackingToken || '') && Number.isFinite(value.savedAt) && value.savedAt <= Date.now() && Date.now() - value.savedAt < 30 * 86400000) return value;
+    } catch {}
+    return null;
+}
 function showPending() {
     const pending = read(pendingKey);
     if (!pending || !/^AUR-[A-F0-9]{16}$/.test(pending.orderNumber) || !/^[a-f0-9]{64}$/i.test(pending.trackingToken)) return;
@@ -43,7 +50,7 @@ function showPending() {
     if (!heading) return;
     document.getElementById('infinitepayPending')?.remove();
     const notice = document.createElement('p'); notice.id = 'infinitepayPending'; notice.setAttribute('role', 'status');
-    notice.textContent = 'Você iniciou um pagamento pela InfinitePay. ';
+    notice.textContent = 'Sua compra foi registrada. Se ainda não pagou, abra o pedido para continuar o pagamento. ';
     const link = document.createElement('a'); link.textContent = 'Consultar meu pedido'; link.className = 'pending-order-button';
     link.href = `rastrear-pedido.html#token=${pending.trackingToken}`;
     notice.append(link); heading.append(notice);
@@ -53,7 +60,11 @@ async function post(path, body) {
         body: JSON.stringify(body), signal: AbortSignal.timeout(45000) });
     const result = await response.json().catch(() => ({}));
     if (result.data?.trackingToken && /^AUR-[A-F0-9]{16}$/.test(result.data.orderNumber) && /^[a-f0-9]{64}$/i.test(result.data.trackingToken)) {
-        sessionStorage.setItem(pendingKey, JSON.stringify(result.data)); showPending();
+        try { sessionStorage.setItem(pendingKey, JSON.stringify({orderNumber:result.data.orderNumber,trackingToken:result.data.trackingToken,savedAt:Date.now()})); } catch {}
+        try {
+            localStorage.setItem(pendingKey, JSON.stringify({orderNumber:result.data.orderNumber,trackingToken:result.data.trackingToken,savedAt:Date.now()}));
+        } catch {}
+        showPending();
     }
     if (!response.ok || !result.success) {
         if (response.status === 400 && !result.data) sessionStorage.removeItem(attemptKey);

@@ -12,6 +12,8 @@ async function populateHero() {
             const image = document.createElement('img');
             image.alt = product.name;
             image.decoding = 'async';
+            image.width = 640; image.height = 640;
+            if (picks.indexOf(product) === 0) image.fetchPriority = 'high';
             image.addEventListener('load', () => { loaded += 1; stage.classList.add('has-products'); });
             image.addEventListener('error', () => { image.remove(); if (!loaded) stage.classList.remove('has-products'); });
             image.src = url.href;
