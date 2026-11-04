@@ -1,5 +1,6 @@
 'use strict';
 const {normalizeStore,validCoupon}=require('./discovery');
+const {profilePhoto}=require('./profile-photo');
 function safeDirectoryImage(value){try{const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password?url.href:'';}catch{return '';}}
 
 function createDirectory({getDb, getCatalog}) {
@@ -13,7 +14,7 @@ function createDirectory({getDb, getCatalog}) {
         const config=normalizeStore(doc.data()),coupon=await validCoupon(db,config.coupon,doc.id);
         if(!coupon||!config.skus.some(sku=>catalog.some(p=>String(p.sku).toLowerCase()===sku.toLowerCase())))return null;
         const features=await require('./feature-access').getAccess(db,doc.id);
-        return {name:config.name,image:safeDirectoryImage(config.image),url:'/pages/vitrine-influenciador.html?loja='+encodeURIComponent(doc.id),canFollow:features.followers===true};
+        return {name:config.name,image:safeDirectoryImage(profilePhoto(doc.id,config.image)),url:'/pages/vitrine-influenciador.html?loja='+encodeURIComponent(doc.id),canFollow:features.followers===true};
       } catch {return null;}
     }));
     return rows.filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')).slice(0,30);
