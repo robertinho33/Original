@@ -1,3 +1,15 @@
+import {readFollow,verifyFollow,watchFollows} from './follow-state.js?v=20261104-2';
+const controls=[];
+function updateFollowControl(control){
+ const saved=readFollow(control.owner),confirmed=saved?.status==='confirmed';
+ control.node.textContent=confirmed?'Seguindo':saved?'Ver acompanhamento':'Seguir';
+ control.node.setAttribute('aria-label',(confirmed?'Você segue ':saved?'Ver acompanhamento de ':'Seguir ')+control.name);
+ control.node.classList.toggle('is-following',confirmed);
+ const url=new URL(control.url,location.origin);if(!saved)url.searchParams.set('seguir','1');url.hash='storeCommunity';control.node.href=url.href;
+}
+async function refreshFollows(){for(const control of controls){updateFollowControl(control);try{await verifyFollow(control.owner);}catch{}updateFollowControl(control);}}
+watchFollows(event=>{for(const control of controls)updateFollowControl(control);if(event?.type==='storage')void refreshFollows();});
+window.addEventListener('pageshow',()=>void refreshFollows());
 const target = document.getElementById('influencerDirectory');
 if (target) {
     const status = document.getElementById('influencerDirectoryStatus');
@@ -19,10 +31,10 @@ if (target) {
                 const name = document.createElement('span'); name.textContent = person.name;
                 link.append(frame,name);card.append(link);
                 const visit=document.createElement('a');visit.href=url.href;visit.textContent='Ver vitrine';visit.className='influencer-mini-visit';card.append(visit);
-                if(person.canFollow){const follow=document.createElement('a');url.searchParams.set('seguir','1');url.hash='storeCommunity';follow.href=url.href;follow.textContent='Seguir';follow.className='influencer-mini-follow';follow.setAttribute('aria-label','Seguir '+person.name);card.append(follow);}
+                if(person.canFollow){const follow=document.createElement('a');follow.className='influencer-mini-follow';const control={node:follow,owner:url.searchParams.get('loja'),name:person.name,url:url.href};controls.push(control);updateFollowControl(control);card.append(follow);}
                 fragment.append(card);
             }
-            target.replaceChildren(fragment);
+            target.replaceChildren(fragment);void refreshFollows();
             status.textContent=target.childElementCount?'Toque na foto para conhecer a seleção de cada influenciador.':'Novas vitrines de influenciadores aparecerão aqui em breve.';
         } catch {
             status.replaceChildren(document.createTextNode('Não foi possível carregar os perfis agora. '));
