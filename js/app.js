@@ -1600,3 +1600,10 @@ productModalEl?.addEventListener('keydown', event => {
     if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
     else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
 });
+
+// Escape also works if pressed before the panel receives keyboard focus.
+document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (productModalEl?.classList.contains('open')) { event.preventDefault(); closeProductModal(); }
+    else if (cartDrawerEl?.classList.contains('open')) { event.preventDefault(); closeCart(); }
+});
