@@ -5,6 +5,31 @@ const apiRoot = window.location.protocol === 'file:'
 function safeCampaignUrl(value) {
     try { const url = new URL(value, location.origin); return url.protocol === 'https:' || (url.origin === location.origin && url.protocol === location.protocol) ? url.href : ''; } catch { return ''; }
 }
+function startOffer(campaign, reset) {
+    const offer = document.getElementById('heroFlashOffer');
+    const card = offer?.closest('.hero-card');
+    const end = Date.parse(campaign.endsAt);
+    const discount = Number(campaign.discountPercent);
+    const href = safeCampaignUrl(campaign.buttonUrl);
+    if (!offer || !href || !Number.isFinite(end) || !(discount > 0 && discount <= 100) || end <= Date.now()) return;
+    offer.href = href;
+    document.getElementById('heroOfferLabel').textContent = campaign.offerLabel || 'OFERTA ESPECIAL';
+    document.getElementById('heroOfferDiscount').textContent = `${discount.toLocaleString('pt-BR')}% OFF`;
+    const tick = () => {
+        const remaining = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+        if (!remaining) { clearInterval(timer); reset(); return; }
+        const days = Math.floor(remaining / 86400);
+        const hours = String(Math.floor(remaining % 86400 / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor(remaining % 3600 / 60)).padStart(2, '0');
+        const seconds = String(remaining % 60).padStart(2, '0');
+        document.getElementById('heroOfferCountdown').textContent = `${days ? days + 'd ' : ''}${hours}:${minutes}:${seconds}`;
+    };
+    offer.hidden = false;
+    card?.classList.add('has-flash-offer');
+    const timer = setInterval(tick, 1000);
+    tick();
+    window.addEventListener('pagehide', () => clearInterval(timer), { once: true });
+}
 async function loadCampaignHero() {
     try {
         const response = await fetch(`${apiRoot}/api/storefront/hero`, { headers: { Accept: 'application/json' } });
@@ -19,6 +44,24 @@ async function loadCampaignHero() {
                 if (element) element.textContent = value;
             }
         };
+        if (campaign.endsAt && Date.parse(campaign.endsAt) <= Date.now()) return;
+        if (campaign.startsAt && Date.parse(campaign.startsAt) > Date.now()) return;
+        const defaults = ['heroCampaignEyebrow', 'heroCampaignTitle', 'heroCampaignEmphasis', 'heroCampaignEnding', 'heroCampaignDescription'].map(id => [id, document.getElementById(id)?.textContent]);
+        const defaultButton = document.getElementById('heroCampaignButton');
+        const defaultHref = defaultButton?.getAttribute('href');
+        const defaultLabel = defaultButton?.firstChild.textContent;
+        const reset = () => {
+            defaults.forEach(([id, value]) => setText(id, value));
+            document.getElementById('heroFlashOffer').hidden = true;
+            document.getElementById('heroCampaignImage').hidden = true;
+            document.querySelector('.hero-card')?.classList.remove('has-flash-offer', 'has-campaign-image');
+            if (defaultButton) { defaultButton.href = defaultHref; defaultButton.firstChild.textContent = defaultLabel; }
+        };
+        // Preserve the new store headline when the published campaign still has the previous wording.
+        if ([campaign.title, campaign.emphasis, campaign.ending].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim() === 'Beleza que começa no ritual.') {
+            campaign.title = 'Beleza que começa'; campaign.emphasis = 'com seus cuidados.'; campaign.ending = '';
+        }
+        startOffer(campaign, reset);
         setText('heroCampaignEyebrow', campaign.eyebrow);
         setText('heroCampaignTitle', campaign.title);
         setText('heroCampaignEmphasis', campaign.emphasis);

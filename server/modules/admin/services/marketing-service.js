@@ -48,6 +48,8 @@ function validHeroUrl(value) {
 }
 function normalizeHero(body = {}) {
     return {
+        offerLabel: text(body.offerLabel, 70),
+        discountPercent: Number.isFinite(Number(body.discountPercent)) ? Math.min(100, Math.max(0, Number(body.discountPercent))) : 0,
         eyebrow: text(body.eyebrow, 80),
         title: text(body.title, 90),
         emphasis: text(body.emphasis, 60),
@@ -97,6 +99,7 @@ async function saveHeroDraft(body, actor) {
     if (start !== null && end !== null && end < start) {
         throw new Error("A data de término deve ser posterior à data de início.");
     }
+    if (hero.discountPercent && (!end || end <= Date.now())) throw new Error("Para destacar um desconto, informe o término futuro da promoção.");
     const ref = db().collection(HERO_COLLECTION).doc(HERO_DRAFT_ID);
     const now = new Date().toISOString();
     await ref.set({ ...hero, status: "draft", updatedAt: now, updatedBy: actorName(actor) }, { merge: true });
