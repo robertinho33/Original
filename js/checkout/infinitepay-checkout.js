@@ -75,7 +75,7 @@ async function post(path, body) {
 export async function startInfinitePay(order) {
     const payload = { items: order.items.map(item => ({ sku: item.sku, quantity: item.quantity })), customer: order.customer,
         address: order.delivery?.address || null, deliveryMethod: order.delivery?.method || 'delivery',
-        shippingSelection: order.shippingSelection, coupon: order.coupon || null, notes: order.notes || '' };
+        shippingSelection: order.shippingSelection, coupon: order.coupon || null, flashOfferId: order.flashOfferId || null, notes: order.notes || '' };
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(payload)));
     const fingerprint = [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('');
     let attempt = read(attemptKey);

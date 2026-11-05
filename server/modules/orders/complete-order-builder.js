@@ -59,9 +59,12 @@ async function buildCompleteOrder(payload = {}) {
       throw new AppError(result.message || 'Cupom inválido.', { status: 400, code: 'INVALID_COUPON' });
     }
     coupon = result.coupon;
-    const subtotal = order.totals.subtotal;
-    const value = Number(coupon.discount);
-    discount = Number(Math.min(subtotal, Math.max(0, coupon.discountType === 'percentage' ? subtotal * value / 100 : value)).toFixed(2));
+
+  }
+  discount = await require('./flash-offer').apply(order, coupon);
+  if(payload.flashOfferId && payload.flashOfferId !== order.flashOffer?.id) {
+    const {AppError}=require('../../core/app-error');
+    throw new AppError('A promoção mudou ou terminou. Atualize sua sacola e confira os valores.',{status:409,code:'FLASH_OFFER_CHANGED'});
   }
   order.coupon = coupon;
   order.totals.discount = discount;

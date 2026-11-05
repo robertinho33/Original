@@ -72,11 +72,11 @@ async function getOverview() {
         const rawOrderCoupon = order.coupon && typeof order.coupon === "object" ? order.coupon : {};
         const orderCoupon = typeof order.coupon === "string" ? { code: order.coupon } : rawOrderCoupon;
         const coupon = couponById.get(String(orderCoupon.id || orderCoupon.couponId || orderCoupon.coupon_id || "")) || couponByCode.get(norm(orderCoupon.code || orderCoupon.couponCode || orderCoupon.coupon_code || order.couponCode || order.coupon_code));
-        const influencer = coupon?.influencer;
+        const influencer = order.flashOffer && orderCoupon.influencerId ? influencerById.get(String(orderCoupon.influencerId)) : coupon?.influencer;
         if (!influencer || !totals.has(influencer.id)) {
             const usedCouponCode = orderCoupon.code || orderCoupon.couponCode || orderCoupon.coupon_code || order.couponCode || order.coupon_code;
             const orderDiscount = number(order.discount ?? order.totals?.discount) ?? 0;
-            if (isPaidOrder(order) && !isCancelledOrder(order) && (usedCouponCode || orderDiscount > 0)) {
+            if (isPaidOrder(order) && !isCancelledOrder(order) && (usedCouponCode || orderDiscount - (number(order.totals?.promotionDiscount) ?? 0) > 0)) {
                 attributedOrders.push({
                     orderDocumentId: order.id,
                     orderId: String(order.orderNumber || order.order_number || order.id || "—"),
@@ -98,7 +98,7 @@ async function getOverview() {
         const subtotal = number(order.subtotal ?? order.totals?.subtotal);
         const discount = number(order.discount ?? order.totals?.discount ?? 0) ?? 0;
         const base = subtotal === null ? null : Math.round(Math.max(0, subtotal - discount) * 100) / 100;
-        const couponRate = number(coupon.commission);
+        const couponRate = number(order.flashOffer ? orderCoupon.commission : coupon.commission);
         const rate = number(contract?.commissionRate ?? couponRate ?? influencer.commissionDefault) ?? 0;
         const commissionRateSource = contract ? "Contrato" : couponRate !== null ? "Cupom" : "Cadastro";
         const amount = paid && base !== null ? Math.round(base * rate) / 100 : null;
@@ -117,7 +117,7 @@ async function getOverview() {
             influencerId: influencer.id,
             influencerName: influencer.name,
             contractId: contract?.id || null,
-            couponCode: coupon.code || coupon.couponCode || coupon.coupon_code || orderCoupon.code || "—",
+            couponCode: orderCoupon.code || coupon?.code || coupon?.couponCode || coupon?.coupon_code || "—",
             products: (Array.isArray(order.items) ? order.items : []).map(item => ({ sku: String(item.sku || ''), name: String(item.name || item.title || ''), image: String(item.image || ''), quantity: Number(item.quantity) || 0 })),
             paymentStatus: paid ? "Pago" : (cancelled ? "Cancelado/estornado" : "Pendente"),
             orderTotal: number(order.total ?? order.totals?.total) ?? 0,
