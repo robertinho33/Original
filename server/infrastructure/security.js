@@ -22,7 +22,9 @@ function securityHeaders(req, res, next) {
   const policy = req.path === '/pages/ads-measurement.html'
     ? contentPolicy.replace("script-src 'self'", "script-src 'self' https://www.googleadservices.com https://www.google.com")
         .replace("frame-src 'self'", "frame-src 'self' https://www.googletagmanager.com")
-    : contentPolicy;
+    : req.path === '/pages/meta-measurement.html'
+      ? contentPolicy.replace("script-src 'self'","script-src 'self' https://connect.facebook.net").replace("frame-src 'self'","frame-src 'self' https://www.facebook.com")
+      : contentPolicy;
   res.setHeader('Content-Security-Policy', policy);
   if (req.secure || (req.get?.('x-forwarded-proto') || '').split(',')[0].trim() === 'https') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000');

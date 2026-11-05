@@ -6,6 +6,9 @@ const pageNames = {
     '/pages/checkout.html': 'Fios Perfeitos — Checkout',
     '/pages/privacidade.html': 'Fios Perfeitos — Privacidade',
     '/pages/monte-seu-ritual.html': 'Fios Perfeitos — Cuidado do seu jeito',
+    '/pages/vitrine-influenciador.html': 'Fios Perfeitos — Vitrine',
+    '/pages/parcerias.html': 'Fios Perfeitos — Parcerias',
+    '/pages/combos-profissionais.html': 'Fios Perfeitos — Combos profissionais',
     '/pages/trocas.html': 'Fios Perfeitos — Trocas e devoluções'
 };
 export function analyticsPage(href) {
