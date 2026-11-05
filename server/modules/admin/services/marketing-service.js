@@ -48,6 +48,8 @@ function validHeroUrl(value) {
 }
 function normalizeHero(body = {}) {
     return {
+        offerId: /^[a-f0-9-]{36}$/i.test(body.offerId || '') ? body.offerId : '',
+        flashSku: text(body.flashSku, 180),
         offerLabel: text(body.offerLabel, 70),
         discountPercent: Number.isFinite(Number(body.discountPercent)) ? Math.min(100, Math.max(0, Number(body.discountPercent))) : 0,
         eyebrow: text(body.eyebrow, 80),
@@ -100,6 +102,13 @@ async function saveHeroDraft(body, actor) {
         throw new Error("A data de término deve ser posterior à data de início.");
     }
     if (hero.discountPercent && (!end || end <= Date.now())) throw new Error("Para destacar um desconto, informe o término futuro da promoção.");
+    if (hero.discountPercent) {
+        if (!hero.flashSku) throw new Error("Informe o SKU do produto da promoção relâmpago.");
+        const previous = await db().collection(HERO_COLLECTION).doc(HERO_DRAFT_ID).get();
+        const prior = previous.exists ? previous.data() : {};
+        // Editing an existing offer keeps the one-per-customer history.
+        hero.offerId = prior.offerId && prior.flashSku === hero.flashSku && hero.offerId === prior.offerId ? prior.offerId : require('node:crypto').randomUUID();
+    }
     const ref = db().collection(HERO_COLLECTION).doc(HERO_DRAFT_ID);
     const now = new Date().toISOString();
     await ref.set({ ...hero, status: "draft", updatedAt: now, updatedBy: actorName(actor) }, { merge: true });
@@ -110,6 +119,11 @@ async function activateHero(actor) {
     const ref = db().collection(HERO_COLLECTION).doc(HERO_DRAFT_ID);
     const snapshot = await ref.get();
     if (!snapshot.exists) throw new Error("Salve um rascunho do banner antes de publicar.");
+    const draft = snapshot.data();
+    if (draft.discountPercent) {
+        if (!draft.flashSku || !draft.offerId || Date.parse(draft.endsAt) <= Date.now()) throw new Error("Confira o produto e o término da promoção relâmpago antes de publicar.");
+        await require('../../catalog/product-resolver').resolveProduct(draft.flashSku, 1);
+    }
     const now = new Date().toISOString();
     const hero = { ...snapshot.data(), status: "active", activatedAt: now, activatedBy: actorName(actor), updatedAt: now };
     await db().collection(HERO_COLLECTION).doc(HERO_ACTIVE_ID).set(hero);

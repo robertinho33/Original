@@ -60,7 +60,7 @@ function createRouter(deps = {}) {
       const items = stock.aggregateItems(payload.items).sort((a, b) => a.sku.localeCompare(b.sku));
       const input = { items, customer: payload.customer || {}, address: payload.address || null,
         deliveryMethod: payload.deliveryMethod || 'delivery', shippingSelection: payload.shippingSelection || null,
-        coupon: payload.coupon || null, notes: String(payload.notes || '').trim().slice(0, 1500), paymentMethod: 'online' };
+        coupon: payload.coupon || null, ...(payload.flashOfferId ? {flashOfferId:String(payload.flashOfferId).slice(0,36)} : {}), notes: String(payload.notes || '').trim().slice(0, 1500), paymentMethod: 'online' };
       const fingerprint = createHash('sha256').update(JSON.stringify(input)).digest('hex');
       const attemptRef = db.collection('infinitepayAttempts').doc(payload.checkoutAttemptId);
       // Existing attempts never generate another link after an ambiguous network result.
@@ -77,7 +77,9 @@ function createRouter(deps = {}) {
       const won = await db.runTransaction(async tx => {
         const current = await tx.get(attemptRef);
         if (current.exists) return false;
+        const claim = await require('../orders/flash-offer').prepareClaim(tx, db, order, orderRef);
         order.stock = await stock.reserveInTransaction(tx, plans);
+        claim();
         tx.create(orderRef, order);
         tx.create(attemptRef, { fingerprint, orderNumber: order.orderNumber, trackingToken: order.publicTrackingToken });
         tx.create(db.collection('orderTracking').doc(order.publicTrackingToken), {
@@ -151,6 +153,7 @@ function createRouter(deps = {}) {
       tx.set(db.collection('orderTracking').doc(order.publicTrackingToken), { paymentStatus: 'paid', paymentConfirmedAt: now }, { merge: true });
     });
     invalidate();
+    if (order.coupon?.code) { try { await (deps.syncCommissions || (()=>require('../admin/services/commission-service').sync('payment-confirmation')))(); } catch { console.warn('[INFINITEPAY] Comissão precisa de conciliação no painel.'); } }
     try { await notify((await ref.get()).data()); } catch { console.warn('[INFINITEPAY] Aviso de expedição precisa de conferência.'); }
     return { paymentStatus: 'paid' };
   }
