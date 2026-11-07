@@ -52,7 +52,9 @@
 
   <!-- Fios Perfeitos_SEO_SCHEMA_V1 -->
 <link rel="stylesheet" href="/css/analytics-consent.css">
-<link rel="stylesheet" href="/css/store-trust.css"><link rel="icon" type="image/svg+xml" href="/assets/brands/fp.svg?v=20261029"><link rel="alternate icon" href="/favicon.ico?v=20261029"><link rel="stylesheet" href="/css/access-and-search.css?v=20261031"><link rel="stylesheet" href="/css/visitor-navigation.css?v=20261031"></head>
+<link rel="stylesheet" href="/css/store-trust.css"><link rel="icon" type="image/svg+xml" href="/assets/brands/fp.svg?v=20261029"><link rel="alternate icon" href="/favicon.ico?v=20261029"><link rel="stylesheet" href="/css/access-and-search.css?v=20261031"><link rel="stylesheet" href="/css/visitor-navigation.css?v=20261031">  <link rel="stylesheet" href="/css/influencer-directory.css">
+  <link rel="stylesheet" href="/css/hero-offer.css">
+</head>
 
 <body>
   <a class="skip-link" href="#colecao">Ir para os produtos</a>
@@ -99,6 +101,16 @@
           <div class="hero-stage-copy"><span>FIOS PERFEITOS</span><strong>Cuidado<br>do seu jeito.</strong><p>Descubra o seu próximo cuidado.</p></div>
         </div>
 
+        <a id="heroFlashOffer" class="hero-flash-offer" hidden>
+          <span id="heroOfferLabel">OFERTA ESPECIAL</span>
+          <span id="heroOfferProduct"></span>
+          <span>De <s id="heroOfferOriginal"></s> por <strong id="heroOfferPrice"></strong></span>
+          <strong id="heroOfferDiscount"></strong>
+          <span id="heroOfferSavings"></span>
+          <span>Termina em <b id="heroOfferCountdown" role="timer" aria-label="Tempo restante da oferta"></b></span>
+          <small>1 unidade por cliente · Cupons não acumulam desconto</small>
+          <span class="hero-offer-action">Aproveitar oferta ↗</span>
+        </a>
         <div class="floating-note">
           SEU CUIDADO<br>
           <strong>começa nos detalhes.</strong>
@@ -108,7 +120,21 @@
     </section>
 
 
-    <section class="visitor-paths" aria-labelledby="visitorPathsTitle"><h2 id="visitorPathsTitle">O que você quer fazer hoje?</h2><div class="visitor-paths-grid"><a href="#colecao"><strong>Comprar produtos</strong><small>Explore produtos, marcas e kits.</small><span>Ver catálogo →</span></a><a href="/pages/monte-seu-ritual.html"><strong>Encontrar meu cuidado</strong><small>Compare combinações para seu cabelo e seu orçamento.</small><span>Responder às perguntas →</span></a><a href="/pages/rastrear-pedido.html"><strong>Acompanhar meu pedido</strong><small>Consulte o andamento da compra e da entrega.</small><span>Consultar pedido →</span></a><a href="/pages/parcerias.html"><strong>Parcerias e portais</strong><small>Influenciadores, salões e perfumarias.</small><span>Escolher meu acesso →</span></a></div></section>
+    <section class="influencer-directory" aria-labelledby="influencerDirectoryTitle">
+      <div class="influencer-directory-heading">
+        <div><p class="eyebrow">CUIDADOS COMPARTILHADOS</p><h2 id="influencerDirectoryTitle">Conheça nossos influenciadores</h2></div>
+        <a href="/pages/candidatura-influenciador.html">Quero ser influenciador ↗</a>
+      </div>
+      <p id="influencerDirectoryStatus" role="status">Carregando vitrines reais…</p>
+      <p id="influencerDirectoryHint">Role para o lado. Os avatares com borda tracejada são perfis fictícios de demonstração.</p>
+      <div id="influencerDirectory" class="influencer-directory-strip" tabindex="0" role="region" aria-label="Faixa de vitrines e demonstrações" aria-describedby="influencerDirectoryHint"></div>
+    </section>
+    <dialog id="influencerDemo" class="influencer-demo" aria-labelledby="influencerDemoTitle">
+      <p class="eyebrow">VITRINE DEMONSTRATIVA</p>
+      <h2 id="influencerDemoTitle"></h2>
+      <p>Este perfil é fictício e serve como exemplo de vitrine.</p>
+      <form method="dialog"><button type="submit">Fechar</button></form>
+    </dialog>
     <section class="store-brands" id="marcas"><div class="store-section-heading"><div><p class="eyebrow">SUAS MARCAS, SEU ESTILO</p><h2>Marcas para o cuidado do seu jeito.</h2></div><a href="#colecao">Explorar catálogo ↗</a></div><div id="catalogBrandButtons" class="catalog-brand-buttons" role="group" aria-label="Filtrar por marca"></div></section>
     <section class="store-highlights" aria-labelledby="storeHighlightsTitle"><div class="store-section-heading"><div><p class="eyebrow">UM NOVO FAVORITO TE ESPERA</p><h2 id="storeHighlightsTitle">Destaques do catálogo.</h2></div><a href="#colecao">Ver todos ↗</a></div><div id="storeHighlights" class="store-highlight-grid" aria-busy="true"></div></section>
     <section class="store-editorial-grid" aria-label="Mais formas de escolher"><a href="/pages/monte-seu-ritual.html"><small>MENOS DÚVIDA, MAIS CUIDADO</small><h2>Cuidado<br>do seu jeito.</h2><p>Conte seu objetivo e encontre uma seleção dentro do seu orçamento.</p><span>Encontrar meu cuidado ↗</span></a><button type="button" data-store-query="kit"><small>ESCOLHAS QUE SE COMPLETAM</small><h2>Seu cuidado<br>em boa companhia.</h2><p>Conheça os kits e encontre os próximos passos da sua rotina.</p><span>Explorar kits ↗</span></button></section>
@@ -148,6 +174,7 @@
 
     </section>
 
+    <section class="visitor-paths" aria-labelledby="visitorPathsTitle"><h2 id="visitorPathsTitle">O que você quer fazer hoje?</h2><div class="visitor-paths-grid"><a href="#colecao"><strong>Comprar produtos</strong><small>Explore produtos, marcas e kits.</small><span>Ver catálogo →</span></a><a href="/pages/monte-seu-ritual.html"><strong>Encontrar meu cuidado</strong><small>Compare combinações para seu cabelo e seu orçamento.</small><span>Responder às perguntas →</span></a><a href="/pages/rastrear-pedido.html"><strong>Acompanhar meu pedido</strong><small>Consulte o andamento da compra e da entrega.</small><span>Consultar pedido →</span></a><a href="/pages/parcerias.html"><strong>Parcerias e portais</strong><small>Influenciadores, salões e perfumarias.</small><span>Escolher meu acesso →</span></a></div></section>
     <section id="sobre" class="store-about">
       <div><p class="eyebrow">FIOS PERFEITOS</p><h2>Mais espaço para<br><em>cuidar de você.</em></h2></div>
       <div><p>Cuidar dos cabelos faz parte da sua rotina — e escolher os produtos também merece ser simples.</p><p>Na Fios Perfeitos, você explora marcas, compara opções e consulta os detalhes de cada produto antes de decidir.</p><a class="text-link" href="#colecao">Conheça o catálogo <span aria-hidden="true">→</span></a></div>
@@ -255,7 +282,7 @@
     type="module"
     src="js/app.js"
   ></script>
-  <script type="module" src="js/storefront-hero.js"></script>
+  <script type="module" src="js/storefront-hero.js?v=20261106"></script>
   <script type="module" src="js/storefront-experience.js"></script>
 
   <!-- =====================================================
@@ -384,6 +411,7 @@
 <dialog id="shoppingWishlist" class="shopping-wishlist" aria-labelledby="shoppingWishlistTitle"><header><div><p>GUARDADOS COM CARINHO</p><h2 id="shoppingWishlistTitle">Meus desejos</h2></div><button type="button" data-close-wishes aria-label="Fechar meus desejos">×</button></header><p class="shopping-memory-note">Seus cuidados ficam guardados neste navegador. Não gera compra nem mensagens. Em aparelhos compartilhados, retire o que não quiser manter.</p><div class="shopping-tabs" role="group" aria-label="Sua seleção"><button type="button" data-shopping-tab="want" aria-pressed="true">Quero</button><button type="button" data-shopping-tab="like" aria-pressed="false">Curtidos</button></div><div id="shoppingWishlistItems"></div><p data-shopping-message role="status"></p></dialog><div id="shoppingToast" class="shopping-toast" role="status" aria-live="polite" hidden><span data-shopping-toast-text></span><button type="button">Ver meus desejos</button></div>
 <script src="js/utils/form-masks.js"></script>
 <script type="module" src="/js/analytics/store-analytics.js"></script>
+<script type="module" src="/js/influencers/public-directory.js"></script>
 </body>
 
 </html>
