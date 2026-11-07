@@ -30,6 +30,25 @@ async function activateHero(req, res) {
 async function publicHero(req, res) {
     try {
         const data = await service.getActiveHero();
+        if (require("../../../../js/marketing/flash-policy").active(data)) {
+            try {
+                const product = await require("../../catalog/product-resolver").resolveProduct(data.flashSku, 1);
+                const originalCents = Math.round(product.unitPrice * 100);
+                const { promotionDiscount } = require("../../../../js/marketing/flash-policy")
+                    .calculate([product], null, data);
+                const savingsCents = Math.round(promotionDiscount * 100);
+                if (savingsCents > 0) {
+                    data.offerPricing = {
+                        name: product.name,
+                        originalCents,
+                        priceCents: originalCents - savingsCents,
+                        savingsCents
+                    };
+                }
+            } catch {
+                // The campaign banner can still load when the product is unavailable.
+            }
+        }
         res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
         res.json({ success: true, data });
     } catch (error) {

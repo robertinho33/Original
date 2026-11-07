@@ -69,7 +69,7 @@ test('all entry, product and purchase pages show the same business identity with
   assert.ok(product.includes(identity.publicName));
   assert.doesNotMatch(product,/Roberto Ferreira Silva|Roberto Silva|sou_roberto@hotmail\.com/i);
   assert.ok(product.includes(identity.address));
-  assert.match(product,/prazo de preparação/);
+  assert.doesNotMatch(product,/Confira o frete, o prazo de prepara/);
   assert.equal((await fetch(base+'/server/config/business-identity.json')).status,404);
   assert.equal(isPublicFile('/server/config/business-identity.json'),false);
   for(const file of ['/pages/atendimento.html','/js/store/support.js','/css/store-trust.css']) assert.equal(isPublicFile(file),true);

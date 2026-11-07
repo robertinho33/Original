@@ -10,9 +10,15 @@ function startOffer(campaign, reset) {
     const card = offer?.closest('.hero-card');
     const end = Date.parse(campaign.endsAt);
     const discount = Number(campaign.discountPercent);
-    const href = safeCampaignUrl(campaign.buttonUrl);
-    if (!offer || !href || !Number.isFinite(end) || !(discount > 0 && discount <= 100) || end <= Date.now()) return;
+    const pricing = campaign.offerPricing;
+    const href = '/index.html?' + new URLSearchParams({ search: campaign.flashSku }) + '#colecao';
+    const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    if (!offer || !campaign.flashSku || !pricing || !Number.isFinite(end) || !(discount > 0 && discount <= 100) || end <= Date.now()) return;
     offer.href = href;
+    document.getElementById('heroOfferProduct').textContent = pricing.name;
+    document.getElementById('heroOfferOriginal').textContent = money.format(pricing.originalCents / 100);
+    document.getElementById('heroOfferPrice').textContent = money.format(pricing.priceCents / 100);
+    document.getElementById('heroOfferSavings').textContent = 'Economize ' + money.format(pricing.savingsCents / 100);
     document.getElementById('heroOfferLabel').textContent = campaign.offerLabel || 'OFERTA ESPECIAL';
     document.getElementById('heroOfferDiscount').textContent = `${discount.toLocaleString('pt-BR')}% OFF`;
     const tick = () => {
@@ -28,7 +34,6 @@ function startOffer(campaign, reset) {
     card?.classList.add('has-flash-offer');
     const timer = setInterval(tick, 1000);
     tick();
-    window.addEventListener('pagehide', () => clearInterval(timer), { once: true });
 }
 async function loadCampaignHero() {
     try {

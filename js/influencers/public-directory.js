@@ -1,45 +1,85 @@
-import {readFollow,verifyFollow,watchFollows} from './follow-state.js?v=20261104-2';
-const controls=[];
-function updateFollowControl(control){
- const saved=readFollow(control.owner),confirmed=saved?.status==='confirmed';
- control.node.textContent=confirmed?'Seguindo':saved?'Ver acompanhamento':'Seguir';
- control.node.setAttribute('aria-label',(confirmed?'Você segue ':saved?'Ver acompanhamento de ':'Seguir ')+control.name);
- control.node.classList.toggle('is-following',confirmed);
- const url=new URL(control.url,location.origin);if(!saved)url.searchParams.set('seguir','1');url.hash='storeCommunity';control.node.href=url.href;
+const directory = document.getElementById('influencerDirectory');
+const status = document.getElementById('influencerDirectoryStatus');
+const demoDialog = document.getElementById('influencerDemo');
+const demoTitle = document.getElementById('influencerDemoTitle');
+const demoProfiles = [
+    'Aurora Lunar', 'Brisa de Âmbar', 'Céu de Lavanda', 'Dália Solar', 'Estrela de Chá',
+    'Flor de Nuvem', 'Girassol Azul', 'Horizonte Rosa', 'Íris de Mel', 'Jasmim da Lua',
+    'Lótus Coral', 'Maré Lilás', 'Névoa de Seda', 'Orquídea do Vento', 'Pétala Dourada',
+    'Quartzo Verde', 'Rosa de Algodão', 'Sol de Baunilha', 'Tulipa do Mar', 'Violeta de Papel'
+];
+
+function photoFrame(name, imageUrl) {
+    const frame = document.createElement('span');
+    frame.className = 'influencer-photo';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.textContent = name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('');
+    if (imageUrl) {
+        const image = document.createElement('img');
+        image.src = imageUrl;
+        image.alt = '';
+        image.width = image.height = 72;
+        image.loading = 'lazy';
+        image.decoding = 'async';
+        image.addEventListener('error', () => image.remove(), { once: true });
+        frame.append(image);
+    }
+    return frame;
 }
-async function refreshFollows(){for(const control of controls){updateFollowControl(control);try{await verifyFollow(control.owner);}catch{}updateFollowControl(control);}}
-watchFollows(event=>{for(const control of controls)updateFollowControl(control);if(event?.type==='storage')void refreshFollows();});
-window.addEventListener('pageshow',()=>void refreshFollows());
-const target = document.getElementById('influencerDirectory');
-if (target) {
-    const status = document.getElementById('influencerDirectoryStatus');
-    const load = async () => {
-        try {
-            const response = await fetch('/api/discovery/influencers', {signal:AbortSignal.timeout(20000)});
-            const result = await response.json();
-            if (!response.ok || !result.success || !Array.isArray(result.data)) throw Error();
-            const fragment = document.createDocumentFragment();
-            for (const person of result.data) {
-                const url = new URL(person.url, location.origin);
-                if (url.origin !== location.origin || url.pathname !== '/pages/vitrine-influenciador.html') continue;
-                const card = document.createElement('article'); card.className = 'influencer-mini';
-                const link = document.createElement('a'); link.href = url.href; link.className = 'influencer-mini-profile';
-                const initials = document.createElement('span'); initials.className = 'influencer-mini-initials'; initials.setAttribute('aria-hidden','true');
-                initials.textContent = String(person.name || '').trim().split(/\s+/).slice(0,2).map(part=>part[0]).join('');
-                const frame = document.createElement('span'); frame.className='influencer-mini-photo';frame.append(initials);
-                try { const imageUrl=new URL(person.image);if(imageUrl.protocol==='https:'){const image=document.createElement('img');image.src=imageUrl.href;image.alt='';image.width=72;image.height=72;image.loading='lazy';image.decoding='async';image.addEventListener('error',()=>image.remove());frame.append(image);} } catch {}
-                const name = document.createElement('span'); name.textContent = person.name;
-                link.append(frame,name);card.append(link);
-                const visit=document.createElement('a');visit.href=url.href;visit.textContent='Ver vitrine';visit.className='influencer-mini-visit';card.append(visit);
-                if(person.canFollow){const follow=document.createElement('a');follow.className='influencer-mini-follow';const control={node:follow,owner:url.searchParams.get('loja'),name:person.name,url:url.href};controls.push(control);updateFollowControl(control);card.append(follow);}
-                fragment.append(card);
-            }
-            target.replaceChildren(fragment);void refreshFollows();
-            status.textContent=target.childElementCount?'Toque na foto para conhecer a seleção de cada influenciador.':'Novas vitrines de influenciadores aparecerão aqui em breve.';
-        } catch {
-            status.replaceChildren(document.createTextNode('Não foi possível carregar os perfis agora. '));
-            const retry=document.createElement('button');retry.type='button';retry.textContent='Tentar novamente';retry.addEventListener('click',()=>{status.textContent='Carregando…';void load();});status.append(retry);
+
+function realCard(person) {
+    const url = new URL(person.url, location.origin);
+    if (url.origin !== location.origin || url.pathname !== '/pages/vitrine-influenciador.html' || !url.searchParams.get('loja')) return null;
+    let photo = '';
+    try {
+        const image = new URL(person.image, location.origin);
+        if (image.protocol === 'https:' && !image.username && !image.password) {
+            photo = ['www.fiosperfeitos.com.br', 'fiosperfeitos.com.br'].includes(image.host)
+                ? image.pathname + image.search
+                : image.href;
         }
-    };
-    void load();
+    } catch {}
+    const card = document.createElement('a');
+    card.className = 'influencer-profile';
+    card.href = url.pathname + url.search;
+    card.append(photoFrame(person.name, photo), person.name);
+    return card;
 }
+
+const demos = demoProfiles.map(name => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'influencer-profile influencer-profile-demo';
+    const label = document.createElement('small');
+    label.textContent = 'Perfil fictício';
+    card.append(photoFrame(name), name, label);
+    card.addEventListener('click', () => {
+        demoTitle.textContent = name;
+        demoDialog.showModal();
+    });
+    return card;
+});
+directory.append(...demos);
+
+async function loadProfiles() {
+    status.textContent = 'Carregando vitrines reais…';
+    try {
+        const response = await fetch('/api/discovery/influencers', { signal: AbortSignal.timeout(20000) });
+        const result = await response.json();
+        if (!response.ok || !result.success || !Array.isArray(result.data)) throw new Error();
+        const cards = result.data.filter(person => typeof person?.name === 'string' && person.name.trim())
+            .map(realCard).filter(Boolean);
+        directory.prepend(...cards);
+        status.textContent = cards.length
+            ? 'Toque na foto para conhecer a seleção de cada influenciador.'
+            : 'Nenhuma vitrine real disponível no momento.';
+    } catch {
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.textContent = 'Tentar novamente';
+        retry.addEventListener('click', loadProfiles, { once: true });
+        status.replaceChildren('Não foi possível carregar as vitrines reais. ', retry);
+    }
+}
+
+void loadProfiles();

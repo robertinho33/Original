@@ -1,0 +1,88 @@
+.influencer-directory {
+    margin: 2rem 0;
+    min-width: 0;
+}
+
+.influencer-directory-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .5rem 1rem;
+}
+
+.influencer-directory-strip {
+    display: flex;
+    gap: .5rem;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: .5rem .3rem .8rem;
+    scroll-padding-inline: .3rem;
+}
+
+.influencer-profile {
+    display: flex;
+    flex: 0 0 7rem;
+    flex-direction: column;
+    align-items: center;
+    gap: .35rem;
+    padding: .45rem;
+    border: 1px solid transparent;
+    border-radius: .75rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: .85rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+
+.influencer-profile:hover,
+.influencer-profile:focus-visible,
+.influencer-directory-strip:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.influencer-photo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #f3e5ed;
+    color: #542740;
+    font-weight: 700;
+}
+
+.influencer-photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.influencer-profile-demo .influencer-photo {
+    border: 2px dashed currentColor;
+}
+
+.influencer-profile-demo small {
+    font-weight: 700;
+}
+
+.influencer-demo {
+    max-width: min(24rem, calc(100% - 2rem));
+    padding: 1.5rem;
+    border: 0;
+    border-radius: 1rem;
+    color: #291d26;
+}
+
+.influencer-demo::backdrop {
+    background: #19132999;
+}
