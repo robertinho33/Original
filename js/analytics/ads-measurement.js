@@ -1,3 +1,4 @@
+import {mountMetaChoice} from './meta-measurement.js?v=20261104';
 import {readConsent,CONSENT_TTL} from './analytics-policy.js';
 import {ADS_CONSENT_KEY,adsContext,safePurchase} from './ads-policy.js';
 const context=adsContext(location.href);
@@ -53,8 +54,8 @@ if(context?.tracking){
  button.addEventListener('click',()=>{
   const panel=document.createElement('section');panel.className='analytics-consent';panel.setAttribute('aria-label','Medição opcional de anúncios');
   const title=document.createElement('strong');title.textContent='Medição dos anúncios';panel.append(title);
-  const save=mountAdsChoice(panel),actions=document.createElement('div');actions.className='analytics-consent-actions';
-  for(const [text,accepted] of [['Recusar',false],['Salvar preferência',true]]){const control=document.createElement('button');control.type='button';control.textContent=text;control.onclick=()=>{save(accepted);panel.remove();button.focus();};actions.append(control);}
+  const save=mountAdsChoice(panel),saveMeta=mountMetaChoice(panel),actions=document.createElement('div');actions.className='analytics-consent-actions';
+  for(const [text,accepted] of [['Recusar',false],['Salvar preferência',true]]){const control=document.createElement('button');control.type='button';control.textContent=text;control.onclick=()=>{save(accepted);saveMeta(accepted);panel.remove();button.focus();};actions.append(control);}
   panel.append(actions);document.body.append(panel);panel.querySelector('input').focus();
  });(document.querySelector('footer')||document.body).append(button);
 }

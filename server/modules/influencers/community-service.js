@@ -83,7 +83,7 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
  }
  async function follow(owner,body){
   await requireFeature(owner,'followers');
-  const store=await publicStore(owner),name=clean(body?.name,100),number=phone(body?.phone);
+  await publicStore(owner);const name=clean(body?.name,100),number=phone(body?.phone);
   if(!name||!/^\d{10,11}$/.test(number)||body.followConsent!==true)fail(400,'Informe nome, WhatsApp com DDD e autorize o acompanhamento.');
   const id=randomBytes(16).toString('hex'),secret=randomBytes(32).toString('hex'),code=randomBytes(6).toString('hex').toUpperCase(),createdAt=new Date(now()).toISOString();
   const ref=db().collection('communityFollowRequests').doc(id),limit=db().collection('communityFollowLimits').doc(digest(owner+':'+number));
@@ -91,10 +91,12 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
    await requireFeature(owner,'followers',tx);
    const existing=await tx.get(followerRef({owner,phone:number}));if(existing.exists&&existing.data().blocked===true)fail(403,'Este acompanhamento está bloqueado pelo influenciador.');
    const previous=await tx.get(limit);if(previous.exists&&now()-previous.data().createdAt<300000)fail(429,'Já há um pedido recente para esse WhatsApp. Aguarde cinco minutos.');
-   tx.set(ref,{owner,name,phone:number,managementHash:digest(secret),codeHash:digest(code),status:'pending',followConsent:true,marketingConsent:body.marketingConsent===true,consentVersion:'2026-10-26',createdAt,expiresAt:now()+48*3600000});tx.set(limit,{createdAt:now()});
+   tx.set(ref,{owner,name,phone:number,managementHash:digest(secret),codeHash:digest(code),status:'confirmed',followConsent:true,marketingConsent:body.marketingConsent===true,consentVersion:'2026-11-04',createdAt,expiresAt:null,reviewedBy:'automatic',reviewedAt:createdAt});
+   tx.set(followerRef({owner,phone:number}),{name,phone:number,active:true,blocked:false,sourceRequestId:id,managementHash:digest(secret),followConsent:true,marketingConsent:body.marketingConsent===true,consentVersion:'2026-11-04',consentedAt:createdAt,consentUpdatedAt:now(),confirmedAt:createdAt,confirmedBy:'automatic',phoneVerified:false});
+   tx.set(limit,{createdAt:now()});
   });
-  const message='Olá! Quero seguir '+clean(store.name,100)+' na Fios Perfeitos. Meu nome: '+name+'. WhatsApp cadastrado: '+number+'. Código de confirmação: '+code+'. '+(body.marketingConsent===true?'Também autorizo receber novidades pelo WhatsApp.':'Não autorizo mensagens de novidades pelo WhatsApp.');
-  return {id,secret,code,status:'pending',whatsappUrl:'https://wa.me/5511986215473?text='+encodeURIComponent(message)};
+  const message='Olá! Quero seguir esta vitrine na Fios Perfeitos. Meu nome: '+name+'. WhatsApp cadastrado: '+number+'. Código de confirmação: '+code+'. '+(body.marketingConsent===true?'Também autorizo receber novidades pelo WhatsApp.':'Não autorizo mensagens de novidades pelo WhatsApp.');
+  return {id,secret,code,status:'confirmed',whatsappUrl:'https://wa.me/5511986215473?text='+encodeURIComponent(message)};
  }
  async function ownRequest(id,secret){
   if(!/^[a-f0-9]{32}$/.test(id)||!secretValid(secret))fail(401,'Confirmação não encontrada neste aparelho.');
@@ -151,7 +153,7 @@ function createService({getDb,analyzeImage=bytes=>require('./image-moderation').
  }
  async function interact(id,kind,visitor,membership){
   if(!/^[a-f0-9]{32}$/.test(id)||!['like','want'].includes(kind)||!secretValid(visitor))fail(400,'Interação inválida.');
-  const followMessage='Para curtir ou marcar Quero, siga este influenciador e aguarde seu pedido ser aceito.';
+  const followMessage='Para curtir ou marcar Quero, siga este influenciador. O acompanhamento é liberado na hora.';
   if(!/^[a-f0-9]{32}$/.test(membership?.id||'')||!secretValid(membership?.secret))fail(403,followMessage);
   const ref=db().collection('influencerGalleryPhotos').doc(id),ledger=db().collection('communityPhotoInteractions').doc(digest(id+':'+visitor));
   return db().runTransaction(async tx=>{

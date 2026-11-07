@@ -176,6 +176,12 @@ test('initial passwords are individual and owner password change revokes every o
     assert.equal((await call('/profile',{image:'',revision:photoRevision},personalCookie,undefined,'PUT')).status,200);
     assert.equal(records.get('influencerPublicStores/one').image,'');
     assert.equal(records.get('influencerPublicStores/one').enabled,true);assert.equal(records.get('influencerPublicStores/one').coupon,'STORE');
+    const uploadRevision=(await (await call('/profile',{},personalCookie)).json()).data.revision;
+    const photoBytes=await require('sharp')({create:{width:48,height:48,channels:3,background:'#345640'}}).jpeg().toBuffer();
+    response=await call('/profile',{image:'data:image/jpeg;base64,'+photoBytes.toString('base64'),revision:uploadRevision},personalCookie,undefined,'PUT');assert.equal(response.status,200);
+    const uploaded=(await response.json()).data;assert.match(uploaded.image,/profile-photo\/one\?v=/);assert.equal(records.get('influencerPublicStores/one').image,uploaded.image);
+    assert.ok(records.get('influencerProfilePhotos/one').bytes);assert.equal(records.has('influencerProfilePhotos/two'),false);
+    assert.equal((await call('/profile',{image:'',revision:uploaded.revision},personalCookie,undefined,'PUT')).status,200);assert.equal(records.has('influencerProfilePhotos/one'),false);
     const reset=await credentials.provision(db,'one',{reset:true},'admin');assert.notEqual(reset.initialPassword,first.initialPassword);
     assert.ok(reset.whatsappUrl.startsWith('https://wa.me/5511999999999?text='));assert.ok(decodeURIComponent(reset.whatsappUrl).includes('48 horas'));assert.ok(!decodeURIComponent(reset.whatsappUrl).includes('/admin'));
     assert.equal((await call('/session',{},personalCookie)).status,401);assert.equal((await login('NewPass1')).status,401);

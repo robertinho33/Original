@@ -229,3 +229,15 @@ if (token) {
     elements.input.closest('form')?.classList.add('tracking-token-mode');
     loadTracking(token, true);
 }
+
+// Recover the private link on the original device when Meus pedidos is opened.
+if (!token && !initialOrder) {
+    for (const storage of [() => sessionStorage, () => localStorage]) {
+        try {
+            const saved = JSON.parse(storage().getItem('fios-infinitepay-pending') || 'null');
+            if (!/^[a-f0-9]{64}$/i.test(saved?.trackingToken || '') || (saved.savedAt && (saved.savedAt > Date.now() || Date.now() - saved.savedAt > 30*86400000))) continue;
+            history.replaceState(null, '', location.pathname + '#token=' + saved.trackingToken);
+            loadTracking(saved.trackingToken, true); break;
+        } catch {}
+    }
+}

@@ -51,7 +51,9 @@ async function create(order, attempt = null) {
             return;
         }
     }
+    const claim = await require('./flash-offer').prepareClaim(tx, db, storedOrder, docRef);
     storedOrder.stock = await inventory.reserveInTransaction(tx, plans);
+    claim();
     tx.create(docRef, storedOrder);
 
     if (storedOrder.publicTrackingToken) {

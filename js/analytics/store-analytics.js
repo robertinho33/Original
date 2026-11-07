@@ -1,3 +1,4 @@
+import {mountMetaChoice,metaChoice} from './meta-measurement.js?v=20261104';
 import {analyticsPage, readConsent, CONSENT_KEY, CONSENT_TTL, createAnalyticsController} from './analytics-policy.js';
 import {recordStoreVisit} from './visit-counter.js';
 import {mountAdsChoice,adsChoice} from './ads-measurement.js';
@@ -42,7 +43,7 @@ function clearAnalyticsCookies() {
 }
 let panel = null;
 function showPreferences() {
-    if (panel) { panel.querySelector('input[data-ads-consent]').checked = adsChoice() === 'granted'; const care = panel.querySelector('input[data-care-consent]'); if (care) care.checked = careConsent() === 'granted'; panel.hidden = false; panel.querySelector('button')?.focus(); return; }
+    if (panel) { panel.querySelector('input[data-ads-consent]').checked = adsChoice() === 'granted'; const care = panel.querySelector('input[data-care-consent]'); if (care) care.checked = careConsent() === 'granted'; const meta=panel.querySelector('input[data-meta-consent]');if(meta)meta.checked=metaChoice()==='granted'; panel.hidden = false; panel.querySelector('button')?.focus(); return; }
     panel = document.createElement('section');
     panel.className = 'analytics-consent';
     panel.setAttribute('aria-label','Preferências de estatísticas');
@@ -52,6 +53,7 @@ function showPreferences() {
     panel.append(title,description,link);
     const saveCareChoice=mountCareChoice(panel);
     const saveAdsChoice=mountAdsChoice(panel);
+    const saveMetaChoice=mountMetaChoice(panel);
     const actions = document.createElement('div'); actions.className = 'analytics-consent-actions';
     for (const [value,label] of [['denied','Recusar'],['granted','Aceitar estatísticas']]) {
         const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
@@ -62,6 +64,7 @@ function showPreferences() {
             chooseStatistics(value);
             saveCareChoice(value === 'granted');
             saveAdsChoice(value === 'granted');
+            saveMetaChoice(value === 'granted');
             panel.hidden = true;
         });
         actions.append(button);
@@ -73,7 +76,7 @@ if (page) {
     const preferences = document.createElement('button'); preferences.type = 'button'; preferences.className = 'analytics-preferences'; preferences.textContent = 'Preferências de estatísticas';
     preferences.addEventListener('click',showPreferences); (footer || document.body).append(preferences);
     let choice = null; try { choice = readConsent(localStorage.getItem(CONSENT_KEY)); } catch {}
-    if (choice && (adsChoice() === null || (location.pathname === '/pages/monte-seu-ritual.html' && careConsent() === null))) showPreferences();
+    if (choice && (adsChoice() === null || metaChoice() === null || (location.pathname === '/pages/monte-seu-ritual.html' && careConsent() === null))) showPreferences();
     if (choice) { if (choice === 'denied') clearAnalyticsCookies(); chooseStatistics(choice); }
     else showPreferences();
     window.addEventListener('storage',event=>{

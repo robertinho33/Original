@@ -18,7 +18,16 @@ function database(){
  return {db,records};
 }
 const product={sku:'PRODUCT',name:'Shampoo',price:35,stock:10},body={image:'test',productSku:'PRODUCT',caption:'Uso do produto',policyAccepted:true,rightsConfirmed:true};
-function setup(analysis='clear'){const memory=database();let time=Date.now();const service=createService({getDb:()=>memory.db,getCatalog:async()=>[product],prepareImage:async()=>Buffer.from('photo'),analyzeImage:async()=>({status:analysis}),now:()=>time});return {...memory,service,advance:milliseconds=>{time+=milliseconds;}};}
+const legacyFixtures=new WeakMap();
+function setup(analysis='clear'){const memory=database();let time=Date.now();const service=createService({getDb:()=>memory.db,getCatalog:async()=>[product],prepareImage:async()=>Buffer.from('photo'),analyzeImage:async()=>({status:analysis}),now:()=>time});legacyFixtures.set(service,{records:memory.records,now:()=>time});return {...memory,service,advance:milliseconds=>{time+=milliseconds;}};}
+async function legacyFollow(service,owner,input){
+ const fixture=legacyFixtures.get(service),{createHash}=require('node:crypto'),digits=String(input.phone||'').replace(/\D/g,''),number=digits.startsWith('55')&&digits.length>11?digits.slice(2):digits;
+ const key='influencerCommunities/'+owner+'/followers/'+createHash('sha256').update(number).digest('hex'),previous=fixture.records.get(key);
+ const result=await service.follow(owner,input),row=fixture.records.get('communityFollowRequests/'+result.id);
+ row.status='pending';row.expiresAt=fixture.now()+48*3600000;
+ if(previous)fixture.records.set(key,previous);else fixture.records.delete(key);
+ return {...result,status:'pending'};
+}
 const checklist={adultsOnly:true,noSexualContent:true,noWeaponsDrugsViolence:true,commercialRights:true};
 test('photos stay private until automatic analysis plus full admin checklist; ownership and withdrawal are enforced',async()=>{
  const {service}=setup();const photo=await service.upload('one',body);
@@ -41,7 +50,7 @@ test('six-photo limit remains atomic for concurrent uploads; rejected and unavai
 });
 test('WhatsApp follows require matching original code and sender, preserve separate consent, deduplicate and allow cancellation',async()=>{
  const {service,advance}=setup();const input={name:'Seguidor',phone:'(11) 99999-9999',followConsent:true,marketingConsent:false};
- const request=await service.follow('one',input);assert.equal((await service.ownerSummary('one')).followers,0);
+ const request=await legacyFollow(service,'one',input);assert.equal((await service.ownerSummary('one')).followers,0);
  assert.equal((await service.followStatus(request.id,request.secret)).status,'pending');
  assert.ok(request.whatsappUrl.startsWith('https://wa.me/5511986215473?text='));
  await assert.rejects(service.followStatus(request.id,'0'.repeat(64)),error=>error.status===401);
@@ -49,13 +58,13 @@ test('WhatsApp follows require matching original code and sender, preserve separ
  await service.confirmFollow(request.id,{verifiedInWhatsApp:true,decision:'approve',phone:input.phone,code:request.code},'admin');
  assert.equal((await service.ownerSummary('one')).followers,1);assert.equal((await service.followStatus(request.id,request.secret)).marketingConsent,false);
  await assert.rejects(service.confirmFollow(request.id,{verifiedInWhatsApp:true,decision:'approve',phone:input.phone,code:request.code},'admin'),error=>error.status===409);
- advance(300001);const second=await service.follow('one',{...input,marketingConsent:true});await service.confirmFollow(second.id,{verifiedInWhatsApp:true,decision:'approve',phone:input.phone,code:second.code},'admin');
+ advance(300001);const second=await legacyFollow(service,'one',{...input,marketingConsent:true});await service.confirmFollow(second.id,{verifiedInWhatsApp:true,decision:'approve',phone:input.phone,code:second.code},'admin');
  assert.equal((await service.ownerSummary('one')).followers,1);await service.unfollow(request.id,request.secret);assert.equal((await service.ownerSummary('one')).followers,1,'old browser cannot cancel newly confirmed ownership');
- advance(300001);const stale=await service.follow('one',input);
+ advance(300001);const stale=await legacyFollow(service,'one',input);
  await service.unfollow(second.id,second.secret);assert.equal((await service.ownerSummary('one')).followers,0);
  await assert.rejects(service.confirmFollow(stale.id,{verifiedInWhatsApp:true,decision:'approve',phone:input.phone,code:stale.code},'admin'),error=>error.status===409);
  const queue=await service.adminQueue();assert.equal(JSON.stringify(queue).includes(request.secret),false);assert.equal(JSON.stringify(queue).includes('codeHash'),false);
- advance(300001);const expired=await service.follow('one',input);advance(49*3600000);assert.equal((await service.followStatus(expired.id,expired.secret)).status,'expired');
+ advance(300001);const expired=await legacyFollow(service,'one',input);advance(49*3600000);assert.equal((await service.followStatus(expired.id,expired.secret)).status,'expired');
  await assert.rejects(service.confirmFollow(expired.id,{verifiedInWhatsApp:true,decision:'approve',phone:input.phone,code:expired.code},'admin'),/expirado/);
 });
 test('moderation thresholds block sexual categories, invalid images fail validation, and bundled free model runs locally',async()=>{
@@ -79,7 +88,7 @@ test('rollout is hidden by default and blocks public and owner access to already
  await assert.rejects(service.photo(id),error=>error.status===404);await assert.rejects(service.photo(id,'one'),error=>error.status===404);
  await assert.rejects(service.gallery('one'),error=>error.status===404);await assert.rejects(service.ownerSummary('one'),error=>error.status===404);
  await assert.rejects(service.upload('one',body),error=>error.status===404);
- await assert.rejects(service.follow('one',{name:'Teste',phone:'11999999999',followConsent:true}),error=>error.status===404);
+ await assert.rejects(legacyFollow(service,'one',{name:'Teste',phone:'11999999999',followConsent:true}),error=>error.status===404);
  assert.equal((await service.photo(id,null,true)).toString(),'photo','admin can still review hidden records');
 });
 
@@ -99,7 +108,7 @@ test('global defaults, individual exceptions and the master suspension enforce r
 
 test('suspension during analysis prevents saving and opt-out remains possible while disabled',async()=>{
  const {db,records,service}=setup();
- const request=await service.follow('one',{name:'Teste',phone:'11999999999',followConsent:true,marketingConsent:true});
+ const request=await legacyFollow(service,'one',{name:'Teste',phone:'11999999999',followConsent:true,marketingConsent:true});
  await service.confirmFollow(request.id,{verifiedInWhatsApp:true,decision:'approve',phone:'11999999999',code:request.code},'admin');
  const racing=createService({getDb:()=>db,getCatalog:async()=>[product],prepareImage:async()=>Buffer.from('photo'),analyzeImage:async()=>{records.delete('settings/influencerFeatureRollout');return {status:'clear'};}});
  await assert.rejects(racing.upload('one',body),error=>error.status===404);assert.equal([...records.keys()].some(key=>key.startsWith('influencerGalleryPhotos/')),false);
@@ -132,7 +141,7 @@ test('HTTP endpoints keep pending photos private, reject forged owners and forei
  response=await call('/public/stores/one/follow','POST',{name:'Pessoa',phone:'11999999999',followConsent:true});const request=(await response.json()).data;assert.deepEqual(Object.keys(request).sort(),['id','secret','status']);
  assert.equal((await call('/owner/followers/'+request.id,'POST',{decision:'accept'},'two')).status,404);
  assert.equal((await call('/owner/followers/'+request.id,'POST',{decision:'accept'},'one','https://evil.test')).status,403);
- assert.equal((await call('/owner/followers/'+request.id,'POST',{decision:'accept'})).status,200);
+ assert.equal(request.status,'confirmed');assert.equal((await call('/owner/followers/'+request.id,'POST',{decision:'accept'})).status,409);
  assert.equal((await (await call('/public/stores/one/stats')).json()).data.friends,1);
  const interaction={kind:'like',follow:{id:request.id,secret:request.secret}};
  response=await fetch(base+'/public/photos/'+photo.id+'/interact',{method:'POST',headers:{Origin:'https://www.fiosperfeitos.com.br',Referer:'https://www.fiosperfeitos.com.br/index.html','Content-Type':'application/json'},body:JSON.stringify(interaction)});assert.equal(response.status,403);
@@ -143,26 +152,26 @@ test('HTTP endpoints keep pending photos private, reject forged owners and forei
 
 test('influencers accept their own requests without admin, block and unblock, while contacts and consent stay protected',async()=>{
  const {service,advance,records}=setup();const input={name:'Pessoa',phone:'11999999999',followConsent:true,marketingConsent:false};
- const request=await service.follow('one',input);
+ const request=await legacyFollow(service,'one',input);
  await assert.rejects(service.manageFollower('two',request.id,'accept'),e=>e.status===404);
  const pending=await service.ownerSummary('one');assert.equal(pending.requests.length,1);assert.equal(pending.requests[0].phone,'•••• 9999');assert.ok(!JSON.stringify(pending).includes(input.phone));assert.ok(!JSON.stringify(pending).includes(request.secret));
  await service.manageFollower('one',request.id,'accept');assert.equal((await service.followStatus(request.id,request.secret)).status,'confirmed');assert.equal((await service.publicStats('one')).friends,1);
  await assert.rejects(service.manageFollower('one',request.id,'accept'),e=>e.status===409);
  await service.manageFollower('one',request.id,'block');assert.equal((await service.publicStats('one')).friends,0);assert.equal((await service.ownerSummary('one')).friends[0].blocked,true);
- advance(300001);await assert.rejects(service.follow('one',input),e=>e.status===403);
- await service.manageFollower('one',request.id,'unblock');advance(1);const next=await service.follow('one',input);advance(1);await service.manageFollower('one',next.id,'accept');
+ advance(300001);await assert.rejects(legacyFollow(service,'one',input),e=>e.status===403);
+ await service.manageFollower('one',request.id,'unblock');advance(1);const next=await legacyFollow(service,'one',input);advance(1);await service.manageFollower('one',next.id,'accept');
  assert.equal((await service.publicStats('one')).friends,1);await service.unfollow(next.id,next.secret);assert.equal((await service.publicStats('one')).friends,0);
  const follower=[...records].find(([k])=>k.includes('/followers/'))[1];assert.equal(follower.marketingConsent,false);assert.equal(follower.phoneVerified,false);
 });
 
 test('owner acceptance cannot revive withdrawn consent or bypass rollout',async()=>{
- const {service,records,advance}=setup();const input={name:'Pessoa',phone:'11999999999',followConsent:true};const first=await service.follow('one',input);await service.manageFollower('one',first.id,'accept');advance(300001);const stale=await service.follow('one',input);advance(1);await service.unfollow(first.id,first.secret);await assert.rejects(service.manageFollower('one',stale.id,'accept'),e=>e.status===409);
+ const {service,records,advance}=setup();const input={name:'Pessoa',phone:'11999999999',followConsent:true};const first=await legacyFollow(service,'one',input);await service.manageFollower('one',first.id,'accept');advance(300001);const stale=await legacyFollow(service,'one',input);advance(1);await service.unfollow(first.id,first.secret);await assert.rejects(service.manageFollower('one',stale.id,'accept'),e=>e.status===409);
  records.set('settings/influencerFeatureRollout',{enabled:false});await assert.rejects(service.manageFollower('one',stale.id,'block'),e=>e.status===404);
 });
 
 test('only accepted followers of this owner interact; public totals survive blocked, cancelled and deleted links/photos',async()=>{
  const {service,records}=setup();const photo=await service.upload('one',body),a='a'.repeat(64),b='b'.repeat(64);
- const input={name:'Pessoa',phone:'11999999999',followConsent:true};const member=await service.follow('one',input),other=await service.follow('two',input);
+ const input={name:'Pessoa',phone:'11999999999',followConsent:true};const member=await legacyFollow(service,'one',input),other=await legacyFollow(service,'two',input);
  await assert.rejects(service.interact(photo.id,'like',a),e=>e.status===403);
  await assert.rejects(service.interact(photo.id,'like',a,member),e=>e.status===404);
  await service.reviewPhoto(photo.id,{decision:'approve',safetyConfirmed:true,checklist},'admin');
@@ -175,7 +184,7 @@ test('only accepted followers of this owner interact; public totals survive bloc
  assert.ok(!JSON.stringify(views).includes(member.secret));assert.deepEqual(await service.publicStats('two'),{friends:1,likes:0,wants:0});
  await service.manageFollower('one',member.id,'block');await assert.rejects(service.interact(photo.id,'want',b,member),e=>e.status===403);
  assert.equal((await service.gallery('one'))[0].likes,2,'non-followers can still see general counts');
- const second=await service.follow('one',{...input,phone:'11888888888'});await service.manageFollower('one',second.id,'accept');await service.unfollow(second.id,second.secret);await assert.rejects(service.interact(photo.id,'want',b,second),e=>e.status===403);
+ const second=await legacyFollow(service,'one',{...input,phone:'11888888888'});await service.manageFollower('one',second.id,'accept');await service.unfollow(second.id,second.secret);await assert.rejects(service.interact(photo.id,'want',b,second),e=>e.status===403);
  records.set('settings/influencerFeatureRollout',{enabled:false});await assert.rejects(service.interact(photo.id,'want',b,member),e=>e.status===404);
  records.set('settings/influencerFeatureRollout',{enabled:true,defaults:{gallery:true,followers:true}});records.set('influencerPublicStores/one',{enabled:true});await service.remove('one',photo.id);assert.deepEqual(await service.publicStats('one'),{friends:0,likes:2,wants:1});await assert.rejects(service.interact(photo.id,'want',b,member),e=>e.status===404);
 });
@@ -184,7 +193,7 @@ test('home product counts aggregate existing photos and accepted interactions ac
  const {service,records}=setup(),one='1'.repeat(32),two='2'.repeat(32);
  records.set('influencerGalleryPhotos/'+one,{owner:'one',state:'approved',productSku:'PRODUCT',likes:3,wants:1});records.set('influencerGalleryPhotos/'+two,{owner:'two',state:'approved',productSku:'PRODUCT',likes:6,wants:2});
  assert.deepEqual(await service.productReactions(),[{sku:'PRODUCT',likes:9,wants:3}]);
- const member=await service.follow('one',{name:'Pessoa',phone:'11999999999',followConsent:true});await service.manageFollower('one',member.id,'accept');
+ const member=await legacyFollow(service,'one',{name:'Pessoa',phone:'11999999999',followConsent:true});await service.manageFollower('one',member.id,'accept');
  await service.interact(one,'like','a'.repeat(64),member);await service.interact(one,'like','a'.repeat(64),member);assert.deepEqual(await service.productReactions(),[{sku:'PRODUCT',likes:10,wants:3}]);
  await service.remove('one',one);assert.deepEqual(await service.productReactions(),[{sku:'PRODUCT',likes:10,wants:3}]);
  assert.ok(!JSON.stringify(await service.productReactions()).includes(member.secret));assert.ok(!JSON.stringify(await service.productReactions()).includes('owner'));
@@ -198,4 +207,19 @@ test('public product hearts and wishes toggle without signup, remain idempotent,
  assert.equal((await service.setProductReaction('PRODUCT','want',true,visitor)).wants,3);assert.equal((await service.setProductReaction('PRODUCT','want',false,visitor)).wants,2);
  assert.equal(records.get('influencerGalleryPhotos/'+'a'.repeat(32)).likes,4);assert.equal([...records.keys()].filter(key=>key.startsWith('communityFollowRequests/')).length,0);
  await assert.rejects(service.setProductReaction('UNKNOWN','like',true,visitor),e=>e.status===404);await assert.rejects(service.setProductReaction('PRODUCT','like','true',visitor),e=>e.status===400);
+});
+
+test('new followers are confirmed immediately, preserve opt-in and can cancel without approval',async()=>{
+ const {service,advance,records}=setup();
+ await assert.rejects(service.follow('one',{name:'Pessoa',phone:'11999999999',followConsent:false}),e=>e.status===400);
+ const member=await service.follow('one',{name:'Pessoa',phone:'11999999999',followConsent:true,marketingConsent:false});
+ assert.equal(member.status,'confirmed');assert.equal((await service.followStatus(member.id,member.secret)).status,'confirmed');
+ const summary=await service.ownerSummary('one');assert.equal(summary.followers,1);assert.equal(summary.requests.length,0);assert.ok(!JSON.stringify(summary).includes('11999999999'));
+ const follower=[...records].find(([key])=>key.includes('/followers/'))[1];assert.equal(follower.marketingConsent,false);assert.equal(follower.phoneVerified,false);assert.equal(follower.confirmedBy,'automatic');
+ await assert.rejects(service.follow('one',{name:'Pessoa',phone:'11999999999',followConsent:true}),e=>e.status===429);
+ await service.manageFollower('one',member.id,'block');advance(300001);
+ await assert.rejects(service.follow('one',{name:'Pessoa',phone:'11999999999',followConsent:true}),e=>e.status===403);
+ await service.manageFollower('one',member.id,'unblock');const next=await service.follow('one',{name:'Pessoa',phone:'11999999999',followConsent:true,marketingConsent:true});
+ await service.unfollow(member.id,member.secret);assert.equal((await service.followStatus(next.id,next.secret)).status,'confirmed');
+ await service.unfollow(next.id,next.secret);assert.equal((await service.publicStats('one')).friends,0);
 });

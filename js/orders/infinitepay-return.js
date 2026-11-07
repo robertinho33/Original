@@ -23,6 +23,7 @@ async function confirm() {
         if (result.paymentStatus === 'paid') {
             message('Pagamento confirmado. Atualize a consulta do pedido para ver o status.');
             sessionStorage.removeItem('fios-infinitepay-pending'); sessionStorage.removeItem('fios-infinitepay-attempt');
+            try { localStorage.removeItem('fios-infinitepay-pending'); } catch {}
             location.reload();
         } else message('O pagamento ainda não foi confirmado. Consulte novamente em instantes.');
     } catch (err) {
@@ -40,8 +41,13 @@ if (params.get('infinitepay_return') === '1' && /^[a-f0-9]{64}$/i.test(token || 
 document.addEventListener('nefer:tracking-loaded', event => {
     document.getElementById('infinitepayResume')?.remove();
     const order = event.detail;
-    if (order.paymentProvider !== 'infinitepay' || order.paymentStatus !== 'pending') return;
-    const button = document.createElement('button'); button.id = 'infinitepayResume'; button.type = 'button'; button.textContent = 'Continuar pagamento na InfinitePay';
+    if (order.paymentProvider !== 'infinitepay') return;
+    if (order.paymentStatus === 'paid') {
+        try { const saved=JSON.parse(localStorage.getItem('fios-infinitepay-pending')||'null'); if(saved?.trackingToken===order.trackingToken){localStorage.removeItem('fios-infinitepay-pending');sessionStorage.removeItem('fios-infinitepay-pending');sessionStorage.removeItem('fios-infinitepay-attempt');} } catch {}
+        document.getElementById('savedPurchase')?.remove();
+    }
+    if (order.paymentStatus !== 'pending') return;
+    const button = document.createElement('button'); button.id = 'infinitepayResume'; button.type = 'button'; button.className = 'btn btn-primary'; button.textContent = 'Continuar pagamento · Pix ou cartão';
     button.addEventListener('click', async () => {
         button.disabled = true;
         try {

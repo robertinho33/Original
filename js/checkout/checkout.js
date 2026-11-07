@@ -1,3 +1,4 @@
+import '../marketing/flash-policy.js';
 import { configureInfinitePay, startInfinitePay } from './infinitepay-checkout.js';
 import { ORDER_STATUS } from '../orders/order-status.js';
 import { installProductImageFallbacks } from '../catalog/image-fallback.js';
@@ -49,6 +50,8 @@ let products = [];
 let cart = [];
 let submitting = false;
 let appliedCoupon = null;
+let flashCampaign = null;
+let flashTimer = null;
 /* =========================================================
    ELEMENTOS
    ========================================================= */
@@ -839,43 +842,32 @@ async function configureShippingAvailability() {
 }
 
 
-function getDiscount(subtotal) {
-
-    if (!appliedCoupon) {
-        return 0;
-    }
-
-    const base = Number(subtotal) || 0;
-    const value = Number(
-        appliedCoupon.value ??
-        appliedCoupon.discount ??
-        0
-    ) || 0;
-
-    let discount = 0;
-
-    if (
-        appliedCoupon.type ===
-        'percentage'
-    ) {
-        discount =
-            base *
-            value /
-            100;
-    } else {
-        discount = Math.min(
-            base,
-            value
-        );
-    }
-
-    return Number(
-        Math.max(
-            0,
-            discount
-        ).toFixed(2)
-    );
+function getPricing() {
+    return globalThis.FlashOfferPolicy.calculate(getCartItems().map(item => ({sku:item.sku,quantity:item.quantity,unitPrice:item.product.price})), appliedCoupon, flashCampaign);
 }
+function getDiscount(subtotal) { return getPricing().discount; }
+
+async function loadFlashOffer() {
+    const response = await fetch('/api/storefront/hero', {cache:'no-store',headers:{Accept:'application/json'}});
+    if (!response.ok) throw new Error('Não foi possível conferir as ofertas. Atualize a página antes de pagar.');
+    const result = await response.json();
+    flashCampaign = result.data;
+    if (!globalThis.FlashOfferPolicy.active(flashCampaign)) return;
+    const matching = cart.filter(item => item.sku === flashCampaign.flashSku);
+    if (matching.reduce((sum,item)=>sum+item.quantity,0)>1) {
+        let kept = false;
+        cart = cart.filter(item=>{if(item.sku!==flashCampaign.flashSku)return true;if(kept)return false;item.quantity=1;kept=true;return true;});
+        localStorage.setItem(CART_STORAGE_KEY,JSON.stringify(cart));
+        showMessage('A promoção relâmpago permite uma unidade por cliente. A quantidade foi ajustada para 1.');
+    }
+    flashTimer = setInterval(()=>{
+        if (!globalThis.FlashOfferPolicy.active(flashCampaign)) {
+            clearInterval(flashTimer);flashCampaign=null;renderCart();
+            showMessage('A promoção relâmpago terminou. Confira os valores atualizados antes de pagar.');
+        }
+    },1000);
+}
+window.addEventListener('pagehide',()=>clearInterval(flashTimer),{once:true});
 
 
 function getTotal() {
@@ -921,6 +913,14 @@ function formatCep(value) {
    ========================================================= */
 
 function renderCart() {
+    const promo = getPricing();
+    let notice = document.getElementById('flashOfferNotice');
+    if (!notice && elements.couponMessage) {
+        notice = document.createElement('p');notice.id='flashOfferNotice';notice.setAttribute('role','status');elements.couponMessage.after(notice);
+    }
+    if(notice){notice.hidden=!promo.promotionalQuantity;notice.textContent=`Promoção relâmpago: ${formatCurrency(promo.promotionDiscount)} de desconto. Limite de 1 unidade por cliente (e-mail e telefone). O cupom indica o parceiro e mantém a comissão, sem desconto extra neste produto.`;}
+    if(appliedCoupon&&elements.couponMessage){elements.couponMessage.textContent=promo.promotionalQuantity?`Cupom ${appliedCoupon.code} registrado para ${appliedCoupon.affiliateName||'o parceiro'}. Desconto do cupom somente nos demais produtos.`:`Cupom ${appliedCoupon.code} aplicado.`;}
+
 
     if (!elements.checkoutItems) {
         return;
@@ -1489,6 +1489,7 @@ function getPaymentMethod() {
    ========================================================= */
 
 function createOrder() {
+    if(getPricing().promotionalQuantity>1)throw new Error('A promoção relâmpago permite apenas uma unidade por cliente.');
     if (getDeliveryMethod() === 'delivery' && (!selectedShipping || shippingDestination !== onlyDigits(elements.cep.value))) {
         throw new Error(shippingQuoteError || 'Calcule a entrega e selecione uma opção dos Correios antes de confirmar.');
     }
@@ -1595,6 +1596,7 @@ function createOrder() {
         })),
 
         subtotal,
+        flashOfferId: getPricing().promotionalQuantity ? flashCampaign.offerId : null,
         shippingSelection: getDeliveryMethod() === 'delivery' ? { code: selectedShipping.code, cost: selectedShipping.cost } : null,
 
         discount,
@@ -2201,6 +2203,7 @@ async function init() {
 
 
         products = await loadProducts();
+        await loadFlashOffer();
 
         cart =
             cart

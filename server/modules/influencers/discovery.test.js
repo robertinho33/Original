@@ -92,3 +92,18 @@ test('ritual rejects malformed input, unavailable stock and unreviewed products;
   assert.equal(result.total,40.01);assert.equal(result.products.length,3);assert.ok(!result.products.some(p=>p.sku==='UNREVIEWED'));
   assert.ok(result.products.every(p=>!('stock' in p)&&!('specificity' in p)));
 });
+
+test('home directory exposes only active published stores with valid coupons and no private contact fields',async()=>{
+ const records={
+  'influencers/one':{active:true,email:'PRIVATE',phone:'SECRET'},
+  'influencers/inactive':{active:false},'influencers/noCoupon':{active:true},
+  'influencerPublicStores/one':{enabled:true,name:'Ana',image:'https://example.test/ana.jpg',coupon:'ANA',skus:['SH'],email:'PRIVATE'},
+  'influencerPublicStores/inactive':{enabled:true,name:'Off',coupon:'ANA',skus:['SH']},
+  'influencerPublicStores/noCoupon':{enabled:true,name:'Sem cupom',coupon:'MISSING',skus:['SH']},
+  'settings/influencerFeatureRollout':{enabled:true,defaults:{followers:true}}
+ };
+ function collection(name){const query={doc:id=>({get:async()=>({exists:!!records[name+'/'+id],data:()=>records[name+'/'+id]})}),where:()=>query,limit:()=>query,get:async()=>({docs:name==='coupons'?[{data:()=>({code:'ANA',influencerId:'one',active:true})}]:Object.entries(records).filter(([key])=>key.startsWith(name+'/')).map(([key,value])=>({id:key.slice(name.length+1),data:()=>value}))})};return query;}
+ const directory=require('./public-directory').createDirectory({getDb:()=>({collection}),getCatalog:async()=>catalog});
+ const rows=await directory();assert.equal(rows.length,1);assert.equal(rows[0].name,'Ana');assert.equal(rows[0].canFollow,true);assert.match(rows[0].url,/loja=one$/);
+ assert.deepEqual(Object.keys(rows[0]).sort(),['canFollow','image','name','url']);assert.ok(!JSON.stringify(rows).includes('PRIVATE'));assert.ok(!JSON.stringify(rows).includes('SECRET'));
+});

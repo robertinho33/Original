@@ -4,3 +4,10 @@
 @media(max-width:850px){.visitor-paths-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.partner-paths{grid-template-columns:1fr}.visitor-nav{gap:4px 8px;padding:10px 16px}.visitor-nav>a{font-size:13px;padding:8px 12px}.topbar>.visitor-nav{justify-content:flex-start;gap:4px 8px}.visitor-paths{padding:0 20px}.visitor-paths a{padding:18px;min-height:145px}}
 @media(max-width:650px){.topbar{position:static}.visitor-nav{justify-content:flex-start}.topbar>.visitor-nav>a{font-size:12px;min-height:44px;padding:8px 10px}.visitor-paths-grid{gap:10px}.visitor-paths a{min-height:165px;padding:16px}.visitor-paths strong{font-size:14px}.visitor-paths small{font-size:12px}.visitor-paths h2{font-size:26px}.partner-paths article{padding:22px}html{scroll-padding-top:24px}}
 .hero #heroInfluencerButton{margin-left:12px;background:transparent;color:#254b38;border:1px solid #9caf96}.hero #heroInfluencerButton:hover{background:#edf4eb}.hero .visitor-buy{border:1px solid #254b38}@media(max-width:650px){.hero .visitor-buy,.hero #heroInfluencerButton{display:inline-flex;margin:8px 0 0;width:100%;justify-content:space-between}}
+
+.partner-paths .partner-promise{flex:0;font-size:18px;line-height:1.5;font-weight:700;color:#254b38;margin:0 0 12px}
+.visitor-nav>.portal-access{background:#254b38;color:#fff}.visitor-nav>.portal-access:hover{background:#365d46;color:#fff}.visitor-nav>.portal-access[aria-current]{background:#e6efe3;color:#254b38}
+
+/* Keep the current destination accessible without changing its button style. */
+.visitor-nav>a[aria-current]:not(.portal-access),.topbar>.visitor-nav>a[aria-current]:not(.portal-access){background:transparent;color:#254b38;font-weight:500;border-bottom:0}
+.visitor-nav>a[aria-current]:not(.portal-access):hover{background:#edf4eb}

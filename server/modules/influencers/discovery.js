@@ -55,19 +55,19 @@ function createRouter(deps={}){
   const router=express.Router(),db=deps.getDb||getFirestore,getCatalog=deps.getCatalog||publicCatalog;
   const requests=new Map();
   router.use((req,res,next)=>{
-    res.set('Cache-Control','no-store');const now=Date.now(),id=req.ip||'local';
+    res.set('Cache-Control','no-store');const now=Date.now(),photoRequest=req.path.startsWith('/profile-photo/'),id=(req.ip||'local')+(photoRequest?':photos':':api');
     if(requests.size>5000)for(const [key,value] of requests)if(value.until<now)requests.delete(key);
     const previous=requests.get(id),entry=previous?.until>now?previous:{count:0,until:now+60000};entry.count++;requests.set(id,entry);
-    if(entry.count>30)return res.status(429).json({success:false,error:'Aguarde um minuto antes de consultar novamente.'});next();
+    if(entry.count>(photoRequest?120:30))return res.status(429).json({success:false,error:'Aguarde um minuto antes de consultar novamente.'});next();
   });
+  router.get('/profile-photo/:id',require('./profile-photo').createPhotoHandler({getDb:db,fetchImpl:deps.fetchImpl||fetch}));
   const directory=require('./public-directory').createDirectory({getDb:db,getCatalog});
-  router.get('/influencers',async(req,res)=>{try{
-    res.json({success:true,data:await directory()});
-  }catch{res.status(503).json({success:false,error:'Não foi possível carregar os influenciadores agora.'});}});
+  router.get('/influencers',async(req,res)=>{try{res.json({success:true,data:await directory()});}catch{res.status(503).json({success:false,error:'Não foi possível carregar os influenciadores agora.'});}});
   router.get('/stores/:id',async(req,res)=>{try{
     const id=text(req.params.id,100),[store,person,catalog]=await Promise.all([db().collection('influencerPublicStores').doc(id).get(),db().collection('influencers').doc(id).get(),getCatalog()]);
     if(!store.exists||!person.exists||person.data().active===false||!store.data().enabled)return res.status(404).json({success:false,error:'Esta vitrine não está disponível.'});
     const config=normalizeStore(store.data()),coupon=await validCoupon(db(),config.coupon,id);
+    config.image=require('./profile-photo').profilePhoto(id,config.image);
     if(!coupon)return res.status(404).json({success:false,error:'Esta vitrine está temporariamente indisponível.'});
     res.json({success:true,data:{...projectStore(config,catalog,coupon),features:await require('./feature-access').getAccess(db(),id)}});
   }catch{res.status(503).json({success:false,error:'Não foi possível carregar esta vitrine.'});}});
@@ -96,12 +96,12 @@ function admin(kind,write=false){return async(req,res)=>{
       }
       return res.json({success:true,data,catalog:catalog.map(productView),...(publication?{publication}:{})});
     }
-    let data,personData,verifiedCoupon;
-    try{data=kind==='store'?normalizeStore(req.body):normalizeRules(req.body);
+    let data,personData,verifiedCoupon,preparedPhoto;
+    try{let body=req.body;if(kind==='store'){const previous=await ref.get();if(body.image!==(previous.exists?previous.data().image:undefined)){preparedPhoto=await require('./profile-photo').preparePhoto(id,body.image);body={...body,image:preparedPhoto.image};}}data=kind==='store'?normalizeStore(body):normalizeRules(body);
       const skus=kind==='store'?data.skus:data.rules.map(r=>r.sku);if(data.enabled&&skus.some(sku=>!catalog.some(p=>key(p.sku)===key(sku))))throw Error('Escolha produtos visíveis e disponíveis no catálogo.');
       if(kind==='store'){const person=await db.collection('influencers').doc(id).get();if(!person.exists||(data.enabled&&person.data().active===false))throw Error('O influenciador precisa estar ativo.');personData=person.data();verifiedCoupon=await validCoupon(db,data.coupon,id);if(data.enabled&&!verifiedCoupon)throw Error('O cupom precisa estar ativo e vinculado a este influenciador.');}
     }catch(error){return res.status(400).json({success:false,error:error.message});}
-    await ref.set({...data,...(kind==='store'?{selectionRevision:require('node:crypto').randomBytes(16).toString('hex')} : {}),updatedAt:new Date().toISOString(),updatedBy:req.admin.uid||req.admin.email||'admin'});res.json({success:true,data,...(kind==='store'?{publication:storePublication(data,personData,verifiedCoupon)}:{})});
+    const updated={...data,...(kind==='store'?{selectionRevision:require('node:crypto').randomBytes(16).toString('hex')} : {}),updatedAt:new Date().toISOString(),updatedBy:req.admin.uid||req.admin.email||'admin'};if(preparedPhoto?.photo){await db.runTransaction(async tx=>{tx.set(ref,updated);tx.set(db.collection('influencerProfilePhotos').doc(id),preparedPhoto.photo);});}else{await ref.set(updated);}res.json({success:true,data,...(kind==='store'?{publication:storePublication(data,personData,verifiedCoupon)}:{})});
   }catch{res.status(503).json({success:false,error:'Não foi possível acessar a configuração.'});}
 };}
 module.exports={createRouter,admin,normalizeRules,recommend,normalizeStore,projectStore,storePublication,publicCatalog,validCoupon,productView};

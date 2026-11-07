@@ -6,9 +6,11 @@ const { createRouter } = require('./infinitepay-routes');
 
 const configuration = () => ({ enabled: true, handle: 'loja-teste', key: 'secret-test',
   store: 'https://store.test', webhook: 'https://api.test/api/payments/infinitepay/webhook' });
-function fixture() {
+function fixture(flash = false) {
   const records = new Map();
-  const ref = key => ({ key, get: async () => snapshot(key), update: async patch => update({ key }, patch) });
+  const campaign={offerId:'12345678-1234-4234-8234-123456789abc',flashSku:'REAL',discountPercent:30,status:'active',endsAt:new Date(Date.now()+600000).toISOString()};
+  if(flash)records.set('settings/storefrontHero',campaign);
+  const ref = key => ({ key, id:key.split('/').at(-1), get: async () => snapshot(key), update: async patch => update({ key }, patch) });
   const snapshot = key => ({ exists: records.has(key), data: () => structuredClone(records.get(key)) });
   function set(reference, data, options = {}) { records.set(reference.key, { ...(options.merge ? records.get(reference.key) : {}), ...structuredClone(data) }); }
   function update(reference, patch) {
@@ -23,17 +25,18 @@ function fixture() {
     get: reference => reference.get(), set, update, create: (reference, data) => {
       assert.equal(records.has(reference.key), false); set(reference, data);
     } }) };
-  let links = 0, commits = 0, reserves = 0, uncertain = false;
+  let links = 0, commits = 0, reserves = 0, uncertain = false, syncs = 0;
   let payment = { success: true, paid: true, amount: 7990, paid_amount: 7990, capture_method: 'pix' };
   const router = createRouter({ configuration, getDb: () => db,
-    buildOrder: async payload => ({ customer: payload.customer, items: [{ sku: 'REAL', quantity: 1, unitPrice: 79.9 }],
-      totals: { total: 79.9 }, status: 'pending', createdAt: new Date().toISOString() }),
+    buildOrder: async payload => ({ customer: payload.customer, items: [{ sku: 'REAL', quantity: 1, unitPrice: flash ? 100 : 79.9 }],
+      ...(flash ? {flashOffer:{id:campaign.offerId,sku:campaign.flashSku},coupon:{code:'PARTNER',influencerId:'partner',commission:12}} : {}),
+      totals: flash ? {subtotal:100,promotionDiscount:30,couponDiscount:0,discount:30,total:70} : { total: 79.9 }, status: 'pending', createdAt: new Date().toISOString() }),
     stock: { aggregateItems: items => items, prepareReservation: async () => [], reserveInTransaction: async () => { reserves++; return { status: 'reserved' }; } },
     commitStock: async () => { commits++; return { stockCommitted: true, 'stock.status': 'committed' }; },
-    notify: async () => {}, invalidate: () => {},
+    notify: async () => {}, syncCommissions:async()=>{syncs++;}, invalidate: () => {},
     request: async (cfg, path, body) => {
       if (path === '/links') {
-        links++; assert.equal(body.items[0].price, 7990); assert.equal(body.options.single_payment, true);
+        links++; assert.equal(body.items[0].price, flash ? 7000 : 7990); assert.equal(body.options.single_payment, true);
         assert.deepEqual(body.webhook, { url: configuration().webhook, events: ['paid'] });
         assert.ok(Date.parse(body.options.valid_until) > Date.now());
         if (uncertain) throw Error('network timeout');
@@ -51,7 +54,7 @@ function fixture() {
   }
   const payload = { checkoutAttemptId: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', items: [{ sku: 'REAL', quantity: 1 }],
     customer: { name: 'Teste' }, total: 0.01, discount: 9999 };
-  return { records, post, payload, stats: () => ({ links, commits, reserves }),
+  return { records, post, payload, syncs:()=>syncs, stats: () => ({ links, commits, reserves }),
     payment: value => { payment = value; }, uncertain: () => { uncertain = true; } };
 }
 test('provider: disabled by default, HTTPS, cents, secret only in request header', async () => {
@@ -141,11 +144,11 @@ test('browser redirects only to InfinitePay, preserves cart and stores no custom
   const vm = require('node:vm');
   const fs = require('node:fs');
   const path = require('node:path');
-  const values = new Map(), calls = [], redirects = [];
+  const values = new Map(), persistent = new Map(), calls = [], redirects = [];
   const storage = { getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) };
   const data = { checkoutUrl: 'https://checkout.infinitepay.io/loja/test', orderNumber: 'AUR-AAAAAAAAAAAAAAAA', trackingToken: 'a'.repeat(64) };
   const context = { location: { hostname: 'localhost', assign: url => redirects.push(url) },
-    sessionStorage: storage, document: { querySelector: () => null },
+    sessionStorage: storage, localStorage:{getItem:key=>persistent.get(key)||null,setItem:(key,value)=>persistent.set(key,value),removeItem:key=>persistent.delete(key)}, document: { querySelector: () => null },
     crypto: require('node:crypto').webcrypto, TextEncoder, Uint8Array, URL, AbortSignal,
     fetch: async (url, options) => {
       calls.push({ url, body: JSON.parse(options.body) });
@@ -157,6 +160,11 @@ test('browser redirects only to InfinitePay, preserves cart and stores no custom
     delivery: { method: 'pickup' }, payment: { method: 'infinitepay' } };
   await context.start(order);
   assert.equal(redirects[0], data.checkoutUrl);
+  const saved=JSON.parse(persistent.get('fios-infinitepay-pending'));
+  assert.deepEqual(Object.keys(saved).sort(),['orderNumber','savedAt','trackingToken']);
+  assert.equal(saved.trackingToken,data.trackingToken);assert.ok(Date.now()-saved.savedAt<1000);
+  assert.ok(!JSON.stringify([...persistent.values()]).includes('Private Customer'));
+  assert.ok(!JSON.stringify([...persistent.values()]).includes('private@example.test'));
   assert.ok(!JSON.stringify([...values.values()]).includes('Private Customer'));
   assert.ok(!JSON.stringify([...values.values()]).includes('private@example.test'));
   assert.equal(calls[0].body.items[0].unitPrice, undefined);
@@ -208,10 +216,22 @@ test('changed form recovers stale attempts, but never rotates an existing or unv
     vm.runInNewContext(source + '\nglobalThis.start = startInfinitePay;', context);
     const operation = () => context.start({ items: [{ sku: 'REAL', quantity: 1 }], customer: { name: 'Changed' }, delivery: { method: 'pickup' } });
     if (state === 'empty') {
-      await operation(); assert.equal(redirects[0], data.checkoutUrl); assert.equal(calls.length, 2);
+      await operation(); assert.equal(redirects[0], data.checkoutUrl);
+ assert.equal(calls.length, 2);
     } else {
       await assert.rejects(operation()); assert.equal(calls.length, 1); assert.equal(redirects.length, 0);
       assert.equal(JSON.parse(values.get('fios-infinitepay-attempt')).id, oldId);
     }
   }
+});
+
+test('flash checkout claims one unit across attempts and reconciles the partner only after verified payment',async()=>{
+ const f=fixture(true),payload={...f.payload,customer:{name:'Cliente',email:'cliente@example.test',phone:'11988887777'}};
+ const first=await f.post('/checkout',payload);assert.equal(first.status,200);assert.equal(f.syncs(),0);
+ const duplicate=await f.post('/checkout',{...payload,checkoutAttemptId:'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb'});assert.equal(duplicate.status,409);assert.match(duplicate.data.message,/já possui/);assert.equal(f.stats().links,1);
+ assert.equal((await f.post('/checkout',payload)).data.data.orderNumber,first.data.data.orderNumber);
+ const saved=f.records.get('orders/'+first.data.data.orderNumber);assert.equal(saved.totals.total,70);assert.equal(saved.coupon.influencerId,'partner');assert.equal(saved.totals.couponDiscount,0);
+ f.payment({success:true,paid:true,amount:7000,paid_amount:7000,capture_method:'pix'});
+ const event={order_nsu:saved.orderNumber,transaction_nsu:'tx-flash',slug:'invoice',token:saved.publicTrackingToken};assert.equal((await f.post('/confirm',event)).status,200);assert.equal(f.syncs(),1);
+ assert.equal((await f.post('/checkout',{...payload,checkoutAttemptId:'cccccccc-cccc-4ccc-cccc-cccccccccccc'})).status,409);
 });
