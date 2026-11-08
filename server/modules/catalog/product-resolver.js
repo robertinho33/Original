@@ -146,6 +146,7 @@ async function resolveProduct(sku, quantity) {
       product.Produto ??
       product.produto ??
       '',
+    image: product.image || product.imageUrl || product.imagem || "",
     quantity,
     unitPrice,
     stock

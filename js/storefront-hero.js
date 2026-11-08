@@ -1,3 +1,5 @@
+import { flashUrl, offerPricing } from './marketing/flash-display.js';
+
 const apiRoot = window.location.protocol === 'file:'
     ? 'http://localhost:3000'
     : '';
@@ -10,8 +12,8 @@ function startOffer(campaign, reset) {
     const card = offer?.closest('.hero-card');
     const end = Date.parse(campaign.endsAt);
     const discount = Number(campaign.discountPercent);
-    const pricing = campaign.offerPricing;
-    const href = '/index.html?' + new URLSearchParams({ search: campaign.flashSku }) + '#colecao';
+    const pricing = offerPricing(campaign);
+    const href = flashUrl;
     const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
     if (!offer || !campaign.flashSku || !pricing || !Number.isFinite(end) || !(discount > 0 && discount <= 100) || end <= Date.now()) return;
     offer.href = href;

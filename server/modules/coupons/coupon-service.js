@@ -54,16 +54,10 @@ async function validateCoupon(code) {
 
   const uses = Number(coupon.uses || 0);
 
-  const usageLimit =
-    coupon.usageLimit === null ||
-    coupon.usageLimit === undefined ||
-    coupon.usageLimit === ''
-      ? null
-      : Number(coupon.usageLimit);
-
+  const usageLimit = Number(coupon.usageLimit);
   if (
-    usageLimit !== null &&
-    Number.isFinite(usageLimit) &&
+    Number.isInteger(usageLimit) &&
+    usageLimit > 0 &&
     uses >= usageLimit
   ) {
     return {

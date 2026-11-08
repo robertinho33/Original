@@ -2753,7 +2753,7 @@ function openCouponEditor(coupon = null) {
                                 String(
                                     couponValue(
                                         coupon || {}
-                                    )
+                                    ) || '*'
                                 )
                             )}"
                         >
@@ -2797,9 +2797,9 @@ function openCouponEditor(coupon = null) {
 
                         <input
                             id="coupon-usage-limit"
-                            type="number"
-                            min="0"
-                            step="1"
+                            type="text"
+                            pattern="[*]|[0-9]+"
+                            required
                             value="${escapeHtml(
                                 String(
                                     couponUsageLimit(
@@ -2810,7 +2810,7 @@ function openCouponEditor(coupon = null) {
                         >
 
                         <small>
-                            0 = uso ilimitado
+                            * = uso ilimitado
                         </small>
 
                     </label>
@@ -3118,21 +3118,7 @@ function openCouponEditor(coupon = null) {
                 );
 
 
-            const usageLimit =
-                Math.max(
-                    0,
-                    Math.trunc(
-                        Number(
-                            modal
-                                .querySelector(
-                                    '#coupon-usage-limit'
-                                )
-                                ?.value ||
-                            0
-                        )
-                    )
-                );
-
+            const usageLimit = modal.querySelector('#coupon-usage-limit').value.trim();
 
             const active =
                 modal

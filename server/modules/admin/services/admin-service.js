@@ -18,6 +18,16 @@ const { createPublishedJsonReader } = require('../../../infrastructure/published
 const readCatalog = createPublishedJsonReader(resolve(process.cwd(), 'data/catalog/catalog-runtime.json'));
 const readManifest = createPublishedJsonReader(resolve(process.cwd(), 'data/catalog/manifests/catalog-sources.json'));
 
+function parseUsageLimit(value) {
+    const raw = String(value ?? '').trim();
+    if (raw === '*' || raw === '') return 0;
+    const limit = Number(raw);
+    if (!/^\d+$/.test(raw) || !Number.isSafeInteger(limit) || limit > 2147483647) {
+        throw Object.assign(new Error('Informe * para uso ilimitado ou um número inteiro de usos.'), { status: 400 });
+    }
+    return limit;
+}
+
 function db() {
     return getFirestore();
 }
@@ -305,11 +315,7 @@ async function createCoupon(data = {}) {
                     ? "inactive"
                     : "active",
         uses: Number(data.uses || 0),
-        usageLimit:
-            data.usageLimit === "" ||
-            data.usageLimit == null
-                ? null
-                : Number(data.usageLimit),
+        usageLimit: parseUsageLimit(data.usageLimit),
         expiresAt:
             data.expiresAt ||
             data.expires_at ||
@@ -407,18 +413,7 @@ async function updateCoupon(id, data = {}) {
                 current.uses ??
                 0
             ),
-        usageLimit:
-            data.usageLimit !== undefined
-                ? (
-                    data.usageLimit === ""
-                        ? null
-                        : Number(data.usageLimit)
-                )
-                : (
-                    current.usageLimit ??
-                    current.usage_limit ??
-                    null
-                ),
+        usageLimit: parseUsageLimit(data.usageLimit !== undefined ? data.usageLimit : current.usageLimit ?? current.usage_limit),
         expiresAt:
             data.expiresAt !== undefined
                 ? data.expiresAt

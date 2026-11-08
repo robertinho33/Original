@@ -3,7 +3,7 @@
     function active(campaign,now=Date.now()) {
         const end=Date.parse(campaign?.endsAt),start=campaign?.startsAt?Date.parse(campaign.startsAt):null;
         const percent=Number(campaign?.discountPercent);
-        return Boolean(campaign?.offerId&&campaign?.flashSku&&campaign.status==='active'&&Number.isFinite(end)&&end>now&&(!start||start<=now)&&percent>0&&percent<=100);
+        return Boolean(campaign?.offerId&&campaign?.flashSku&&campaign.status==='active'&&Number.isFinite(end)&&end>now&&(start===null||(Number.isFinite(start)&&start<=now))&&percent>0&&percent<=100);
     }
     function calculate(items,coupon,campaign,now=Date.now()) {
         const enabled=active(campaign,now),sku=String(campaign?.flashSku||'').trim();

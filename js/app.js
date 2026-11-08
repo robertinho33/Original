@@ -23,6 +23,34 @@ const partnerCode = (new URLSearchParams(location.search).get('cupom') || '').sl
 if (partnerCode) for (const link of document.querySelectorAll('a[href="/pages/monte-seu-ritual.html"]')) link.href='/pages/monte-seu-ritual.html?cupom='+encodeURIComponent(partnerCode);
 const CATALOG_PAGE_SIZE = 24;
 
+import { flashUrl, offerPricing, priceMarkup } from './marketing/flash-display.js';
+
+let flashCampaign = null;
+function storefrontPrice(product) {
+    const offer = String(product.sku) === flashCampaign?.flashSku && offerPricing(flashCampaign);
+    return offer ? priceMarkup(offer) + `<a class="flash-link" href="${flashUrl}">Ver promoção relâmpago ↗</a>`
+        : `<span class="price">${formatCurrency(product.price)}</span>`;
+}
+async function loadStorefrontOffer() {
+    try {
+        const response = await fetch('/api/storefront/hero', { cache: 'no-store' });
+        if (!response.ok) return;
+        flashCampaign = (await response.json()).data;
+        if (!offerPricing(flashCampaign)) return;
+        const refresh = () => { void renderCatalog(); renderStoreHighlights(); };
+        refresh();
+        const expire = () => {
+            if (offerPricing(flashCampaign)) return;
+            clearInterval(timer);
+            flashCampaign = null;
+            refresh();
+        };
+        const timer = setInterval(expire, 1000);
+        window.addEventListener('pageshow', expire);
+    } catch { /* Regular catalog stays available. */ }
+}
+void loadStorefrontOffer();
+
 let catalogProducts = [];
 let catalogSources = [];
 
@@ -684,11 +712,7 @@ async function renderCatalog() {
                             ${stock}
 
                             <div class="product-bottom">
-                                <span class="price">
-                                    ${formatCurrency(
-                                        product.price
-                                    )}
-                                </span>
+                                ${storefrontPrice(product)}
 
                                 <button
                                     class="add"
@@ -1571,7 +1595,7 @@ function renderStoreHighlights(){
   const eligible=catalogProducts.filter(p=>p.active!==false&&!/^INATIVO\b/i.test(p.name||'')&&p.image&&Number(p.stock)>0&&Number(p.price)>0).sort((a,b)=>Number(b.featured)-Number(a.featured)||(Number(b.priority)||0)-(Number(a.priority)||0));
   const brands=[...new Set(eligible.map(p=>p.sourceId||''))],picks=[];
   for(let index=0;picks.length<8&&index<eligible.length;index++){for(const brand of brands){const product=eligible.filter(p=>(p.sourceId||'')===brand)[index];if(product)picks.push(product);if(picks.length===8)break;}}
-  target.innerHTML=picks.map(p=>`<article class="store-highlight-card"><button type="button" class="store-highlight-visual" data-featured-detail="${escapeAttribute(p.sku)}" aria-label="Ver detalhes de ${escapeAttribute(p.name)}"><img src="${escapeAttribute(p.image)}" alt="${escapeAttribute(p.name)}" class="product-image" width="240" height="240" loading="lazy" decoding="async"></button><div><small>${escapeHTML(p.sourceName||'Fios Perfeitos')}</small><h3>${escapeHTML(p.name)}</h3>${productReactionMarkup(p.sku)}<strong>${formatCurrency(p.price)}</strong><button type="button" data-featured-add="${escapeAttribute(p.sku)}" aria-label="Adicionar ${escapeAttribute(p.name)} à sacola">Adicionar à sacola</button></div></article>`).join('')||'<p>Explore todos os produtos abaixo.</p>';target.setAttribute('aria-busy','false');void hydrateProductReactions(target);
+  target.innerHTML=picks.map(p=>`<article class="store-highlight-card"><button type="button" class="store-highlight-visual" data-featured-detail="${escapeAttribute(p.sku)}" aria-label="Ver detalhes de ${escapeAttribute(p.name)}"><img src="${escapeAttribute(p.image)}" alt="${escapeAttribute(p.name)}" class="product-image" width="240" height="240" loading="lazy" decoding="async"></button><div><small>${escapeHTML(p.sourceName||'Fios Perfeitos')}</small><h3>${escapeHTML(p.name)}</h3>${productReactionMarkup(p.sku)}${storefrontPrice(p)}<button type="button" data-featured-add="${escapeAttribute(p.sku)}" aria-label="Adicionar ${escapeAttribute(p.name)} à sacola">Adicionar à sacola</button></div></article>`).join('')||'<p>Explore todos os produtos abaixo.</p>';target.setAttribute('aria-busy','false');void hydrateProductReactions(target);
 }
 document.addEventListener('click',event=>{
   const query=event.target.closest('[data-store-query]');

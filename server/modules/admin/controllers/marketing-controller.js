@@ -40,6 +40,7 @@ async function publicHero(req, res) {
                 if (savingsCents > 0) {
                     data.offerPricing = {
                         name: product.name,
+                        image: product.image,
                         originalCents,
                         priceCents: originalCents - savingsCents,
                         savingsCents
@@ -49,7 +50,7 @@ async function publicHero(req, res) {
                 // The campaign banner can still load when the product is unavailable.
             }
         }
-        res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+        res.set("Cache-Control", "no-store");
         res.json({ success: true, data });
     } catch (error) {
         console.error("[STOREFRONT HERO]", error);

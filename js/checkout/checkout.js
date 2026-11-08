@@ -1,3 +1,4 @@
+import { flashUrl, priceMarkup } from '../marketing/flash-display.js';
 import '../marketing/flash-policy.js';
 import { configureInfinitePay, startInfinitePay } from './infinitepay-checkout.js';
 import { ORDER_STATUS } from '../orders/order-status.js';
@@ -916,9 +917,25 @@ function renderCart() {
     const promo = getPricing();
     let notice = document.getElementById('flashOfferNotice');
     if (!notice && elements.couponMessage) {
-        notice = document.createElement('p');notice.id='flashOfferNotice';notice.setAttribute('role','status');elements.couponMessage.after(notice);
+        notice = document.createElement('div');notice.className='flash-checkout';notice.id='flashOfferNotice';notice.setAttribute('role','status');elements.couponMessage.after(notice);
     }
-    if(notice){notice.hidden=!promo.promotionalQuantity;notice.textContent=`Promoção relâmpago: ${formatCurrency(promo.promotionDiscount)} de desconto. Limite de 1 unidade por cliente (e-mail e telefone). O cupom indica o parceiro e mantém a comissão, sem desconto extra neste produto.`;}
+    if (notice) {
+        const item = promo.promotionalQuantity && getCartItems().find(row => row.sku === flashCampaign?.flashSku);
+        notice.hidden = !item;
+        if (item) {
+            const originalCents = Math.round(Number(item.product.price) * 100);
+            const savingsCents = Math.round(promo.promotionDiscount * 100);
+            notice.innerHTML = priceMarkup({
+                percent: Number(flashCampaign.discountPercent),
+                originalCents, savingsCents, priceCents: originalCents - savingsCents
+            }) + `<p>Limite de uma unidade por cliente. Cupom sem desconto extra neste item. Frete calculado à parte.</p><a class="flash-link" href="${flashUrl}">Conferir a promoção relâmpago ↗</a>`;
+            const heading = document.createElement('strong');
+            heading.textContent = 'Promoção relâmpago · ' + item.product.name;
+            notice.prepend(heading);
+        } else {
+            notice.replaceChildren();
+        }
+    }
     if(appliedCoupon&&elements.couponMessage){elements.couponMessage.textContent=promo.promotionalQuantity?`Cupom ${appliedCoupon.code} registrado para ${appliedCoupon.affiliateName||'o parceiro'}. Desconto do cupom somente nos demais produtos.`:`Cupom ${appliedCoupon.code} aplicado.`;}
 
 
@@ -990,9 +1007,9 @@ function renderCart() {
                         </div>
 
                         <div class="checkout-item-price">
-                            ${formatCurrency(
-                                item.total
-                            )}
+                            ${promo.promotionalQuantity && item.sku === flashCampaign?.flashSku
+                                ? `<small>Preço com a oferta</small> ${formatCurrency(item.total - promo.promotionDiscount)}`
+                                : formatCurrency(item.total)}
                         </div>
 
                     </div>

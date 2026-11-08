@@ -54,6 +54,7 @@
 <link rel="stylesheet" href="/css/analytics-consent.css">
 <link rel="stylesheet" href="/css/store-trust.css?v=20261104-2"><link rel="icon" type="image/svg+xml" href="/assets/brands/fp.svg?v=20261029"><link rel="alternate icon" href="/favicon.ico?v=20261029"><link rel="stylesheet" href="/css/access-and-search.css?v=20261031"><link rel="stylesheet" href="/css/visitor-navigation.css?v=20261102-2">  <link rel="stylesheet" href="/css/hero-offer.css">
   <link rel="stylesheet" href="/css/influencer-directory.css">
+  <link rel="stylesheet" href="/css/flash-offer.css">
 </head>
 
 <body>
@@ -126,15 +127,8 @@
         <a href="/pages/candidatura-influenciador.html">Quero ser influenciador ↗</a>
       </div>
       <p id="influencerDirectoryStatus" role="status">Carregando vitrines reais…</p>
-      <p id="influencerDirectoryHint">Role para o lado. Os avatares com borda tracejada são perfis fictícios de demonstração.</p>
-      <div id="influencerDirectory" class="influencer-directory-strip" tabindex="0" role="region" aria-label="Faixa de vitrines e demonstrações" aria-describedby="influencerDirectoryHint"></div>
+      <div id="influencerDirectory" class="influencer-directory-strip" tabindex="0" role="region" aria-label="Vitrines dos influenciadores"></div>
     </section>
-    <dialog id="influencerDemo" class="influencer-demo" aria-labelledby="influencerDemoTitle">
-      <p class="eyebrow">VITRINE DEMONSTRATIVA</p>
-      <h2 id="influencerDemoTitle"></h2>
-      <p>Este perfil é fictício e serve como exemplo de vitrine.</p>
-      <form method="dialog"><button type="submit">Fechar</button></form>
-    </dialog>
     <section class="store-brands" id="marcas"><div class="store-section-heading"><div><p class="eyebrow">SUAS MARCAS, SEU ESTILO</p><h2>Marcas para o cuidado do seu jeito.</h2></div><a href="#colecao">Explorar catálogo ↗</a></div><div id="catalogBrandButtons" class="catalog-brand-buttons" role="group" aria-label="Filtrar por marca"></div></section>
     <section class="store-highlights" aria-labelledby="storeHighlightsTitle"><div class="store-section-heading"><div><p class="eyebrow">UM NOVO FAVORITO TE ESPERA</p><h2 id="storeHighlightsTitle">Destaques do catálogo.</h2></div><a href="#colecao">Ver todos ↗</a></div><div id="storeHighlights" class="store-highlight-grid" aria-busy="true"></div></section>
     <section class="store-editorial-grid" aria-label="Mais formas de escolher"><a href="/pages/monte-seu-ritual.html"><small>MENOS DÚVIDA, MAIS CUIDADO</small><h2>Cuidado<br>do seu jeito.</h2><p>Conte seu objetivo e encontre uma seleção dentro do seu orçamento.</p><span>Encontrar meu cuidado ↗</span></a><button type="button" data-store-query="kit"><small>ESCOLHAS QUE SE COMPLETAM</small><h2>Seu cuidado<br>em boa companhia.</h2><p>Conheça os kits e encontre os próximos passos da sua rotina.</p><span>Explorar kits ↗</span></button></section>
@@ -283,9 +277,9 @@
 
   <script
     type="module"
-    src="js/app.js?v=20261104-2"
+    src="js/app.js?v=flash-1"
   ></script>
-  <script type="module" src="js/storefront-hero.js?v=20261107"></script>
+  <script type="module" src="js/storefront-hero.js?v=flash-1"></script>
   <script type="module" src="js/storefront-experience.js?v=20261104"></script>
 
   <!-- =====================================================
@@ -415,6 +409,6 @@
 <dialog id="shoppingWishlist" class="shopping-wishlist" aria-labelledby="shoppingWishlistTitle"><header><div><p>GUARDADOS COM CARINHO</p><h2 id="shoppingWishlistTitle">Meus desejos</h2></div><button type="button" data-close-wishes aria-label="Fechar meus desejos">×</button></header><p class="shopping-memory-note">Seus cuidados ficam guardados neste navegador. Não gera compra nem mensagens. Em aparelhos compartilhados, retire o que não quiser manter.</p><div class="shopping-tabs" role="group" aria-label="Sua seleção"><button type="button" data-shopping-tab="want" aria-pressed="true">Quero</button><button type="button" data-shopping-tab="like" aria-pressed="false">Curtidos</button></div><div id="shoppingWishlistItems"></div><p data-shopping-message role="status"></p></dialog><div id="shoppingToast" class="shopping-toast" role="status" aria-live="polite" hidden><span data-shopping-toast-text></span><button type="button">Ver meus desejos</button></div>
 <script src="js/utils/form-masks.js"></script>
 <script type="module" src="/js/analytics/store-analytics.js?v=20261104-meta"></script>
-<script type="module" src="/js/orders/pending-purchase.js?v=20261104"></script><script type="module" src="/js/influencers/public-directory.js?v=20261107"></script></body>
+<script type="module" src="/js/orders/pending-purchase.js?v=20261104"></script><script type="module" src="/js/influencers/public-directory.js?v=flash-1"></script></body>
 
 </html>

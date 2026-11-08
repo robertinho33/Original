@@ -1,14 +1,5 @@
 const directory = document.getElementById('influencerDirectory');
 const status = document.getElementById('influencerDirectoryStatus');
-const demoDialog = document.getElementById('influencerDemo');
-const demoTitle = document.getElementById('influencerDemoTitle');
-const demoProfiles = [
-    'Aurora Lunar', 'Brisa de Âmbar', 'Céu de Lavanda', 'Dália Solar', 'Estrela de Chá',
-    'Flor de Nuvem', 'Girassol Azul', 'Horizonte Rosa', 'Íris de Mel', 'Jasmim da Lua',
-    'Lótus Coral', 'Maré Lilás', 'Névoa de Seda', 'Orquídea do Vento', 'Pétala Dourada',
-    'Quartzo Verde', 'Rosa de Algodão', 'Sol de Baunilha', 'Tulipa do Mar', 'Violeta de Papel'
-];
-
 function photoFrame(name, imageUrl) {
     const frame = document.createElement('span');
     frame.className = 'influencer-photo';
@@ -45,21 +36,6 @@ function realCard(person) {
     card.append(photoFrame(person.name, photo), person.name);
     return card;
 }
-
-const demos = demoProfiles.map(name => {
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'influencer-profile influencer-profile-demo';
-    const label = document.createElement('small');
-    label.textContent = 'Perfil fictício';
-    card.append(photoFrame(name), name, label);
-    card.addEventListener('click', () => {
-        demoTitle.textContent = name;
-        demoDialog.showModal();
-    });
-    return card;
-});
-directory.append(...demos);
 
 async function loadProfiles() {
     status.textContent = 'Carregando vitrines reais…';

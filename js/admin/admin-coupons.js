@@ -417,20 +417,9 @@ function validateCoupon(data) {
         );
     }
 
-    const usageLimit =
-        Number(
-            data.usageLimit
-        ) || 0;
-
-    if (
-        !Number.isFinite(
-            usageLimit
-        ) ||
-        usageLimit < 0
-    ) {
-        throw new Error(
-            "O limite de uso não pode ser negativo."
-        );
+    const usageLimit = String(data.usageLimit ?? '*').trim();
+    if (usageLimit !== '*' && !/^\d+$/.test(usageLimit)) {
+        throw new Error('Informe * para uso ilimitado ou um número inteiro de usos.');
     }
 
     return {
@@ -1016,20 +1005,19 @@ function createModal(
                         Limite de uso
 
                         <input
-                            type="number"
+                            type="text"
                             name="usageLimit"
-                            min="0"
-                            step="1"
+                            pattern="[*]|[0-9]+"
+                            required
                             value="${escapeHtml(
                                 String(
-                                    coupon?.usageLimit ??
-                                    0
+                                    coupon?.usageLimit || '*'
                                 )
                             )}"
                         >
 
                         <small>
-                            0 = ilimitado
+                            * = ilimitado
                         </small>
                     </label>
 
@@ -1227,12 +1215,7 @@ function createModal(
                         )
                     ) || 0,
 
-                usageLimit:
-                    Number(
-                        formData.get(
-                            "usageLimit"
-                        )
-                    ) || 0,
+                usageLimit: formData.get('usageLimit'),
 
                 active:
                     formData.get(
