@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210" height="48" viewBox="0 0 210 48" role="img" aria-label="Consultar segurança no Google">
+  <rect x="0.5" y="0.5" width="209" height="47" rx="10" fill="#fff" stroke="#cbd8ce"/>
+  <path d="M24 10c4 3 8 4 12 4v9c0 7-5 12-12 15-7-3-12-8-12-15v-9c4 0 8-1 12-4z" fill="#e7f1e8" stroke="#254633" stroke-width="1.5"/>
+  <path d="m19 24 4 4 7-8" fill="none" stroke="#254633" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="46" y="21" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#254633">Consultar segurança</text>
+  <text x="46" y="36" font-family="Arial,sans-serif" font-size="11" fill="#465049">Google Safe Browsing</text>
+  <path d="M185 28l10-10m-8 0h8v8" fill="none" stroke="#254633" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

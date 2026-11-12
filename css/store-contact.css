@@ -1,0 +1,41 @@
+.store-security-check {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-block: 8px;
+}
+
+.store-security-check img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.store-whatsapp {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 19;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #176640;
+  color: #fff;
+  box-shadow: 0 4px 16px #172d2240;
+}
+
+.store-whatsapp:hover {
+  background: #104e31;
+  color: #fff;
+}
+
+.store-whatsapp:focus-visible,
+.store-security-check:focus-visible {
+  outline: 3px solid #254633;
+  outline-offset: 4px;
+}
+
+body:has(.drawer[aria-hidden="false"], .product-modal[aria-hidden="false"], dialog[open], .analytics-consent:not([hidden])) .store-whatsapp {
+  display: none;
+}
