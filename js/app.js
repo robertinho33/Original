@@ -1,6 +1,6 @@
 'use strict';
 
-import { subscribeCatalog } from './catalog/catalog-service.js?v=kits-1';
+import { subscribeCatalog } from './catalog/catalog-service.js?v=discovery-pages-1';
 import {hydrateRatings} from './catalog/product-ratings.js';
 import {productReactionMarkup,hydrateProductReactions} from './catalog/product-reactions.js';
 import {mountShoppingAffection} from './catalog/shopping-affection.js';
@@ -11,7 +11,7 @@ import {
     isCatalogKit,
     searchProducts,
     loadSources
-} from './catalog/catalog-service.js?v=kits-1';
+} from './catalog/catalog-service.js?v=discovery-pages-1';
 
 import { formatCurrency } from './utils/formatters.js';
 import { installProductImageFallbacks } from './catalog/image-fallback.js';
@@ -56,6 +56,7 @@ let catalogSources = [];
 
 let catalogPage = 1;
 let catalogCategory = 'todos';
+let kitsOnly = false;
 let catalogSourceId = 'todos';
 let catalogSearch = new URLSearchParams(location.search).get('search') || '';
 
@@ -257,7 +258,6 @@ function getCatalogCategories() {
     return [
         ...new Set(
             catalogProducts
-                .filter(isCatalogKit)
                 .map(product => product.category)
                 .filter(Boolean)
         )
@@ -329,7 +329,9 @@ async function refreshCatalog() {
 
 async function getCatalogResults() {
     const filters = {
-        kitsOnly: !catalogSearch.trim(),
+        kitsOnly,
+        featuredPages: !kitsOnly && !catalogSearch.trim() && catalogCategory === 'todos'
+            && catalogSourceId === 'todos' && catalogSort === 'priority',
         category:
             catalogCategory === 'todos'
                 ? ''
@@ -416,6 +418,7 @@ function renderFilters() {
             button.addEventListener(
                 'click',
                 () => {
+                    kitsOnly = false;
                     catalogCategory =
                         button.dataset.category ||
                         'todos';
@@ -429,18 +432,10 @@ function renderFilters() {
         });
 }
 
-function renderPagination(totalItems) {
+function renderPagination(totalPages) {
     if (!paginationEl) {
         return;
     }
-
-    const totalPages = Math.max(
-        1,
-        Math.ceil(
-            totalItems /
-            CATALOG_PAGE_SIZE
-        )
-    );
 
     if (catalogPage > totalPages) {
         catalogPage = totalPages;
@@ -735,7 +730,7 @@ async function renderCatalog() {
                 `;
             }).join('');
 
-        renderPagination(total);
+        renderPagination(result.totalPages || 1);
         void hydrateRatings(productsEl);
         void hydrateProductReactions(productsEl);
 
@@ -1356,6 +1351,7 @@ let catalogSearchTimer = 0;
 searchInputEl?.addEventListener('input', event => {
     window.clearTimeout(catalogSearchTimer);
     catalogSearchTimer = window.setTimeout(() => {
+        kitsOnly = false;
         catalogSearch = event.target.value.trim();
         catalogPage = 1;
         renderCatalog();
@@ -1602,11 +1598,11 @@ function renderStoreHighlights(){
 }
 document.addEventListener('click',event=>{
   const query=event.target.closest('[data-store-query]');
-  if(query){catalogSearch=query.dataset.storeQuery === 'kit' ? '' : query.dataset.storeQuery;catalogCategory='todos';catalogSourceId='todos';catalogPage=1;if(searchInputEl)searchInputEl.value=catalogSearch;if(sourceSelectEl)sourceSelectEl.value='todos';renderFilters();void renderCatalog();document.getElementById('colecao')?.scrollIntoView({block:'start'});}
+  if(query){kitsOnly=query.dataset.storeQuery === 'kit';catalogSearch=kitsOnly ? '' : query.dataset.storeQuery;catalogCategory='todos';catalogSourceId='todos';catalogPage=1;if(searchInputEl)searchInputEl.value=catalogSearch;if(sourceSelectEl)sourceSelectEl.value='todos';renderFilters();void renderCatalog();document.getElementById('colecao')?.scrollIntoView({block:'start'});}
   const add=event.target.closest('[data-featured-add]');if(add){addToCart(add.dataset.featuredAdd);return;}
   const detail=event.target.closest('[data-featured-detail]');if(detail)openProductModal(detail.dataset.featuredDetail,detail);
 });
-searchInputEl?.addEventListener('keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();clearTimeout(catalogSearchTimer);catalogSearch=searchInputEl.value.trim();catalogPage=1;void renderCatalog();document.getElementById('colecao')?.scrollIntoView({block:'start'});});
+searchInputEl?.addEventListener('keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();clearTimeout(catalogSearchTimer);kitsOnly=false;catalogSearch=searchInputEl.value.trim();catalogPage=1;void renderCatalog();document.getElementById('colecao')?.scrollIntoView({block:'start'});});
 
 // Keep keyboard navigation inside the open cart and restore focus on close.
 cartDrawerEl?.addEventListener('keydown', event => {

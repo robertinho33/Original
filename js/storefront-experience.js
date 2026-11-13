@@ -1,4 +1,4 @@
-import { isCatalogKit, loadProducts } from './catalog/catalog-service.js?v=kits-1';
+import { isCatalogKit, loadProducts } from './catalog/catalog-service.js?v=discovery-pages-1';
 async function populateHero() {
     const stage = document.getElementById('heroProductStage');
     if (!stage) return;

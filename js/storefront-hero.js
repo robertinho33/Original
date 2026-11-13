@@ -1,4 +1,4 @@
-import { isCatalogKit, loadProducts } from './catalog/catalog-service.js?v=kits-1';
+import { isCatalogKit, loadProducts } from './catalog/catalog-service.js?v=discovery-pages-1';
 import { flashUrl, offerPricing } from './marketing/flash-display.js';
 
 const apiRoot = window.location.protocol === 'file:'

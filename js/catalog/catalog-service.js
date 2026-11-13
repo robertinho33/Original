@@ -267,11 +267,21 @@ export function isCatalogKit(product) {
         || product.productType === 'kit' || product.recommendationProfile?.type === 'kit';
 }
 
+const discoveryOrder = new Map();
+
+function randomizeDiscovery(products) {
+    for (const product of products) {
+        if (!discoveryOrder.has(product.sku)) discoveryOrder.set(product.sku, Math.random());
+    }
+    return products.sort((a, b) => discoveryOrder.get(a.sku) - discoveryOrder.get(b.sku));
+}
+
 export async function searchProducts(
     query = '',
     {
         category = '',
         kitsOnly = false,
+        featuredPages = false,
         sourceId = '',
         page = 1,
         pageSize = 24,
@@ -360,15 +370,22 @@ export async function searchProducts(
             Number(pageSize) || 24
         );
 
-    const total =
-        sorted.length;
+    let pages;
+    if (featuredPages) {
+        const kits = sorted.filter(isCatalogKit).slice(0, safePageSize);
+        const otherProducts = randomizeDiscovery(sorted.filter(product =>
+            !isCatalogKit(product) && product.stock > 0 && product.price > 0
+        )).slice(0, 2 * safePageSize);
+        pages = [kits, otherProducts.slice(0, safePageSize), otherProducts.slice(safePageSize)]
+            .filter(items => items.length);
+    }
+
+    const total = pages ? pages.reduce((count, items) => count + items.length, 0) : sorted.length;
 
     const totalPages =
         Math.max(
             1,
-            Math.ceil(
-                total / safePageSize
-            )
+            pages ? pages.length : Math.ceil(total / safePageSize)
         );
 
     const currentPage =
@@ -382,10 +399,7 @@ export async function searchProducts(
         safePageSize;
 
     const items =
-        sorted.slice(
-            start,
-            start + safePageSize
-        );
+        pages ? pages[currentPage - 1] || [] : sorted.slice(start, start + safePageSize);
 
     return {
         items,

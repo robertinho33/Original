@@ -8,6 +8,24 @@
 .partner-paths .partner-promise{flex:0;font-size:18px;line-height:1.5;font-weight:700;color:#254b38;margin:0 0 12px}
 .visitor-nav>.portal-access{background:#254b38;color:#fff}.visitor-nav>.portal-access:hover{background:#365d46;color:#fff}.visitor-nav>.portal-access[aria-current]{background:#e6efe3;color:#254b38}
 
-/* Keep the current destination accessible without changing its button style. */
-.visitor-nav>a[aria-current]:not(.portal-access),.topbar>.visitor-nav>a[aria-current]:not(.portal-access){background:transparent;color:#254b38;font-weight:500;border-bottom:0}
-.visitor-nav>a[aria-current]:not(.portal-access):hover{background:#edf4eb}
+.visitor-nav > a {
+    border: 1px solid #aabfa4;
+    background: #f6f9f3;
+    font-weight: 600;
+}
+
+.visitor-nav > a:hover {
+    border-color: #52734e;
+    background: #edf4eb;
+}
+
+.visitor-nav > a[aria-current],
+.topbar > .visitor-nav > a[aria-current] {
+    border: 1px solid #52734e;
+    background: #e6efe3;
+    font-weight: 700;
+}
+
+.visitor-nav > .portal-access {
+    border-color: #254b38;
+}
