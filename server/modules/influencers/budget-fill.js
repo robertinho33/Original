@@ -6,4 +6,20 @@ function fillBudget(rows,capacity){
  for(const row of candidates){if(cents+row.cents>capacity)continue;selected.push(row);cents+=row.cents;}
  return {rows:selected,cents};
 }
-module.exports={fillBudget};
+// Track reachable totals in cents, using each SKU at most once.
+function closestBudget(rows,capacity){
+ const totals=new Map([[0,[]]]);
+ let best=0;
+ for(const row of rows){
+  for(const [subtotal,selected] of [...totals]){
+   const next=subtotal+row.cents;
+   if(next>capacity||totals.has(next))continue;
+   const combination=[...selected,row];
+   if(next===capacity)return {rows:combination,cents:next};
+   totals.set(next,combination);
+   best=Math.max(best,next);
+  }
+ }
+ return {rows:totals.get(best),cents:best};
+}
+module.exports={fillBudget,closestBudget};

@@ -1,5 +1,5 @@
 'use strict';
-const {fillBudget}=require('./budget-fill');
+const {fillBudget,closestBudget}=require('./budget-fill');
 const {options}=require('../../../js/product-care-profile');
 const key=v=>String(v||'').trim().toLowerCase();
 const safeImage=v=>{try{const u=new URL(v);return u.protocol==='https:'?u.href:'';}catch{return '';}};
@@ -39,12 +39,17 @@ function buildSelection(available,input){
    kit=candidate;kitGoal=goal;reserved=target;break;
   }
  }
- // Hard contract: no returned combination may begin with an individual product.
- if(!kit)return {products:[],total:0,alternatives:[],routineComplete:false,missingSteps:['wash','condition','treat','finish'],explanation:'',message:'Não encontramos um kit disponível que caiba neste valor e atenda às suas respostas. Ajuste o orçamento ou fale com a gente.'};
+ const lowBudget=budget<12000;
+ if(!kit&&!lowBudget)return {products:[],total:0,alternatives:[],routineComplete:false,missingSteps:['wash','condition','treat','finish'],explanation:'',message:'Não encontramos um kit disponível que caiba neste valor e atenda às suas respostas. Ajuste o orçamento ou fale com a gente.'};
  const excluded=new Set(kit?[key(kit.product.sku),...profile(kit).components.map(c=>key(c.sku))]:[]);
  const singles=rows.filter(r=>profile(r)?.type==='individual'&&!excluded.has(key(r.product.sku))&&r!==reserved&&matchedGoal(r));
  // Value order applies only after factual purpose and explicit restrictions are checked.
- const packed=fillBudget(singles,budget-(kit?.cents||0)-(reserved?.cents||0)),extras=[...(reserved?[reserved]:[]),...packed.rows].sort(descending),selected=kit?[kit,...extras]:extras;
+ const capacity=budget-(kit?.cents||0)-(reserved?.cents||0);
+ const compatible=singles.sort(descending);
+ const packed=lowBudget
+  ? closestBudget(!kit&&primarySingles.length?compatible.filter(r=>fits(profile(r),input)):compatible,capacity)
+  : fillBudget(compatible,capacity);
+ const extras=[...(reserved?[reserved]:[]),...packed.rows].sort(descending),selected=kit?[kit,...extras]:extras;
  const products=selected.map(row=>{
   const p=row.product,c=profile(row),limits=[],goal=row===kit?kitGoal:matchedGoal(row);
   if(c.hairScope==='unknown')limits.push('A ficha da fabricante não especifica o tipo de cabelo.');
@@ -56,12 +61,13 @@ function buildSelection(available,input){
  });
  const coverage=new Set(selected.flatMap(r=>profile(r).type==='kit'?profile(r).components.map(c=>c.step||available.get(key(c.sku))?.product.recommendationProfile?.step):[profile(r).step]));
  return {products,total:((kit?.cents||0)+(reserved?.cents||0)+packed.cents)/100,alternatives:[],routineComplete:['wash','condition','treat'].every(s=>coverage.has(s)),missingSteps:['wash','condition','treat','finish'].filter(s=>!coverage.has(s)),line:kit?profile(kit).line:'Sua seleção',
-  explanation:products.some(p=>p.matchedGoal===input.goal)?'Conheça os produtos da sua seleção. O frete é calculado ao finalizar.':'Não encontramos indicação confirmada para '+options.goals[input.goal].toLowerCase()+' neste perfil. Estas opções atendem ao cuidado adicional informado. O frete é calculado ao finalizar.',
+  explanation:products.some(p=>p.matchedGoal===input.goal)?'':'Não encontramos indicação confirmada para '+options.goals[input.goal].toLowerCase()+' neste perfil. Estas opções atendem ao cuidado adicional informado.',
   message:products.length?'Uma seleção especial para você!':'Ainda não temos opções com finalidade confirmada pela EcoBelle para estas respostas e este valor. Fale com a gente para escolher.'};
 }
 function recommendVerified(available,input){
+ const kitRequired=Number(input.budget)>=120;
  const first=buildSelection(available,input),choices=[],seen=new Set(),requireMain=first.products.some(p=>p.matchedGoal===input.goal);
- const add=option=>{if(option.products[0]?.step!=='kit'||requireMain&&!option.products.some(p=>p.matchedGoal===input.goal))return false;const signature=option.products.map(p=>key(p.sku)).sort().join('|');if(seen.has(signature))return false;seen.add(signature);choices.push({...option,alternatives:[]});return true;};
+ const add=option=>{if(!option.products.length||kitRequired&&option.products[0].step!=='kit'||requireMain&&!option.products.some(p=>p.matchedGoal===input.goal))return false;const signature=option.products.map(p=>key(p.sku)).sort().join('|');if(seen.has(signature))return false;seen.add(signature);choices.push({...option,alternatives:[]});return true;};
  add(first);if(!choices.length)return first;
  const firstHasKit=first.products[0].step==='kit',remaining=new Map(available);
  // Prefer a different complete kit for each option before varying its complements.
@@ -77,7 +83,7 @@ function recommendVerified(available,input){
   const kit=seed.products.find(p=>p.step==='kit');
   for(const removed of seed.products.filter(p=>p.step!=='kit').slice(0,24)){
    const variant=new Map([...available].filter(([sku,row])=>sku!==key(removed.sku)&&(!kit||row.product.recommendationProfile?.type!=='kit'||sku===key(kit.sku))));
-   const option=buildSelection(variant,input);if(!firstHasKit||option.products[0]?.step==='kit')add(option);
+   const option=buildSelection(variant,input);if(!kitRequired||option.products[0]?.step==='kit')add(option);
    if(choices.length>=3)break;
   }
  }

@@ -1,5 +1,4 @@
 import {mountCareQuiz} from './care-quiz.js?v=20261029-3';
-import {mountRitualGallery} from './ritual-gallery.js?v=20261029-eco';
 import {mountPublicCommunity} from './influencers/public-community.js?v=20261104-2';
 import {mergeCareCart,cleanMatchReasons} from './care-selection.js';
 import {careConsent} from './analytics/care-consent.js';
@@ -18,7 +17,7 @@ function updatePartnerLinks(){
 }
 updatePartnerLinks();
 const image=v=>{try{const u=new URL(v);return u.protocol==='https:'?u.href:'';}catch{return '';}};
-function cards(products){return products.map((p,index)=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${String(index+1).padStart(2,'0')} · ${esc(steps[p.step])}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p>${cleanMatchReasons(p.matchReasons).length?`<div class="ritual-match"><p class="ritual-match-title">Por que esta opção?</p><ul>${cleanMatchReasons(p.matchReasons).map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></div>`:''}<strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Conhecer este produto ↗</a></p></div></article>`).join('');}
+function cards(products){return products.map(p=>`<article class="portal-product-card">${image(p.image)?`<img class="product-image" src="${esc(image(p.image))}" alt="${esc(p.name)}" loading="lazy">`:'<div class="product-image-placeholder">Imagem indisponível</div>'}<div>${p.step?`<span class="eyebrow">${esc(p.complementary?'Complemento':steps[p.step]||'Produto')}</span>`:''}<h3>${esc(p.name)}</h3><p>${esc(p.reason||'')}</p>${p.kitComponents?.length?`<p><strong>Inclui</strong> ${p.kitComponents.map(esc).join(', ')}.</p>`:''}${cleanMatchReasons(p.matchReasons).length?`<div class="ritual-match"><p class="ritual-match-title">Por que esta opção?</p><ul>${cleanMatchReasons(p.matchReasons).map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></div>`:''}<strong>${money(p.price)}</strong><p><a class="quiet-link" href="/index.html?${new URLSearchParams({search:p.sku,...(currentCoupon?{cupom:currentCoupon}:{})})}#colecao">Conhecer este produto ↗</a></p></div></article>`).join('');}
 async function api(path,body){const res=await fetch('/api/discovery/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(60000)});const result=await res.json();if(!res.ok||!result.success)throw Error(result.error||'Não foi possível consultar agora.');return result.data;}
 const careForm=$('ritualForm');
 if(careForm){
@@ -28,13 +27,7 @@ if(careForm){
  $('openRitualQuiz')?.addEventListener('click',openQuiz);
  dialog?.querySelector('[data-close-quiz]').addEventListener('click',()=>dialog.close());
  dialog?.addEventListener('click',event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();}});
- const suggestion=$('ritualSuggestion');
- // Keep the suggestion dialog available for future use; show results directly for now.
- const suggestionPopupEnabled=false;
  const focusResult=()=>{$('ritualResult').focus({preventScroll:true});$('ritualResult').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});};
- suggestion?.querySelector('[data-close-suggestion]').addEventListener('click',()=>suggestion.close());
- $('viewRitualSelection')?.addEventListener('click',()=>suggestion.close());
- suggestion?.addEventListener('close',focusResult);
  openQuiz();
  const measurement=()=>{
   try{
@@ -53,16 +46,25 @@ if(careForm){
   result(data){
    const input=answers(),hairs={straight:'liso',wavy:'ondulado',curly:'cacheado',coily:'crespo'},goals={hydration:'hidratação e maciez',repair:'cuidado de fios danificados',frizz:'controle do frizz',curls:'definição dos cachos',color:'cuidado da cor',nutrition:'Nutrição dos fios',oiliness:'Controle da oleosidade'};
    $('ritualProfile').textContent='Para cabelo '+hairs[input.hair]+', '+(input.chemistry==='treated'?'com química ou coloração':'sem química')+', buscando '+goals[input.goal]+({normal:'',dry:', com comprimento e pontas ressecados',damaged:', com comprimento e pontas danificados',frizzy:', buscando também menos frizz no comprimento'}[input.ends]||'')+'. Limite de '+money(input.budget)+' em produtos.';
-   selectionOptions=[data,...(Array.isArray(data.alternatives)?data.alternatives:[])].filter(option=>option.products?.[0]?.step==='kit');selectedOption=0;
-   if(selectionOptions.length){showSelection();dialog?.close();$('openRitualQuiz').textContent='Ajustar minhas respostas ↗';const first=selected[0],photo=$('suggestionImage'),src=image(first.image);$('suggestionName').textContent=first.name;$('suggestionTotal').textContent=(first.step==='kit'?'1 kit completo'+(selected.length>1?' + '+(selected.length-1)+' '+(selected.length===2?'complemento':'complementos'):''):selected.length+' '+(selected.length===1?'produto':'produtos'))+' · Total de '+money(selectionOptions[0].total)+' em produtos';photo.hidden=!src;if(src){photo.src=src;photo.alt=first.name;}$('suggestionName').hidden=selectionOptions.length>1;const comparisons=$('suggestionComparisons');comparisons.hidden=selectionOptions.length<2;comparisons.innerHTML=selectionOptions.length>1?selectionOptions.map((option,index)=>'<div class="suggestion-option">'+(image(option.products[0]?.image)?'<img src="'+esc(image(option.products[0].image))+'" alt="">':'')+'<div><span>Opção '+(index+1)+'</span><strong>'+esc(option.products[0]?.name||option.line)+'</strong></div><b>'+money(option.total)+'</b></div>').join(''):'';if(selectionOptions.length>1){photo.hidden=true;$('suggestionTitle').textContent=selectionOptions.length+' opções para você escolher';$('suggestionTotal').textContent='Compare as combinações e escolha a sua. Todas dentro de '+money(input.budget)+'.';$('viewRitualSelection').textContent='Comparar minhas opções →';}else{$('suggestionTitle').textContent='Uma seleção especial para você!';$('viewRitualSelection').textContent='Ver minha seleção →';}if(suggestionPopupEnabled&&suggestion&&!suggestion.open)suggestion.showModal();else focusResult();}else{selected=[];message.textContent=data.message;$('quizMessage').textContent=data.message;$('ritualResult').hidden=true;}
+   selectionOptions=[data,...(Array.isArray(data.alternatives)?data.alternatives:[])].filter(option=>option.products?.length);selectedOption=0;
+   if(selectionOptions.length){
+    showSelection();
+    dialog?.close();
+    $('openRitualQuiz').textContent='Ajustar minhas respostas ↗';
+    focusResult();
+   }else{
+    message.textContent=data.message;
+    $('quizMessage').textContent=data.message;
+   }
   },
   error(reason){message.textContent=reason.message;$('quizMessage').textContent=reason.message;},finish(){button.disabled=false;}
  });
  function showSelection(){
-  const data=selectionOptions[selectedOption];selected=data.products;message.textContent=data.message;
-  $('discoveryProducts').innerHTML=cards(selected);if($('ritualGallery'))mountRitualGallery($('ritualGallery'),selected,{money,esc,safeImage:image});$('ritualExplanation').textContent=data.explanation||'';
+  const data=selectionOptions[selectedOption];selected=data.products;message.textContent='';
+  $('discoveryProducts').innerHTML=cards(selected);$('ritualExplanation').textContent=data.explanation||'';
+  $('ritualExplanation').hidden=!data.explanation;
   const remaining=Math.max(0,Number(answers().budget)-Number(data.total));
-  $('ritualTotal').textContent=(selectionOptions.length>1?'Opção '+(selectedOption+1)+' selecionada: ':'Sua seleção: ')+money(data.total)+' em produtos'+(remaining>0?' · '+money(remaining)+' abaixo do seu limite.':'.')+' Frete calculado ao finalizar.';
+  $('ritualTotal').textContent='Total dos produtos '+money(data.total)+(remaining>=0.005?' · Sobram '+money(remaining)+' do seu orçamento.':' · Usa todo o orçamento.');
   const options=$('ritualOptions');options.hidden=selectionOptions.length<2;
   options.innerHTML=selectionOptions.length>1?'<p>Escolha uma combinação para conhecer os produtos e adicionar à sacola:</p><div>'+selectionOptions.map((option,index)=>'<button type="button" data-ritual-option="'+index+'" aria-pressed="'+(index===selectedOption)+'"><span class="ritual-option-label">Opção '+(index+1)+(index===selectedOption?' · selecionada':'')+'</span>'+(image(option.products[0]?.image)?'<img src="'+esc(image(option.products[0].image))+'" alt="" loading="lazy">':'')+'<strong>'+esc(option.products[0]?.name||option.line||'Seleção de cuidados')+'</strong><span class="ritual-option-price">'+money(option.total)+'</span><small>'+option.products.length+' '+(option.products[0]?.step==='kit'?'itens · kit completo'+(option.products.length>1?' e complementos':''):'produtos')+'</small><small>'+option.products.slice(1).map(p=>esc(p.name)).join(' · ')+'</small></button>').join('')+'</div>':'';
   $('addRitual').textContent=selectionOptions.length>1?'Adicionar esta opção à sacola ↗':'Quero estes produtos na sacola ↗';

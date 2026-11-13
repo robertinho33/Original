@@ -262,10 +262,16 @@ export async function loadHomeProducts({
     );
 }
 
+export function isCatalogKit(product) {
+    return /^kits?$/i.test(String(product.category || '').trim())
+        || product.productType === 'kit' || product.recommendationProfile?.type === 'kit';
+}
+
 export async function searchProducts(
     query = '',
     {
         category = '',
+        kitsOnly = false,
         sourceId = '',
         page = 1,
         pageSize = 24,
@@ -296,6 +302,7 @@ export async function searchProducts(
 
     const filtered =
         products.filter(product => {
+            if (kitsOnly && !isCatalogKit(product)) return false;
             const text = normalizeSearchText([
                 product.name,
                 product.sku,

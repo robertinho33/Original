@@ -1,3 +1,4 @@
+import { isCatalogKit, loadProducts } from './catalog/catalog-service.js?v=kits-1';
 import { flashUrl, offerPricing } from './marketing/flash-display.js';
 
 const apiRoot = window.location.protocol === 'file:'
@@ -67,6 +68,11 @@ async function loadCampaignHero() {
         // Preserve the new store headline when the published campaign still has the previous wording.
         if ([campaign.title, campaign.emphasis, campaign.ending].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim() === 'Beleza que começa no ritual.') {
             campaign.title = 'Beleza que começa'; campaign.emphasis = 'com seus cuidados.'; campaign.ending = '';
+        }
+        if (campaign.flashSku) {
+            const products = await loadProducts();
+            const product = products.find(item => item.sku === campaign.flashSku);
+            if (!product || !isCatalogKit(product)) return;
         }
         startOffer(campaign, reset);
         setText('heroCampaignEyebrow', campaign.eyebrow);

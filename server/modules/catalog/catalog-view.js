@@ -24,6 +24,7 @@ function mergePublicProducts(base,documents,sources=[]){
       sourceId:row.sourceId,sourceName:row.sourceName,sourceUrl:merged.sourceUrl||'',category:row.categoryName||merged.category||'',
       categoryName:row.categoryName,weight:merged.weight||'',featured:merged.featured===true,priority:Number(merged.priority)||0};
     const care=merged.catalogProfile;
+    if (care?.type === 'kit') result.productType = 'kit';
     if(care?.schemaVersion===3&&care.sourceId==='ecobelle')result.recommendationProfile={
       verified:care.reviewStatus==='approved'&&care.evidenceStatus==='purpose_verified'&&care.usage==='home',
       type:care.type,step:care.step,line:care.line,primaryGoal:care.primaryGoal,goals:care.goals,

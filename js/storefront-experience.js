@@ -1,10 +1,10 @@
-import { loadProducts } from './catalog/catalog-service.js';
+import { isCatalogKit, loadProducts } from './catalog/catalog-service.js?v=kits-1';
 async function populateHero() {
     const stage = document.getElementById('heroProductStage');
     if (!stage) return;
     try {
         const products = await loadProducts();
-        const picks = products.filter(product => product.image && product.active !== false && Number(product.stock) > 0).slice(0, 3);
+        const picks = products.filter(product => isCatalogKit(product) && product.image && product.active !== false && Number(product.stock) > 0).slice(0, 3);
         let loaded = 0;
         for (const product of picks) {
             const url = new URL(product.image, location.origin);

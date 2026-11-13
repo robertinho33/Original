@@ -95,3 +95,15 @@ test('no affordable available compatible kit means no individual-only fallback i
 test('limited inventory never fabricates three copies of a sole available kit',()=>{
  const only=catalog.filter(p=>p.sku==='2QSQFLXZ6');const result=recommend(config,only,{...input,goal:'oiliness',budget:400,ends:'normal'});assert.equal(result.products.length,1);assert.deepEqual(result.alternatives,[]);
 });
+
+test('below 120, compatible singles fill the budget when no kit fits',()=>{
+ const profile={verified:true,type:'individual',step:'treat',goals:['frizz'],hairScope:'all',hair:['wavy'],chemistryScope:'all',chemistry:['treated']};
+ const items=[['A',71],['B',62],['C',57],['D',118]].map(([sku,price])=>({
+  sku,name:sku,price,stock:1,sourceId:'ecobelle',recommendationProfile:sku==='D'?{...profile,hair:['curly']}:profile
+ }));
+ const result=recommend(config,items,{...input,budget:119});
+ assert.deepEqual(result.products.map(p=>p.sku),['B','C']);
+ assert.equal(result.total,119);
+ assert.ok(result.alternatives.every(option=>option.total<=119));
+ assert.deepEqual(recommend(config,items,{...input,budget:120}).products,[]);
+});

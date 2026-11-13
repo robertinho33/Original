@@ -32,7 +32,7 @@ test('store publication diagnosis never presents drafts or broken links as publi
     assert.equal(state.published,false);assert.ok(state.issues.length>0);
   }
 });
-test('public HTTP stores protect private data; questionnaire requires kits even with legacy manual rules',async()=>{
+test('public HTTP stores protect private data; questionnaire requires kits from R$ 120 even with legacy manual rules',async()=>{
   const records={'influencers/demo':{active:true,email:'PRIVATE',phone:'SECRET'},'influencerPublicStores/demo':{enabled:true,name:'Nome público',coupon:'PARCEIRO',skus:['SH'],passwordHash:'PRIVATE'},'storeRitualRules/current':rules};
   const db={collection:name=>({doc:id=>({get:async()=>({exists:!!records[name+'/'+id],data:()=>records[name+'/'+id]})}),get:async()=>({docs:[{data:()=>({code:'PARCEIRO',influencerId:'demo',active:true})}]})})};
   let servedCatalog=catalog;
@@ -42,9 +42,9 @@ test('public HTTP stores protect private data; questionnaire requires kits even 
     let response=await fetch(base+'/stores/demo'),data=await response.json();assert.equal(response.status,200);assert.equal(data.data.name,'Nome público');assert.ok(!JSON.stringify(data).includes('PRIVATE'));assert.ok(!JSON.stringify(data).includes('SECRET'));
     records['influencers/demo'].active=false;assert.equal((await fetch(base+'/stores/demo')).status,404);records['influencers/demo'].active=true;
     records['influencerPublicStores/demo'].enabled=false;assert.equal((await fetch(base+'/stores/demo')).status,404);
-    response=await fetch(base+'/ritual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});data=await response.json();assert.deepEqual(data.data.products,[]);assert.match(data.data.message,/kit/);
+    response=await fetch(base+'/ritual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...input,budget:120})});data=await response.json();assert.deepEqual(data.data.products,[]);assert.match(data.data.message,/kit/);
     servedCatalog=[...catalog,{sku:'KIT',name:'Kit completo',price:100,stock:2,sourceId:'ecobelle',recommendationProfile:{verified:true,type:'kit',step:'kit',goals:['hydration'],primaryGoal:'hydration',hairScope:'unknown',chemistryScope:'unknown',restrictions:[],components:catalog.map(p=>({sku:p.sku,quantity:1,name:p.name}))}}];
-    response=await fetch(base+'/ritual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});data=await response.json();assert.equal(data.data.products[0].step,'kit');assert.equal(data.data.total,100);assert.equal(data.data.products.length,1);
+    response=await fetch(base+'/ritual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...input,budget:120})});data=await response.json();assert.equal(data.data.products[0].step,'kit');assert.equal(data.data.total,100);assert.equal(data.data.products.length,1);
   }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
 test('only administrators can configure storefronts and ritual recommendations',async()=>{
