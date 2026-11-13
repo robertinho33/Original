@@ -8,24 +8,39 @@
 .partner-paths .partner-promise{flex:0;font-size:18px;line-height:1.5;font-weight:700;color:#254b38;margin:0 0 12px}
 .visitor-nav>.portal-access{background:#254b38;color:#fff}.visitor-nav>.portal-access:hover{background:#365d46;color:#fff}.visitor-nav>.portal-access[aria-current]{background:#e6efe3;color:#254b38}
 
-.visitor-nav > a {
-    border: 1px solid #aabfa4;
-    background: #f6f9f3;
-    font-weight: 600;
+.topbar > .visitor-nav[data-visitor-nav] {
+    min-width: 0;
+    flex-wrap: wrap !important;
 }
 
-.visitor-nav > a:hover {
-    border-color: #52734e;
-    background: #edf4eb;
-}
-
-.visitor-nav > a[aria-current],
-.topbar > .visitor-nav > a[aria-current] {
-    border: 1px solid #52734e;
+.visitor-nav[data-visitor-nav] > a {
+    border: 1px solid #557960;
+    border-radius: 8px;
     background: #e6efe3;
+    color: #254b38;
+    box-shadow: 0 2px 0 #b9cbb6;
     font-weight: 700;
+    text-decoration: none;
 }
 
-.visitor-nav > .portal-access {
+.visitor-nav[data-visitor-nav] > a:hover {
     border-color: #254b38;
+    background: #d6e6d2;
+    text-decoration: none;
+}
+
+.visitor-nav[data-visitor-nav] > a:is([aria-current="page"], .portal-access) {
+    border-color: #254b38;
+    background: #254b38;
+    color: #fff;
+    box-shadow: 0 2px 0 #173626;
+}
+
+.visitor-nav[data-visitor-nav] > a:is([aria-current="page"], .portal-access):hover {
+    background: #365d46;
+}
+
+.visitor-nav[data-visitor-nav] > a:active {
+    box-shadow: none;
+    transform: translateY(2px);
 }
